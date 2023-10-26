@@ -125,6 +125,7 @@ public class MyAIServiceSelector : IAIServiceSelector
                     defaultRequestSettings ??= model;
                 }
             }
+            Console.WriteLine($"Prompt tokens: {tokens}, Response tokens: {fewestTokens}");
 
             if (serviceId is not null)
             {

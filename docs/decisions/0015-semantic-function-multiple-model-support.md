@@ -42,7 +42,7 @@ Support just use cases listed in this ADR.
 _As a developer using the Semantic Kernel I can configure multiple request settings for a semantic function and associate each one with a service id so that the correct request settings are used when different services are used to execute my semantic function._
 
 The semantic function template configuration allows multiple model request settings to be configured. In this case the developer configures different settings based on the service id that is used to execute the semantic function.
-In the example below the semantic function is executed with "OpenAIChat" using `max_tokens=240` because "OpenAIChat" is set as the default AI service.
+In the example below the semantic function is executed with "AzureText" using `max_tokens=60` because "AzureText" is the first service id in the list of models configured for the prompt.
 
 ```csharp
 // Configure a Kernel with multiple LLM's
