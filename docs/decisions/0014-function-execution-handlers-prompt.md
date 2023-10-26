@@ -31,7 +31,7 @@ The proposal is a way to expose the prompt to the handlers.
 - Handlers should be able to see and modify the prompt before the LLM execution.
 - Handlers should be able to see prompt after the LLM execution.
 
-## Considered Options
+## Current State of Kernel for Pre/Post Hooks
 
 Current state of Kernel:
 
@@ -44,11 +44,21 @@ RunAsync()
     var functionDetails = skFunction.Describe();
     var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
 
-    functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+    functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken);
     context = functionResult.Context;
     var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
 }
 ```
+
+## Considered Options
+
+### Common to all options
+
+Move `Dictionary<string, object> property `Metadata`from`FunctionInvokedEventArgs`to`SKEventArgs` abstract class.
+
+Pro:
+
+- This will make all SKEventArgs extensible, allowing extra information to be passed to the EventArgs when `specialization` isn't possible.
 
 ### Option 1: Kernel awareness of SemanticFunctions
 
@@ -67,7 +77,7 @@ RunAsync()
     }
     else
     {
-        functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken);
     }
 }
 class SemanticFunction : ISKFunction
@@ -104,7 +114,7 @@ class Kernel : IKernel
     RunAsync() {
         var functionInvokingArgs = await this.TriggerEvent<FunctionInvokingEventArgs>(this.FunctionInvoking, skFunction, context);
 
-        var functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken);
 
         var functionInvokedArgs = await this.TriggerEvent<FunctionInvokedEventArgs>(
             this.FunctionInvoked,
@@ -121,11 +131,13 @@ class Kernel : IKernel
 
         if (function is ISKFunctionEventSupport<TEventArgs> supportedFunction)
         {
-            var eventArgs = await supportedFunction.PrepareEventArgsAsync(context).ConfigureAwait(false);
+            var eventArgs = await supportedFunction.PrepareEventArgsAsync(context);
             eventHandler.Invoke(this, eventArgs);
             return eventArgs;
         }
 
+        // If a function don't support the specific event we can:
+        return null; // Ignore or Throw.
         throw new NotSupportedException($"The provided function \"{function.Name}\" does not supports and implements ISKFunctionHandles<{typeof(TEventArgs).Name}>");
     }
 }
@@ -142,9 +154,12 @@ class SemanticFunction : ISKFunction,
 
     public FunctionInvokingEventArgs PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
     {
-        var renderedPrompt = await this.RenderPromptTemplateAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var renderedPrompt = await this.RenderPromptTemplateAsync(context);
         context.Variables.Set(SemanticFunction.RenderedPromptKey, renderedPrompt);
+
         return new SemanticFunctionInvokingEventArgs(this.Describe(), context);
+        // OR                                                          Metadata Dictionary<string, object>
+        return new FunctionInvokingEventArgs(this.Describe(), context, new Dictionary<string, object>() { { RenderedPrompt, renderedPrompt } });
     }
 
     public FunctionInvokedEventArgs PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
@@ -159,8 +174,11 @@ public sealed class SemanticFunctionInvokedEventArgs : FunctionInvokedEventArgs
         : base(functionDescription, context)
     {
         _context = context;
+        Metadata[RenderedPromptKey] = this._context.Variables[RenderedPromptKey];
     }
-    public string? RenderedPrompt => this._context.Variables[RenderedPromptKey];
+
+    public string? RenderedPrompt => this.Metadata[RenderedPromptKey];
+
 }
 
 public sealed class SemanticFunctionInvokingEventArgs : FunctionInvokingEventArgs
@@ -180,6 +198,58 @@ Pros:
 
 - `Kernel` is not aware of `SemanticFunction` implementation details or any other `ISKFunction` implementation
 - Extensible to show dedicated EventArgs per custom `ISKFunctions` implementation, including prompts for semantic functions
-- Extensible to support other events thru the `ISKFunctionEventSupport` interface
+- Extensible to support future events on the Kernel thru the `ISKFunctionEventSupport<NewEvent>` interface
+- Functions can have their own EventArgs specialization.
+- Interface is optional, so custom `ISKFunctions` can choose to implement it or not
 
-### Option 3: Delegate to the ISKFunction how to handle events (Delegate approach)
+Cons:
+
+- Any custom functions now will have to responsibility implement the `ISKFunctionEventSupport` interface if they want to support events.
+
+### Option 3: Delegate to the ISKFunction how to handle events (Delegates approach)
+
+Add Kernel eventhandler delegate wrappers to `ISKFunction.InvokeAsync` interface.
+This approach shares the responsibility of handling the events between the `Kernel` and the `ISKFunction` implementation, flow control will be handled by the Kernel and the `ISKFunction` will be responsible for calling the delegate wrappers and adding data to the `SKEventArgs` that will be passed to the handlers.
+
+```csharp
+class Kernel : IKernel
+{
+    RunAsync() {
+        var functionInvokingDelegateWrapper = new(this.FunctionInvoking);
+        var functionInvokedDelegateWrapper = new(this.FunctionInvoked);
+
+        var functionResult = await skFunction.InvokeAsync(context, functionInvokingDelegateWrapper, functionInvokingDelegateWrapper, functionInvokedDelegateWrapper);
+
+        // Kernel will analyze the delegate results and make flow related decisions...
+        if (functionInvokingDelegateWrapper.EventArgs.CancelRequested ... ) { ... }
+        if (functionInvokingDelegateWrapper.EventArgs.SkipRequested ... ) { ... }
+        if (functionInvokedDelegateWrapper.EventArgs.Repeat ... ) { ... }
+    }
+}
+
+class SemanticFunciton : ISKFunction {
+    InvokeAsync(
+        SKContext context,
+        FunctionInvokingDelegateWrapper functionInvokingDelegateWrapper,
+        FunctionInvokedDelegateWrapper functionInvokedDelegateWrapper)
+    {
+        // The Semantic will have to call the delegate wrappers and share responsibility with the `Kernel`.
+        if (functionInvokingDelegateWrapper.Handler is not null)
+        {
+            var renderedPrompt = await this.RenderPromptTemplateAsync(context);
+            functionInvokingDelegateWrapper.EventArgs.RenderedPrompt = renderedPrompt;
+
+            functionInvokingDelegateWrapper.Handler.Invoke(this, functionInvokingDelegateWrapper.EventArgs);
+
+            if (functionInvokingDelegateWrapper.EventArgs?.CancelToken.IsCancellationRequested ?? false)
+            {
+                // Need to enforce an non processed result
+                return new SKFunctionResult(context);
+
+                //OR make InvokeAsync allow returning null FunctionResult?
+                return null;
+            }
+        }
+    }
+}
+```
