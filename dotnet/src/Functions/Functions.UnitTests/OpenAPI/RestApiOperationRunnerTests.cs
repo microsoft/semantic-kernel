@@ -119,7 +119,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Equal("application/json; charset=utf-8", result.ContentType);
 
-        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>(), It.IsAny<OpenAIManifestAuthenticationConfig>()), Times.Once);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
 
-        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>(), It.IsAny<OpenAIManifestAuthenticationConfig>()), Times.Once);
     }
 
     [Fact]

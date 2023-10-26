@@ -191,7 +191,7 @@ public static class KernelAIPluginExtensions
                 var callback = executionParameters.AuthCallback;
                 executionParameters.AuthCallback = async (request, _) =>
                 {
-                    await callback.Invoke(request, openApiManifestAuth).ConfigureAwait(false);
+                    await callback(request, openApiManifestAuth).ConfigureAwait(false);
                 };
             }
 
@@ -344,7 +344,7 @@ public static class KernelAIPluginExtensions
     {
         try
         {
-            var settings = new JsonSerializerSettings
+            var serializerSettings = new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {
@@ -352,8 +352,8 @@ public static class KernelAIPluginExtensions
                 }
             };
 
-            JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, settings);
-            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(settings));
+            JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, serializerSettings);
+            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(serializerSettings));
 
             return openApiManifestAuth != null;
         }
