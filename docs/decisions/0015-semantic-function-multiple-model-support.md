@@ -1,9 +1,9 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed}
-date: 2023-10-02
-deciders: mabolan, markwallace
-consulted: semenshi, dmytrostruk, rbarreto
+status: approved
+date: 2023-10-26
+deciders: markwallace, semenshi, rbarreto
+consulted: mabolan, dmytrostruk
 informed: 
 ---
 # Multiple Model Support for Semantic Functions
