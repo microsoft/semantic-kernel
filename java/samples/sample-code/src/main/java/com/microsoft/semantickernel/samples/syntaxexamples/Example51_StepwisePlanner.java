@@ -17,7 +17,13 @@ import java.util.Locale;
 import reactor.core.publisher.Mono;
 
 /**
- * This example shows how to use Stepwise Planner to create a plan for a given goal.
+ * Demonstrates the <a href=
+ * "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-stepwise-planner/">
+ * Stepwise Planner</a>
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
  */
 public class Example51_StepwisePlanner {
 

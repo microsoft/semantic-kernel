@@ -27,6 +27,10 @@ import java.util.function.Function;
  * key-value store that you can use when running the kernel.
  * The context is local (i.e. in your computer's RAM) and not persisted anywhere
  * beyond the life of the JVM execution.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
  */
 public class Example04_ContextVariablesChat {
     public static void startChat(Kernel kernel)

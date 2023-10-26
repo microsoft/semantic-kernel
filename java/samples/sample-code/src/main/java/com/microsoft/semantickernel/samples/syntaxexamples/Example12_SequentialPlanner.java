@@ -19,6 +19,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
+/**
+ * Demonstrates the <a href=
+ * "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-sequential-planner/">
+ * Sequential Planner</a>
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example12_SequentialPlanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Example12_SequentialPlanner.class);

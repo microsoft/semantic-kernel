@@ -18,6 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 
+/**
+ * Demonstrates saving and retrieving memories.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example15_MemorySkill {
     private static final String MEMORY_COLLECTION_NAME = "aboutMe";
 
