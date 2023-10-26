@@ -23,24 +23,51 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMethod? Method { get; private set; }
 
-    public HttpResponseMessage ResponseToReturn { get; set; }
+    public Func<HttpRequestMessage, HttpResponseMessage> ResponseToReturnProvider { get; set; }
 
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this.ResponseToReturnProvider = (_) =>
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            response.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+            return response;
+        };
     }
 
     public HttpMessageHandlerStub(Stream responseToReturn)
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StreamContent(responseToReturn);
+        this.ResponseToReturnProvider = (_) =>
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            response.Content = new StreamContent(responseToReturn);
+            return response;
+        };
+    }
+
+    public HttpMessageHandlerStub(HttpContent content)
+    {
+        this.ResponseToReturnProvider = (_) =>
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            response.Content = content;
+            return response;
+        };
+    }
+
+    public HttpMessageHandlerStub(Func<HttpRequestMessage, HttpResponseMessage> responseToReturn)
+    {
+        this.ResponseToReturnProvider = responseToReturn;
     }
 
     public void ResetResponse()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this.ResponseToReturnProvider = (_) =>
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            response.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+            return response;
+        };
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -51,6 +78,6 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
         this.ContentHeaders = request.Content?.Headers;
 
-        return await Task.FromResult(this.ResponseToReturn);
+        return await Task.FromResult(this.ResponseToReturnProvider(request));
     }
 }

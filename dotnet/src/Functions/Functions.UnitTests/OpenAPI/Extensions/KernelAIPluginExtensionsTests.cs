@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -9,10 +10,13 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
+using Moq;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -45,6 +49,60 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
         this._sut = new OpenApiDocumentParser();
+    }
+
+    [Fact]
+    public async Task ItUsesAuthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
+    {
+        //Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub((HttpRequestMessage message) =>
+        {
+            if (message!.RequestUri!.AbsoluteUri == "https://fake-random-test-host/openai_manifest.json")
+            {
+                var response = new HttpResponseMessage();
+                response.Content = new StreamContent(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"));
+                return response;
+            }
+
+            if (message!.RequestUri!.AbsoluteUri == "https://fake-random-test-host/openapi.json")
+            {
+                var response = new HttpResponseMessage();
+                response.Content = new StreamContent(this._openApiDocument);
+                return response;
+            }
+
+            throw new SKException($"Unexpected url - {message!.RequestUri!.AbsoluteUri}");
+        });
+
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var providerActualArguments = new List<OpenAIAuthenticationManifest?>();
+
+        var authCallbackMock = new Mock<AuthenticateRequestAsyncCallback>();
+
+        var authCallbackProviderMock = new Mock<AuthenticateCallbackProvider>();
+        authCallbackProviderMock
+            .Setup(p => p.Invoke(It.IsAny<OpenAIAuthenticationManifest>()))
+            .Callback<OpenAIAuthenticationManifest>(c => providerActualArguments.Add(c))
+            .Returns(authCallbackMock.Object);
+
+        //Act
+        var plugin = await this._kernel.ImportPluginFunctionsAsync(
+            "fakePlugin",
+            new Uri("https://fake-random-test-host/openai_manifest.json"),
+            new OpenApiFunctionExecutionParameters { HttpClient = httpClient, AuthenticateCallbackProvider = authCallbackProviderMock.Object });
+
+        //Assert
+        var setSecretFunction = plugin["SetSecret"];
+        Assert.NotNull(setSecretFunction);
+
+        //Check provider is called two times: first time with null when loading the OpenAI manifest document and the second time with auth config when loading the OpenAPI document.
+        authCallbackProviderMock.Verify(target => target.Invoke(It.IsAny<OpenAIAuthenticationManifest>()), Times.Exactly(2));
+        Assert.Equal(2, providerActualArguments.Count);
+        Assert.Null(providerActualArguments[0]);
+        Assert.Equal("https://vault.azure.net/.default", providerActualArguments[1]?.Scope);
+
+        authCallbackMock.Verify(target => target.Invoke(It.IsAny<HttpRequestMessage>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -203,8 +261,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
     {
         //Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        using var content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        using var messageHandlerStub = new HttpMessageHandlerStub(content);
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
 

@@ -15,9 +15,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -119,8 +123,9 @@ public static class KernelAIPluginExtensions
         var pluginContents = await LoadDocumentFromUriAsync(
             kernel,
             uri,
-            executionParameters,
             httpClient,
+            executionParameters?.UserAgent,
+            executionParameters?.AuthenticateCallbackProvider?.Invoke(null),
             cancellationToken).ConfigureAwait(false);
 
         return await CompleteImportAsync(
@@ -178,15 +183,27 @@ public static class KernelAIPluginExtensions
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
+        var document = pluginContents;
+
+        AuthenticateRequestAsyncCallback? authCallback = null;
+
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
-            return await kernel
-                .ImportPluginFunctionsAsync(
-                    pluginName,
-                    new Uri(openApiUrl),
-                    executionParameters,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            if (TryParseAIPluginForAuth(document, out var openApiManifestAuth) && openApiManifestAuth!.Type != OpenAIAuthenticationType.None)
+            {
+                if (executionParameters?.AuthenticateCallbackProvider != null)
+                {
+                    authCallback = executionParameters.AuthenticateCallbackProvider(openApiManifestAuth);
+                }
+            }
+
+            document = await LoadDocumentFromUriAsync(
+                kernel,
+                new Uri(openApiUrl),
+                httpClient,
+                executionParameters?.UserAgent,
+                authCallback,
+                cancellationToken).ConfigureAwait(false);
         }
 
         return await LoadPluginAsync(
@@ -194,7 +211,8 @@ public static class KernelAIPluginExtensions
             pluginName,
             executionParameters,
             httpClient,
-            pluginContents,
+            document,
+            authCallback,
             documentUri,
             cancellationToken).ConfigureAwait(false);
     }
@@ -205,6 +223,7 @@ public static class KernelAIPluginExtensions
         OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
+        AuthenticateRequestAsyncCallback? authCallback,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -216,7 +235,7 @@ public static class KernelAIPluginExtensions
 
             var runner = new RestApiOperationRunner(
                 httpClient,
-                executionParameters?.AuthCallback,
+                authCallback,
                 executionParameters?.UserAgent,
                 executionParameters?.EnableDynamicPayload ?? false,
                 executionParameters?.EnablePayloadNamespacing ?? false);
@@ -247,15 +266,20 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
-        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
+        string? userAgent,
+        AuthenticateRequestAsyncCallback? authCallback,
         CancellationToken cancellationToken)
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
+        request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? Telemetry.HttpUserAgent));
 
-        requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
+        if (authCallback != null)
+        {
+            await authCallback(request).ConfigureAwait(false);
+        }
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
@@ -317,6 +341,31 @@ public static class KernelAIPluginExtensions
         catch (System.Text.Json.JsonException)
         {
             openApiUrl = null;
+
+            return false;
+        }
+    }
+
+    private static bool TryParseAIPluginForAuth(string gptPluginJson, out OpenAIAuthenticationManifest? openApiManifestAuth)
+    {
+        try
+        {
+            var serializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
+            };
+
+            JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, serializerSettings);
+            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings));
+
+            return openApiManifestAuth != null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            openApiManifestAuth = null;
 
             return false;
         }
