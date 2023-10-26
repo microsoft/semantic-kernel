@@ -211,6 +211,39 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
             int limit,
             float minRelevanceScore,
             boolean withEmbedding) {
+        return getNearestMatchesAsync(
+                collectionName,
+                embedding,
+                limit,
+                minRelevanceScore,
+                withEmbedding,
+                memoryRecordMapper);
+    }
+
+    /**
+     * Gets the nearest matches to the {@link Embedding} of type {@code Float}. Does not guarantee
+     * that the collection exists.
+     *
+     * <p>If a memoryRecordMapper is provided this overrides any mapper provided when constructing
+     * this memory store.
+     *
+     * @param collectionName The name associated with a collection of embeddings.
+     * @param embedding The {@link Embedding} to compare the collection's embeddings with.
+     * @param limit The maximum number of similarity results to return.
+     * @param minRelevanceScore The minimum relevance threshold for returned results.
+     * @param withEmbedding If true, the embeddings will be returned in the memory records.
+     * @param memoryRecordMapper a mapper that controls how to map the search document to a memory
+     *     record
+     * @return A collection of tuples where item1 is a {@link MemoryRecord} and item2 is its
+     *     similarity score as a {@code Float}.
+     */
+    public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
+            @Nonnull String collectionName,
+            @Nonnull Embedding embedding,
+            int limit,
+            float minRelevanceScore,
+            boolean withEmbedding,
+            @Nullable Function<SearchDocument, MemoryRecord> memoryRecordMapper) {
         collectionName = normalizeIndexName(collectionName);
         SearchAsyncClient client = getSearchClient(collectionName);
 
