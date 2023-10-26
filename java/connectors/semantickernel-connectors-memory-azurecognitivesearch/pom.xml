@@ -49,6 +49,10 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-settings-loader</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

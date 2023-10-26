@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.ai.openai.util;
+package com.microsoft.semantickernel.settings;
 
 import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.CONFIGURATION_NOT_FOUND;
 import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.COULD_NOT_READ_CONFIGURATION;

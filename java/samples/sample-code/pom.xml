@@ -72,6 +72,10 @@
             <artifactId>jackson-core</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-settings-loader</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
