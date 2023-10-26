@@ -32,7 +32,7 @@ Currently, there are several aspects of error handling in SK that can be enhance
 - .NET standard exception types should be preferred over SK custom ones because they are easily recognizable, do not require any maintenance, can cover common error scenarios, and provide meaningful and standardized error messages.
 - Exceptions should not be wrapped in SK exceptions when passing them up to a caller, unless it helps in constructing actionable logic for either SK or SK client code.
 
-## Considered Options
+## Decision Outcome
 
 - Simplify existing SK exception hierarchy by removing all custom exceptions types except the SKException one and any other type that is actionable. Use SKException type instead of the removed ones unless more details need to be conveyed in which case create a derived specific exception.
 - Modify SK code to throw .NET standard exceptions, such as ArgumentOutOfRangeException or ArgumentNullException, when class argument values are not provided or are invalid, instead of throwing custom SK exceptions. Analyze SK exception usage to identify and fix other potential areas where standard .NET exceptions can be used instead.

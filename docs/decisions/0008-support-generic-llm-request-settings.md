@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: proposed
-date: 2023-=9-15
+date: 2023-09-15
 deciders: shawncal
 consulted: stoub, lemiller, dmytrostruk
 informed: 
