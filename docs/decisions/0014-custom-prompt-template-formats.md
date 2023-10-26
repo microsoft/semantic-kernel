@@ -1,8 +1,8 @@
 ---
-status: {proposed}
-date: {2023-10-23}
-deciders: mabolan, markwallace
-consulted: dmytrostruk, semenshi, rbarreto
+status: {approved}
+date: {2023-10-26}
+deciders: mabolan, markwallace, semenshi, rbarreto
+consulted: dmytrostruk
 informed: 
 ---
 # Custom Prompt Template Formats
