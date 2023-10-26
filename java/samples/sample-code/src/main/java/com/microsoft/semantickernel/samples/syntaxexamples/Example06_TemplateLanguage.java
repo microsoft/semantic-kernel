@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
 /**
- * Show how to invoke a Native Function written in C#
+ * Show how to invoke a Native Function written in Java
  * from a Semantic Function written in natural language
  * <p>
  * Refer to the <a href=
