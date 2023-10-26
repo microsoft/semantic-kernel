@@ -16,7 +16,7 @@ public class AIServicesOpenAIExtensionsTests
     [Fact]
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
-        KernelBuilder targetBuilder = Kernel.Builder;
+        KernelBuilder targetBuilder = new();
         targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", "azure");
         targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url", "key", "azure");
 
@@ -28,7 +28,7 @@ public class AIServicesOpenAIExtensionsTests
     [Fact]
     public void ItTellsIfAServiceIsAvailable()
     {
-        KernelBuilder targetBuilder = Kernel.Builder;
+        KernelBuilder targetBuilder = new();
         targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", serviceId: "azure");
         targetBuilder.WithOpenAITextCompletionService("model", "apikey", serviceId: "oai");
         targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url2", "key", serviceId: "azure");
@@ -46,7 +46,7 @@ public class AIServicesOpenAIExtensionsTests
     public void ItCanOverwriteServices()
     {
         // Arrange
-        KernelBuilder targetBuilder = Kernel.Builder;
+        KernelBuilder targetBuilder = new();
 
         // Act - Assert no exception occurs
         targetBuilder.WithAzureTextCompletionService("dep", "https://localhost", "key", serviceId: "one");

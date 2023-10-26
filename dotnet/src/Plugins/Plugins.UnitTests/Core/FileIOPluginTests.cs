@@ -22,7 +22,7 @@ public class FileIOPluginTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         // Act
         var functions = kernel.ImportFunctions(new FileIOPlugin(), "fileIO");

@@ -25,7 +25,7 @@ public class MultipleModelTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService("service1", mockTextCompletion1.Object, false)
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
@@ -49,7 +49,7 @@ public class MultipleModelTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService("service1", mockTextCompletion1.Object, false)
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
@@ -83,7 +83,7 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService("service1", mockTextCompletion1.Object, defaultServiceIndex == 0)
             .WithAIService("service2", mockTextCompletion2.Object, defaultServiceIndex == 1)
             .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
@@ -119,7 +119,7 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService("service1", mockTextCompletion1.Object, true)
             .WithAIService("service2", mockTextCompletion2.Object, false)
             .WithAIService("service3", mockTextCompletion3.Object, false)
