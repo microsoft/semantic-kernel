@@ -27,7 +27,7 @@ public class KernelTests
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
@@ -45,7 +45,7 @@ public class KernelTests
     public async Task RunAsyncDoesNotRunWhenCancelledAsync()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var nativePlugin = new MyPlugin();
         var functions = kernel.ImportFunctions(nativePlugin, "mySk");
 
@@ -60,7 +60,7 @@ public class KernelTests
     public async Task RunAsyncRunsWhenNotCancelledAsync()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var nativePlugin = new MyPlugin();
         kernel.ImportFunctions(nativePlugin, "mySk");
 
@@ -77,7 +77,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> functions = Kernel.Builder.Build().ImportFunctions(new MyPlugin(), "test");
+        IDictionary<string, ISKFunction> functions = new KernelBuilder().Build().ImportFunctions(new MyPlugin(), "test");
 
         // Assert
         Assert.Equal(3, functions.Count);
@@ -90,7 +90,7 @@ public class KernelTests
     public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         // Act
         IDictionary<string, ISKFunction> functions = kernel.ImportFunctions(new MyPlugin());
@@ -105,7 +105,7 @@ public class KernelTests
     public void ItAllowsToImportTheSamePluginMultipleTimes()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         // Act - Assert no exception occurs
         kernel.ImportFunctions(new MyPlugin());
@@ -119,7 +119,7 @@ public class KernelTests
     public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
@@ -146,7 +146,7 @@ public class KernelTests
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
         var invoked = false;
@@ -168,7 +168,7 @@ public class KernelTests
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
@@ -193,7 +193,7 @@ public class KernelTests
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
         var invoked = 0;
@@ -218,7 +218,7 @@ public class KernelTests
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
@@ -258,7 +258,7 @@ public class KernelTests
     public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
@@ -285,7 +285,7 @@ public class KernelTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
@@ -307,7 +307,7 @@ public class KernelTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var myPlugin = new Mock<MyPlugin>();
         var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
@@ -338,7 +338,7 @@ public class KernelTests
 
         const string PluginName = "MyPlugin";
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
         var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
@@ -358,7 +358,7 @@ public class KernelTests
     [Fact]
     public async Task ItReturnsChangedResultsFromFunctionInvokedEventsAsync()
     {
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         // Arrange
         [SKName("Function1")]
@@ -385,7 +385,7 @@ public class KernelTests
     public async Task ItReturnsChangedResultsFromFunctionInvokingEventsAsync()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         [SKName("Function1")]
         static string Function1(SKContext context) => context.Variables["injected variable"];
@@ -413,7 +413,7 @@ public class KernelTests
     public async Task ItRepeatsFunctionInvokedEventsAsync(string retryFunction, int numberOfRepeats)
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         [SKName("Function1")]
         static string Function1(SKContext context) => "Result1";
@@ -464,7 +464,7 @@ public class KernelTests
 
         const string PluginName = "MyPlugin";
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
         var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
@@ -528,7 +528,7 @@ public class KernelTests
         static string Function5() => "Result5";
         functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         int numberOfInvocations = 0;
 
@@ -587,7 +587,7 @@ public class KernelTests
         static string Function5() => "Result5";
         functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         int numberOfInvocations = 0;
 
