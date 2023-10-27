@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
-date: 2023-10-24
+status: accepted
+date: 2023-10-25
 deciders: markwallace, mabolan
 consulted:
 informed:
@@ -114,3 +114,4 @@ Cons:
 - Unreliable unless the prompt contains unique markers specifically identifying the prompt type.
 
 ## Decision Outcome
+We decided to choose the '2. Completion service type identified by prompt content' option and will reconsider it when we encounter another completion service type that cannot be supported by this option or when we have a solid set of requirements for using a different mechanism for selecting the completion service type.
