@@ -1,6 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
+contact: rogerbarreto
 date: 2023-05-29
 deciders: @rogerbarreto, @shawncal, @stephentoub
 consulted: 
