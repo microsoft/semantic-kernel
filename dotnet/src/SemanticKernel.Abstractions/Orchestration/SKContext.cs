@@ -62,12 +62,12 @@ public sealed class SKContext
     /// <summary>
     /// AI service provider
     /// </summary>
-    public IAIServiceProvider ServiceProvider { get; }
+    internal IAIServiceProvider ServiceProvider { get; }
 
     /// <summary>
     /// AIService selector implementation
     /// </summary>
-    public IAIServiceSelector ServiceSelector { get; }
+    internal IAIServiceSelector ServiceSelector { get; }
 
     /// <summary>
     /// Constructor for the context.

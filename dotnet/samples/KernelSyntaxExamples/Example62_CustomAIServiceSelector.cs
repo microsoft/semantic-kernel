@@ -55,9 +55,11 @@ public static class Example62_CustomAIServiceSelector
             .WithAIServiceSelector(new MyAIServiceSelector())
             .Build();
 
-        var modelSettings = new List<AIRequestSettings>();
-        modelSettings.Add(new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", MaxTokens = 400 });
-        modelSettings.Add(new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 });
+        var modelSettings = new List<AIRequestSettings>
+        {
+            new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", MaxTokens = 400 },
+            new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 }
+        };
 
         await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
         await RunSemanticFunctionAsync(kernel, "Hello AI, provide an indepth description of what can you do for me as a bulleted list?", modelSettings);
