@@ -52,6 +52,7 @@ public static class Example62_CustomAIServiceSelector
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
+            .WithAIServiceSelector(new MyAIServiceSelector())
             .Build();
 
         var modelSettings = new List<AIRequestSettings>();
@@ -68,13 +69,11 @@ public static class Example62_CustomAIServiceSelector
 
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
         var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
-        var serviceSelector = new MyAIServiceSelector();
 
         var skfunction = kernel.RegisterSemanticFunction(
             "MyFunction",
             promptTemplateConfig,
-            promptTemplate,
-            serviceSelector);
+            promptTemplate);
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());

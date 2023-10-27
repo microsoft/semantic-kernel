@@ -51,7 +51,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
-    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
@@ -60,7 +59,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceSelector? serviceSelector = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -72,7 +70,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
-            serviceSelector: serviceSelector,
             loggerFactory: loggerFactory
         )
         {
@@ -123,7 +120,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string pluginName,
         string functionName,
         string description,
-        IAIServiceSelector? serviceSelector = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -139,8 +135,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this.PluginName = pluginName;
         this.Description = description;
 
-        this._serviceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
-
         this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
 
@@ -149,7 +143,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IAIServiceSelector _serviceSelector;
+    private IAIServiceSelector? _serviceSelector;
     public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -185,7 +179,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
+            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
             Verify.NotNull(textCompletion);
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
