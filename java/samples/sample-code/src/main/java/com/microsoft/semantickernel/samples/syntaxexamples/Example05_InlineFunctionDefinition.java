@@ -14,6 +14,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+/**
+ * Demonstrates using prompt templates to define functions.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example05_InlineFunctionDefinition {
   public static void main(String[] args) throws ConfigurationException {
     OpenAIAsyncClient client = SamplesConfig.getClient();

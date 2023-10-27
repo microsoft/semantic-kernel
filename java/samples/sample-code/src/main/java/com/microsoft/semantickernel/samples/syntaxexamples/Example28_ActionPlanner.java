@@ -8,6 +8,15 @@ import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 
+/**
+ * Demonstrates the <a href=
+ * "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-actionplanner/">
+ * Action Planner</a>
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example28_ActionPlanner {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();

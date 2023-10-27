@@ -14,16 +14,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-/* The files contain two examples about SK Semantic Memory.
+/**
+ * Demonstrate two examples about SK Semantic Memory:
  *
  * 1. Memory using Azure Cognitive Search.
  * 2. Memory using a custom embedding generator and vector engine.
  *
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
+ * <p>
+ * You must <a href=
+ * "https://learn.microsoft.com/en-us/azure/search/search-create-service-portal">
+ * create an Azure Cognitive Search service in the portal</a> to run this example.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
  */
-
-// ReSharper disable once InconsistentNaming
 public class Example14_SemanticMemory {
     private static final String MEMORY_COLLECTION_NAME = "SKGitHub";
 
