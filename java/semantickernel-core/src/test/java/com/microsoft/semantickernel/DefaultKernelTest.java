@@ -103,7 +103,7 @@ public class DefaultKernelTest {
                         + "NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY\n"
                         + "\n"
                         + "BE CREATIVE AND FUNNY. I WANT TO LAUGH.\n"
-                        + "\n"
+                        + "Incorporate the style suggestion, if provided: \n"
                         + "+++++\n"
                         + "\n"
                         + "time travel to dinosaur age\n"
