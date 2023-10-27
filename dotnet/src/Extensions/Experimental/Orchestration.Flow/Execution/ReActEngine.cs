@@ -121,7 +121,23 @@ internal sealed class ReActEngine
         context.Variables.Set("question", question);
         var scratchPad = this.CreateScratchPad(previousSteps);
         context.Variables.Set("agentScratchPad", scratchPad);
-        var functionDesc = this.GetFunctionDescriptions(context);
+
+        var availableFunctions = this.GetAvailableFunctions(context).ToArray();
+        if (availableFunctions.Length == 1)
+        {
+            var firstActionFunction = availableFunctions.First();
+            if (firstActionFunction.Parameters.Count == 0)
+            {
+                var action = $"{firstActionFunction.PluginName}.{firstActionFunction.Name}";
+                this._logger?.LogDebug($"Auto selecting {Action} as it is the only function available and it has no parameters.", action);
+                return new ReActStep
+                {
+                    Action = action
+                };
+            }
+        }
+
+        var functionDesc = this.GetFunctionDescriptions(availableFunctions);
         context.Variables.Set("functionDescriptions", functionDesc);
 
         this._logger?.LogInformation("question: {Question}", question);
@@ -161,11 +177,20 @@ internal sealed class ReActEngine
             throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
         }
 
+        var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
+        var functionView = function.Describe();
+
+        var actionContext = this.CreateActionContext(variables, kernel, context);
+        foreach (var parameter in functionView.Parameters)
+        {
+            if (!actionContext.Variables.ContainsKey(parameter.Name))
+            {
+                actionContext.Variables.Set(parameter.Name, parameter.DefaultValue ?? string.Empty);
+            }
+        }
+
         try
         {
-            var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
-            var actionContext = this.CreateActionContext(variables, kernel, context);
-
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
             foreach (var variable in actionContext.Variables)
@@ -232,7 +257,7 @@ internal sealed class ReActEngine
 
             if (!string.IsNullOrEmpty(s.Observation))
             {
-                scratchPadLines.Insert(insertPoint, $"{Observation} {s.Observation}");
+                scratchPadLines.Insert(insertPoint, $"{Observation} \n{s.Observation}");
             }
 
             if (!string.IsNullOrEmpty(s.Action))
@@ -326,12 +351,9 @@ internal sealed class ReActEngine
         return result;
     }
 
-    private string GetFunctionDescriptions(SKContext context)
+    private string GetFunctionDescriptions(FunctionView[] functions)
     {
-        var availableFunctions = this.GetAvailableFunctions(context);
-
-        string functionDescriptions = string.Join("\n", availableFunctions.Select(ToManualString));
-        return functionDescriptions;
+        return string.Join("\n", functions.Select(ToManualString));
     }
 
     private IEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
@@ -346,7 +368,25 @@ internal sealed class ReActEngine
                 .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
                 .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
-        return availableFunctions;
+
+        return this._config.EnableAutoTermination
+            ? availableFunctions.Append(GetStopAndPromptUserFunction())
+            : availableFunctions;
+    }
+
+    private static FunctionView GetStopAndPromptUserFunction()
+    {
+        ParameterView promptParameter = new(
+            Constants.StopAndPromptParameterName,
+            "The message to be shown to the user.",
+            string.Empty,
+            ParameterViewType.String);
+
+        return new FunctionView(
+            Constants.StopAndPromptFunctionName,
+            "_REACT_ENGINE_",
+            "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
+            new[] { promptParameter });
     }
 
     private static string ToManualString(FunctionView function)

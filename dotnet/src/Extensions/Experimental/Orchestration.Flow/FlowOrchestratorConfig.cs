@@ -60,6 +60,11 @@ public sealed class FlowOrchestratorConfig
     public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; } = null;
 
     /// <summary>
+    /// When this is enabled, the flow will be terminated automatically if ReAct engine has exhausted available plugins.
+    /// </summary>
+    public bool EnableAutoTermination { get; set; } = false;
+
+    /// <summary>
     /// Optional. The model to use for the ReAct engine.
     /// </summary>
     /// <remarks>

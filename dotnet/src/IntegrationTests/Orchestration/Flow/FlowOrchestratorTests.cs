@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -24,7 +23,7 @@ public sealed class FlowOrchestratorTests : IDisposable
 
     public FlowOrchestratorTests(ITestOutputHelper output)
     {
-        this._logger = NullLoggerFactory.Instance;
+        this._logger = new XunitLogger<object>(output);
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration

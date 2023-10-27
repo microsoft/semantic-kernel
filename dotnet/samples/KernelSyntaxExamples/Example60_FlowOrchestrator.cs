@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -38,39 +39,46 @@ steps:
       - answer
   - goal: Collect email address
     plugins:
-      - CollectEmailPlugin
+      - EmailPluginV2
     completionType: AtLeastOnce
     transitionMessage: do you want to send it to another email address?
     provides:
-      - email_address
+      - email_addresses
 
   - goal: Send email
     plugins:
-      - SendEmail
+      - EmailPluginV2
     requires:
-      - email_address
+      - email_addresses
       - answer
     provides:
       - email
+
+provides:
+    - email
 ");
 
     public static Task RunAsync()
     {
         return RunExampleAsync();
-        // return RunInteractiveAsync();
+        //return RunInteractiveAsync();
     }
 
-    public static async Task RunInteractiveAsync()
+    private static async Task RunInteractiveAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
+            loggerBuilder
+                .AddConsole()
+                .AddFilter(null, LogLevel.Warning));
         Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(loggerFactory), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -86,14 +94,11 @@ steps:
                 Console.WriteLine("Assistant: " + result.ToString());
             }
 
-            if (input is null)
-            {
-                input = string.Empty;
-            }
-            else if (string.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(input))
             {
                 Console.WriteLine("User: ");
                 input = Console.ReadLine() ?? string.Empty;
+                s_flow.Steps.First().Goal = input;
             }
 
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input); // This should change to be a FunctionResult or KernelResult probably
@@ -109,13 +114,18 @@ steps:
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
+            loggerBuilder
+                .AddConsole()
+                .AddFilter(null, LogLevel.Error));
+
         Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(loggerFactory), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -140,16 +150,21 @@ steps:
             Console.WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
             Console.WriteLine("Assistant: " + result.ToString());
+
+            if (result.IsComplete(s_flow))
+            {
+                break;
+            }
         }
 
-        Console.WriteLine("\tEmail Address: " + result["email_address"]);
+        Console.WriteLine("\tEmail Address: " + result["email_addresses"]);
         Console.WriteLine("\tEmail Payload: " + result["email"]);
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
     }
 
-    private static KernelBuilder GetKernelBuilder()
+    private static KernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = new KernelBuilder();
 
@@ -164,10 +179,11 @@ steps:
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
                 MinRetryDelay = TimeSpan.FromSeconds(3),
-            });
+            })
+            .WithLoggerFactory(loggerFactory);
     }
 
-    public sealed class CollectEmailPlugin
+    public sealed class EmailPluginV2
     {
         private const string Goal = "Prompt user to provide a valid email address";
 
@@ -186,7 +202,7 @@ If I cannot answer, say that I don't know.
 
         private readonly AIRequestSettings _chatRequestSettings;
 
-        public CollectEmailPlugin(IKernel kernel)
+        public EmailPluginV2(IKernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
             this._chatRequestSettings = new OpenAIRequestSettings
@@ -198,10 +214,10 @@ If I cannot answer, say that I don't know.
         }
 
         [SKFunction]
-        [Description("This function is used to prompt user to provide a valid email address.")]
+        [Description("Useful to assist in configuration of email address")]
         [SKName("CollectEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email")] [Description("The email address provided by the user")]
+            [SKName("email_address")] [Description("The email address provided by the user")]
             string email,
             SKContext context)
         {
@@ -216,33 +232,23 @@ If I cannot answer, say that I don't know.
 
             if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
             {
-                context.Variables["email_address"] = email;
+                context.Variables["email_addresses"] = email;
 
                 return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
             }
 
-            context.Variables["email_address"] = string.Empty;
+            context.Variables["email_addresses"] = string.Empty;
             context.PromptInput();
 
             return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
         }
 
-        private static bool IsValidEmail(string email)
-        {
-            // check using regex
-            var regex = new Regex(EmailRegex);
-            return regex.IsMatch(email);
-        }
-    }
-
-    public sealed class SendEmailPlugin
-    {
         [SKFunction]
         [Description("Send email")]
         [SKName("SendEmail")]
         public string SendEmail(
-            [SKName("email_address")] string emailAddress,
-            [SKName("answer")] string answer,
+            [SKName("email_addresses")][Description("target email addresses")] string emailAddress,
+            [SKName("answer")][Description("answer, which is going to be the email content")] string answer,
             SKContext context)
         {
             var contract = new Email()
@@ -263,6 +269,13 @@ If I cannot answer, say that I don't know.
             public string? Address { get; set; }
 
             public string? Content { get; set; }
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            // check using regex
+            var regex = new Regex(EmailRegex);
+            return regex.IsMatch(email);
         }
     }
 }

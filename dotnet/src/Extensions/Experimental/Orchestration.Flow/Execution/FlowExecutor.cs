@@ -226,13 +226,13 @@ internal class FlowExecutor : IFlowExecutor
                     var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(plugin);
+                        stepKernel.ImportFunctions(plugin, plugin.GetType().Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
                 }
 
-                if (!string.IsNullOrEmpty(stepResult.ToString()) && stepResult.IsPromptInput())
+                if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
                     try
                     {
@@ -291,11 +291,17 @@ internal class FlowExecutor : IFlowExecutor
                         executionState.Variables[variable] = stepResult[variable];
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable,
                             stepResult[variable]);
+
+                        // propagate variables to root context, needed if Flow itself is a step
+                        this.PropagateVariable(rootContext, stepResult, variable);
                     }
                 }
 
                 // propagate variables to root context, needed if Flow itself is a step
-                this.PropagateVariable(rootContext, stepResult, Constants.ChatPluginVariables.PromptInputName);
+                foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
+                {
+                    this.PropagateVariable(rootContext, stepResult, variable);
+                }
             }
 
             if (completed)
@@ -367,10 +373,6 @@ internal class FlowExecutor : IFlowExecutor
         if (stepResult.ContainsKey(variableName))
         {
             rootContext[variableName] = stepResult[variableName];
-        }
-        else
-        {
-            rootContext[variableName] = string.Empty;
         }
     }
 
@@ -536,6 +538,15 @@ internal class FlowExecutor : IFlowExecutor
             this._logger?.LogInformation("Thought: {Thought}", actionStep.Thought);
             if (!string.IsNullOrEmpty(actionStep.Action!))
             {
+                if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
+                {
+                    string prompt = actionStep.ActionVariables![Constants.StopAndPromptParameterName];
+                    context.Variables.Update(prompt);
+                    context.TerminateFlow();
+
+                    return context.Variables;
+                }
+
                 var actionContext = kernel.CreateNewContext();
                 foreach (var kvp in context.Variables)
                 {
@@ -620,6 +631,13 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(context.Result))
                 {
+                    if (context.Variables.IsTerminateFlow())
+                    {
+                        // Terminate the flow without another round of reasoning, to save the LLM reasoning calls.
+                        // This is not suggested unless plugin has performance requirement and has explicitly set the control variable.
+                        return context.Variables;
+                    }
+
                     foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                     {
                         if (context.Variables.ContainsKey(variable))

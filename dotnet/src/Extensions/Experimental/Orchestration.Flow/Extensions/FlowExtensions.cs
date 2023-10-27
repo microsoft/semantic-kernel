@@ -59,8 +59,14 @@ public static class FlowExtensions
             }
 
             referencedFlow.CompletionType = step.CompletionType;
+            referencedFlow.AddPassthrough(step.Passthrough.ToArray());
             referencedFlow.StartingMessage = step.StartingMessage;
             referencedFlow.TransitionMessage = step.TransitionMessage;
+
+            foreach (var referencedFlowStep in referencedFlow.Steps)
+            {
+                referencedFlowStep.AddPassthrough(step.Passthrough.ToArray(), isReferencedFlow: true);
+            }
 
             flow.Steps.Add(referencedFlow);
         }

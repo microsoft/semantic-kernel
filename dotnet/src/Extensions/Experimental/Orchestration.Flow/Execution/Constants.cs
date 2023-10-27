@@ -4,6 +4,16 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 internal static class Constants
 {
+    /// <summary>
+    /// The function name to indicate stop execution and prompt user
+    /// </summary>
+    public const string StopAndPromptFunctionName = "StopAndPrompt";
+
+    /// <summary>
+    /// The parameter name of StopAndPrompt function
+    /// </summary>
+    public const string StopAndPromptParameterName = "prompt";
+
     internal static class ActionVariableNames
     {
         /// <summary>
@@ -40,6 +50,11 @@ internal static class Constants
         public const string ContinueLoopName = "ContinueLoop";
 
         /// <summary>
+        /// Variable name to terminate the flow
+        /// </summary>
+        public const string StopFlowName = "StopFlow";
+
+        /// <summary>
         /// Default variable value
         /// </summary>
         public const string DefaultValue = "True";
@@ -47,6 +62,6 @@ internal static class Constants
         /// <summary>
         /// The variables that change the default flow
         /// </summary>
-        public static readonly string[] ControlVariables = new[] { PromptInputName, ExitLoopName, ContinueLoopName };
+        public static readonly string[] ControlVariables = new[] { PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName };
     }
 }

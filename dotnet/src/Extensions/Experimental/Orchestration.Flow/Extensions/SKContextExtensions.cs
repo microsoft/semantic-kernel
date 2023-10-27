@@ -80,4 +80,13 @@ public static class SKContextExtensions
     {
         context.Variables.Set(Constants.ChatPluginVariables.ContinueLoopName, Constants.ChatPluginVariables.DefaultValue);
     }
+
+    /// <summary>
+    /// Signal the orchestrator to terminate the flow.
+    /// </summary>
+    /// <param name="context">context</param>
+    public static void TerminateFlow(this SKContext context)
+    {
+        context.Variables.Set(Constants.ChatPluginVariables.StopFlowName, Constants.ChatPluginVariables.DefaultValue);
+    }
 }
