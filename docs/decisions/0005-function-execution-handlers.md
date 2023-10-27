@@ -237,8 +237,8 @@ Cons:
 
 ## Decision Outcome
 
-### 3. Event Base Registration (Kernel only) - Phase 1
+Chosen option: **3. Event Base Registration (Kernel only)**
 
 This approach is the simplest and take the benefits of the standard .NET event implementation.
-This don't support all the scenarios but it's was most simple and easy to understand.
-Further changes will be implemented to fully support all the scenarios in a second phase.
+
+Further changes will be implemented to fully support all the scenarios in phase 2.
