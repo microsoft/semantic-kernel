@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.extensions;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.KernelException;
 import com.microsoft.semantickernel.KernelException.ErrorCodes;
@@ -96,7 +97,7 @@ public class KernelExtensions {
             String pluginName,
             String functionName,
             @Nullable Class clazz,
-            PromptTemplateEngine promptTemplateEngine) {
+            PromptTemplateEngine promptTemplateEngine) throws KernelException {
 
         PromptTemplateConfig config =
                 getPromptTemplateConfig(pluginDirectory, pluginName, functionName, clazz);
@@ -149,7 +150,7 @@ public class KernelExtensions {
     }
 
     private static PromptTemplateConfig getPromptTemplateConfig(
-            String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz) {
+            String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz) throws KernelException {
         String configFileName =
                 pluginDirectory
                         + File.separator
@@ -168,10 +169,18 @@ public class KernelExtensions {
                             ResourceLocation.CLASSPATH,
                             ResourceLocation.FILESYSTEM);
 
-            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
+          return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
         } catch (IOException e) {
+          if (e instanceof JsonMappingException) {
+            LOGGER.error("Failed to parse config file " + configFileName, e);
+
+            throw new KernelException(
+                ErrorCodes.FUNCTION_CONFIGURATION_ERROR,
+                "Failed to parse config file " + configFileName, e);
+          } else {
             LOGGER.debug("No config for " + functionName + " in " + pluginName);
-            return null;
+          }
+          return null;
         }
     }
 }

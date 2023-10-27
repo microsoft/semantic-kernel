@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
@@ -12,6 +13,7 @@ import java.util.List;
 import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
     private final CompletionConfig completionConfig;
     private final InputConfig input;
