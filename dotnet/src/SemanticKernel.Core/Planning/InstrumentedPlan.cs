@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -48,13 +49,15 @@ internal sealed class InstrumentedPlan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
+            this._plan.InvokeAsync(context, requestSettings, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken)).ConfigureAwait(false);
     }
 
     #region private ================================================================================
@@ -104,7 +107,7 @@ internal sealed class InstrumentedPlan : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
+    private async Task<FunctionResult?> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         this._logger.LogInformation("Plan execution started.");
 

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -66,13 +67,15 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         this._function.Describe();
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
+            this._function.InvokeAsync(context, requestSettings, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken)).ConfigureAwait(false);
     }
 
     #region private ================================================================================
@@ -114,7 +117,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
+    private async Task<FunctionResult?> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 

@@ -48,7 +48,7 @@ public interface ISKFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<FunctionResult?> InvokeAsync(
+    Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
@@ -121,15 +121,13 @@ public interface ISKFunction
 
 public class EventDelegateWrapper<TEventArgs> where TEventArgs : SKEventArgs
 {
-    private readonly EventHandler<TEventArgs> _eventHandler;
-
-    public EventDelegateWrapper(EventHandler<TEventArgs> eventHandler)
+    public EventDelegateWrapper(EventHandler<TEventArgs>? eventHandler)
     {
         Verify.NotNull(eventHandler);
 
-        this._eventHandler = eventHandler!;
+        this.Handler = eventHandler!;
     }
 
     public TEventArgs? EventArgs { get; set; }
-    public EventHandler<TEventArgs> Handler => this._eventHandler;
+    internal EventHandler<TEventArgs>? Handler { get; }
 }

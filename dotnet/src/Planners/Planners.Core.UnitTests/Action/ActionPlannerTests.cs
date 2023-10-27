@@ -175,6 +175,8 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
+            null,
+            null,
             default
         )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")

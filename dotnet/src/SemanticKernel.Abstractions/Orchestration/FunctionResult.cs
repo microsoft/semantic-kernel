@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Function result after execution.
 /// </summary>
-public sealed class FunctionResult
+public class FunctionResult
 {
     internal Dictionary<string, object>? _metadata;
 
@@ -106,4 +106,20 @@ public sealed class FunctionResult
 
     /// <inheritdoc/>
     public override string ToString() => this.Value?.ToString() ?? base.ToString();
+}
+
+internal sealed class StopFunctionResult : FunctionResult
+{
+    internal StopReason Reason { get; }
+
+    public StopFunctionResult(string functionName, string pluginName, SKContext context, StopReason stopReason) : base(functionName, pluginName, context)
+    {
+        this.Reason = stopReason;
+    }
+
+    internal enum StopReason
+    {
+        Skipped = 0,
+        Cancelled = 1,
+    }
 }

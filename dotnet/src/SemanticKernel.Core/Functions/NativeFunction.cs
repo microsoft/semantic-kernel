@@ -142,14 +142,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         try
         {
             this.CallFunctionInvoking(context, invokingHandlerWrapper);
-            if (this.ShouldReturnNull(invokingHandlerWrapper?.EventArgs))
+            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs))
             {
                 return null;
             }
 
             var result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
-
             this.CallFunctionInvoked(result, invokedHandlerWrapper);
+
             return result;
         }
         catch (Exception e) when (!e.IsCriticalException())
@@ -159,31 +159,33 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    private FunctionInvokingEventArgs? CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
-            return null;
+            return;
         }
 
         eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
-        return eventDelegateWrapper.EventArgs;
     }
 
-    private FunctionInvokedEventArgs? CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
-            return null;
+            return;
         }
 
         eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
-        return eventDelegateWrapper.EventArgs;
+
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
     }
 
-    private bool ShouldReturnNull(FunctionInvokingEventArgs? invokingEvent)
+    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent)
     {
         // When no event handler is registered, the event args are null
         // When args are null, don't stop the function execution.

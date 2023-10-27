@@ -115,40 +115,42 @@ repeat:
             {
                 var functionDetails = skFunction.Describe();
 
-                var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
-                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                var invokingEventWrapper = new EventDelegateWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking);
+                var invokedEventWrapper = new EventDelegateWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
+                functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                if (functionResult is null)
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-                    break;
+                    if (invokingEventWrapper.EventArgs?.CancelToken.IsCancellationRequested ?? false)
+                    {
+                        this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+                        break;
+                    }
+
+                    if (invokingEventWrapper.EventArgs?.IsSkipRequested ?? false)
+                    {
+                        this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+                        continue;
+                    }
+
+                    throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} returned null result.");
                 }
 
-                if (functionInvokingArgs?.IsSkipRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-                    continue;
-                }
-
-                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                context = functionResult.Context;
-
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
-
-                if (functionInvokedArgs is not null)
+                if (invokedEventWrapper.EventArgs is not null)
                 {
                     // All changes to the SKContext by invoked handlers may reflect in the original function result
-                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
+                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, invokedEventWrapper.EventArgs.SKContext, invokedEventWrapper.EventArgs.SKContext.Result);
                 }
 
-                allFunctionResults.Add(functionResult);
+                allFunctionResults.Add(functionResult!);
 
-                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
+                if (invokedEventWrapper.EventArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     break;
                 }
 
-                if (functionInvokedArgs?.IsRepeatRequested ?? false)
+                if (invokedEventWrapper.EventArgs?.IsRepeatRequested ?? false)
                 {
                     this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     goto repeat;

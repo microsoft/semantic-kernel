@@ -90,7 +90,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult?> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
@@ -102,8 +102,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this._modelSettings);
         return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken).ConfigureAwait(false);
     }
-
-
 
     /// <summary>
     /// Dispose of resources.
@@ -182,7 +180,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task<FunctionResult?> RunPromptAsync(
+    private async Task<FunctionResult> RunPromptAsync(
         ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
@@ -199,10 +197,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
             this.CallFunctionInvoking(context, invokingHandlerWrapper, renderedPrompt);
-
-            if (this.ShouldReturnNull(invokingHandlerWrapper?.EventArgs))
+            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
             {
-                return null;
+                return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
 
             renderedPrompt = this.TryUpdatePromptFromEventArgsMetadata(renderedPrompt, invokingHandlerWrapper?.EventArgs);
@@ -230,46 +227,62 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return result;
     }
-    private FunctionInvokingEventArgs? CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper, string prompt)
+    private void CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper, string prompt)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
-            return null;
+            return;
         }
 
-        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context)
+        {
+            Metadata = {
+                [SemanticFunction.RenderedPromptMetadataKey] = prompt
+            }
+        };
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
-        return eventDelegateWrapper.EventArgs;
     }
 
-    private FunctionResult? CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper, string prompt)
+    private void CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper, string prompt)
     {
         result.Metadata[RenderedPromptMetadataKey] = prompt;
+
+        // Not handlers registered, return the result as is
         if (eventDelegateWrapper?.Handler is null)
         {
-            return result;
+            return;
         }
 
         eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
 
-        // Updates the result metadata with all changes made during invoked handler execution
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
         result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
-
-        return result;
     }
 
-    private bool ShouldReturnNull(FunctionInvokingEventArgs? invokingEvent)
+    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent, out StopFunctionResult.StopReason? reason)
     {
-        // When no event handler is registered, the event args are null
-        // When args are null, don't stop the function execution.
+        reason = null;
+
+        // When no event handler is registered, the event args are null and
+        // this should not stop the function execution.
         if (invokingEvent is null)
         {
             return false;
         }
 
-        // Any event flag that triggers flow should stop the function execution, returning null
-        return invokingEvent.IsSkipRequested || invokingEvent.CancelToken.IsCancellationRequested;
+        if (invokingEvent.IsSkipRequested)
+        {
+            reason = StopFunctionResult.StopReason.Skipped;
+        }
+        else if (invokingEvent.CancelToken.IsCancellationRequested)
+        {
+            reason = StopFunctionResult.StopReason.Cancelled;
+        }
+
+        // Check any event flags that interrupt this function execution;
+        return (reason is not null);
     }
 
     private string TryUpdatePromptFromEventArgsMetadata(string renderedPrompt, FunctionInvokingEventArgs? eventArgs)

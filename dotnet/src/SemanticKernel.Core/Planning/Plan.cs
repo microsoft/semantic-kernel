@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -319,9 +320,11 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         var result = new FunctionResult(this.Name, this.PluginName, context);
@@ -338,7 +341,7 @@ public sealed class Plan : ISKFunction
             // Execute the step
             result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, cancellationToken)
+                .InvokeAsync(functionContext, requestSettings, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
         }
@@ -463,8 +466,13 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
     {
+        if (functionResult is null)
+        {
+            return null;
+        }
+
         foreach (var output in this.Outputs)
         {
             if (this.State.TryGetValue(output, out var value))

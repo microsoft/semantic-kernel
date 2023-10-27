@@ -92,6 +92,8 @@ public sealed class SequentialPlannerTests
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
+            null,
+            null,
             default
         )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
@@ -165,6 +167,8 @@ public sealed class SequentialPlannerTests
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
+            null,
+            null,
             null,
             default
         )).Callback<SKContext, object, CancellationToken>(
