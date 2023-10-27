@@ -3,7 +3,7 @@
 status: approved
 contact: markwallace-microsoft
 date: 2023-10-26
-deciders: markwallace-microsoft, semenshi, rbarreto
+deciders: markwallace-microsoft, semenshi, rogerbarreto
 consulted: mabolan, dmytrostruk
 informed: 
 ---
