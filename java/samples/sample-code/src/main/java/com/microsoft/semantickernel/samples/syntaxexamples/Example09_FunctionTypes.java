@@ -14,6 +14,13 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+/**
+ * Demonstrates how the Kernel uses functions loaded from skills.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example09_FunctionTypes {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();

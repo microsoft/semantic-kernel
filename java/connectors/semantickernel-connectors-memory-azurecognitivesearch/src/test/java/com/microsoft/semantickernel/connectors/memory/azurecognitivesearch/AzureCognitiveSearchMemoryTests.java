@@ -4,36 +4,40 @@ package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.http.policy.HttpLogDetailLevel;
-import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.rest.Response;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
+import com.azure.search.documents.SearchAsyncClient;
+import com.azure.search.documents.SearchDocument;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
-import com.azure.search.documents.indexes.SearchIndexClientBuilder;
+import com.azure.search.documents.models.SearchResult;
+import com.azure.search.documents.util.SearchPagedFlux;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
+import com.microsoft.semantickernel.memory.MemoryRecord;
+import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
 class AzureCognitiveSearchMemoryTests {
 
     // com.azure.core.implementation.http.rest.RestProxyBase.RestProxyBase
@@ -85,22 +89,51 @@ class AzureCognitiveSearchMemoryTests {
 
     @BeforeEach
     void setUp() {
+        kernel = buildKernel(null);
+    }
 
-        String apiKey = "fake-key";
-        HttpPipeline pipeline = setUpHttpPipeline();
+    private Kernel buildKernel(
+            @Nullable Function<SearchDocument, MemoryRecord> memoryRecordMapper) {
+        SearchAsyncClient searchAsyncClient = Mockito.mock(SearchAsyncClient.class);
+        SearchIndexAsyncClient searchIndexAsyncClient = Mockito.mock(SearchIndexAsyncClient.class);
+        Response response = Mockito.mock(Response.class);
+        AzureCognitiveSearchMemoryRecord azureCognitiveSearchMemoryRecord =
+                Mockito.mock(AzureCognitiveSearchMemoryRecord.class);
+        MemoryRecord memoryRecord = Mockito.mock(MemoryRecord.class);
+        SearchPagedFlux searchPagedFlux = Mockito.mock(SearchPagedFlux.class);
+        SearchResult searchResult = Mockito.mock(SearchResult.class);
 
-        SearchIndexAsyncClient searchIndexAsyncClient =
-                new SearchIndexClientBuilder()
+        Mockito.when(searchResult.getDocument(Mockito.any())).thenReturn(new SearchDocument());
+        Mockito.when(searchIndexAsyncClient.getSearchAsyncClient(Mockito.any()))
+                .thenReturn(searchAsyncClient);
+
+        Mockito.when(searchPagedFlux.filter(Mockito.any())).thenReturn(Flux.just(searchResult));
+
+        Mockito.when(
+                        searchAsyncClient.getDocumentWithResponse(
+                                Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.just(response));
+
+        Mockito.when(searchAsyncClient.search(Mockito.any(), Mockito.any()))
+                .thenReturn(searchPagedFlux);
+        Mockito.when(response.getValue()).thenReturn(azureCognitiveSearchMemoryRecord);
+        Mockito.when(azureCognitiveSearchMemoryRecord.toMemoryRecord(Mockito.anyBoolean()))
+                .thenReturn(memoryRecord);
+
+        EmbeddingGeneration<String> embeddingGeneration =
+                new EmbeddingGeneration<String>() {
+                    /*
+                    new SearchIndexClientBuilder()
                         .endpoint("https://fake-random-test-host/fake-path")
                         .credential(new AzureKeyCredential(apiKey))
                         .pipeline(pipeline)
                         .httpLogOptions(
-                                new HttpLogOptions()
-                                        .setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
+                            new HttpLogOptions()
+                                .setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
                         .buildAsyncClient();
 
-        EmbeddingGeneration<String> embeddingGeneration =
-                new EmbeddingGeneration<String>() {
+                     */
+
                     List<Embedding> embeddings = new ArrayList<>();
 
                     {
@@ -113,12 +146,12 @@ class AzureCognitiveSearchMemoryTests {
                     }
                 };
 
-        kernel =
-                SKBuilders.kernel()
-                        .withMemoryStorage(
-                                new AzureCognitiveSearchMemoryStore(searchIndexAsyncClient))
-                        .withDefaultAIService(embeddingGeneration)
-                        .build();
+        return SKBuilders.kernel()
+                .withMemoryStorage(
+                        new AzureCognitiveSearchMemoryStore(
+                                searchIndexAsyncClient, memoryRecordMapper))
+                .withDefaultAIService(embeddingGeneration)
+                .build();
     }
 
     private HttpPipeline setUpHttpPipeline() {
@@ -158,6 +191,7 @@ class AzureCognitiveSearchMemoryTests {
         return Mono.just(httpResponse);
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreShouldBeProperlyInitialized() {
         // Arrange
@@ -172,6 +206,7 @@ class AzureCognitiveSearchMemoryTests {
         assertTrue(collections.contains("fake-index"));
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreCanSaveReferenceAsync() {
         // Arrange
@@ -205,6 +240,7 @@ class AzureCognitiveSearchMemoryTests {
         assertEquals("fake-key", key);
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreCanSaveInformationAsync() {
         // Arrange
@@ -237,6 +273,7 @@ class AzureCognitiveSearchMemoryTests {
         assertEquals("fake-key", key);
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreGetAsync() {
         // Arrange
@@ -267,6 +304,7 @@ class AzureCognitiveSearchMemoryTests {
         assertEquals(key, result.getMetadata().getId());
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreRemoveAsync() {
         // Arrange
@@ -298,6 +336,7 @@ class AzureCognitiveSearchMemoryTests {
         // Assert
     }
 
+    @Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
     @Test
     void azureCognitiveSearchMemoryStoreSearchAsync() {
         // Arrange
@@ -341,5 +380,55 @@ class AzureCognitiveSearchMemoryTests {
         // Assert
         assertEquals(1, results.size());
         assertEquals(key, results.get(0).getMetadata().getId());
+    }
+
+    @Test
+    void azureCognitiveSearchMemoryStoreGetAsyncWithCustomMapping() {
+        // Do not convert to lambda, it will break mockito
+        Function<SearchDocument, MemoryRecord> transform =
+                Mockito.spy(
+                        new Function<SearchDocument, MemoryRecord>() {
+                            @Override
+                            public MemoryRecord apply(SearchDocument searchDocument) {
+                                return new MemoryRecord(
+                                        new MemoryRecordMetadata(
+                                                false,
+                                                "an-id",
+                                                "fake-text",
+                                                "fake-description",
+                                                "fake-additionalmetadata",
+                                                "fake-externalsourcename"),
+                                        new Embedding(Arrays.asList(1.0f, 2.0f, 3.0f)),
+                                        "an-id",
+                                        null);
+                            }
+                        });
+
+        kernel = buildKernel(transform);
+        // Arrange
+        String key = "fake-key";
+        String base64EncodedKey =
+                new String(
+                        Base64.getUrlEncoder().encode("fake-key".getBytes(StandardCharsets.UTF_8)));
+
+        responseBody =
+                httpRequest ->
+                        "{"
+                                + "  \"Id\": \""
+                                + base64EncodedKey
+                                + "\","
+                                + "  \"Text\": \"fake-text\","
+                                + "  \"Description\": \"fake-description\","
+                                + "  \"AdditionalMetadata\": \"fake-additionalmetadata\","
+                                + "  \"ExternalSourceName\": \"fake-externalsourcename\","
+                                + "  \"Reference\": false"
+                                + "}";
+
+        responseStatusCode = httpRequest -> 200;
+
+        // Act
+        kernel.getMemory().searchAsync("fake-index", "a-query", 1, 0.0f, false).block();
+
+        Mockito.verify(transform, Mockito.atLeastOnce()).apply(Mockito.any());
     }
 }

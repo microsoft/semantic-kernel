@@ -20,6 +20,13 @@ import java.time.Duration;
 
 import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCATIONS;
 
+/**
+ * Demonstrates customizing the configuration of the Open AI client.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for endpoint and credential configuration.
+ */
 public class Example08_RetryHandler {
 
     public static void main(String[] args) throws ConfigurationException {

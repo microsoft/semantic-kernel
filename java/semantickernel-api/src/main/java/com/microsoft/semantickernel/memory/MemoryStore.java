@@ -122,7 +122,7 @@ public interface MemoryStore extends Buildable {
      * @param minRelevanceScore The minimum relevance threshold for returned results.
      * @param withEmbeddings If true, the embeddings will be returned in the memory records.
      * @return A collection of tuples where item1 is a {@link MemoryRecord} and item2 is its
-     *     similarity score as a {@code double}.
+     *     similarity score as a {@code Float}.
      */
     Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
