@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -131,20 +132,68 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         => this._view.Value;
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            this.CallFunctionInvoking(context, invokingHandlerWrapper);
+            if (this.ShouldReturnNull(invokingHandlerWrapper?.EventArgs))
+            {
+                return null;
+            }
+
+            var result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+
+            this.CallFunctionInvoked(result, invokedHandlerWrapper);
+            return result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
             this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
             throw;
         }
+    }
+
+    private FunctionInvokingEventArgs? CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    {
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return null;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        return eventDelegateWrapper.EventArgs;
+    }
+
+    private FunctionInvokedEventArgs? CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    {
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return null;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        return eventDelegateWrapper.EventArgs;
+    }
+
+    private bool ShouldReturnNull(FunctionInvokingEventArgs? invokingEvent)
+    {
+        // When no event handler is registered, the event args are null
+        // When args are null, don't stop the function execution.
+        if (invokingEvent is null)
+        {
+            return false;
+        }
+
+        // Any event flag that triggers flow should stop the function execution, returning null
+        return invokingEvent.IsSkipRequested || invokingEvent.CancelToken.IsCancellationRequested;
     }
 
     /// <summary>

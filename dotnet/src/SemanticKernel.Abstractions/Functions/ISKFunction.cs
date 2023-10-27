@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -46,9 +48,11 @@ public interface ISKFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<FunctionResult> InvokeAsync(
+    Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default);
 
     #region Obsolete
@@ -113,4 +117,19 @@ public interface ISKFunction
     bool IsSemantic { get; }
 
     #endregion
+}
+
+public class EventDelegateWrapper<TEventArgs> where TEventArgs : SKEventArgs
+{
+    private readonly EventHandler<TEventArgs> _eventHandler;
+
+    public EventDelegateWrapper(EventHandler<TEventArgs> eventHandler)
+    {
+        Verify.NotNull(eventHandler);
+
+        this._eventHandler = eventHandler!;
+    }
+
+    public TEventArgs? EventArgs { get; set; }
+    public EventHandler<TEventArgs> Handler => this._eventHandler;
 }

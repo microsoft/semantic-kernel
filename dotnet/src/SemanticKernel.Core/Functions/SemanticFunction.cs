@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -89,16 +90,20 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
         (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this._modelSettings);
-        return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken).ConfigureAwait(false);
     }
+
+
 
     /// <summary>
     /// Dispose of resources.
@@ -153,6 +158,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private IAIServiceSelector _serviceSelector;
     public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
+    public const string RenderedPromptMetadataKey = "RenderedPrompt";
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -176,11 +182,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task<FunctionResult> RunPromptAsync(
+    private async Task<FunctionResult?> RunPromptAsync(
         ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
-        CancellationToken cancellationToken)
+        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(client);
 
@@ -189,6 +197,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+
+            this.CallFunctionInvoking(context, invokingHandlerWrapper, renderedPrompt);
+
+            if (this.ShouldReturnNull(invokingHandlerWrapper?.EventArgs))
+            {
+                return null;
+            }
+
+            renderedPrompt = this.TryUpdatePromptFromEventArgsMetadata(renderedPrompt, invokingHandlerWrapper?.EventArgs);
+
             IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
@@ -200,6 +218,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             result = new FunctionResult(this.Name, this.PluginName, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
+            result.Metadata.Add(SemanticFunction.RenderedPromptMetadataKey, renderedPrompt);
+
+            this.CallFunctionInvoked(result, invokedHandlerWrapper, renderedPrompt);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -208,6 +229,60 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
 
         return result;
+    }
+    private FunctionInvokingEventArgs? CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper, string prompt)
+    {
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return null;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        return eventDelegateWrapper.EventArgs;
+    }
+
+    private FunctionResult? CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper, string prompt)
+    {
+        result.Metadata[RenderedPromptMetadataKey] = prompt;
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return result;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+
+        // Updates the result metadata with all changes made during invoked handler execution
+        result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
+
+        return result;
+    }
+
+    private bool ShouldReturnNull(FunctionInvokingEventArgs? invokingEvent)
+    {
+        // When no event handler is registered, the event args are null
+        // When args are null, don't stop the function execution.
+        if (invokingEvent is null)
+        {
+            return false;
+        }
+
+        // Any event flag that triggers flow should stop the function execution, returning null
+        return invokingEvent.IsSkipRequested || invokingEvent.CancelToken.IsCancellationRequested;
+    }
+
+    private string TryUpdatePromptFromEventArgsMetadata(string renderedPrompt, FunctionInvokingEventArgs? eventArgs)
+    {
+        if (eventArgs is null)
+        {
+            return renderedPrompt;
+        }
+
+        eventArgs.Metadata.TryGetValue(RenderedPromptMetadataKey, out var renderedPromptFromMetadata);
+
+        // If prompt was modified to null, default to a string.Empty
+        return eventArgs.Metadata[SemanticFunction.RenderedPromptMetadataKey].ToString() ?? string.Empty;
     }
 
     #endregion
