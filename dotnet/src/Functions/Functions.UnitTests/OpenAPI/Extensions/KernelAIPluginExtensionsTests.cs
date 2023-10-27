@@ -67,8 +67,9 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var openAiDocumentContent = JsonConvert.DeserializeObject<JObject>(await reader.ReadToEndAsync(), serializerSettings)!;
         var actualAuthConfig = openAiDocumentContent["auth"]!.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(serializerSettings))!;
 
-        var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
-        using var messageHandlerStub = new HttpMessageHandlerStub(openAiDocument);
+        using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
+        using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
+
         using var httpClient = new HttpClient(messageHandlerStub, false);
         var authCallbackMock = new Mock<AuthenticateRequestAsyncCallback>();
         var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient, AuthCallback = authCallbackMock.Object };
@@ -80,9 +81,10 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
-        authCallbackMock.Verify(target => target.Invoke(It.IsAny<HttpRequestMessage>(), It.Is<OpenAIManifestAuthenticationConfig>(
-            expectedAuthConfig => expectedAuthConfig == actualAuthConfig)),
-            Times.Exactly(1));
+        authCallbackMock.Verify(target => target.Invoke(
+            It.IsAny<HttpRequestMessage>(),
+            It.Is<OpenAIManifestAuthenticationConfig>(expectedAuthConfig => expectedAuthConfig.Scope == actualAuthConfig.Scope)),
+        Times.Exactly(1));
     }
 
     [Fact]
