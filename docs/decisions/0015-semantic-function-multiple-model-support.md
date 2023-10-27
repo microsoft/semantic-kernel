@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: approved
-contact@ markwallace-microsoft
+contact: markwallace-microsoft
 date: 2023-10-26
 deciders: markwallace-microsoft, semenshi, rbarreto
 consulted: mabolan, dmytrostruk
