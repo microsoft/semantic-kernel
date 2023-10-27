@@ -340,7 +340,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static bool TryParseAIPluginForAuth(string gptPluginJson, out OpenAIManifestAuthenticationConfig? openApiManifestAuth)
+    private static bool TryParseAIPluginForAuth(string gptPluginJson, out OpenAIAuthenticationManifest? openApiManifestAuth)
     {
         try
         {
@@ -353,7 +353,7 @@ public static class KernelAIPluginExtensions
             };
 
             JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, serializerSettings);
-            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(serializerSettings));
+            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings));
 
             return openApiManifestAuth != null;
         }

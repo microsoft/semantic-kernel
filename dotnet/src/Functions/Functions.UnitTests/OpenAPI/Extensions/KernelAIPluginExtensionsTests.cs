@@ -65,7 +65,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         };
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
         var openAiDocumentContent = JsonConvert.DeserializeObject<JObject>(await reader.ReadToEndAsync(), serializerSettings)!;
-        var actualAuthConfig = openAiDocumentContent["auth"]!.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(serializerSettings))!;
+        var actualAuthConfig = openAiDocumentContent["auth"]!.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings))!;
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
@@ -83,7 +83,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
-            It.Is<OpenAIManifestAuthenticationConfig>(expectedAuthConfig => expectedAuthConfig.Scope == actualAuthConfig.Scope)),
+            It.Is<OpenAIAuthenticationManifest>(expectedAuthConfig => expectedAuthConfig.Scope == actualAuthConfig.Scope)),
         Times.Exactly(1));
     }
 
