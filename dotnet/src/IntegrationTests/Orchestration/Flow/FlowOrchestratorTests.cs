@@ -103,7 +103,7 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
             .WithLoggerFactory(this._logger)
             .WithRetryBasic()
             .WithAzureChatCompletionService(
