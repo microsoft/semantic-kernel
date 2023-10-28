@@ -1,8 +1,9 @@
 ---
-status: {proposed}
-date: {2023-10-23}
-deciders: mabolan, markwallace
-consulted: dmytrostruk, semenshi, rbarreto
+status: approved
+contact: markwallace-microsoft
+date: 2023-10-26
+deciders: mabolan, markwallace-microsoft, semenshi, rbarreto
+consulted: dmytrostruk
 informed: 
 ---
 # Custom Prompt Template Formats
@@ -32,10 +33,10 @@ IKernel kernel = Kernel.Builder
 
 kernel.ImportFunctions(new TimePlugin(), "time");
 
-string promptTemplate = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
+string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
 var promptTemplateConfig = new PromptTemplateConfig();
-var promptTemplate = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
-var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
+var promptTemplate = new PromptTemplate(templateString, promptTemplateConfig, kernel.PromptTemplateEngine);
+var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate);
 
 var result = await kernel.RunAsync(kindOfDay);
 Console.WriteLine(result.GetValue<string>());
@@ -46,6 +47,10 @@ Also the `BasicPromptTemplateEngine` is the default prompt template engine and w
 
 Some issues with this:
 
+<<<<<<< HEAD
+=======
+1. You need to have a `Kernel` instance to create a semantic function, which is contrary to one of the goals of allow semantic functions to be created once and reused across multiple `Kernel` instances.
+>>>>>>> upstream/main
 1. `Kernel` only supports a single `IPromptTemplateEngine` so we cannot support using multiple prompt templates at the same time.
 1. `IPromptTemplateEngine` is stateless and must perform a parse of the template for each render
 1. Our semantic function extension methods relay on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.
@@ -174,6 +179,7 @@ and then register the helpers. This means we cannot take advantage of the perfor
 
 In no particular order:
 
+* Support creating a semantic function without a `IKernel`instance.
 * Support late binding of functions i.e., having functions resolved when the prompt is rendered.
 * Support allowing the prompt template to be parsed (compiled) just once to optimize performance if needed.
 * Support using multiple prompt template formats with a single `Kernel` instance.
@@ -181,27 +187,37 @@ In no particular order:
 
 ## Considered Options
 
-* Use `IPromptTemplateFactory` and `IPromptTemplate` abstractions.
+* Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`.
 * 
 
-### Use `IPromptTemplateFactory` and `IPromptTemplate` abstractions
+### Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`
+
+<img src="./diagrams/prompt-template-factory.png" alt="ISKFunction class relationships"/>
 
 Below is an expanded example of how to create a semantic function from a prompt template string which uses the built-in Semantic Kernel format:
 
 ```csharp
+// Semantic function can be created once
+var promptTemplateFactory = new BasicPromptTemplateFactory();
+string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
+var promptTemplateConfig = new PromptTemplateConfig();
+// Line below will replace the commented out code
+var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+var kindOfDay = ISKFunction.CreateSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
+// var promptTemplate = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
+// var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate);
+
+// Create Kernel after creating the semantic function
+// Later we will support passing a function collection to the KernelBuilder
 IKernel kernel = Kernel.Builder
-    .WithPromptTemplateFactory(new BasicPromptTemplateFactory())
     .WithOpenAIChatCompletionService(
         modelId: openAIModelId,
         apiKey: openAIApiKey)
     .Build();
 
 kernel.ImportFunctions(new TimePlugin(), "time");
-
-string promptTemplate = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
-var promptTemplateConfig = new PromptTemplateConfig();
-var promptTemplate = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
-var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
+// Optionally register the semantic function with the Kernel
+kernel.RegisterCustomFunction(kindOfDay);
 
 var result = await kernel.RunAsync(kindOfDay);
 Console.WriteLine(result.GetValue<string>());
@@ -209,19 +225,21 @@ Console.WriteLine(result.GetValue<string>());
 
 **Notes:**
 
-* `BasicPromptTemplateFactory` will be the default implementation and will be automatically loaded.
+* `BasicPromptTemplateFactory` will be the default implementation and will be automatically provided in `KernelSemanticFunctionExtensions`. Developers will also be able to provide their own implementation.
 * The factory uses the new `PromptTemplateConfig.TemplateFormat` to create the appropriate `IPromptTemplate` instance.
-* We should look to remove `promptTemplateConfig` as a parameter to `RegisterSemanticFunction`. That change is outside of the scope of this ADR.
+* We should look to remove `promptTemplateConfig` as a parameter to `CreateSemanticFunction`. That change is outside of the scope of this ADR.
 
 The `BasicPromptTemplateFactory` and `BasicPromptTemplate` implementations look as follows:
 
 ```csharp
 public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
 {
+    private readonly IPromptTemplateFactory _promptTemplateFactory;
     private readonly ILoggerFactory _loggerFactory;
 
-    public BasicPromptTemplateFactory(ILoggerFactory? loggerFactory = null)
+    public BasicPromptTemplateFactory(IPromptTemplateFactory promptTemplateFactory, ILoggerFactory? loggerFactory = null)
     {
+        this._promptTemplateFactory = promptTemplateFactory;
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
@@ -231,8 +249,12 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
         {
             return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
         }
+        else if (this._promptTemplateFactory is not null)
+        {
+            return this._promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+        }
 
-        return null;
+        throw new SKException($"Invalid prompt template format {promptTemplateConfig.TemplateFormat}");
     }
 }
 
@@ -267,5 +289,5 @@ public sealed class BasicPromptTemplate : IPromptTemplate
 
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+Chosen option: "Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`", because
+addresses the requirements and provides good flexibility for the future.
