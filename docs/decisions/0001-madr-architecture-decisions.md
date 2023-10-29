@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 date: 2023-05-29
 deciders: dluc,shawncal,hathind,alliscode
 consulted: 
