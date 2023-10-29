@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
 /// </summary>
-public sealed class InstrumentedPlan : IPlan
+internal sealed class InstrumentedPlan : ISKFunction
 {
     /// <inheritdoc/>
     public string Name => this._plan.Name;
@@ -28,16 +28,13 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
-    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
+    /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedPlan(
-        IPlan plan,
+        ISKFunction plan,
         ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
@@ -60,21 +57,9 @@ public sealed class InstrumentedPlan : IPlan
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._plan.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._plan.SetAIService(serviceFactory);
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
-        this._plan.SetDefaultFunctionCollection(functions);
-
     #region private ================================================================================
 
-    private readonly IPlan _plan;
+    private readonly ISKFunction _plan;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -160,6 +145,20 @@ public sealed class InstrumentedPlan : IPlan
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._plan.SetAIService(serviceFactory);
+
+    /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string SkillName => this._plan.PluginName;
@@ -170,9 +169,14 @@ public sealed class InstrumentedPlan : IPlan
     public bool IsSemantic => this._plan.IsSemantic;
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._plan.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

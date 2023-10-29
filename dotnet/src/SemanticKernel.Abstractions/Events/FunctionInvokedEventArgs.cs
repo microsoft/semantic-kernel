@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Events;
 /// </summary>
 public class FunctionInvokedEventArgs : SKCancelEventArgs
 {
+    private Dictionary<string, object>? _metadata;
+
     /// <summary>
     /// Indicates if the function execution should repeat.
     /// </summary>
@@ -18,7 +20,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
-    public Dictionary<string, object> Metadata { get; private set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata => this._metadata ??= new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
@@ -27,7 +29,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// <param name="result">Function result</param>
     public FunctionInvokedEventArgs(FunctionView functionView, FunctionResult result) : base(functionView, result.Context)
     {
-        this.Metadata = result.Metadata;
+        this._metadata = result._metadata;
     }
 
     /// <summary>
