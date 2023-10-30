@@ -1,6 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
+contact: markwallace-microsoft
 date: 2023-=9-15
 deciders: shawncal
 consulted: stoub, lemiller, dmytrostruk
