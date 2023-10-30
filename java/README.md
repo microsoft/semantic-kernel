@@ -38,6 +38,8 @@ To build the Semantic Kernel, you will need:
 
 Check the `samples` folder for examples of how to use the Semantic Kernel for Java.
 
+For a list of the maven dependencies and how to use them see [PACKAGES.md](PACKAGES.md).
+
 ## Discord community
 
 Join the [Microsoft Semantic Kernel Discord community](https://aka.ms/java-sk-discord) to discuss the Semantic Kernel
