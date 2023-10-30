@@ -29,7 +29,7 @@ public static class Example58_ConfigureRequestSettings
             return;
         }
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 deploymentName: chatDeploymentName,

@@ -31,9 +31,6 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public string Description => this._function.Description;
 
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
     /// </summary>
@@ -77,14 +74,6 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._function.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._function.SetAIService(serviceFactory);
 
     #region private ================================================================================
 
@@ -173,6 +162,20 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     #endregion
 
     #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._function.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

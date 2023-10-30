@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Moq;
@@ -29,6 +30,8 @@ public sealed class PromptTemplateEngineTests
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
     private readonly Mock<IFunctionRunner> _functionRunner;
+    private readonly Mock<IAIServiceProvider> _serviceProvider;
+    private readonly Mock<IAIServiceSelector> _serviceSelector;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -38,6 +41,8 @@ public sealed class PromptTemplateEngineTests
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
         this._functionRunner = new Mock<IFunctionRunner>();
+        this._serviceProvider = new Mock<IAIServiceProvider>();
+        this._serviceSelector = new Mock<IAIServiceSelector>();
     }
 
     [Fact]
@@ -375,7 +380,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 return function.InvokeAsync(context, null, cancellationToken);
             });
     }
@@ -385,7 +390,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 var function = functions.First(f => f.PluginName == functionName);
 
                 return function.InvokeAsync(context, null, cancellationToken);
@@ -396,6 +401,8 @@ public sealed class PromptTemplateEngineTests
     {
         return new SKContext(
             this._functionRunner.Object,
+            this._serviceProvider.Object,
+            this._serviceSelector.Object,
             this._variables,
             this._functions.Object);
     }
