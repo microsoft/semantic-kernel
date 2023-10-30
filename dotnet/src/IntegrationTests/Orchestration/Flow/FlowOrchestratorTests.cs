@@ -58,10 +58,9 @@ public sealed class FlowOrchestratorTests : IDisposable
         Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
 goal: answer question and sent email
 steps:
-  - goal: Who is the current president of the United States? What is his current age divided by 2
+  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
-      - TimePlugin
     provides:
       - answer
   - goal: Collect email address
@@ -71,7 +70,7 @@ steps:
       - email_address
   - goal: Send email
     plugins:
-      - SendEmail
+      - SendEmailPlugin
     requires:
       - email_address
       - answer
@@ -79,10 +78,13 @@ steps:
       - email
 ");
 
-        var flowOrchestrator = new FlowOrchestrator(builder, await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()), plugins);
+        var flowOrchestrator = new FlowOrchestrator(
+            builder,
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()),
+            plugins);
 
         // Act
-        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
+        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
@@ -94,7 +96,7 @@ steps:
         // Assert
         var emailPayload = result["email"];
         Assert.Contains(email, emailPayload, StringComparison.InvariantCultureIgnoreCase);
-        Assert.Contains("biden", emailPayload, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
     private KernelBuilder InitializeKernelBuilder()

@@ -25,6 +25,7 @@ public sealed class CollectEmailPlugin
 The email should conform the regex: {EmailRegex}
 
 If I cannot answer, say that I don't know.
+Do not expose the regex unless asked.
 ";
 
     private readonly IChatCompletion _chat;
@@ -45,10 +46,11 @@ If I cannot answer, say that I don't know.
     }
 
     [SKFunction]
-    [Description("This function is used to prompt user to provide a valid email address.")]
-    [SKName("CollectEmailAddress")]
+    [Description("Useful to assist in configuration of email address, must be called after email provided")]
+    [SKName("ConfigureEmailAddress")]
     public async Task<string> CollectEmailAsync(
-        [SKName("email")] string email,
+        [SKName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
+        string email,
         SKContext context)
     {
         var chat = this._chat.CreateNewChat(SystemPrompt);

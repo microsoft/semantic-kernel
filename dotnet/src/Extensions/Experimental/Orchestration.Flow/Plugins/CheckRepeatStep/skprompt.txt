@@ -31,7 +31,7 @@ Based on the response, the user wants to try the previous step again.
 [FINAL ANSWER]
 TRUE
 
-IMPORTANT REMINDER: your each response should contain at most one question. Do not provide more than one step.  
+IMPORTANT REMINDER: Your each response MUST contain one of [QUESTION] and [FINAL ANSWER]!
 Let's break down the problem step by step and think about the best approach.
 
 Begin!

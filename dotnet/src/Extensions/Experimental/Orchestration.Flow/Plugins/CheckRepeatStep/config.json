@@ -8,7 +8,7 @@
     "top_p": 1,
     "presence_penalty": 0,
     "frequency_penalty": 0,
-    "stop_sequences": ["[RESPONSE]"]
+    "stop_sequences": [ "[RESPONSE]", "[Goal]" ]
   },
   "input": {
     "parameters": [

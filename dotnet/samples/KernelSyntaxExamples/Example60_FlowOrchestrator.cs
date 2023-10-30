@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using NCalcPlugins;
 
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
@@ -31,15 +32,15 @@ public static class Example60_FlowOrchestrator
 name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
 steps:
-  - goal: Who is the current president of the United States? What is his current age divided by 2
+  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
-      - TimePlugin
+      - LanguageCalculatorPlugin
     provides:
       - answer
   - goal: Collect email address
     plugins:
-      - EmailPluginV2
+      - ChatPlugin
     completionType: AtLeastOnce
     transitionMessage: do you want to send it to another email address?
     provides:
@@ -60,6 +61,9 @@ provides:
 
     public static Task RunAsync()
     {
+        // Load assemblies for external plugins
+        Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
+
         return RunExampleAsync();
         //return RunInteractiveAsync();
     }
@@ -78,7 +82,11 @@ provides:
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(loggerFactory), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
+        FlowOrchestrator orchestrator = new(
+            GetKernelBuilder(loggerFactory),
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
+            plugins,
+            config: GetOrchestratorConfig());
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -125,7 +133,11 @@ provides:
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(loggerFactory), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
+        FlowOrchestrator orchestrator = new(
+            GetKernelBuilder(loggerFactory),
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
+            plugins,
+            config: GetOrchestratorConfig());
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -133,8 +145,10 @@ provides:
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
         var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow").ConfigureAwait(false);
+
+        Console.WriteLine("Question: " + s_flow.Steps.First().Goal);
+        Console.WriteLine("Answer: " + result["answer"]);
         Console.WriteLine("Assistant: " + result.ToString());
-        Console.WriteLine("\tAnswer: " + result["answer"]);
 
         string[] userInputs = new[]
         {
@@ -142,7 +156,7 @@ provides:
             "my email is sample@xyz.com",
             "yes", // confirm to add another email address
             "I also want to notify foo@bar.com",
-            "no", // end of collect emails
+            "no I don't need notify any more address", // end of collect emails
         };
 
         foreach (var t in userInputs)
@@ -164,15 +178,27 @@ provides:
         Console.WriteLine("*****************************************************");
     }
 
+    private static FlowOrchestratorConfig GetOrchestratorConfig()
+    {
+        var config = new FlowOrchestratorConfig();
+        config.ExcludedFunctions.Add("DaysAgo");
+        config.ExcludedFunctions.Add("DateMatchingLastDayName");
+        config.ReActModel = FlowOrchestratorConfig.ModelName.GPT35_TURBO;
+        config.MaxStepIterations = 20;
+
+        return config;
+    }
+
     private static KernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = new KernelBuilder();
 
-        return builder.WithAzureChatCompletionService(
+        return builder
+            .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
+                true,
                 setAsDefault: true)
             .WithRetryBasic(new()
             {
@@ -183,7 +209,7 @@ provides:
             .WithLoggerFactory(loggerFactory);
     }
 
-    public sealed class EmailPluginV2
+    public sealed class ChatPlugin
     {
         private const string Goal = "Prompt user to provide a valid email address";
 
@@ -194,6 +220,7 @@ provides:
 The email should conform the regex: {EmailRegex}
 
 If I cannot answer, say that I don't know.
+Do not expose the regex unless asked.
 ";
 
         private readonly IChatCompletion _chat;
@@ -202,7 +229,7 @@ If I cannot answer, say that I don't know.
 
         private readonly AIRequestSettings _chatRequestSettings;
 
-        public EmailPluginV2(IKernel kernel)
+        public ChatPlugin(IKernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
             this._chatRequestSettings = new OpenAIRequestSettings
@@ -214,10 +241,11 @@ If I cannot answer, say that I don't know.
         }
 
         [SKFunction]
-        [Description("Useful to assist in configuration of email address")]
-        [SKName("CollectEmailAddress")]
+        [Description("Useful to assist in configuration of email address, must be called after email provided")]
+        [SKName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email_address")] [Description("The email address provided by the user")]
+            [SKName("email_address")]
+            [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
             SKContext context)
         {
@@ -243,12 +271,24 @@ If I cannot answer, say that I don't know.
             return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
         }
 
+        private static bool IsValidEmail(string email)
+        {
+            // check using regex
+            var regex = new Regex(EmailRegex);
+            return regex.IsMatch(email);
+        }
+    }
+
+    public sealed class EmailPluginV2
+    {
         [SKFunction]
         [Description("Send email")]
         [SKName("SendEmail")]
         public string SendEmail(
-            [SKName("email_addresses")][Description("target email addresses")] string emailAddress,
-            [SKName("answer")][Description("answer, which is going to be the email content")] string answer,
+            [SKName("email_addresses")][Description("target email addresses")]
+            string emailAddress,
+            [SKName("answer")][Description("answer, which is going to be the email content")]
+            string answer,
             SKContext context)
         {
             var contract = new Email()
@@ -270,33 +310,27 @@ If I cannot answer, say that I don't know.
 
             public string? Content { get; set; }
         }
-
-        private static bool IsValidEmail(string email)
-        {
-            // check using regex
-            var regex = new Regex(EmailRegex);
-            return regex.IsMatch(email);
-        }
     }
 }
 //*****************************************************
 //Flow: FlowOrchestrator_Example_Flow
-//Assistant: ["Please provide a valid email address in the following format: example@example.com"]
-//        Answer: Joe Biden is the current president of the United States. His age is (2023 - 1942) = 81 years old. When divided by 2, his age is 40.5 years.
+//Question: What is the tallest mountain on Earth? How tall is it divided by 2?
+//Answer: The tallest mountain on Earth is Mount Everest, which has a height of 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters).
+//Assistant: ["Please provide a valid email address."]
 //User: my email is bad*email&address
-//Assistant: ["The email address you provided is not valid. Please provide a valid email address in the following format: example@example.com"]
+//Assistant: ["I\u0027m sorry, but \u0022bad*email\u0026address\u0022 is not a valid email address. A valid email address should have the format \u0022example@example.com\u0022."]
 //User: my email is sample@xyz.com
 //Assistant: ["Do you want to send it to another email address?"]
 //User: yes
-//Assistant: ["Please provide a valid email address in the following format: example@example.com"]
+//Assistant: ["Please provide a valid email address."]
 //User: I also want to notify foo@bar.com
 //Assistant: ["Do you want to send it to another email address?"]
-//User: no
+//User: no I don't need notify any more address
 //Assistant: []
-//        Email Address: ["The collected email address is sample@xyz.com.","foo@bar.com"]
+//        Email Address: ["sample@xyz.com","foo@bar.com"]
 //        Email Payload: {
 //  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
-//  "Content": "Joe Biden is the current president of the United States. His age is (2023 - 1942) = 81 years old. When divided by 2, his age is 40.5 years."
+//  "Content": "The tallest mountain on Earth is Mount Everest, which has a height of 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters)."
 //}
-//Time Taken: 00:01:15.1529717
+//Time Taken: 00:00:22.7646223
 //*****************************************************

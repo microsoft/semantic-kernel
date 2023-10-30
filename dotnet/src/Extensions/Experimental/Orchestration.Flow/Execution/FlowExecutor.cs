@@ -324,6 +324,7 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         // unconfirmed, prompt user
                         outputs.Add(repeatStep.Prompt!);
+                        this._logger?.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
                         break;
                     }
@@ -459,7 +460,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         // Extract thought
-        Match thoughtMatch = s_thoughtRegex.Match(input);
+        Match thoughtMatch = s_thoughtRegex.Match(llmResponseText);
         if (thoughtMatch.Success)
         {
             string thoughtString = thoughtMatch.Groups[1].Value.Trim();
@@ -476,6 +477,8 @@ internal class FlowExecutor : IFlowExecutor
             return new RepeatOrStartStepResult(null, prompt);
         }
 
+        this._logger?.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
     }
@@ -612,9 +615,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}. " +
                                              "Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. " +
-                                             "Do not attempt to use any other functions that are not specified.\r\n" +
-                                             "The value of parameters should either by empty when missing information, or derived from the agent scratchpad.\r\n" +
-                                             "You are not allowed to ask user directly for more information.";
+                                             "Do not attempt to use any other functions that are not specified.\n";
 
                     continue;
                 }

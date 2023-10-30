@@ -95,7 +95,7 @@ internal sealed class ReActEngine
         {
             promptConfig = new PromptTemplateConfig();
 
-            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Plugins.ReActEngine.gpt3.config.json" : "Plugins.ReActEngine.config.json");
+            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.GPT4_32k ? "Plugins.ReActEngine.config.json" : "Plugins.ReActEngine.gpt3.config.json");
 
             if (!string.IsNullOrEmpty(promptConfigString))
             {
@@ -110,7 +110,7 @@ internal sealed class ReActEngine
         var promptTemplate = config.ReActPromptTemplate;
         if (string.IsNullOrEmpty(promptTemplate))
         {
-            promptTemplate = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Plugins.ReActEngine.gpt3.skprompt.txt" : "Plugins.ReActEngine.skprompt.txt");
+            promptTemplate = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.GPT4_32k ? "Plugins.ReActEngine.skprompt.txt" : "Plugins.ReActEngine.gpt3.skprompt.txt");
         }
 
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
