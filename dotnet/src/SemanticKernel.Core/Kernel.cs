@@ -51,9 +51,6 @@ public sealed class Kernel : IKernel, IDisposable
     public IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <inheritdoc/>
-    public IPromptTemplateFactory PromptTemplateFactory { get; }
-
-    /// <inheritdoc/>
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <inheritdoc/>
@@ -68,14 +65,19 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory">Semantic text Memory</param>
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceSelector">AI Service selector</param>
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine? promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory? loggerFactory) : this(functionCollection, aiServiceProvider, promptTemplateEngine is null ? null : new PromptTemplateFactory(promptTemplateEngine), memory, httpHandlerFactory, loggerFactory)
+        ILoggerFactory? loggerFactory,
+        IAIServiceSelector? serviceSelector = null) : this(functionCollection, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
     {
+        this.PromptTemplateEngine = promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(loggerFactory);
     }
 
     /// <summary>
@@ -83,26 +85,22 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="functionCollection">function collection</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory"></param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="serviceSelector">AI service selector</param>
+    /// <param name="serviceSelector">AI Service selector</param>
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
-        IPromptTemplateFactory? promptTemplateFactory,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null
-        )
+        IAIServiceSelector? serviceSelector = null)
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
         this.LoggerFactory = loggerFactory;
         this.HttpHandlerFactory = httpHandlerFactory;
-        this.PromptTemplateFactory = promptTemplateFactory ?? this.CreateDefaultPromptTemplateFactory(loggerFactory);
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
         this._functionCollection = functionCollection;
@@ -327,11 +325,11 @@ repeat:
 
     #region Private ====================================================================================
 
-    private static bool s_promptTemplateFactoryInitialized = false;
-    private static Type? s_promptTemplateFactoryType = null;
+    private static bool s_promptTemplateEngineInitialized = false;
+    private static Type? s_promptTemplateEngineType = null;
 
     /// <summary>
-    /// Create a default prompt template factory.
+    /// Create a default prompt template engine.
     ///
     /// This is a temporary solution to avoid breaking existing clients.
     /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
@@ -339,45 +337,45 @@ repeat:
     /// </summary>
     /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
     /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    private IPromptTemplateFactory CreateDefaultPromptTemplateFactory(ILoggerFactory? loggerFactory = null)
+    [Obsolete("Provided for backward compatability. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
-        if (!s_promptTemplateFactoryInitialized)
+        if (!s_promptTemplateEngineInitialized)
         {
-            s_promptTemplateFactoryType = this.GetPromptTemplateFactoryType();
-            s_promptTemplateFactoryInitialized = true;
+            s_promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            s_promptTemplateEngineInitialized = true;
         }
 
-        if (s_promptTemplateFactoryType is not null)
+        if (s_promptTemplateEngineType is not null)
         {
-            var constructor = s_promptTemplateFactoryType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
             if (constructor is not null)
             {
 #pragma warning disable CS8601 // Null logger factory is OK
-                var factory = (IPromptTemplateFactory)constructor.Invoke(new object[] { loggerFactory });
-                if (factory is not null)
-                {
-                    return factory;
-                }
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
 #pragma warning restore CS8601
             }
         }
 
-        return new NullPromptTemplateFactory();
+        return new NullPromptTemplateEngine();
     }
 
     /// <summary>
     /// Get the prompt template engine type if available
     /// </summary>
     /// <returns>The type for the prompt template engine if available</returns>
-    private Type? GetPromptTemplateFactoryType()
+    [Obsolete("Provided for backward compatability. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    private Type? GetPromptTemplateEngineType()
     {
         try
         {
             var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.Basic");
 
             return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals("BasicPromptTemplateFactory", StringComparison.Ordinal) &&
-                type.GetInterface(nameof(IPromptTemplateFactory)) is not null);
+                type.Name.Equals("BasicPromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -389,52 +387,16 @@ repeat:
 }
 
 /// <summary>
-/// No-operation IPromptTemplateFactory which an IPromptTemplate that performs no rendering of the template.
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
 ///
 /// This is a temporary solution to avoid breaking existing clients.
 /// </summary>
-internal sealed class NullPromptTemplateFactory : IPromptTemplateFactory
+[Obsolete("This is used for backward compatability. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
 {
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
-        return new NullPromptTemplate(templateString);
-    }
-}
-
-/// <summary>
-/// No-operation IPromptTemplate which performs no rendering of the template.
-///
-/// This is a temporary solution to avoid breaking existing clients.
-/// </summary>
-internal sealed class NullPromptTemplate : IPromptTemplate
-{
-    private readonly string _templateString;
-
-    public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
-
-    internal NullPromptTemplate(string templateString)
-    {
-        this._templateString = templateString;
-    }
-
-    public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult<string>(this._templateString);
-    }
-}
-
-[Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
-internal sealed class PromptTemplateFactory : IPromptTemplateFactory
-{
-    private readonly IPromptTemplateEngine _promptTemplateEngine;
-
-    public PromptTemplateFactory(IPromptTemplateEngine promptTemplateEngine)
-    {
-        this._promptTemplateEngine = promptTemplateEngine;
-    }
-
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
-    {
-        return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
+        return Task.FromResult(templateText);
     }
 }

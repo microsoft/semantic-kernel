@@ -21,8 +21,9 @@ public sealed class KernelBuilder
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     private IPromptTemplateEngine? _promptTemplateEngine;
-    private IPromptTemplateFactory? _promptTemplateFactory;
     private readonly AIServiceCollection _aiServices = new();
     private IAIServiceSelector? _serviceSelector;
 
@@ -43,15 +44,17 @@ public sealed class KernelBuilder
     public IKernel Build()
     {
 #pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS0618 // Type or member is obsolete
         var instance = new Kernel(
             new FunctionCollection(),
             this._aiServices.Build(),
-            this._promptTemplateFactory,
+            this._promptTemplateEngine,
             this._memoryFactory.Invoke(),
             this._httpHandlerFactory,
             this._loggerFactory,
             this._serviceSelector
         );
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS8604 // Possible null reference argument.
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -152,6 +155,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="promptTemplateEngine">Prompt template engine to add.</param>
     /// <returns>Updated kernel builder including the prompt template engine.</returns>
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithPromptTemplateEngine(IPromptTemplateEngine promptTemplateEngine)
     {
         Verify.NotNull(promptTemplateEngine);
@@ -253,22 +258,6 @@ public sealed class KernelBuilder
     public KernelBuilder WithAIServiceSelector(IAIServiceSelector serviceSelector)
     {
         this._serviceSelector = serviceSelector;
-        return this;
-    }
-
-    /// <summary>
-    /// Create a default prompt template engine.
-    ///
-    /// This is a temporary solution to avoid breaking existing clients.
-    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
-    ///
-    /// </summary>
-    /// <param name="promptTemplateFactory"></param>
-    /// <returns></returns>
-    public KernelBuilder WithPromptTemplateFactory(IPromptTemplateFactory promptTemplateFactory)
-    {
-        Verify.NotNull(promptTemplateFactory);
-        this._promptTemplateFactory = promptTemplateFactory;
         return this;
     }
 }

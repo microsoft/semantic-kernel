@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
@@ -110,19 +112,22 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
-        string? pluginName = null)
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
-        IPromptTemplate? promptTemplateInstance = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
+        var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(kernel);
+        IPromptTemplate promptTemplateInstance = factory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(pluginName)
@@ -171,6 +176,21 @@ public static class KernelSemanticFunctionExtensions
     /// <summary>
     /// Imports semantic functions, defined by prompt templates stored in the filesystem.
     /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="parentDirectory"></param>
+    /// <param name="pluginDirectoryNames"></param>
+    /// <returns></returns>
+    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
+        this IKernel kernel,
+        string parentDirectory,
+        params string[] pluginDirectoryNames)
+    {
+        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, null, pluginDirectoryNames);
+    }
+
+    /// <summary>
+    /// Imports semantic functions, defined by prompt templates stored in the filesystem.
+    /// </summary>
     /// <remarks>
     /// <para>
     /// A plugin directory contains a set of subdirectories, one for each semantic function.
@@ -213,16 +233,20 @@ public static class KernelSemanticFunctionExtensions
     /// </remarks>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="parentDirectory">Directory containing the plugin directory, e.g. "d:\myAppPlugins"</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
     public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
         this IKernel kernel,
         string parentDirectory,
-        params string[] pluginDirectoryNames)
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        params string[] pluginDirectoryNames
+        )
     {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
+        var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(kernel);
         var functions = new Dictionary<string, ISKFunction>();
 
         ILogger? logger = null;
@@ -257,7 +281,7 @@ public static class KernelSemanticFunctionExtensions
 
                 // Load prompt template
                 var promptTemplate = File.ReadAllText(promptPath);
-                IPromptTemplate? promptTemplateInstance = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
+                IPromptTemplate? promptTemplateInstance = factory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
@@ -289,5 +313,89 @@ public static class KernelSemanticFunctionExtensions
             kernel.LoggerFactory
         );
     }
+
+    private const string BasedTemplateFactoryAssemblyName = "Microsoft.SemanticKernel.TemplateEngine.Basic";
+    private const string BasedTemplateFactoryTypeName = "BasicPromptTemplateFactory";
+    private static bool s_promptTemplateFactoryInitialized = false;
+    private static Type? s_promptTemplateFactoryType = null;
+
+    /// <summary>
+    /// Create a default prompt template factory.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
+    /// </summary>
+    /// <param name="kernel">Kernel instance</param>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
+    private static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(IKernel kernel)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (kernel.PromptTemplateEngine is not null)
+        {
+            return new PromptTemplateFactory(kernel.PromptTemplateEngine);
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        if (!s_promptTemplateFactoryInitialized)
+        {
+            s_promptTemplateFactoryType = GetPromptTemplateFactoryType();
+            s_promptTemplateFactoryInitialized = true;
+        }
+
+        if (s_promptTemplateFactoryType is not null)
+        {
+            var constructor = s_promptTemplateFactoryType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                var factory = (IPromptTemplateFactory)constructor.Invoke(new object[] { kernel.LoggerFactory });
+                if (factory is not null)
+                {
+                    return factory;
+                }
+#pragma warning restore CS8601
+            }
+        }
+
+        throw new SKException($"Unable to create default prompt template factory. Please provide an implementation of IPromptTemplateFactory or depend on {BasedTemplateFactoryAssemblyName}");
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    private static Type? GetPromptTemplateFactoryType()
+    {
+        try
+        {
+            var assembly = Assembly.Load(BasedTemplateFactoryAssemblyName);
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals(BasedTemplateFactoryTypeName, StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateFactory)) is not null);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            return null;
+        }
+    }
+
     #endregion
+}
+
+[Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
+internal sealed class PromptTemplateFactory : IPromptTemplateFactory
+{
+    private readonly IPromptTemplateEngine _promptTemplateEngine;
+
+    public PromptTemplateFactory(IPromptTemplateEngine promptTemplateEngine)
+    {
+        this._promptTemplateEngine = promptTemplateEngine;
+    }
+
+    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    {
+        return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
+    }
 }

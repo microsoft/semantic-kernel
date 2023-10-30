@@ -13,5 +13,5 @@ public interface IPromptTemplateFactory
     /// <param name="templateString"></param>
     /// <param name="promptTemplateConfig"></param>
     /// <returns></returns>
-    IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
+    IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
 }

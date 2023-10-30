@@ -199,12 +199,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var promptTemplate = new Mock<IPromptTemplate>();
         promptTemplate.SetupGet(x => x.Parameters).Returns(Array.Empty<ParameterView>());
 
-        var promptTemplateFactory = new Mock<IPromptTemplateFactory>();
-        promptTemplateFactory.Setup(x => x.CreatePromptTemplate(It.IsAny<string>(), It.IsAny<PromptTemplateConfig>()))
-            .Returns(promptTemplate.Object);
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.PromptTemplateFactory).Returns(promptTemplateFactory.Object);
-
         return kernel;
     }
 

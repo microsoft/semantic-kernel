@@ -2,11 +2,11 @@
 
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
@@ -22,7 +22,6 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = CreateMockKernel();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
         kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
             .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
             {
@@ -64,7 +63,7 @@ public sealed class SequentialPlannerTests
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
@@ -228,14 +227,8 @@ public sealed class SequentialPlannerTests
     // Method to create Mock<IKernel> objects
     private static Mock<IKernel> CreateMockKernel()
     {
-        var promptTemplate = new Mock<IPromptTemplate>();
-        promptTemplate.SetupGet(x => x.Parameters).Returns(Array.Empty<ParameterView>());
-
-        var promptTemplateFactory = new Mock<IPromptTemplateFactory>();
-        promptTemplateFactory.Setup(x => x.CreatePromptTemplate(It.IsAny<string>(), It.IsAny<PromptTemplateConfig>()))
-            .Returns(promptTemplate.Object);
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.PromptTemplateFactory).Returns(promptTemplateFactory.Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         return kernel;
     }

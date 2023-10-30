@@ -37,12 +37,6 @@ public interface IKernel
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
-    /// Reference to the factory to create prompt templates
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IPromptTemplateFactory PromptTemplateFactory { get; }
-
-    /// <summary>
     /// Registers a custom function in the internal function collection.
     /// </summary>
     /// <param name="customFunction">The custom function to register.</param>
