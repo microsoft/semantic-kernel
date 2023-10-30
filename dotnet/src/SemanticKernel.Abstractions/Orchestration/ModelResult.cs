@@ -55,6 +55,6 @@ public sealed class ModelResult
     /// <returns>The result object as a JSON element.</returns>
     public JsonElement GetJsonResult()
     {
-        return Json.Deserialize<JsonElement>(this._result.ToJson());
+        return Json.Deserialize<JsonElement>(Json.Serialize(this._result));
     }
 }

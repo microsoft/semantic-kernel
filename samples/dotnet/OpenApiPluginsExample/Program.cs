@@ -51,22 +51,22 @@ internal sealed class Program
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
             ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
 
-        KernelBuilder kb = Kernel.Builder
+        KernelBuilder builder = new KernelBuilder()
             .WithLogger(loggerFactory.CreateLogger<IKernel>());
 
         switch (aiOptions.Type)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kb.WithAzureChatCompletionService(aiOptions.Models.Completion, aiOptions.Endpoint, aiOptions.Key);
+                builder.WithAzureChatCompletionService(aiOptions.Models.Completion, aiOptions.Endpoint, aiOptions.Key);
                 break;
             case AIServiceOptions.AIServiceType.OpenAI:
-                kb.WithOpenAIChatCompletionService(aiOptions.Models.Completion, aiOptions.Key);
+                builder.WithOpenAIChatCompletionService(aiOptions.Models.Completion, aiOptions.Key);
                 break;
             default:
                 throw new InvalidOperationException($"Unhandled AI service type {aiOptions.Type}");
         }
 
-        var kernel = kb.Build();
+        var kernel = builder.Build();
 
         // Register the GitHub plugin using an OpenAPI definition containing only pull request GET operations.
         GitHubPluginOptions gitHubOptions = configuration.GetRequiredSection(GitHubPluginOptions.PropertyName).Get<GitHubPluginOptions>()

@@ -46,7 +46,11 @@ class PromptTemplate(PromptTemplateBase):
                 continue
 
             result.append(
-                ParameterView(param.name, param.description, param.default_value)
+                ParameterView(
+                    name=param.name,
+                    description=param.description,
+                    default_value=param.default_value,
+                )
             )
 
             seen.add(param.name)
@@ -62,7 +66,9 @@ class PromptTemplate(PromptTemplateBase):
             if var_block.name in seen:
                 continue
 
-            result.append(ParameterView(var_block.name, "", ""))
+            result.append(
+                ParameterView(name=var_block.name, description="", default_value="")
+            )
 
             seen.add(var_block.name)
 

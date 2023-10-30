@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -21,10 +22,10 @@ public sealed class SequentialPlannerTests
         // Arrange
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
-        kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, vars, cancellationToken) =>
+        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
+            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
             {
-                var functionResult = await function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
+                var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
             });
 
@@ -60,6 +61,8 @@ public sealed class SequentialPlannerTests
 
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
@@ -67,10 +70,14 @@ public sealed class SequentialPlannerTests
 
         var context = new SKContext(
             functionRunner.Object,
+            serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables());
 
         var returnContext = new SKContext(
             functionRunner.Object,
+            serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables());
 
         var planString =
@@ -147,15 +154,17 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(functionRunner.Object, new ContextVariables(planString));
+        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(planString));
 
-        var context = new SKContext(functionRunner.Object, new ContextVariables());
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -168,10 +177,10 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, vars, cancellationToken) =>
+        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
+            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
             {
-                var functionResult = await function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
+                var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
             });
 
