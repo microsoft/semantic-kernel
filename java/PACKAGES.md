@@ -28,20 +28,20 @@ A BOM is provided that can be used to define the versions of all semantic kernel
 
 ## Common Packages
 
-semantickernel-bom
+`semantickernel-bom`
 : A BOM that can be used to define the versions of all semantic kernel packages.
 
-semantickernel-api
+`semantickernel-api`
 : Main API for the semantic kernel. Defines the core public API for the semantic kernel.
 
-semantickernel-core
+`semantickernel-core`
 : An implementation of the semantic kernel API. This package contains the core implementation of the semantic kernel. This
 should be made available to the application at runtime, however these classes are considered internal and should not be used directly
 by the application as they may change without notice.
 
 ## Connectors
 
-semantickernel-connectors-ai-openai
+`semantickernel-connectors-ai-openai`
 : Provides a connector that can be used to interact with an OpenAI API.
 
 ### Memory Connectors
@@ -49,22 +49,22 @@ semantickernel-connectors-ai-openai
 #### JDBC Memory Connectors
 
 Provides a memory connector that can be used to interact with a JDBC database.
-- semantickernel-connectors-memory-sqlite
-- semantickernel-connectors-memory-postgresql
-- semantickernel-connectors-memory-mysql
+- `semantickernel-connectors-memory-sqlite`
+- `semantickernel-connectors-memory-postgresql`
+- `semantickernel-connectors-memory-mysql`
 
-semantickernel-connectors-memory-azurecognitivesearch
+`semantickernel-connectors-memory-azurecognitivesearch`
 : Provides a memory connector that allows using Azure Cognitive Search as a memory.
 
 ### Miscellaneous Packages
 
-semantickernel-planners
+`semantickernel-planners`
 : Implementations of various planners that can be used to plan the execution of semantic functions.
 
-semantickernel-plugin-core
+`semantickernel-plugin-core`
 : Several example plugins, many of which are used in the samples.
 
-semantickernel-gpt3-tokenizer
+`semantickernel-gpt3-tokenizer`
 : A tokenizer that can be used to tokenize text for use with GPT-3. Can be used to estimate cost.
 
 
