@@ -85,7 +85,7 @@ public class MyPromptTemplate : IPromptTemplate
         this._promptTemplateConfig = promptTemplateConfig;
     }
 
-    public IReadOnlyList<ParameterView> Parameters => throw new NotImplementedException();
+    public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
     public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
     {
