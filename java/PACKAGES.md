@@ -29,7 +29,7 @@ A BOM is provided that can be used to define the versions of all semantic kernel
 ## Common Packages
 
 `semantickernel-bom`
-: A BOM that can be used to define the versions of all semantic kernel packages.
+: A Maven project BOM that can be used to define the versions of all semantic kernel packages.
 
 `semantickernel-api`
 : Main API for the semantic kernel. Defines the core public API for the semantic kernel.
