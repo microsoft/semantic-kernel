@@ -70,8 +70,8 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     public async Task<FunctionResult?> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>

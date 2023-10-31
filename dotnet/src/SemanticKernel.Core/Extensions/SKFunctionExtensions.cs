@@ -41,7 +41,7 @@ public static class SKFunctionExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult?> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
         IKernel kernel,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
@@ -62,7 +62,7 @@ public static class SKFunctionExtensions
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult?> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -82,7 +82,7 @@ public static class SKFunctionExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult?> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
         string input,
         IKernel kernel,
         IReadOnlyFunctionCollection? functions = null,

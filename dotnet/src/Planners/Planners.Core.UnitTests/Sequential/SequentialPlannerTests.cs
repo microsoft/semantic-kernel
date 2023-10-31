@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -46,8 +47,18 @@ public sealed class SequentialPlannerTests
             functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, object, CancellationToken>((context, settings, cancellationToken) =>
+                    x.InvokeAsync(
+                        It.IsAny<SKContext>(),
+                        It.IsAny<AIRequestSettings>(),
+                        It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
+                        It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<
+                    SKContext,
+                    object,
+                    EventHandlerWrapper<FunctionInvokingEventArgs>,
+                    EventHandlerWrapper<FunctionInvokedEventArgs>,
+                    CancellationToken>((context, settings, _, _, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(name, pluginName, context));
@@ -95,8 +106,13 @@ public sealed class SequentialPlannerTests
             null,
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
+        )).Callback<
+            SKContext,
+            object,
+            EventHandlerWrapper<FunctionInvokingEventArgs>,
+            EventHandlerWrapper<FunctionInvokedEventArgs>,
+            CancellationToken>(
+            (c, s, _, _, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, planString)));
 
         // Mock Plugins
@@ -171,8 +187,13 @@ public sealed class SequentialPlannerTests
             null,
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
+        )).Callback<
+            SKContext,
+            object,
+            EventHandlerWrapper<FunctionInvokingEventArgs>,
+            EventHandlerWrapper<FunctionInvokedEventArgs>,
+            CancellationToken>(
+            (c, s, _, _, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, planString)));
 
         // Mock Plugins

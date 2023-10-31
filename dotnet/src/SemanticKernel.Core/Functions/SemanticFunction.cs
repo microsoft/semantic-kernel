@@ -93,8 +93,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
@@ -184,8 +184,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
-        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(client);
@@ -231,7 +231,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return result;
     }
-    private void CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper, string prompt)
+    private void CallFunctionInvoking(SKContext context, EventHandlerWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper, string prompt)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
@@ -247,7 +247,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
     }
 
-    private void CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper, string prompt)
+    private void CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper, string prompt)
     {
         result.Metadata[RenderedPromptMetadataKey] = prompt;
 

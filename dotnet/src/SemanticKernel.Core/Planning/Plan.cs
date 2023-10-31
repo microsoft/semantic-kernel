@@ -320,11 +320,11 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult?> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         var result = new FunctionResult(this.Name, this.PluginName, context);

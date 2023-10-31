@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -172,14 +173,20 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = new SKContext(functionRunner.Object, serviceProvider.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
+ 
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
             null,
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
+        )).Callback<
+            SKContext,
+            object,
+            EventHandlerWrapper<FunctionInvokingEventArgs>,
+            EventHandlerWrapper<FunctionInvokedEventArgs>,
+            CancellationToken>(
+            (c, s, _, _, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
         kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
@@ -220,9 +227,18 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+            mockFunction.Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
+                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
+                It.IsAny<CancellationToken>()))
+                .Returns<
+                    SKContext,
+                    AIRequestSettings,
+                    EventHandlerWrapper<FunctionInvokingEventArgs>,
+                    EventHandlerWrapper<FunctionInvokedEventArgs>,
+                    CancellationToken>((context, settings, _, _, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(name, pluginName, context));

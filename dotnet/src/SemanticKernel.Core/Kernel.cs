@@ -115,8 +115,8 @@ repeat:
             {
                 var functionDetails = skFunction.Describe();
 
-                var invokingEventWrapper = new EventDelegateWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking);
-                var invokedEventWrapper = new EventDelegateWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
+                var invokingEventWrapper = new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking);
+                var invokedEventWrapper = new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
 
                 functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
                 allFunctionResults.Add(functionResult!);

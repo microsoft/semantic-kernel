@@ -20,7 +20,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
-using static Microsoft.SemanticKernel.Orchestration.StopFunctionResult;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -136,8 +135,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventDelegateWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -165,7 +164,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    private void CallFunctionInvoking(SKContext context, EventDelegateWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoking(SKContext context, EventHandlerWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
@@ -176,7 +175,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
     }
 
-    private FunctionResult CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    private FunctionResult CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
