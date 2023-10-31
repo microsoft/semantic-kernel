@@ -337,7 +337,7 @@ repeat:
     /// </summary>
     /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
     /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    [Obsolete("Provided for backward compatability. This will be removed in a future release.")]
+    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
@@ -391,7 +391,7 @@ repeat:
 ///
 /// This is a temporary solution to avoid breaking existing clients.
 /// </summary>
-[Obsolete("This is used for backward compatability. This will be removed in a future release.")]
+[Obsolete("This is used for backward compatibility. This will be removed in a future release.")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
 {
