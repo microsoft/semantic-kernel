@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.8" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.2" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.3" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.4" />
@@ -55,7 +55,7 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.3, )" />
     <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.57.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.58.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.26" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
