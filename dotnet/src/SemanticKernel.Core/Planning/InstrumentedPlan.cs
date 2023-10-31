@@ -49,7 +49,7 @@ internal sealed class InstrumentedPlan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult?> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
@@ -107,7 +107,7 @@ internal sealed class InstrumentedPlan : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<FunctionResult?> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
+    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         this._logger.LogInformation("Plan execution started.");
 

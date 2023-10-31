@@ -67,7 +67,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         this._function.Describe();
 
     /// <inheritdoc/>
-    public async Task<FunctionResult?> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
@@ -117,7 +117,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<FunctionResult?> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
+    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 

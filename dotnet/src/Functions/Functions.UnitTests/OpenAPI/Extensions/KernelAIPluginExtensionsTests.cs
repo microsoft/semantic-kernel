@@ -208,8 +208,10 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiFunctionExecutionParameters();
-        executionParameters.HttpClient = httpClient;
+        var executionParameters = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = httpClient
+        };
 
         var fakePlugin = new FakePlugin();
 
@@ -218,9 +220,11 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
         var kernel = KernelBuilder.Create();
 
-        var arguments = new ContextVariables();
-        arguments.Add("secret-name", "fake-secret-name");
-        arguments.Add("api-version", "fake-api-version");
+        var arguments = new ContextVariables
+        {
+            { "secret-name", "fake-secret-name" },
+            { "api-version", "fake-api-version" }
+        };
 
         //Act
         var res = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
@@ -250,12 +254,13 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
     private ContextVariables GetFakeContextVariables()
     {
-        var variables = new ContextVariables();
-
-        variables["secret-name"] = "fake-secret-name";
-        variables["api-version"] = "fake-api-version";
-        variables["X-API-Version"] = "fake-api-version";
-        variables["payload"] = "fake-payload";
+        var variables = new ContextVariables
+        {
+            ["secret-name"] = "fake-secret-name",
+            ["api-version"] = "fake-api-version",
+            ["X-API-Version"] = "fake-api-version",
+            ["payload"] = "fake-payload"
+        };
 
         return variables;
     }

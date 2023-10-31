@@ -189,7 +189,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
             Verify.NotNull(textCompletion);
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
 
             this.CallFunctionInvoking(context, invokingHandlerWrapper, renderedPrompt);
             if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
@@ -199,7 +198,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
             renderedPrompt = this.TryUpdatePromptFromEventArgsMetadata(renderedPrompt, invokingHandlerWrapper?.EventArgs);
 
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion

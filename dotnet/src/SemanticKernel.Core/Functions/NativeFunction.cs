@@ -187,11 +187,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
 
         // Apply any changes from the event handlers to final result.
-        var functionResult = new FunctionResult(this.Name, this.PluginName, eventDelegateWrapper.EventArgs.SKContext, eventDelegateWrapper.EventArgs.SKContext.Result);
-
-        // Updates the eventArgs metadata during invoked handler execution
-        // will reflect in the result metadata
-        functionResult.Metadata = eventDelegateWrapper.EventArgs.Metadata;
+        var functionResult = new FunctionResult(this.Name, this.PluginName, eventDelegateWrapper.EventArgs.SKContext, eventDelegateWrapper.EventArgs.SKContext.Result)
+        {
+            // Updates the eventArgs metadata during invoked handler execution
+            // will reflect in the result metadata
+            Metadata = eventDelegateWrapper.EventArgs.Metadata
+        };
 
         return functionResult;
     }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -124,7 +125,6 @@ repeat:
                 var invokedEventWrapper = new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
 
                 functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
-                allFunctionResults.Add(functionResult!);
 
                 if (functionResult is StopFunctionResult stopResult)
                 {
@@ -142,6 +142,9 @@ repeat:
                     throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
                 }
 
+                // Stop results will not be added as Kernel results.
+                allFunctionResults.Add(functionResult!);
+
                 if (invokedEventWrapper.EventArgs?.IsRepeatRequested ?? false)
                 {
                     this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -156,7 +159,7 @@ repeat:
 
             pipelineStepCount++;
         }
-        return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
+        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
     private bool ShouldSkipFlow(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
@@ -236,44 +239,6 @@ repeat:
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
-
-    /// <summary>
-    /// Execute the OnFunctionInvoking event handlers.
-    /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext before function invocation</param>
-    /// <returns>FunctionInvokingEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokingEventArgs? OnFunctionInvoking(FunctionView functionView, SKContext context)
-    {
-        if (this.FunctionInvoking is not null)
-        {
-            var args = new FunctionInvokingEventArgs(functionView, context);
-            this.FunctionInvoking.Invoke(this, args);
-
-            return args;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Execute the OnFunctionInvoked event handlers.
-    /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="result">Function result after invocation</param>
-    /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, FunctionResult result)
-    {
-        if (this.FunctionInvoked is not null)
-        {
-            var args = new FunctionInvokedEventArgs(functionView, result);
-            this.FunctionInvoked.Invoke(this, args);
-
-            return args;
-        }
-
-        return null;
-    }
 
     #endregion
 
