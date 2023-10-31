@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
-using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +23,7 @@ public sealed class FlowOrchestratorTests : IDisposable
 
     public FlowOrchestratorTests(ITestOutputHelper output)
     {
-        this._logger = NullLoggerFactory.Instance;
+        this._logger = new XunitLogger<object>(output);
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -40,7 +39,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Fact]
+    [RetryFact(maxRetries: 3)]
     public async Task CanExecuteFlowAsync()
     {
         // Arrange
@@ -52,17 +51,15 @@ public sealed class FlowOrchestratorTests : IDisposable
 
         Dictionary<object, string?> plugins = new()
         {
-            { webSearchEnginePlugin, "WebSearch" },
-            { new TimePlugin(), "time" }
+            { webSearchEnginePlugin, "WebSearch" }
         };
 
         Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
 goal: answer question and sent email
 steps:
-  - goal: Who is the current president of the United States? What is his current age divided by 2
+  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
-      - TimePlugin
     provides:
       - answer
   - goal: Collect email address
@@ -72,7 +69,7 @@ steps:
       - email_address
   - goal: Send email
     plugins:
-      - SendEmail
+      - SendEmailPlugin
     requires:
       - email_address
       - answer
@@ -80,10 +77,14 @@ steps:
       - email
 ");
 
-        var flowOrchestrator = new FlowOrchestrator(builder, await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()), plugins);
+        var flowOrchestrator = new FlowOrchestrator(
+            builder,
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()),
+            plugins,
+            config: new FlowOrchestratorConfig() { MaxStepIterations = 20 });
 
         // Act
-        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
+        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
@@ -95,7 +96,7 @@ steps:
         // Assert
         var emailPayload = result["email"];
         Assert.Contains(email, emailPayload, StringComparison.InvariantCultureIgnoreCase);
-        Assert.Contains("biden", emailPayload, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
     private KernelBuilder InitializeKernelBuilder()

@@ -173,9 +173,14 @@ public class FlowStep
     /// Register the arguments passed through by the step
     /// </summary>
     /// <param name="passthroughArguments">Array of passthrough arguments</param>
-    public void AddPassthrough(params string[] passthroughArguments)
+    /// <param name="isReferencedFlow">Is referenced flow</param>
+    public void AddPassthrough(string[] passthroughArguments, bool isReferencedFlow = false)
     {
-        if (passthroughArguments.Length != 0 && this.CompletionType != CompletionType.AtLeastOnce && this.CompletionType != CompletionType.ZeroOrMore)
+        // A referenced flow is allowed to have steps that have passthrough arguments even if the completion type is not AtLeastOnce or ZeroOrMore. This is so the step can pass arguments to the outer flow.
+        if (!isReferencedFlow
+            && passthroughArguments.Length != 0
+            && this.CompletionType != CompletionType.AtLeastOnce
+            && this.CompletionType != CompletionType.ZeroOrMore)
         {
             throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce or ZeroOrMore completion type");
         }

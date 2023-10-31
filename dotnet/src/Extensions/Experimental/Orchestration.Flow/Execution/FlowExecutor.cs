@@ -226,13 +226,13 @@ internal class FlowExecutor : IFlowExecutor
                     var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(plugin);
+                        stepKernel.ImportFunctions(plugin, plugin.GetType().Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
                 }
 
-                if (!string.IsNullOrEmpty(stepResult.ToString()) && stepResult.IsPromptInput())
+                if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
                     try
                     {
@@ -291,11 +291,17 @@ internal class FlowExecutor : IFlowExecutor
                         executionState.Variables[variable] = stepResult[variable];
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable,
                             stepResult[variable]);
+
+                        // propagate variables to root context, needed if Flow itself is a step
+                        this.PropagateVariable(rootContext, stepResult, variable);
                     }
                 }
 
                 // propagate variables to root context, needed if Flow itself is a step
-                this.PropagateVariable(rootContext, stepResult, Constants.ChatPluginVariables.PromptInputName);
+                foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
+                {
+                    this.PropagateVariable(rootContext, stepResult, variable);
+                }
             }
 
             if (completed)
@@ -318,6 +324,7 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         // unconfirmed, prompt user
                         outputs.Add(repeatStep.Prompt!);
+                        this._logger?.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
                         break;
                     }
@@ -367,10 +374,6 @@ internal class FlowExecutor : IFlowExecutor
         if (stepResult.ContainsKey(variableName))
         {
             rootContext[variableName] = stepResult[variableName];
-        }
-        else
-        {
-            rootContext[variableName] = string.Empty;
         }
     }
 
@@ -457,7 +460,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         // Extract thought
-        Match thoughtMatch = s_thoughtRegex.Match(input);
+        Match thoughtMatch = s_thoughtRegex.Match(llmResponseText);
         if (thoughtMatch.Success)
         {
             string thoughtString = thoughtMatch.Groups[1].Value.Trim();
@@ -474,6 +477,8 @@ internal class FlowExecutor : IFlowExecutor
             return new RepeatOrStartStepResult(null, prompt);
         }
 
+        this._logger?.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
     }
@@ -536,6 +541,15 @@ internal class FlowExecutor : IFlowExecutor
             this._logger?.LogInformation("Thought: {Thought}", actionStep.Thought);
             if (!string.IsNullOrEmpty(actionStep.Action!))
             {
+                if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
+                {
+                    string prompt = actionStep.ActionVariables![Constants.StopAndPromptParameterName];
+                    context.Variables.Update(prompt);
+                    context.TerminateFlow();
+
+                    return context.Variables;
+                }
+
                 var actionContext = kernel.CreateNewContext();
                 foreach (var kvp in context.Variables)
                 {
@@ -601,9 +615,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}. " +
                                              "Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. " +
-                                             "Do not attempt to use any other functions that are not specified.\r\n" +
-                                             "The value of parameters should either by empty when missing information, or derived from the agent scratchpad.\r\n" +
-                                             "You are not allowed to ask user directly for more information.";
+                                             "Do not attempt to use any other functions that are not specified.\n";
 
                     continue;
                 }
@@ -620,6 +632,13 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(context.Result))
                 {
+                    if (context.Variables.IsTerminateFlow())
+                    {
+                        // Terminate the flow without another round of reasoning, to save the LLM reasoning calls.
+                        // This is not suggested unless plugin has performance requirement and has explicitly set the control variable.
+                        return context.Variables;
+                    }
+
                     foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                     {
                         if (context.Variables.ContainsKey(variable))
