@@ -10,9 +10,6 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
-
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /**

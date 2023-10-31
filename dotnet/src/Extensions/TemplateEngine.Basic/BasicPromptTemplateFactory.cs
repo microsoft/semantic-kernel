@@ -47,7 +47,7 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
         {
             return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
         }
-        else if (this._promptTemplateFactory != null)
+        else if (this._promptTemplateFactory is not null)
         {
             return this._promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
         }
