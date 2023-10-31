@@ -70,7 +70,9 @@ Provides a memory connector that can be used to interact with a JDBC database.
 
 ## Example Configurations
 
-### A simple project that uses Open AI for text/chat completion with a SQLite database as memory
+### Example: OpenAI + SQLite
+
+POM XML for a simple project that uses OpenAI for text or chat completion with an SQLite database as the memory provider.
 
 ```xml
 <dependencyManagement>
