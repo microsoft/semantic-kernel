@@ -30,7 +30,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
             return;
         }
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 deploymentName: deploymentName,

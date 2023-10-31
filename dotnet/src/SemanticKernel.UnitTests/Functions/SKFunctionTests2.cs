@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -1044,9 +1045,13 @@ public sealed class SKFunctionTests2
     private SKContext MockContext(string input)
     {
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
 
         return new SKContext(
             functionRunner.Object,
+            serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables(input)
         );
     }

@@ -75,7 +75,7 @@ public static class Example08_RetryHandler
 
     private static KernelBuilder InitializeKernelBuilder()
     {
-        return Kernel.Builder
+        return new KernelBuilder()
                     .WithLoggerFactory(InfoLogger.LoggerFactory)
                     // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
                     .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
