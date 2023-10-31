@@ -117,32 +117,28 @@ repeat:
 
                 var invokingEventWrapper = new EventDelegateWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking);
                 var invokedEventWrapper = new EventDelegateWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
-                functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (functionResult is null)
+                functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
+                allFunctionResults.Add(functionResult!);
+
+                if (functionResult is StopFunctionResult stopResult)
                 {
-                    if (invokingEventWrapper.EventArgs?.CancelToken.IsCancellationRequested ?? false)
+                    if (stopResult.Reason == StopFunctionResult.StopReason.InvokingCancelled)
                     {
                         this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                         break;
                     }
-
-                    if (invokingEventWrapper.EventArgs?.IsSkipRequested ?? false)
+                    else if (stopResult.Reason == StopFunctionResult.StopReason.InvokingSkipped)
                     {
                         this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                         continue;
                     }
 
-                    throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} returned null result.");
+                    this._logger.LogError("Function {PluginName}.{FuncitonName} stopped with an unexpected reason: {Reason}.", skFunction.PluginName, skFunction.Name, stopResult.Reason);
+                    throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
                 }
 
-                if (invokedEventWrapper.EventArgs is not null)
-                {
-                    // All changes to the SKContext by invoked handlers may reflect in the original function result
-                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, invokedEventWrapper.EventArgs.SKContext, invokedEventWrapper.EventArgs.SKContext.Result);
-                }
 
-                allFunctionResults.Add(functionResult!);
 
                 if (invokedEventWrapper.EventArgs?.CancelToken.IsCancellationRequested ?? false)
                 {

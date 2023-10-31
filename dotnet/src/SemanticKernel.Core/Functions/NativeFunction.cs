@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using static Microsoft.SemanticKernel.Orchestration.StopFunctionResult;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -132,7 +133,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         => this._view.Value;
 
     /// <inheritdoc/>
-    public async Task<FunctionResult?> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         EventDelegateWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
@@ -142,15 +143,15 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         try
         {
             this.CallFunctionInvoking(context, invokingHandlerWrapper);
-            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs))
+            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
             {
-                return null;
+                return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
 
-            var result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
-            this.CallFunctionInvoked(result, invokedHandlerWrapper);
+            var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            var finalResult = this.CallFunctionInvoked(invokeResult, invokedHandlerWrapper);
 
-            return result;
+            return finalResult;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
@@ -170,32 +171,49 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
     }
 
-    private void CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    private FunctionResult CallFunctionInvoked(FunctionResult result, EventDelegateWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
     {
         if (eventDelegateWrapper?.Handler is null)
         {
-            return;
+            // No handlers registered, return the result as is.
+            return result;
         }
 
         eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
         eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
 
+        // Apply any changes from the event handlers to final result.
+        var functionResult = new FunctionResult(this.Name, this.PluginName, eventDelegateWrapper.EventArgs.SKContext, eventDelegateWrapper.EventArgs.SKContext.Result);
+
         // Updates the eventArgs metadata during invoked handler execution
         // will reflect in the result metadata
-        result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
+        functionResult.Metadata = eventDelegateWrapper.EventArgs.Metadata;
+
+        return functionResult;
     }
 
-    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent)
+    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent, out StopFunctionResult.StopReason? reason)
     {
-        // When no event handler is registered, the event args are null
-        // When args are null, don't stop the function execution.
+        reason = null;
+
+        // When no event handler is registered, the event args are null and
+        // this should not stop the function execution.
         if (invokingEvent is null)
         {
             return false;
         }
 
-        // Any event flag that triggers flow should stop the function execution, returning null
-        return invokingEvent.IsSkipRequested || invokingEvent.CancelToken.IsCancellationRequested;
+        if (invokingEvent.IsSkipRequested)
+        {
+            reason = StopFunctionResult.StopReason.Skipped;
+        }
+        else if (invokingEvent.CancelToken.IsCancellationRequested)
+        {
+            reason = StopFunctionResult.StopReason.Cancelled;
+        }
+
+        // Check any event flags that interrupt this function execution;
+        return (reason is not null);
     }
 
     /// <summary>
