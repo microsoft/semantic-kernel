@@ -218,6 +218,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             result.Metadata.Add(SemanticFunction.RenderedPromptMetadataKey, renderedPrompt);
 
             this.CallFunctionInvoked(result, invokedHandlerWrapper, renderedPrompt);
+            if (this.ShouldStopInvocation(invokedHandlerWrapper?.EventArgs, out stopReason))
+            {
+                return new StopFunctionResult(this.Name, this.PluginName, context, result.Value, stopReason!.Value);
+            }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -274,11 +278,31 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         if (invokingEvent.IsSkipRequested)
         {
-            reason = StopFunctionResult.StopReason.Skipped;
+            reason = StopFunctionResult.StopReason.InvokingSkipped;
         }
         else if (invokingEvent.CancelToken.IsCancellationRequested)
         {
-            reason = StopFunctionResult.StopReason.Cancelled;
+            reason = StopFunctionResult.StopReason.InvokingCancelled;
+        }
+
+        // Check any event flags that interrupt this function execution;
+        return (reason is not null);
+    }
+
+    private bool ShouldStopInvocation(FunctionInvokedEventArgs? invokedEvent, out StopFunctionResult.StopReason? reason)
+    {
+        reason = null;
+
+        // When no event handler is registered, the event args are null and
+        // this should not stop the function execution.
+        if (invokedEvent is null)
+        {
+            return false;
+        }
+
+        if (invokedEvent.CancelToken.IsCancellationRequested)
+        {
+            reason = StopFunctionResult.StopReason.InvokedCancelled;
         }
 
         // Check any event flags that interrupt this function execution;
