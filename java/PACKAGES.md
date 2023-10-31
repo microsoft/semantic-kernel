@@ -35,9 +35,9 @@ A BOM is provided that can be used to define the versions of all semantic kernel
 : Package that defines the core public API for the semantic kernel for a Maven project.
 
 `semantickernel-core`
-: An implementation of the semantic kernel API. This package contains the core implementation of the semantic kernel. This
-should be made available to the application at runtime, however these classes are considered internal and should not be used directly
-by the application as they may change without notice.
+: The internal implementation of the semantic kernel API.
+This package contains the core implementation of the semantic kernel. This must be made available to the
+application at runtime. Note that these classes are considered internal and should not be used directly by the application. Should they be used directly, it could cause instability in the application as they may change without notice over time.
 
 ## Connectors
 
