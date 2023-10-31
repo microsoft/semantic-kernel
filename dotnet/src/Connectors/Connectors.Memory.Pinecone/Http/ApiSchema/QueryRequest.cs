@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -36,7 +37,7 @@ internal sealed class QueryRequest
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
     [JsonPropertyName("vector")]
-    public IEnumerable<float>? Vector { get; set; }
+    public ReadOnlyMemory<float> Vector { get; set; }
 
     /// <summary>
     /// The unique ID of a vector
@@ -106,7 +107,7 @@ internal sealed class QueryRequest
     /// Initializes a new instance of the <see cref="QueryRequest" /> class.
     /// </summary>
     [JsonConstructor]
-    private QueryRequest(IEnumerable<float>? values = null)
+    private QueryRequest(ReadOnlyMemory<float> values)
     {
         this.Vector = values;
     }

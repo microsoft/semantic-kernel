@@ -34,6 +34,17 @@ public class ChatHistory : List<ChatMessageBase>
     }
 
     /// <summary>
+    /// Insert a message into the chat history
+    /// </summary>
+    /// <param name="index">Index of the message to insert</param>
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="content">Message content</param>
+    public void InsertMessage(int index, AuthorRole authorRole, string content)
+    {
+        this.Insert(index, new ChatMessage(authorRole, content));
+    }
+
+    /// <summary>
     /// Add a user message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>

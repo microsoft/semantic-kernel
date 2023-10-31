@@ -46,7 +46,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
         // Assert
-        Assert.Equal(AdaVectorLength, singleResult.Count);
+        Assert.Equal(AdaVectorLength, singleResult.Length);
         Assert.Equal(3, batchResult.Count);
     }
 
@@ -67,7 +67,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
         // Assert
-        Assert.Equal(AdaVectorLength, singleResult.Count);
+        Assert.Equal(AdaVectorLength, singleResult.Length);
         Assert.Equal(3, batchResult.Count);
     }
 

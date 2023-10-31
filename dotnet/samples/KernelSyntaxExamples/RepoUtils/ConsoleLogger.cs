@@ -10,15 +10,15 @@ namespace RepoUtils;
 /// </summary>
 internal static class ConsoleLogger
 {
-    internal static ILogger Logger => LogFactory.CreateLogger<object>();
+    internal static ILogger Logger => LoggerFactory.CreateLogger<object>();
 
-    private static ILoggerFactory LogFactory => s_loggerFactory.Value;
+    internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
 
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
     private static ILoggerFactory LogBuilder()
     {
-        return LoggerFactory.Create(builder =>
+        return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
         {
             builder.SetMinimumLevel(LogLevel.Warning);
 

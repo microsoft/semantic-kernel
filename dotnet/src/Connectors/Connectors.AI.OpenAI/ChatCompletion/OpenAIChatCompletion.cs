@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -24,21 +26,33 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletion(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null
-    ) : base(modelId, apiKey, organization, httpClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
+    {
+    }
+
+    /// <summary>
+    /// Create an instance of the OpenAI chat completion connector
+    /// </summary>
+    /// <param name="modelId">Model name</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenAIChatCompletion(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
     }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -48,7 +62,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -64,7 +78,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -74,7 +88,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

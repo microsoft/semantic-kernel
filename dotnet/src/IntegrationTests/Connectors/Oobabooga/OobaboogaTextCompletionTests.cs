@@ -16,6 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost";
@@ -23,8 +24,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaTextCompletionTests()
     {
@@ -52,10 +53,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             blockingPort: BlockingPort);
 
         // Act
-        var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
+        var localResponse = await oobaboogaLocal.CompleteAsync(Input, requestSettings: new TextCompletionRequest()
         {
             Temperature = 0.01,
-            MaxTokens = 7,
+            MaxNewTokens = 7,
             TopP = 0.1,
         });
 
@@ -71,10 +72,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             webSocketFactory: this._webSocketFactory);
 
         // Act
-        var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
+        var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, requestSettings: new TextCompletionRequest()
         {
             Temperature = 0.01,
-            MaxTokens = 7,
+            MaxNewTokens = 7,
             TopP = 0.1,
         });
 

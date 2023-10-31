@@ -2,7 +2,7 @@
 
 from logging import Logger
 from threading import Thread
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -23,9 +23,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
         model_id: str,
-        device: Optional[int] = -1,
+        device: Optional[int] = None,
         task: Optional[str] = None,
         log: Optional[Logger] = None,
+        model_kwargs: Dict[str, Any] = None,
+        pipeline_kwargs: Dict[str, Any] = {},
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextCompletion class.
@@ -33,19 +35,29 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Arguments:
             model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/models
-            device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
+            device {Optional[int]} -- Device to run the model on, defaults to CPU, 0+ for GPU,
+                                   -- None if using device_map instead. (If both device and device_map
+                                      are specified, device overrides device_map. If unintended,
+                                      it can lead to unexpected behavior.)
             task {Optional[str]} -- Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
             log {Optional[Logger]} -- Logger instance.
+            model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
+                passed along to the model's `from_pretrained(..., **model_kwargs)` function.
+            pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
+                to the specific pipeline init (see the documentation for the corresponding pipeline class
+                for possible values).
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         self._model_id = model_id
         self._task = "text2text-generation" if task is None else task
         self._log = log if log is not None else NullLogger()
+        self._model_kwargs = model_kwargs
+        self._pipeline_kwargs = pipeline_kwargs
 
         try:
             import torch
@@ -55,15 +67,29 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 "Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion"
             )
 
-        self.device = (
-            "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
-        )
+        device_map = self._pipeline_kwargs.get("device_map", None)
+        if device is None:
+            self.device = "cpu" if device_map is None else None
+        else:
+            self.device = (
+                "cuda:" + str(device)
+                if device >= 0 and torch.cuda.is_available()
+                else "cpu"
+            )
+
         self.generator = transformers.pipeline(
-            task=self._task, model=self._model_id, device=self.device
+            task=self._task,
+            model=self._model_id,
+            device=self.device,
+            model_kwargs=self._model_kwargs,
+            **self._pipeline_kwargs
         )
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         try:
             import transformers
@@ -110,7 +136,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             raise AIException("Hugging Face completion failed", e)
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         """
         Streams a text completion using a Hugging Face model.

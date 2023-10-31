@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Milvus</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+
+    <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
+    <NoWarn>NU5104</NoWarn>
+  </PropertyGroup>
+
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Milvus Connector</Title>
+    <Description>Milvus connector for Semantic Kernel plugins and semantic memory</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Milvus.Client"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+</Project>

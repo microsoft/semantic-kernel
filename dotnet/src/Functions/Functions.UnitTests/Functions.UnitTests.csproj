@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>SemanticKernel.Functions.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Functions.UnitTests</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>CA2007,VSTHRD111</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
+
+  <ItemGroup>
+    <None Remove="Grpc\protoV3.proto" />
+    <None Remove="OpenAPI\TestPlugins\documentV3_1.yaml" />
+    <None Remove="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
+    <None Remove="OpenAPI\TestPlugins\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_0.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Functions.Grpc\Functions.Grpc.csproj" />
+    <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+  </ItemGroup>
+
+</Project>

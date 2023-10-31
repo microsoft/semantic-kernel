@@ -21,7 +21,7 @@ jobs:
       matrix: ${{ steps.set-yarn-folders.outputs.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Find yarn projects
         id: set-yarn-folders
@@ -51,7 +51,7 @@ jobs:
       matrix: ${{ fromJson(needs.find-yarn-projects.outputs.matrix) }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@v3
         with:

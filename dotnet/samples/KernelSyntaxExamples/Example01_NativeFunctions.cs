@@ -2,7 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 
 // ReSharper disable once InconsistentNaming
 public static class Example01_NativeFunctions
@@ -11,8 +11,8 @@ public static class Example01_NativeFunctions
     {
         Console.WriteLine("======== Functions ========");
 
-        // Load native skill
-        var text = new TextSkill();
+        // Load native plugin
+        var text = new TextPlugin();
 
         // Use function without kernel
         var result = text.Uppercase("ciao!");

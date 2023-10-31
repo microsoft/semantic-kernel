@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -14,7 +13,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult
+internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
     private readonly ModelResult _modelResult;
     private readonly StreamingChatChoice _choice;
@@ -37,7 +36,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         if (chatMessage is null)
         {
-            throw new AIException(AIException.ErrorCodes.UnknownError, "Unable to get chat message from stream");
+            throw new SKException("Unable to get chat message from stream");
         }
 
         return new SKChatMessage(chatMessage);
@@ -48,7 +47,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            yield return new SKChatMessage(message);
+            if (message.Content is { Length: > 0 })
+            {
+                yield return new SKChatMessage(message);
+            }
         }
     }
 
@@ -63,7 +65,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return result.Content;
+            if (result.Content is string content and { Length: > 0 })
+            {
+                yield return content;
+            }
         }
     }
 }

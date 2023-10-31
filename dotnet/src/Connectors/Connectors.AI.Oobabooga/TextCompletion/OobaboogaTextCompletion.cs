@@ -23,9 +23,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// Oobabooga text completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
-    public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
+    /// <summary>
+    /// The URI path for blocking API requests.
+    /// </summary>
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
@@ -40,10 +43,11 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
     private readonly ILogger? _logger;
+    private Task? _cleanupTask = null;
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
-    /// Controls the size of the buffer used to received websocket packets
+    /// Controls the size of the buffer used to receive websocket packets.
     /// </summary>
     public int WebSocketBufferSize { get; set; } = 2048;
 
@@ -131,7 +135,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
@@ -190,7 +194,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -210,27 +214,20 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 RequestUri = this._blockingUri.Uri,
                 Content = stringContent
             };
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
             TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
+                throw new SKException($"Unexpected response from Oobabooga API: {body}");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
         }
         finally
         {
@@ -241,28 +238,42 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     #region private ================================================================================
 
     /// <summary>
-    /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
+    /// Creates an Oobabooga request, mapping dynamic request setting fields to their Oobabooga API counter parts
     /// </summary>
     /// <param name="text">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
     /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    private TextCompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
+    private TextCompletionRequest CreateOobaboogaRequest(string text, AIRequestSettings? requestSettings)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ArgumentNullException(nameof(text));
         }
 
-        // Prepare the request using the provided parameters.
-        return new TextCompletionRequest()
+        if (requestSettings is null)
         {
-            Prompt = text,
-            MaxNewTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            RepetitionPenalty = GetRepetitionPenalty(requestSettings),
-            StoppingStrings = requestSettings.StopSequences.ToList()
-        };
+            return new TextCompletionRequest()
+            {
+                Prompt = text
+            };
+        }
+
+        if (requestSettings is TextCompletionRequest requestSettingsTextCompletionRequest)
+        {
+            requestSettingsTextCompletionRequest.Prompt = text;
+            return requestSettingsTextCompletionRequest;
+        }
+
+        var json = JsonSerializer.Serialize(requestSettings);
+        var textCompletionRequest = JsonSerializer.Deserialize<TextCompletionRequest>(json);
+
+        if (textCompletionRequest is not null)
+        {
+            textCompletionRequest.Prompt = text;
+            return textCompletionRequest;
+        }
+
+        throw new ArgumentException("Invalid request settings, cannot convert to TextCompletionRequest", nameof(requestSettings));
     }
 
     /// <summary>
@@ -270,15 +281,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// </summary>
     private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
     {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
-    }
-
-    /// <summary>
-    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
-    /// </summary>
-    private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
-    {
-        return 1 + requestSettings.PresencePenalty / 2;
+        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
@@ -313,7 +316,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 if (responseObject is null)
                 {
-                    throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
+                    throw new SKException($"Unexpected response from Oobabooga API: {messageText}");
                 }
 
                 switch (responseObject.Event)
@@ -396,7 +399,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
     private void StartCleanupTask(CancellationToken cancellationToken)
     {
-        Task.Factory.StartNew(
+        if (this._cleanupTask == null || this._cleanupTask.IsCompleted)
+        {
+            this._cleanupTask = Task.Factory.StartNew(
             async () =>
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -407,6 +412,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             cancellationToken,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
+        }
     }
 
     /// <summary>

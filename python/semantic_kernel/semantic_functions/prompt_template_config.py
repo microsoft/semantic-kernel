@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -15,12 +15,19 @@ class PromptTemplateConfig:
         max_tokens: int = 256
         number_of_responses: int = 1
         stop_sequences: List[str] = field(default_factory=list)
+        token_selection_biases: Dict[int, int] = field(default_factory=dict)
+        chat_system_prompt: str = None
+        # the function_call should be 'auto' or the name of a specific function in order to leverage function calling
+        # when not using auto, the format is 'SkillName-FunctionName', e.g. 'Weather-GetWeather'
+        function_call: Optional[str] = None
 
     @dataclass
     class InputParameter:
         name: str = ""
         description: str = ""
         default_value: str = ""
+        type_: str = "string"
+        required: bool = True
 
     @dataclass
     class InputConfig:
@@ -40,23 +47,30 @@ class PromptTemplateConfig:
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
-        config.schema = data.get("schema")
-        config.type = data.get("type")
-        config.description = data.get("description")
+        keys = ["schema", "type", "description"]
+        for key in keys:
+            if key in data:
+                setattr(config, key, data[key])
 
         # Some skills may not have all completion parameters defined
         config.completion = PromptTemplateConfig.CompletionConfig()
         completion_dict = data["completion"]
-        config.completion.temperature = completion_dict.get("temperature")
-        config.completion.top_p = completion_dict.get("top_p")
-        config.completion.presence_penalty = completion_dict.get("presence_penalty")
-        config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
-        config.completion.max_tokens = completion_dict.get("max_tokens")
-        config.completion.number_of_responses = completion_dict.get(
-            "number_of_responses"
-        )
-        config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
-        config.default_services = data.get("default_services", [])
+        completion_keys = [
+            "temperature",
+            "top_p",
+            "presence_penalty",
+            "frequency_penalty",
+            "max_tokens",
+            "number_of_responses",
+            "stop_sequences",
+            "token_selection_biases",
+            "default_services",
+            "chat_system_prompt",
+            "function_call",
+        ]
+        for comp_key in completion_keys:
+            if comp_key in completion_dict:
+                setattr(config.completion, comp_key, completion_dict[comp_key])
 
         # Some skills may not have input parameters defined
         config.input = PromptTemplateConfig.InputConfig()
@@ -84,11 +98,16 @@ class PromptTemplateConfig:
                         f"Input parameter '{name}' doesn't have a default value (function: {config.description})"
                     )
 
+                type_ = parameter.get("type")
+                required = parameter.get("required")
+
                 config.input.parameters.append(
                     PromptTemplateConfig.InputParameter(
                         name,
                         description,
                         defaultValue,
+                        type_,
+                        required,
                     )
                 )
         return config
@@ -97,7 +116,12 @@ class PromptTemplateConfig:
     def from_json(json_str: str) -> "PromptTemplateConfig":
         import json
 
-        return PromptTemplateConfig.from_dict(json.loads(json_str))
+        def keystoint(d):
+            return {int(k) if k.isdigit() else k: v for k, v in d.items()}
+
+        return PromptTemplateConfig.from_dict(
+            json.loads(json_str, object_hook=keystoint)
+        )
 
     @staticmethod
     def from_completion_parameters(
@@ -108,6 +132,9 @@ class PromptTemplateConfig:
         max_tokens: int = 256,
         number_of_responses: int = 1,
         stop_sequences: List[str] = [],
+        token_selection_biases: Dict[int, int] = {},
+        chat_system_prompt: str = None,
+        function_call: Optional[str] = None,
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -117,4 +144,7 @@ class PromptTemplateConfig:
         config.completion.max_tokens = max_tokens
         config.completion.number_of_responses = number_of_responses
         config.completion.stop_sequences = stop_sequences
+        config.completion.token_selection_biases = token_selection_biases
+        config.completion.chat_system_prompt = chat_system_prompt
+        config.completion.function_call = function_call
         return config

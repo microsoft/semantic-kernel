@@ -46,7 +46,9 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             )
 
         self.device = (
-            "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
+            "cuda:" + str(device)
+            if device >= 0 and torch.cuda.is_available()
+            else "cpu"
         )
         self.generator = sentence_transformers.SentenceTransformer(
             model_name_or_path=self._model_id, device=self.device
