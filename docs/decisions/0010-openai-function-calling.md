@@ -1,5 +1,6 @@
 ---
-status: proposed
+status: accepted
+contact: gitri-ms
 date: 2023-09-21
 deciders: gitri-ms, shawncal
 consulted: lemillermicrosoft, awharrison-28, dmytrostruk, nacharya1

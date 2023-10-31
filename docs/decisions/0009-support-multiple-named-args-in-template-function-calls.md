@@ -1,7 +1,8 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
-date: 6/16/2023
+status: accepted
+contact: dmytrostruk
+date: 2013-06-16
 deciders: shawncal, hario90
 consulted: dmytrostruk, matthewbolanos 
 informed: lemillermicrosoft
