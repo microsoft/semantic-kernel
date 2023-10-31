@@ -1,6 +1,6 @@
 # Semantic Kernel for Java Packages
 
-The semantic kernel has the packages below, all are under the groupId `com.microsoft.semantic-kernel`, and can be imported
+The Semantic Kernel has the packages below, all are under the groupId `com.microsoft.semantic-kernel`, and can be imported
 to maven.
 
 ```xml
@@ -10,7 +10,7 @@ to maven.
     </dependency>
 ```
 
-A BOM is provided that can be used to define the versions of all semantic kernel packages.
+A BOM is provided that can be used to define the versions of all Semantic Kernel packages.
 
 ```xml
     <dependencyManagement>
@@ -29,14 +29,14 @@ A BOM is provided that can be used to define the versions of all semantic kernel
 ## Common Packages
 
 `semantickernel-bom`
-: A Maven project BOM that can be used to define the versions of all semantic kernel packages.
+: A Maven project BOM that can be used to define the versions of all Semantic Kernel packages.
 
 `semantickernel-api`
-: Package that defines the core public API for the semantic kernel for a Maven project.
+: Package that defines the core public API for the Semantic Kernel for a Maven project.
 
 `semantickernel-core`
-: The internal implementation of the semantic kernel API.
-This package contains the core implementation of the semantic kernel. This must be made available to the
+: The internal implementation of the Semantic Kernel API.
+This package contains the core implementation of the Semantic Kernel. This must be made available to the
 application at runtime. Note that these classes are considered internal and should not be used directly by the application. Should they be used directly, it could cause instability in the application as they may change without notice over time.
 
 ## Connectors
@@ -47,6 +47,9 @@ application at runtime. Note that these classes are considered internal and shou
 ### Memory Connectors
 
 #### JDBC Memory Connectors
+
+`semantickernel-connectors-memory-jdbc`
+: A package that serves as a parent for all JDBC based connectors, adding a new JDBC database should be a matter of extending the classes within this module.
 
 Provides a memory connector that can be used to interact with a JDBC database.
 - `semantickernel-connectors-memory-sqlite`
@@ -62,7 +65,7 @@ Provides a memory connector that can be used to interact with a JDBC database.
 : Implementations of various planners that can be used in the execution of semantic functions.
 
 `semantickernel-plugin-core`
-: Several example plugins, many of which are used in the [Java Semantic Kernel samples](/java-development/java/samples).
+: Several example plugins, many of which are used in the [Semantic Kernel for Java samples](/java-development/java/samples).
 
 `semantickernel-gpt3-tokenizer`
 : A tokenizer that can be used to tokenize text for use with GPT-3. Can be used to estimate cost.
