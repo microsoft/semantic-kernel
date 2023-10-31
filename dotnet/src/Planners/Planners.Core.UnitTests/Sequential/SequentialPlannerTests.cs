@@ -62,6 +62,7 @@ public sealed class SequentialPlannerTests
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
@@ -70,11 +71,13 @@ public sealed class SequentialPlannerTests
         var context = new SKContext(
             functionRunner.Object,
             serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables());
 
         var returnContext = new SKContext(
             functionRunner.Object,
             serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables());
 
         var planString =
@@ -152,15 +155,16 @@ public sealed class SequentialPlannerTests
         // Arrange
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, new ContextVariables(planString));
+        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(planString));
 
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, new ContextVariables());
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(

@@ -1,6 +1,6 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
+contact: semenshi
 date: 2023-08-15
 deciders: shawncal
 consulted:
