@@ -365,7 +365,7 @@ repeat:
     /// Get the prompt template engine type if available
     /// </summary>
     /// <returns>The type for the prompt template engine if available</returns>
-    [Obsolete("Provided for backward compatability. This will be removed in a future release.")]
+    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     private Type? GetPromptTemplateEngineType()
     {
