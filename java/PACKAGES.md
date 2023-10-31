@@ -59,7 +59,7 @@ Provides a memory connector that can be used to interact with a JDBC database.
 ### Miscellaneous Packages
 
 `semantickernel-planners`
-: Implementations of various planners that can be used to plan the execution of semantic functions.
+: Implementations of various planners that can be used in the execution of semantic functions.
 
 `semantickernel-plugin-core`
 : Several example plugins, many of which are used in the samples.
