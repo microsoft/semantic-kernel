@@ -47,10 +47,6 @@ Also the `BasicPromptTemplateEngine` is the default prompt template engine and w
 
 Some issues with this:
 
-<<<<<<< HEAD
-=======
-1. You need to have a `Kernel` instance to create a semantic function, which is contrary to one of the goals of allow semantic functions to be created once and reused across multiple `Kernel` instances.
->>>>>>> upstream/main
 1. `Kernel` only supports a single `IPromptTemplateEngine` so we cannot support using multiple prompt templates at the same time.
 1. `IPromptTemplateEngine` is stateless and must perform a parse of the template for each render
 1. Our semantic function extension methods relay on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.

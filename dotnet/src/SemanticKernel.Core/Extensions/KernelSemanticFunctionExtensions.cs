@@ -107,7 +107,7 @@ public static class KernelSemanticFunctionExtensions
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="promptTemplate">Prompt template string</param>
+    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,

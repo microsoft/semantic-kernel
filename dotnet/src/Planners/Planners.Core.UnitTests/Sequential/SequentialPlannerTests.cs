@@ -63,7 +63,6 @@ public sealed class SequentialPlannerTests
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
