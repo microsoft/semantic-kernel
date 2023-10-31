@@ -18,8 +18,9 @@ public interface IAIServiceSelector
     /// The returned value is a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/>
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
+    /// <param name="renderedPrompt">Rendered prompt</param>
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="modelSettings">Collection of model settings</param>
     /// <returns></returns>
-    (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService;
 }

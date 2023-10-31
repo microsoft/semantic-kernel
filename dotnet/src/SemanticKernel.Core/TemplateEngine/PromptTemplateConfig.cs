@@ -102,7 +102,7 @@ public class PromptTemplateConfig
     /// <remarks>TODO: use enum</remarks>
     [JsonPropertyName("type")]
     [JsonPropertyOrder(5)]
-    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
+    [Obsolete("Type property is no longer required. This will be removed in a future release.")]
     public string Type { get; set; } = "completion";
 
     /// <summary>
@@ -111,7 +111,7 @@ public class PromptTemplateConfig
     [JsonPropertyName("completion")]
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.Models collection instead. This will be removed in a future release.")]
+    [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.ModelSettings collection instead. This will be removed in a future release.")]
     public AIRequestSettings? Completion
     {
         get { return this.GetDefaultRequestSettings(); }
@@ -130,7 +130,7 @@ public class PromptTemplateConfig
     [JsonPropertyName("default_services")]
     [JsonPropertyOrder(7)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("DefaultServices property is no longer used. This will be removed in a future release.")]
+    [Obsolete("DefaultServices property is not being used. This will be removed in a future release.")]
     public List<string> DefaultServices { get; set; } = new();
     #endregion
 
