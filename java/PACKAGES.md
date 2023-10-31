@@ -68,7 +68,7 @@ Provides a memory connector that can be used to interact with a JDBC database.
 : A tokenizer that can be used to tokenize text for use with GPT-3. Can be used to estimate cost.
 
 
-# Example configurations
+## Example Configurations
 
 ### A simple project that uses Open AI for text/chat completion with a SQLite database as memory
 
