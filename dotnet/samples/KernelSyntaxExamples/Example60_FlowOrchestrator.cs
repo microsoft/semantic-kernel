@@ -180,11 +180,11 @@ provides:
 
     private static FlowOrchestratorConfig GetOrchestratorConfig()
     {
-        var config = new FlowOrchestratorConfig();
-        config.ExcludedFunctions.Add("DaysAgo");
-        config.ExcludedFunctions.Add("DateMatchingLastDayName");
-        config.ReActModel = FlowOrchestratorConfig.ModelName.GPT35_TURBO;
-        config.MaxStepIterations = 20;
+        var config = new FlowOrchestratorConfig
+        {
+            ReActModel = FlowOrchestratorConfig.ModelName.GPT35_TURBO,
+            MaxStepIterations = 20
+        };
 
         return config;
     }

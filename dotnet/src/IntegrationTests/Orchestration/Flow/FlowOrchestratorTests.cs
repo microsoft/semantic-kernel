@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,7 +40,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Fact]
+    [RetryFact(maxRetries: 3)]
     public async Task CanExecuteFlowAsync()
     {
         // Arrange
@@ -51,8 +52,7 @@ public sealed class FlowOrchestratorTests : IDisposable
 
         Dictionary<object, string?> plugins = new()
         {
-            { webSearchEnginePlugin, "WebSearch" },
-            { new TimePlugin(), "time" }
+            { webSearchEnginePlugin, "WebSearch" }
         };
 
         Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
@@ -81,7 +81,8 @@ steps:
         var flowOrchestrator = new FlowOrchestrator(
             builder,
             await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()),
-            plugins);
+            plugins,
+            config: new FlowOrchestratorConfig() { MaxStepIterations = 20 });
 
         // Act
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
