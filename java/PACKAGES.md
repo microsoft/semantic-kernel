@@ -107,7 +107,9 @@ POM XML for a simple project that uses OpenAI for text or chat completion with a
 </dependencies>
 ```
 
-### A project that uses Open AI for planning with a Azure Cognitive Search as memory
+### Example: Planner using Open AI + Cognitive Search
+
+The POM XML content for a project that uses Open AI for planning, using Azure Cognitive Search as the memory provider.
 
 ```xml
 <dependencyManagement>
