@@ -53,8 +53,7 @@ Is it weekend time (weekend/not weekend)?
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new BasicPromptTemplateFactory();
-        var promptTemplate = promptTemplateFactory.CreatePromptTemplate(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(kernel.CreateNewContext());
+        var renderedPrompt = await promptTemplateFactory.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function

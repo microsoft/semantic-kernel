@@ -21,7 +21,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new BasicPromptTemplateEngine();
+        this._promptTemplateFactory = new BasicPromptTemplateFactory();
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     }
 
     private readonly RedirectOutput _logger;
-    private readonly BasicPromptTemplateEngine _target;
+    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
 
     public void Dispose()
     {

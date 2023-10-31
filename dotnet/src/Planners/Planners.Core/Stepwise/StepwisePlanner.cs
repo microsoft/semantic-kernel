@@ -61,7 +61,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
-        this._promptRenderer = new BasicPromptTemplateEngine(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
@@ -350,14 +350,14 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var descriptions = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
-        return await this._promptRenderer.RenderAsync(this._manualTemplate, context, cancellationToken).ConfigureAwait(false);
+        return await this._promptTemplateFactory.RenderAsync(this._manualTemplate, context, cancellationToken).ConfigureAwait(false);
     }
 
     private Task<string> GetUserQuestionAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptRenderer.RenderAsync(this._questionTemplate, context, cancellationToken);
+        => this._promptTemplateFactory.RenderAsync(this._questionTemplate, context, cancellationToken);
 
     private Task<string> GetSystemMessageAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptRenderer.RenderAsync(this._promptTemplate, context, cancellationToken);
+        => this._promptTemplateFactory.RenderAsync(this._promptTemplate, context, cancellationToken);
 
     #endregion setup helpers
 
@@ -648,7 +648,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateEngine _promptRenderer;
+    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The prompt config to use for the system step

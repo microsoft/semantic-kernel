@@ -55,8 +55,8 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new BasicPromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, context);
+        var promptTemplateFactory = new BasicPromptTemplateFactory();
+        var renderedPrompt = await promptTemplateFactory.RenderAsync(FunctionDefinition, context);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
