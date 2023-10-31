@@ -13,7 +13,7 @@ public class ChatHistory : List<ChatMessageBase>
 {
     private sealed class ChatMessage : ChatMessageBase
     {
-        public ChatMessage(AuthorRole authorRole, string content, string? name) : base(authorRole, content, name)
+        public ChatMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext) : base(authorRole, content, additionalContext)
         {
         }
     }
@@ -28,10 +28,10 @@ public class ChatHistory : List<ChatMessageBase>
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <param name="name">If role is function, name of the function that produced the content</param>
-    public void AddMessage(AuthorRole authorRole, string content, string? name = null)
+    /// <param name="additionalContext">Dictionary for any additional message properties</param>
+    public void AddMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext = null)
     {
-        this.Add(new ChatMessage(authorRole, content, name));
+        this.Add(new ChatMessage(authorRole, content, additionalContext));
     }
 
     /// <summary>
@@ -40,10 +40,10 @@ public class ChatHistory : List<ChatMessageBase>
     /// <param name="index">Index of the message to insert</param>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <param name="name">If role is function, name of the function that produced the content</param>
-    public void InsertMessage(int index, AuthorRole authorRole, string content, string? name = null)
+    /// <param name="additionalContext">Dictionary for any additional message properties</param>
+    public void InsertMessage(int index, AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext = null)
     {
-        this.Insert(index, new ChatMessage(authorRole, content, name));
+        this.Insert(index, new ChatMessage(authorRole, content, additionalContext));
     }
 
     /// <summary>
@@ -71,15 +71,5 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddSystemMessage(string content)
     {
         this.AddMessage(AuthorRole.System, content);
-    }
-
-    /// <summary>
-    /// Add a function message to the chat history
-    /// </summary>
-    /// <param name="content">Message content</param>
-    /// <param name="name">Name of the function that generated the content</param>
-    public void AddFunctionMessage(string content, string name)
-    {
-        this.AddMessage(AuthorRole.Function, content, name);
     }
 }

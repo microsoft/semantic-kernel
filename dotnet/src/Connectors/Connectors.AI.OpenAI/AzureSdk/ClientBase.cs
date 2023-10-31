@@ -390,13 +390,14 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var validRole = GetValidChatRole(message.Role);
-            options.Messages.Add(new ChatMessage
+            var azureMessage = new ChatMessage(GetValidChatRole(message.Role), message.Content);
+
+            if (message.AdditionalContext?.TryGetValue("Name", out string? name) is true)
             {
-                Role = validRole,
-                Content = message.Content,
-                Name = message.Name
-            });
+                azureMessage.Name = name;
+            }
+
+            options.Messages.Add(azureMessage);
         }
 
         return options;

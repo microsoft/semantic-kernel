@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
@@ -18,31 +20,20 @@ public abstract class ChatMessageBase
     public string Content { get; set; }
 
     /// <summary>
-    /// If role is function, the name of the function that produced the content
+    /// Dictionary for any additional message properties
     /// </summary>
-    public string? Name { get; set; } = null;
+    public IDictionary<string, string>? AdditionalContext { get; set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageBase"/> class
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
-    protected ChatMessageBase(AuthorRole role, string content)
+    /// <param name="additionalContext">Dictionary for any additional message properties</param>
+    protected ChatMessageBase(AuthorRole role, string content, IDictionary<string, string>? additionalContext = null)
     {
         this.Role = role;
         this.Content = content;
-    }
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="ChatMessageBase"/> class
-    /// </summary>
-    /// <param name="role">Role of the author of the message</param>
-    /// <param name="content">Content of the message</param>
-    /// <param name="name">If role is function, name of the function that produced the content</param>
-    protected ChatMessageBase(AuthorRole role, string content, string? name)
-    {
-        this.Role = role;
-        this.Content = content;
-        this.Name = name;
+        this.AdditionalContext = additionalContext;
     }
 }
