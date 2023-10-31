@@ -54,7 +54,7 @@ Provides a memory connector that can be used to interact with a JDBC database.
 - `semantickernel-connectors-memory-mysql`
 
 `semantickernel-connectors-memory-azurecognitivesearch`
-: Provides a memory connector that allows using Azure Cognitive Search as a memory.
+: Provides a memory connector for using Azure Cognitive Search as the memory provider for an application.
 
 ### Miscellaneous Packages
 
