@@ -7,6 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -15,9 +17,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
 using Moq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -56,16 +55,9 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     public async Task ItUsesAuthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
     {
         //Arrange
-        var serializerSettings = new JsonSerializerSettings
-        {
-            ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            }
-        };
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
-        var openAiDocumentContent = JsonConvert.DeserializeObject<JObject>(await reader.ReadToEndAsync(), serializerSettings)!;
-        var actualAuthConfig = openAiDocumentContent["auth"]!.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings))!;
+        JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
+        var actualOpenAIManifestAuth = openAIDocumentContent["auth"].Deserialize<OpenAIManifestAuthentication>()!;
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
@@ -83,7 +75,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
-            It.Is<OpenAIAuthenticationManifest>(expectedAuthConfig => expectedAuthConfig.Scope == actualAuthConfig.Scope)),
+            It.Is<OpenAIManifestAuthentication>(expectedOpenAIManifestAuth => expectedOpenAIManifestAuth.Scope == actualOpenAIManifestAuth.Scope)),
         Times.Exactly(1));
     }
 

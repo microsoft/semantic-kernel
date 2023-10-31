@@ -28,8 +28,8 @@ public class BearerAuthenticationProvider
     /// Applies the token to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="authConfig">The <see cref="OpenAIAuthenticationManifest"/> used to authenticate.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, OpenAIAuthenticationManifest? authConfig = null)
+    /// <param name="openAIManifestAuth">The <see cref="OpenAIManifestAuthentication"/> used to authenticate.</param>
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request, OpenAIManifestAuthentication? openAIManifestAuth = null)
     {
         var token = await this._bearerToken().ConfigureAwait(false);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

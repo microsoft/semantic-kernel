@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,9 +20,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -185,13 +183,13 @@ public static class KernelAIPluginExtensions
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
             if (executionParameters?.AuthCallback != null &&
-                TryParseAIPluginForAuth(pluginContents, out var openApiManifestAuth) &&
-                openApiManifestAuth!.Type != OpenAIAuthenticationType.None)
+                TryParseAIPluginForAuth(pluginContents, out var openAIManifestAuth) &&
+                openAIManifestAuth!.Type != OpenAIAuthenticationType.None)
             {
                 var callback = executionParameters.AuthCallback;
                 executionParameters.AuthCallback = async (request, _) =>
                 {
-                    await callback(request, openApiManifestAuth).ConfigureAwait(false);
+                    await callback(request, openAIManifestAuth).ConfigureAwait(false);
                 };
             }
 
@@ -340,27 +338,17 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static bool TryParseAIPluginForAuth(string gptPluginJson, out OpenAIAuthenticationManifest? openApiManifestAuth)
+    private static bool TryParseAIPluginForAuth(string pluginJson, out OpenAIManifestAuthentication? openAIManifestAuth)
     {
         try
         {
-            var serializerSettings = new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
-            };
-
-            JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, serializerSettings);
-            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings));
-
-            return openApiManifestAuth != null;
+            JsonNode? gptPlugin = JsonNode.Parse(pluginJson);
+            openAIManifestAuth = gptPlugin?["auth"].Deserialize<OpenAIManifestAuthentication>();
+            return openAIManifestAuth != null;
         }
         catch (System.Text.Json.JsonException)
         {
-            openApiManifestAuth = null;
-
+            openAIManifestAuth = null;
             return false;
         }
     }
