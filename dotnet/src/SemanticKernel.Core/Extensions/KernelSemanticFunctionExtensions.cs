@@ -314,8 +314,8 @@ public static class KernelSemanticFunctionExtensions
         );
     }
 
-    private const string BasedTemplateFactoryAssemblyName = "Microsoft.SemanticKernel.TemplateEngine.Basic";
-    private const string BasedTemplateFactoryTypeName = "BasicPromptTemplateFactory";
+    private const string BasicTemplateFactoryAssemblyName = "Microsoft.SemanticKernel.TemplateEngine.Basic";
+    private const string BasicTemplateFactoryTypeName = "BasicPromptTemplateFactory";
     private static bool s_promptTemplateFactoryInitialized = false;
     private static Type? s_promptTemplateFactoryType = null;
 
@@ -358,7 +358,7 @@ public static class KernelSemanticFunctionExtensions
             }
         }
 
-        throw new SKException($"Unable to create default prompt template factory. Please provide an implementation of IPromptTemplateFactory or depend on {BasedTemplateFactoryAssemblyName}");
+        throw new SKException($"Unable to create default prompt template factory. Please provide an implementation of IPromptTemplateFactory or depend on {BasicTemplateFactoryAssemblyName}");
     }
 
     /// <summary>
@@ -369,10 +369,10 @@ public static class KernelSemanticFunctionExtensions
     {
         try
         {
-            var assembly = Assembly.Load(BasedTemplateFactoryAssemblyName);
+            var assembly = Assembly.Load(BasicTemplateFactoryAssemblyName);
 
             return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals(BasedTemplateFactoryTypeName, StringComparison.Ordinal) &&
+                type.Name.Equals(BasicTemplateFactoryTypeName, StringComparison.Ordinal) &&
                 type.GetInterface(nameof(IPromptTemplateFactory)) is not null);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
