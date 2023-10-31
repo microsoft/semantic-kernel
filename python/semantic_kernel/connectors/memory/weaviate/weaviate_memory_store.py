@@ -341,19 +341,13 @@ class WeaviateMemoryStore(MemoryStoreBase):
         alpha: float,
         with_embeddings: bool,
     ) -> List[Tuple[MemoryRecord, float]]:
-        hybrid = {
-            "query": ask,
-            "vector": embedding,
-            "alpha": alpha,
-        }
-
         additional = ["certainty"]
         if with_embeddings:
             additional.append("vector")
 
         query = (
             self.client.query.get(collection_name, ALL_PROPERTIES)
-            .with_hybrid(hybrid)
+            .with_hybrid(query=ask, vector=embedding, alpha=alpha)
             .with_additional(additional)
             .with_limit(limit)
         )
