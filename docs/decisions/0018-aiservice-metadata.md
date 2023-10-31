@@ -60,7 +60,10 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
 
 ## Considered Options
 
-* {title of option 1}
+* Option #1
+  * Extend `IAIService` to include this property `IReadOnlyDictionary<string, string> Metadata { get; }` which returns the metadata as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
+  * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
+  * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
 ## Decision Outcome
 
