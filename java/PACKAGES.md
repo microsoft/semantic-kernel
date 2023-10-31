@@ -42,7 +42,7 @@ application at runtime. Note that these classes are considered internal and shou
 ## Connectors
 
 `semantickernel-connectors-ai-openai`
-: Provides a connector that can be used to interact with an OpenAI API.
+: Provides a connector that can be used to interact with the OpenAI API.
 
 ### Memory Connectors
 
