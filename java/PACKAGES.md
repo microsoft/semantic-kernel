@@ -62,7 +62,7 @@ Provides a memory connector that can be used to interact with a JDBC database.
 : Implementations of various planners that can be used in the execution of semantic functions.
 
 `semantickernel-plugin-core`
-: Several example plugins, many of which are used in the samples.
+: Several example plugins, many of which are used in the [Java Semantic Kernel samples](/java-development/java/samples).
 
 `semantickernel-gpt3-tokenizer`
 : A tokenizer that can be used to tokenize text for use with GPT-3. Can be used to estimate cost.
