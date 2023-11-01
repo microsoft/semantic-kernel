@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -390,32 +392,22 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new ChatMessage(GetValidChatRole(message.Role), message.Content);
+            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
-            if (message.AdditionalContext?.TryGetValue("Name", out string? name) is true)
+            if (message.AdditionalProperties?.TryGetValue("Name", out string? name) is true)
             {
                 azureMessage.Name = name;
+            }
+
+            if (message.AdditionalProperties?.TryGetValue("FunctionCall", out string? functionCall) is true)
+            {
+                azureMessage.FunctionCall = JsonSerializer.Deserialize<FunctionCall>(functionCall);
             }
 
             options.Messages.Add(azureMessage);
         }
 
         return options;
-    }
-
-    private static ChatRole GetValidChatRole(AuthorRole role)
-    {
-        var validRole = new ChatRole(role.Label);
-
-        if (validRole != ChatRole.User &&
-            validRole != ChatRole.System &&
-            validRole != ChatRole.Assistant &&
-            validRole != ChatRole.Function)
-        {
-            throw new ArgumentException($"Invalid chat message author role: {role}");
-        }
-
-        return validRole;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)

@@ -13,7 +13,7 @@ public class ChatHistory : List<ChatMessageBase>
 {
     private sealed class ChatMessage : ChatMessageBase
     {
-        public ChatMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext) : base(authorRole, content, additionalContext)
+        public ChatMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties) : base(authorRole, content, additionalProperties)
         {
         }
     }
@@ -28,10 +28,10 @@ public class ChatHistory : List<ChatMessageBase>
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <param name="additionalContext">Dictionary for any additional message properties</param>
-    public void AddMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext = null)
+    /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    public void AddMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties = null)
     {
-        this.Add(new ChatMessage(authorRole, content, additionalContext));
+        this.Add(new ChatMessage(authorRole, content, additionalProperties));
     }
 
     /// <summary>
@@ -40,10 +40,10 @@ public class ChatHistory : List<ChatMessageBase>
     /// <param name="index">Index of the message to insert</param>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <param name="additionalContext">Dictionary for any additional message properties</param>
-    public void InsertMessage(int index, AuthorRole authorRole, string content, IDictionary<string, string>? additionalContext = null)
+    /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    public void InsertMessage(int index, AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties = null)
     {
-        this.Insert(index, new ChatMessage(authorRole, content, additionalContext));
+        this.Insert(index, new ChatMessage(authorRole, content, additionalProperties));
     }
 
     /// <summary>

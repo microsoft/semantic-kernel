@@ -22,18 +22,18 @@ public abstract class ChatMessageBase
     /// <summary>
     /// Dictionary for any additional message properties
     /// </summary>
-    public IDictionary<string, string>? AdditionalContext { get; set; }
+    public IDictionary<string, string>? AdditionalProperties { get; set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageBase"/> class
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
-    /// <param name="additionalContext">Dictionary for any additional message properties</param>
-    protected ChatMessageBase(AuthorRole role, string content, IDictionary<string, string>? additionalContext = null)
+    /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    protected ChatMessageBase(AuthorRole role, string content, IDictionary<string, string>? additionalProperties = null)
     {
         this.Role = role;
         this.Content = content;
-        this.AdditionalContext = additionalContext;
+        this.AdditionalProperties = additionalProperties;
     }
 }
