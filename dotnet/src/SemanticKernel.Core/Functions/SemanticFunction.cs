@@ -147,10 +147,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IAIServiceSelector? _serviceSelector;
-    public List<AIRequestSettings>? _modelSettings;
+    private List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
-    public const string RenderedPromptMetadataKey = "RenderedPrompt";
-    public IPromptTemplate _promptTemplate { get; }
+    private readonly IPromptTemplate _promptTemplate;
+    internal const string RenderedPromptMetadataKey = "RenderedPrompt";
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
