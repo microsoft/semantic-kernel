@@ -196,7 +196,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
                 return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
 
-            renderedPrompt = this.TryUpdatePromptFromEventArgsMetadata(renderedPrompt, invokingHandlerWrapper?.EventArgs);
+            renderedPrompt = this.TryGetPromptFromEventArgsMetadata(renderedPrompt, invokingHandlerWrapper?.EventArgs);
 
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -303,7 +303,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return (reason is not null);
     }
 
-    private string TryUpdatePromptFromEventArgsMetadata(string renderedPrompt, FunctionInvokingEventArgs? eventArgs)
+    private string TryGetPromptFromEventArgsMetadata(string renderedPrompt, FunctionInvokingEventArgs? eventArgs)
     {
         if (eventArgs is null)
         {
@@ -381,4 +381,41 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
+}
+
+/// <summary>
+/// SKEventArgs extensions
+/// </summary>
+public static class SKEventArgsExtensions
+{
+    /// <summary>
+    /// Try to get the rendered prompt from the event args metadata.
+    /// </summary>
+    /// <param name="eventArgs">Target event args to extend</param>
+    /// <param name="renderedPrompt">Outputs the renderedPrompt</param>
+    /// <returns>True if the prompt was present</returns>
+    public static bool TryGetRenderedPrompt(this SKEventArgs eventArgs, out string? renderedPrompt)
+    {
+        var found = eventArgs.Metadata.TryGetValue(SemanticFunction.RenderedPromptMetadataKey, out var renderedPromptObject);
+        renderedPrompt = renderedPromptObject?.ToString();
+
+        return found;
+    }
+
+    /// <summary>
+    /// Try to update the rendered prompt in the event args metadata.
+    /// </summary>
+    /// <param name="eventArgs">Target event args to extend</param>
+    /// <param name="newPrompt">Prompt to override</param>
+    /// <returns></returns>
+    public static bool TryUpdateRenderedPrompt(this SKEventArgs eventArgs, string newPrompt)
+    {
+        if (eventArgs.Metadata.ContainsKey(SemanticFunction.RenderedPromptMetadataKey))
+        {
+            eventArgs.Metadata[SemanticFunction.RenderedPromptMetadataKey] = newPrompt;
+            return true;
+        }
+
+        return false;
+    }
 }
