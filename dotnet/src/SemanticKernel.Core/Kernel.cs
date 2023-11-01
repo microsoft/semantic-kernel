@@ -125,8 +125,6 @@ repeat:
                 var invokedEventWrapper = new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
 
                 functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
-                allFunctionResults.Add(functionResult!);
-
                 if (functionResult is StopFunctionResult stopResult)
                 {
                     if (this.ShouldCancelFlow(skFunction, stopResult.Reason, pipelineStepCount))
@@ -142,6 +140,8 @@ repeat:
                     this._logger.LogError("Function {PluginName}.{FunctionName} stopped with an unexpected reason: {Reason}.", skFunction.PluginName, skFunction.Name, stopResult.Reason);
                     throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
                 }
+
+                allFunctionResults.Add(functionResult!);
 
                 if (invokedEventWrapper.EventArgs?.IsRepeatRequested ?? false)
                 {

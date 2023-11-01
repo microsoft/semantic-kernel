@@ -494,7 +494,9 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(expectedResult, kernelResult.GetValue<string>()!.Trim());
         Assert.Equal(ExpectedInvocations, numberOfInvocations);
-        Assert.Equal(ExpectedInvocations, kernelResult.FunctionResults.Count);
+
+        // ExpectedInvocations + StopFunctionResult
+        Assert.Equal(ExpectedInvocations + 1, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
@@ -502,7 +504,7 @@ public class KernelTests
     [InlineData(2, 0, 0)]
     [InlineData(2, 1, 1)]
     [InlineData(5, 2, 2)]
-    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int expectedInvocations)
+    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int invokedHandlerInvocations)
     {
         List<ISKFunction> functions = new();
         const string PluginName = "MyPlugin";
@@ -552,8 +554,10 @@ public class KernelTests
         Assert.NotNull(kernelResult);
 
         // Kernel result is the same as the last invoked function
-        Assert.Equal(expectedInvocations, numberOfInvocations);
-        Assert.Equal(expectedInvocations, kernelResult.FunctionResults.Count);
+        Assert.Equal(invokedHandlerInvocations, numberOfInvocations);
+
+        // Number of invocations + StopResult
+        Assert.Equal(numberOfInvocations + 1, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
