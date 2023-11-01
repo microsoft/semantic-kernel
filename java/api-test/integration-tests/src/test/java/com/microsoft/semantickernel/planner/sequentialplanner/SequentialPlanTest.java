@@ -179,6 +179,7 @@ public class SequentialPlanTest {
         Kernel kernel = SKBuilders.kernel().build();
         kernel.importSkill(new Skills(), "Skills");
 
-        return SequentialPlanParser.toPlanFromXml(planString.stripIndent(), "", kernel.getSkills());
+        return SequentialPlanParser.toPlanFromXml(
+                planString.stripIndent(), "", kernel.getSkills(), kernel::getService);
     }
 }

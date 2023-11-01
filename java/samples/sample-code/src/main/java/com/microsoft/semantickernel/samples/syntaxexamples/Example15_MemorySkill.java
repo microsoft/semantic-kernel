@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.util.List;
@@ -75,20 +75,20 @@ public class Example15_MemorySkill {
         kernel.importSkill(memorySkill, "memory");
 
         // Build a semantic function that saves info to memory
-        PromptTemplateConfig.CompletionConfig completionConfig = SKBuilders.completionConfig()
-                .temperature(0.2)
-                .topP(0.5)
-                .presencePenalty(0)
-                .frequencyPenalty(0)
-                .maxTokens(2000)
-                .build();
+      CompletionRequestSettings completionConfig = SKBuilders.completionRequestSettings()
+          .temperature(0.2)
+          .topP(0.5)
+          .presencePenalty(0)
+          .frequencyPenalty(0)
+          .maxTokens(2000)
+          .build();
 
         CompletionSKFunction saveFunctionDefinition = SKBuilders.completionFunctions()
                 .withKernel(kernel)
                 .withPromptTemplate("{{memory.save $info}}")
                 .withFunctionName("save")
                 .withDescription("save information to memory")
-                .withCompletionConfig(completionConfig)
+                .withRequestSettings(completionConfig)
                 .build();
 
         CompletionSKFunction memorySaver =
@@ -170,7 +170,7 @@ public class Example15_MemorySkill {
         CompletionSKFunction recallFunctionDefinition = SKBuilders.completionFunctions()
                 .withKernel(kernel)
                 .withPromptTemplate(prompt)
-                .withCompletionConfig(completionConfig)
+                .withRequestSettings(completionConfig)
                 .build();
 
         SKFunction<?> aboutMeOracle = kernel.registerSemanticFunction(recallFunctionDefinition);

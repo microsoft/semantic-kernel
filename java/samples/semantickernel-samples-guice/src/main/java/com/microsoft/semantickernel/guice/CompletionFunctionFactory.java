@@ -2,14 +2,14 @@
 package com.microsoft.semantickernel.guice;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import jakarta.inject.Inject;
 
 public interface CompletionFunctionFactory {
 
     CompletionSKFunction createFunction(
-            String prompt, String name, PromptTemplateConfig.CompletionConfig completionConfig);
+            String prompt, String name, CompletionRequestSettings completionConfig);
 
     class CompletionFunctionFactoryImpl implements CompletionFunctionFactory {
         @Inject
@@ -19,11 +19,11 @@ public interface CompletionFunctionFactory {
         public CompletionSKFunction createFunction(
                 String prompt,
                 String name,
-                PromptTemplateConfig.CompletionConfig completionConfig) {
+                CompletionRequestSettings completionConfig) {
             return kernel.getSemanticFunctionBuilder()
                     .withPromptTemplate(prompt)
                     .withFunctionName(name)
-                    .withCompletionConfig(completionConfig)
+                    .withRequestSettings(completionConfig)
                     .build();
         }
     }

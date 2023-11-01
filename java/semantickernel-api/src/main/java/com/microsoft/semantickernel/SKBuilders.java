@@ -10,13 +10,14 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings.Builder;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
+
     // Prevent creating object
     private SKBuilders() {}
 
@@ -60,9 +61,9 @@ public class SKBuilders {
         return BuildersSingleton.INST.getInstance(SKContext.Builder.class);
     }
 
-    public static PromptTemplateConfig.CompletionConfigBuilder completionConfig() {
-        return BuildersSingleton.INST.getInstance(
-                PromptTemplateConfig.CompletionConfigBuilder.class);
+    public static Builder completionRequestSettings() {
+        // No need to look up as this is in the API
+        return new Builder();
     }
 
     @SuppressWarnings("unchecked")

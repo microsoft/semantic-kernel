@@ -76,7 +76,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
     private Flux<String> generateMessageStream(CompletionsOptions completionsOptions) {
         return getClient()
-                .getCompletionsStream(getModelId(), completionsOptions)
+                .getCompletionsStream(getModelId(completionsOptions), completionsOptions)
                 .groupBy(Completions::getId)
                 .concatMap(
                         completionResult -> {
@@ -103,10 +103,26 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
         return getClient()
-                .getCompletions(getModelId(), completionsOptions)
+                .getCompletions(getModelId(requestSettings), completionsOptions)
                 .flatMapIterable(Completions::getChoices)
                 .mapNotNull(Choice::getText)
                 .collectList();
+    }
+
+    private String getModelId(CompletionRequestSettings requestSettings) {
+        String model = requestSettings.getModelId();
+        if (model == null) {
+            model = getModelId();
+        }
+        return model;
+    }
+
+    private String getModelId(CompletionsOptions completionsOptions) {
+        String model = completionsOptions.getModel();
+        if (model == null) {
+            model = getModelId();
+        }
+        return model;
     }
 
     private CompletionsOptions getCompletionsOptions(
@@ -122,7 +138,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                         .setTopP(requestSettings.getTopP())
                         .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
                         .setPresencePenalty(requestSettings.getPresencePenalty())
-                        .setModel(getModelId())
+                        .setModel(getModelId(requestSettings))
                         .setUser(requestSettings.getUser())
                         .setBestOf(requestSettings.getBestOf())
                         .setLogitBias(new HashMap<>());

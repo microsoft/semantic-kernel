@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -68,9 +67,14 @@ public class SequentialPlanner {
                                 "Given a request or command or goal generate a step by step plan to"
                                     + " fulfill the request using functions. This ability is also"
                                     + " known as decision making and function flow")
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.0)
+                                        .topP(0.0)
+                                        .maxTokens(this.config.getMaxTokens())
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .build())
                         .build();
 
         this.kernel = kernel;
@@ -121,7 +125,10 @@ public class SequentialPlanner {
 
                                 Plan plan =
                                         SequentialPlanParser.toPlanFromXml(
-                                                planResultString, goal, context.getSkills());
+                                                planResultString,
+                                                goal,
+                                                context.getSkills(),
+                                                kernel::getService);
                                 return plan;
                             });
         } catch (Exception e) {

@@ -2,7 +2,9 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.ai.AIRequestSettings;
 import com.microsoft.semantickernel.memory.NullMemory;
+import com.microsoft.semantickernel.services.AIServiceSupplier;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import java.util.Collections;
@@ -16,23 +18,24 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public abstract class DefaultSemanticSKFunction<RequestConfiguration>
-        extends AbstractSkFunction<RequestConfiguration>
-        implements SKFunction<RequestConfiguration> {
+public abstract class DefaultSemanticSKFunction<RequestConfiguration extends AIRequestSettings>
+        extends AIFunction<RequestConfiguration> {
 
     public DefaultSemanticSKFunction(
             List<ParameterView> parameters,
             String skillName,
             String functionName,
             String description,
-            @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier,
+            @Nullable AIServiceSupplier aiServiceSupplier) {
         super(
                 parameters,
                 skillName,
                 functionName,
                 description,
                 Collections.emptyList(),
-                kernelSkillsSupplier);
+                kernelSkillsSupplier,
+                aiServiceSupplier);
     }
 
     @Override

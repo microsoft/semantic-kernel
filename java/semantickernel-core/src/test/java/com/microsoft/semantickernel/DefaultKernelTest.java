@@ -11,7 +11,8 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.util.Arrays;
@@ -50,8 +51,14 @@ public class DefaultKernelTest {
                         .withKernel(kernel)
                         .withPromptTemplate(prompt)
                         .withFunctionName("ChatBot")
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.7)
+                                        .topP(0.5)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .maxTokens(2000)
+                                        .build())
                         .build();
 
         SKContext readOnlySkContext =
@@ -261,14 +268,14 @@ public class DefaultKernelTest {
                         openAIAsyncClient.getCompletionsStream(
                                 Mockito.any(String.class),
                                 Mockito.argThat(
-                                        it ->
-                                                response.getT1()
-                                                        .matches(
-                                                                it.getPrompt()
-                                                                        .get(
-                                                                                it.getPrompt()
-                                                                                                .size()
-                                                                                        - 1)))))
+                                        it -> {
+                                            return response.getT1()
+                                                    .matches(
+                                                            it.getPrompt()
+                                                                    .get(
+                                                                            it.getPrompt().size()
+                                                                                    - 1));
+                                        })))
                 .then(
                         (arg) -> {
                             response.getT3()
@@ -371,8 +378,14 @@ public class DefaultKernelTest {
                         .withKernel(kernel)
                         .withPromptTemplate(prompt)
                         .withFunctionName("summarize")
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.2)
+                                        .topP(0.5)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .maxTokens(2000)
+                                        .build())
                         .build();
 
         Mono<SKContext> mono = summarize.invokeAsync(text);
@@ -401,5 +414,135 @@ public class DefaultKernelTest {
                                                         .getPrompt()
                                                         .get(0)
                                                         .equals(expected)));
+    }
+
+    @Test
+    public void modelCanBeOverriddenInTheInvocationTest() {
+        String model = "a-model";
+
+        String expectedResponse = "foo";
+        OpenAIAsyncClient openAIAsyncClient =
+                mockCompletionOpenAIAsyncClient("block", expectedResponse);
+
+        Kernel kernel = buildKernel(model, openAIAsyncClient);
+
+        String text = "A block of text\n";
+        String prompt = "{{$input}}\n" + "Summarize the content above.";
+        String expectedPrompt = "A block of text\n\nSummarize the content above.";
+
+        CompletionSKFunction summarize =
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("summarize")
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.2)
+                                        .topP(0.5)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .maxTokens(2000)
+                                        .build())
+                        .build();
+
+        Mono<SKContext> mono = summarize.invokeAsync(text);
+
+        SKContext result = mono.block();
+
+        assertCompletionsWasCalledWithModelAndText(openAIAsyncClient, model, expectedPrompt);
+        assertTheResultEquals(result, expectedResponse);
+
+        // Invoke again, this time overriding with a different model
+        mono =
+                summarize.invokeAsync(
+                        text,
+                        SKBuilders.completionRequestSettings().modelId("text-ada-001").build());
+
+        result = mono.block();
+
+        assertCompletionsWasCalledWithModelAndText(
+                openAIAsyncClient, "text-ada-001", expectedPrompt);
+        assertTheResultEquals(result, expectedResponse);
+    }
+
+    @Test
+    public void modelAndServiceCanBeOverriddenInTheConfigFileTest() {
+        String expectedResponse = "foo";
+        OpenAIAsyncClient openAIAsyncClient =
+                mockCompletionOpenAIAsyncClient("Tell me a joke.", expectedResponse);
+
+        TextCompletion textCompletion =
+                new OpenAITextCompletion(openAIAsyncClient, "model-that-should-not-be-used");
+
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withAIService("a-service-id", textCompletion, false, TextCompletion.class)
+                        .build();
+
+        ReadOnlyFunctionCollection skills =
+                kernel.importSkillFromResources(
+                        "Plugins", "ExamplePlugins", "ExampleFunctionWithService");
+
+        SKFunction<?> function = skills.getFunction("ExampleFunctionWithService");
+
+        SKContext result = function.invokeAsync().block();
+
+        assertCompletionsWasCalledWithModelAndText(
+                openAIAsyncClient, "a-model-id", "Tell me a joke.");
+        assertTheResultEquals(result, expectedResponse);
+    }
+
+    @Test
+    public void serviceCanBeOverriddenInTheInvocationTest() {
+        String model = "a-model";
+
+        String expectedResponse = "foo";
+        OpenAIAsyncClient openAIAsyncClient =
+                mockCompletionOpenAIAsyncClient("block", expectedResponse);
+
+        TextCompletion textCompletion = new OpenAITextCompletion(openAIAsyncClient, model);
+
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withAIService("a-service-id", textCompletion, false, TextCompletion.class)
+                        .build();
+
+        String text = "A block of text\n";
+        String prompt = "{{$input}}\n" + "Summarize the content above.";
+        String expectedPrompt = "A block of text\n\nSummarize the content above.";
+
+        CompletionSKFunction summarize =
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("summarize")
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.2)
+                                        .topP(0.5)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .maxTokens(2000)
+                                        .build())
+                        .build();
+
+        Mono<SKContext> mono = summarize.invokeAsync(text);
+
+        SKContext result = mono.block();
+
+        assertCompletionsWasCalledWithModelAndText(openAIAsyncClient, model, expectedPrompt);
+        assertTheResultEquals(result, expectedResponse);
+
+        // Invoke again, this time overriding with a different model
+        mono =
+                summarize.invokeAsync(
+                        text,
+                        SKBuilders.completionRequestSettings().modelId("text-ada-001").build());
+
+        result = mono.block();
+
+        assertCompletionsWasCalledWithModelAndText(
+                openAIAsyncClient, "text-ada-001", expectedPrompt);
+        assertTheResultEquals(result, expectedResponse);
     }
 }

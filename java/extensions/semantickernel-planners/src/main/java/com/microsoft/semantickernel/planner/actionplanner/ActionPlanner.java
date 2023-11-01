@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
@@ -34,6 +33,7 @@ import reactor.core.publisher.Mono;
 /// the Plan object in future.
 /// </summary>
 public class ActionPlanner {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionPlanner.class);
 
     // Extracts the json portion of a plan between the braces, stripping off any non-json content
@@ -71,8 +71,14 @@ public class ActionPlanner {
                         .withKernel(kernel)
                         .withPromptTemplate(promptTemplate)
                         .withSkillName(SkillName)
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.0, 0.0, 0.0, 0.0, 1024))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.0)
+                                        .topP(0.0)
+                                        .maxTokens(1024)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .build())
                         .build();
 
         kernel.importSkill(this, SkillName);
@@ -150,9 +156,9 @@ public class ActionPlanner {
 
         if (function == null) {
             // No function was found - return a plan with no steps.
-            return new Plan(goal, variables, () -> kernel.getSkills());
+            return new Plan(goal, variables, kernel::getSkills, kernel::getService);
         } else {
-            return new Plan(goal, variables, () -> kernel.getSkills(), function);
+            return new Plan(goal, variables, kernel::getSkills, kernel::getService, function);
         }
     }
 

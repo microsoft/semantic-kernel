@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
+import com.microsoft.semantickernel.services.AIServiceSupplier;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import java.io.ByteArrayInputStream;
@@ -27,6 +28,7 @@ import org.xml.sax.SAXException;
 
 /** Parse sequential plan text into a plan. */
 public class SequentialPlanParser {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SequentialPlanParser.class);
 
     // The tag name used in the plan xml for the user's goal/ask.
@@ -56,7 +58,11 @@ public class SequentialPlanParser {
      * @return The plan
      * @throws PlanningException
      */
-    public static Plan toPlanFromXml(String xmlString, String goal, ReadOnlySkillCollection skills)
+    public static Plan toPlanFromXml(
+            String xmlString,
+            String goal,
+            ReadOnlySkillCollection skills,
+            AIServiceSupplier aiServiceSupplier)
             throws PlanningException {
 
         try {
@@ -70,7 +76,7 @@ public class SequentialPlanParser {
 
             NodeList solution = doc.getElementsByTagName(SolutionTag);
 
-            Plan plan = new Plan(goal, () -> skills);
+            Plan plan = new Plan(goal, () -> skills, aiServiceSupplier);
 
             for (int i = 0; i < solution.getLength(); i++) {
                 Node solutionNode = solution.item(i);
@@ -81,7 +87,11 @@ public class SequentialPlanParser {
                     if (childNode.getNodeName().equals("#text")) {
                         if (childNode.getNodeValue() != null
                                 && !childNode.getNodeValue().trim().isEmpty()) {
-                            plan.addSteps(new Plan(childNode.getNodeValue().trim(), () -> skills));
+                            plan.addSteps(
+                                    new Plan(
+                                            childNode.getNodeValue().trim(),
+                                            () -> skills,
+                                            aiServiceSupplier));
                         }
                         continue;
                     }
@@ -116,7 +126,8 @@ public class SequentialPlanParser {
                                             functionVariables,
                                             SKBuilders.variables().build(),
                                             functionOutputs,
-                                            () -> skills);
+                                            () -> skills,
+                                            aiServiceSupplier);
 
                             plan.addOutputs(functionResults);
                             plan.addSteps(planStep);
@@ -125,13 +136,18 @@ public class SequentialPlanParser {
                                     "{}: appending function node {}",
                                     parentNodeName,
                                     skillFunctionName);
-                            plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
+                            plan.addSteps(
+                                    new Plan(
+                                            childNode.getTextContent(),
+                                            () -> skills,
+                                            aiServiceSupplier));
                         }
 
                         continue;
                     }
 
-                    plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
+                    plan.addSteps(
+                            new Plan(childNode.getTextContent(), () -> skills, aiServiceSupplier));
                 }
             }
             return plan;
