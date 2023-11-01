@@ -127,24 +127,14 @@ public static class Example57_FunctionEventHandlers
             }
         }
 
-        void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
-        {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
-            e.Cancel();
-        }
-
-        void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
+        void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
             Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
-        kernel.FunctionInvoked += MyPostExecutionHandler;
-
-        // Adding and Removing a handler
-        kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
-        kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
+        kernel.FunctionInvoked += MyPostHandler;
 
         const string Input = "I missed the F1 final race";
         var result = await kernel.RunAsync(Input, excuseFunction);

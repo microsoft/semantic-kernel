@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
-using static Microsoft.SemanticKernel.Orchestration.StopFunctionResult;
 
 namespace Microsoft.SemanticKernel.Planning;
 
