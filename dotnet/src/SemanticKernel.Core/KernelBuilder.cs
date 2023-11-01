@@ -28,6 +28,7 @@ public sealed class KernelBuilder
     private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
+    private IAIServiceSelector? _serviceSelector;
 
     private static bool s_promptTemplateEngineInitialized = false;
     private static Type? s_promptTemplateEngineType = null;
@@ -54,7 +55,8 @@ public sealed class KernelBuilder
             this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
             this._httpHandlerFactory,
-            this._loggerFactory
+            this._loggerFactory,
+            this._serviceSelector
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -247,6 +249,15 @@ public sealed class KernelBuilder
         bool setAsDefault = false) where TService : IAIService
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <cref name="IAIServiceSelector"/> to the builder
+    /// </summary>
+    public KernelBuilder WithAIServiceSelector(IAIServiceSelector serviceSelector)
+    {
+        this._serviceSelector = serviceSelector;
         return this;
     }
 

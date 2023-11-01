@@ -23,7 +23,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(new Mock<IFunctionRunner>().Object, new Mock<IAIServiceProvider>().Object, variables);
+        var target = new SKContext(new Mock<IFunctionRunner>().Object, new Mock<IAIServiceProvider>().Object, new Mock<IAIServiceSelector>().Object, variables);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -47,8 +47,8 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
-        var (kernel, functionRunner, serviceProvider) = this.SetupKernelMock(this._functions.Object);
-        var target = new SKContext(functionRunner.Object, serviceProvider.Object, new ContextVariables(), this._functions.Object);
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock(this._functions.Object);
+        var target = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);
 
         // Act
@@ -61,22 +61,23 @@ public class SKContextTests
         Assert.Equal("ciao", result.GetValue<string>());
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
+    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
 
         kernel.SetupGet(x => x.Functions).Returns(functions);
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
         {
-            return new SKContext(functionRunner.Object, serviceProvider.Object, contextVariables);
+            return new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, contextVariables);
         });
 
-        return (kernel, functionRunner, serviceProvider);
+        return (kernel, functionRunner, serviceProvider, serviceSelector);
     }
 
     private sealed class Parrot
