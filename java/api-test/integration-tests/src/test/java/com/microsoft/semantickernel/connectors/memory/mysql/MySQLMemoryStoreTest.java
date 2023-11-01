@@ -38,10 +38,11 @@ public class MySQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        builder = new MySQLMemoryStore.Builder()
-                .withConnection(
-                        DriverManager.getConnection(
-                                CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD));
+        builder =
+                new MySQLMemoryStore.Builder()
+                        .withConnection(
+                                DriverManager.getConnection(
+                                        CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD));
         db = builder.buildAsync().block();
     }
 

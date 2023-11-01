@@ -383,7 +383,10 @@ public class PromptTemplateConfig {
     }
 
     public PromptTemplateConfig(
-            String description, String type, @Nullable String serviceId, @Nullable CompletionConfig completionConfig) {
+            String description,
+            String type,
+            @Nullable String serviceId,
+            @Nullable CompletionConfig completionConfig) {
         this(1, description, type, serviceId, completionConfig, new InputConfig(new ArrayList<>()));
     }
 

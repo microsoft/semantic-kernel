@@ -41,7 +41,8 @@ public class JDBCMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        builder = new JDBCMemoryStore.Builder()
+        builder =
+                new JDBCMemoryStore.Builder()
                         .withConnection(DriverManager.getConnection("jdbc:sqlite::memory:"));
         db = builder.buildAsync().block();
     }

@@ -38,7 +38,8 @@ public class PostgreSQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        builder = new PostgreSQLMemoryStore.Builder()
+        builder =
+                new PostgreSQLMemoryStore.Builder()
                         .withConnection(
                                 DriverManager.getConnection(
                                         CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD));

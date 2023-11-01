@@ -1,25 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStoreTest;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
-
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 public class SQLiteMemoryStoreTest extends JDBCMemoryStoreTest {
 
