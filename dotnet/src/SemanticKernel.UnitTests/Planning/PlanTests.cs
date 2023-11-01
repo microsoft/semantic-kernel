@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -827,6 +829,428 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         Assert.Equal(expected, result.Context.Result);
         Assert.Equal(expected, result.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ConPlanStepsTriggerKernelEventsAsync()
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("WritePoem")]
+        static string Function2() => "Poem";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("SendEmail")]
+        static string Function3() => "Sent Email";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        var plan = new Plan(goal);
+        plan.AddSteps(functions.ToArray());
+
+        var expectedInvocations = 3;
+        var sut = new KernelBuilder().Build();
+
+        // 1 - Plan - Write poem and send email goal
+        // 2 - Plan - Step 1 - WritePoem
+        // 3 - Plan - Step 2 - WritePoem
+
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvocations, invokingCalls);
+        Assert.Equal(expectedInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, functions[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, functions[1].Name);
+
+        // Expected invoked sequence
+        Assert.Equal(invokedListFunctions[0].Name, functions[0].Name);
+        Assert.Equal(invokedListFunctions[1].Name, functions[1].Name);
+        Assert.Equal(invokedListFunctions[2].Name, plan.Name);
+    }
+
+    [Fact]
+    public async Task PlanIsCancelledWhenInvokingHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 0;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.PluginName == "Plan")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Aborting at the plan level, will render no result
+        Assert.Null(result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheStepWhenInvokingHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 0;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Aborting at any step of a plan, will invalidate the full plan result
+        Assert.Null(result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheStepWhenInvokedHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 1;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Cancel();
+            }
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+
+        // Aborting in invoked will stop the plan result and return the step stop result value.
+        Assert.Equal("Poem", result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtFinalStepWhenInvokedHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 2;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+
+            if (e.FunctionView.Name == "SendEmail")
+            {
+                e.Cancel();
+            }
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+        Assert.Equal(invokedListFunctions[1].Name, plan.Steps[1].Name);
+
+        // Aborting in invoked will stop the plan result and return the step stop result value.
+        Assert.Equal("Sent Email", result.Value);
+    }
+
+    [Fact]
+    public async Task PlanSkipToFinalStepWhenInvokingHandlerTriggersSkiplAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 2;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Skip();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Skipped the first step (will not trigger invoked for it)
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[1].Name);
+        Assert.Equal("Sent Email", result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheMiddleStepWhenHandlerTriggersInvokingCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 1;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "SendEmail")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Cancelling the second step, don't block the triggering "invoked" for the first step.
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+
+        // Aborting one any step of a plan, will render the value of the step
+        // Invoking are cancelled before the step is executes and render no value.
+        Assert.Null(result.Value);
+    }
+
+    private void PrepareKernelAndPlan(out IKernel kernel, out Plan plan)
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("WritePoem")]
+        static string Function2() => "Poem";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("SendEmail")]
+        static string Function3() => "Sent Email";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        plan = new Plan(goal);
+        plan.AddSteps(functions.ToArray());
+
+        kernel = new KernelBuilder().Build();
+
+        // 1 - Plan - Write poem and send email goal
+        // 2 - Plan - Step 1 - WritePoem
+        // 3 - Plan - Step 2 - WritePoem
+    }
+
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
     }
 
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernelMock(IFunctionCollection? functions = null)

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using SemanticKernel.IntegrationTests.Fakes;
@@ -143,6 +144,72 @@ public sealed class PlanTests : IDisposable
         Assert.Equal(
             "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
             result.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ConPlanStepsTriggerKernelEventsAsync()
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel();
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        var plan = new Plan(goal);
+        var subPlan = new Plan("Write a poem or joke");
+        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var returnContext = target.CreateNewContext();
+        var expectedInvocations = 6;
+        // 1 - Outer Plan - Write poem and send email goal
+        // 2 - Inner Plan - Write poem or joke goal
+        // 3 - Inner Plan - Step 1 - WritePoem
+        // 4 - Inner Plan - Step 2 - WritePoem
+        // 5 - Inner Plan - Step 3 - WritePoem
+        // 6 - Outer Plan - Step 1 - SendEmail
+
+        subPlan.AddSteps(emailFunctions["WritePoem"], emailFunctions["WritePoem"], emailFunctions["WritePoem"]);
+        plan.AddSteps(subPlan, emailFunctions["SendEmail"]);
+        plan.State.Set("email_address", "something@email.com");
+
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        target.FunctionInvoking += FunctionInvoking;
+        target.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await target.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvocations, invokingCalls);
+        Assert.Equal(expectedInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, subPlan.Name);
+        Assert.Equal(invokingListFunctions[2].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[3].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[4].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[5].Name, emailFunctions["SendEmail"].Name);
+
+        // Expected invoked sequence
+        Assert.Equal(invokedListFunctions[0].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[1].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[2].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[3].Name, subPlan.Name);
+        Assert.Equal(invokedListFunctions[4].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokedListFunctions[5].Name, plan.Name);
     }
 
     [Theory]

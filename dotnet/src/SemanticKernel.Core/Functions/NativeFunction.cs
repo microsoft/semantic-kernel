@@ -240,6 +240,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // Check any event flags that interrupt this function execution;
         return (reason is not null);
     }
+
     /// <summary>
     /// Dispose of resources.
     /// </summary>

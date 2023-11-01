@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using static Microsoft.SemanticKernel.Orchestration.StopFunctionResult;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -241,50 +242,7 @@ public sealed class Plan : ISKFunction
     {
         if (this.HasNextStep)
         {
-            var step = this.Steps[this.NextStepIndex];
-
-            // Merge the state with the current context variables for step execution
-            var functionVariables = this.GetNextStepVariables(context.Variables, step);
-
-            // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-
-            var resultValue = result.Context.Result.Trim();
-
-            #region Update State
-
-            // Update state with result
-            this.State.Update(resultValue);
-
-            // Update Plan Result in State with matching outputs (if any)
-            if (this.Outputs.Intersect(step.Outputs).Any())
-            {
-                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
-                {
-                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
-                }
-                else
-                {
-                    this.State.Set(DefaultResultKey, resultValue);
-                }
-            }
-
-            // Update state with outputs (if any)
-            foreach (var item in step.Outputs)
-            {
-                if (result.Context.Variables.TryGetValue(item, out string? val))
-                {
-                    this.State.Set(item, val);
-                }
-                else
-                {
-                    this.State.Set(item, resultValue);
-                }
-            }
-
-            #endregion Update State
-
-            this.NextStepIndex++;
+            await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -347,15 +305,45 @@ public sealed class Plan : ISKFunction
         }
         else
         {
+            this.CallFunctionInvoking(context, invokingHandlerWrapper);
+            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
+            {
+                return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
+            }
+
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
                 AddVariablesToContext(this.State, context);
-                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+                var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+                if (stepResult is StopFunctionResult stopResult)
+                {
+                    // Cancel subsequent flow
+                    if (stopResult.Reason is
+                        StopFunctionResult.StopReason.InvokingCancelled
+                        or StopFunctionResult.StopReason.InvokedCancelled)
+                    {
+                        // Breaks the plan execution and give the current step as the plan stop result.
+                        // This will render no result for the plan when run from the Kernel.
+                        return stepResult;
+                    }
+
+                    // Skip current step
+                    if (stopResult.Reason == StopFunctionResult.StopReason.InvokingSkipped)
+                    {
+                        continue;
+                    }
+                }
                 this.UpdateContextWithOutputs(context);
 
                 result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
                 this.UpdateFunctionResultWithOutputs(result);
+            }
+
+            this.CallFunctionInvoked(result, invokedHandlerWrapper);
+            if (this.ShouldStopInvocation(invokedHandlerWrapper?.EventArgs, out stopReason))
+            {
+                return new StopFunctionResult(this.Name, this.PluginName, context, result.Value, stopReason!.Value);
             }
         }
 
@@ -385,6 +373,139 @@ public sealed class Plan : ISKFunction
         }
 
         return result;
+    }
+
+    private bool ShouldStopInvocation(FunctionInvokedEventArgs? invokedEvent, out StopFunctionResult.StopReason? reason)
+    {
+        reason = null;
+
+        // When no event handler is registered, the event args are null and
+        // this should not stop the function execution.
+        if (invokedEvent is null)
+        {
+            return false;
+        }
+
+        if (invokedEvent.CancelToken.IsCancellationRequested)
+        {
+            reason = StopFunctionResult.StopReason.InvokedCancelled;
+        }
+
+        // Check any event flags that interrupt this function execution;
+        return (reason is not null);
+    }
+
+    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent, out StopFunctionResult.StopReason? reason)
+    {
+        reason = null;
+
+        // When no event handler is registered, the event args are null and
+        // this should not stop the function execution.
+        if (invokingEvent is null)
+        {
+            return false;
+        }
+
+        if (invokingEvent.IsSkipRequested)
+        {
+            reason = StopFunctionResult.StopReason.InvokingSkipped;
+        }
+        else if (invokingEvent.CancelToken.IsCancellationRequested)
+        {
+            reason = StopFunctionResult.StopReason.InvokingCancelled;
+        }
+
+        // Check any event flags that interrupt this function execution;
+        return (reason is not null);
+    }
+
+    /// <summary>
+    /// Invoke the next step of the plan
+    /// </summary>
+    /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Next step result</returns>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    private async Task<FunctionResult> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    {
+        if (this.HasNextStep)
+        {
+            var step = this.Steps[this.NextStepIndex];
+
+            // Merge the state with the current context variables for step execution
+            var functionVariables = this.GetNextStepVariables(context.Variables, step);
+
+            // Execute the step
+            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+
+            var resultValue = result.Context.Result.Trim();
+
+            #region Update State
+
+            // Update state with result
+            this.State.Update(resultValue);
+
+            // Update Plan Result in State with matching outputs (if any)
+            if (this.Outputs.Intersect(step.Outputs).Any())
+            {
+                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
+                {
+                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    this.State.Set(DefaultResultKey, resultValue);
+                }
+            }
+
+            // Update state with outputs (if any)
+            foreach (var item in step.Outputs)
+            {
+                if (result.Context.Variables.TryGetValue(item, out string? val))
+                {
+                    this.State.Set(item, val);
+                }
+                else
+                {
+                    this.State.Set(item, resultValue);
+                }
+            }
+
+            #endregion Update State
+
+            this.NextStepIndex++;
+
+            return result;
+        }
+
+        throw new InvalidOperationException("There isn't a next step");
+    }
+
+    private void CallFunctionInvoking(SKContext context, EventHandlerWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    {
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+    }
+
+    private void CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    {
+        // Not handlers registered, return the result as is
+        if (eventDelegateWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
     }
 
     /// <summary>
