@@ -43,7 +43,7 @@ Console.WriteLine(result.GetValue<string>());
 ```
 
 We have an extension method `var kindOfDay = kernel.CreateSemanticFunction(promptTemplate);` to simplify the process to create and register a semantic function but the expanded format is shown above to highlight the dependency on `kernel.PromptTemplateEngine`.
-Also the `BasicPromptTemplateEngine` is the default prompt template engine and will be loaded automatically if the package is available and not other prompt template engine is specified.
+Also the `BasicPromptTemplateEngine` is the default prompt template engine and will be loaded automatically if the package is available and no other prompt template engine is specified.
 
 Some issues with this:
 
