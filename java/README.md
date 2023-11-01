@@ -1,13 +1,13 @@
 # Semantic Kernel for Java
 
-Semantic Kernel (SK) is a lightweight SDK that lets you easily mix conventional programming languages with the latest in
+Semantic Kernel (SK) is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
 Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box.
 
 To learn more about Microsoft Semantic Kernel, visit
 the [Microsoft Semantic Kernel documentation](https://learn.microsoft.com/en-us/semantic-kernel/whatissk).
 
-The Semantic Kernel for Java is an SDK that implements the key concepts of the Semantic Kernel in Java. It is designed
-to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries
+The Microsoft Semantic Kernel for Java is a library that implements the key concepts and foundations of Microsoft Semantic Kernel. It is designed
+to be used in Java applications in both client (desktop, mobile, CLIs) and server environments in an idiomatic way, and to be easily integrated with other Java libraries
 and frameworks.
 
 ## Get started
@@ -18,7 +18,7 @@ or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-servi
 
 ### Requirements
 
-To build the Semantic Kernel, you will need:
+To build the Semantic Kernel for Java, you will need:
 
 - **Required**:
   - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
@@ -29,14 +29,16 @@ To build the Semantic Kernel, you will need:
 
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
-2. Build the Semantic Kernel
+2. Build the projet with the Maven Wrapper
 
         cd semantic-kernel/java
         ./mvnw install
 
-## Using the Semantic Kernel
+## Using the Semantic Kernel for Java
 
-Check the `samples` folder for examples of how to use the Semantic Kernel for Java.
+The library is organized in a set of dependencies published to Maven Central. For a list of the Maven dependencies and how to use each of them, see [PACKAGES.md](PACKAGES.md).
+
+Alternatively, check the `samples` folder for examples of common AI-enabled scenarios implemented with Semantic Kernel for Java.
 
 ## Discord community
 
