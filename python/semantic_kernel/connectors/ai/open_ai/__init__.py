@@ -1,5 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion_with_data import (
+    AzureChatCompletionWithData,
+    AzureChatCompletionDataSourceConfig,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
@@ -26,4 +30,6 @@ __all__ = [
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
+    "AzureChatCompletionWithData",
+    "AzureChatCompletionDataSourceConfig",
 ]

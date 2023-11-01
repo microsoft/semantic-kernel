@@ -74,12 +74,20 @@ def azure_openai_settings_from_dot_env_as_dict(
         Dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
         endpoint and api version (or empty)
     """
-    (
-        deployment_name,
-        api_key,
-        endpoint,
-        api_version,
-    ) = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
+    if include_api_version:
+        (
+            deployment_name,
+            api_key,
+            endpoint,
+            api_version,
+        ) = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
+    else:
+        (
+            deployment_name,
+            api_key,
+            endpoint,
+        ) = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
+
     ret = {
         "api_key": api_key,
         "endpoint": endpoint,

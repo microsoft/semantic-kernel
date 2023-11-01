@@ -202,28 +202,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        if request_settings is None:
-            raise ValueError("The request settings cannot be `None`")
-
-        if request_settings.max_tokens < 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The max tokens must be greater than 0, "
-                f"but was {request_settings.max_tokens}",
-            )
-
-        if len(messages) <= 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "To complete a chat you need at least one message",
-            )
-
-        if messages[-1]["role"] in ["assistant", "system"]:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The last message must be from the user or a function output",
-            )
-
+        self._validate_chat_request(messages, request_settings, stream, functions)
         model_args = {
             "api_key": self._api_key,
             "api_type": self._api_type,
@@ -283,6 +262,35 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             self._total_tokens += response.usage.total_tokens
 
         return response
+
+    def _validate_chat_request(
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        stream: bool,
+        functions: Optional[List[Dict[str, Any]]] = None,
+    ):
+        if request_settings is None:
+            raise ValueError("The request settings cannot be `None`")
+
+        if request_settings.max_tokens < 1:
+            raise AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                "The max tokens must be greater than 0, "
+                f"but was {request_settings.max_tokens}",
+            )
+
+        if len(messages) <= 0:
+            raise AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                "To complete a chat you need at least one message",
+            )
+
+        if messages[-1]["role"] in ["assistant", "system"]:
+            raise AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                "The last message must be from the user or a function output",
+            )
 
     @property
     def prompt_tokens(self) -> int:

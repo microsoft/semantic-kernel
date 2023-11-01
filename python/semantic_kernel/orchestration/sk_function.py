@@ -164,6 +164,18 @@ class SKFunction(SKFunctionBase):
                         context.variables.update(completion)
                     if function_call is not None:
                         context.objects["function_call"] = function_call
+                elif hasattr(client, "complete_chat_with_data_async"):
+                    (
+                        completion,
+                        citations,
+                    ) = await client.complete_chat_with_data_async(
+                        messages, request_settings
+                    )
+                    if completion is not None:
+                        as_chat_prompt.add_assistant_message(completion)
+                        context.variables.update(completion)
+                    if citations is not None:
+                        context.objects["tool"] = citations
                 else:
                     completion = await client.complete_chat_async(
                         messages, request_settings
