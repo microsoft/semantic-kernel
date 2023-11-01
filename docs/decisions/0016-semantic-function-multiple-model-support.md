@@ -26,7 +26,7 @@ In scope for Semantic Kernel V1.0 is the ability to select AI Service and Model 
 1. By arbitrary AI service attributes
     * E.g. an AI service can define a provider id which uniquely identifies an AI provider e.g. "Azure OpenAI", "OpenAI", "Hugging Face"
 
-**This ADR focusses on items 1 & 2 in the above list. To implement 3 & 4 we need to provide the ability to store `AIService` metadata.**
+**This ADR focuses on items 1 & 2 in the above list. To implement 3 & 4 we need to provide the ability to store `AIService` metadata.**
 
 ## Decision Outcome
 
