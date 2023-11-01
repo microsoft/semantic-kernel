@@ -36,7 +36,7 @@ internal static class SemanticKernelFactory
             logger.LogWarning("Text embedding service has not been supplied");
         }
 
-        KernelBuilder builder = Kernel.Builder;
+        KernelBuilder builder = new();
         builder = _ConfigureKernelBuilder(apiConfig, builder, memoryStore);
         return _CompleteKernelSetup(req, builder, logger, skillsToLoad);
     }
