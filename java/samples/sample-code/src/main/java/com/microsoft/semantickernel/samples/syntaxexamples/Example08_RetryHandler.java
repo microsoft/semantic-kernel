@@ -9,10 +9,10 @@ import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
-import com.microsoft.semantickernel.connectors.ai.openai.util.SettingsMap;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.settings.SettingsMap;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
