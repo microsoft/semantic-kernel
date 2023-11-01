@@ -56,6 +56,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        self._prompt_tokens = 0
+        self._completion_tokens = 0
+        self._total_tokens = 0
 
     async def complete_async(
         self,

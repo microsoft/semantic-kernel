@@ -35,6 +35,9 @@ def test_azure_text_completion_init() -> None:
     assert azure_text_completion._endpoint == endpoint
     assert azure_text_completion._api_version == api_version
     assert azure_text_completion._api_type == "azure"
+    assert azure_text_completion._prompt_tokens == 0
+    assert azure_text_completion._completion_tokens == 0
+    assert azure_text_completion._total_tokens == 0
     assert isinstance(azure_text_completion, OpenAITextCompletion)
 
 
