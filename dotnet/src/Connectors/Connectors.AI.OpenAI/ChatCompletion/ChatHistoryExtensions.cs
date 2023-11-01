@@ -2,6 +2,7 @@
 
 #pragma warning disable IDE0130
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 #pragma warning restore IDE0130
@@ -20,5 +21,30 @@ public static class ChatHistoryExtensions
     public static void AddFunctionMessage(this ChatHistory chatHistory, string message, string functionName)
     {
         chatHistory.AddMessage(AuthorRole.Function, message, new Dictionary<string, string> { { "Name", functionName } });
+    }
+
+    /// <summary>
+    /// Add an assistant message to the chat history.
+    /// </summary>
+    /// <param name="chatHistory">Chat history</param>
+    /// <param name="chatResult">Chat result from the model</param>
+    public static void AddAssistantMessage(this ChatHistory chatHistory, IChatResult chatResult)
+    {
+        var chatMessage = chatResult.ModelResult.GetOpenAIChatResult().Choice.Message;
+
+        if (!chatMessage.Content.IsNullOrEmpty())
+        {
+            chatHistory.AddAssistantMessage(chatMessage.Content);
+        }
+
+        var functionCall = chatMessage.FunctionCall;
+        if (functionCall is not null)
+        {
+            chatHistory.AddMessage(AuthorRole.Assistant, string.Empty, new Dictionary<string, string>
+            {
+                { "Name", functionCall.Name },
+                { "Arguments", functionCall.Arguments }
+            });
+        }
     }
 }

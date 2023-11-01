@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -399,9 +397,9 @@ public abstract class ClientBase
                 azureMessage.Name = name;
             }
 
-            if (message.AdditionalProperties?.TryGetValue("FunctionCall", out string? functionCall) is true)
+            if (message.AdditionalProperties?.TryGetValue("Arguments", out string? arguments) is true)
             {
-                azureMessage.FunctionCall = JsonSerializer.Deserialize<FunctionCall>(functionCall);
+                azureMessage.FunctionCall = new FunctionCall(azureMessage.Name, arguments);
             }
 
             options.Messages.Add(azureMessage);

@@ -63,32 +63,16 @@ public static class Example59_OpenAIFunctionCalling
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
-        // Send request
+        // Send request and add response to chat history
         var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+        chatHistory.AddAssistantMessage(chatResult);
 
-        // Check for message response
-        var chatMessage = await chatResult.GetChatMessageAsync();
-        if (!string.IsNullOrEmpty(chatMessage.Content))
-        {
-            Console.WriteLine(chatMessage.Content);
-
-            // Add the response to chat history
-            chatHistory.AddAssistantMessage(chatMessage.Content);
-        }
+        await PrintChatResultAsync(chatResult);
 
         // Check for function response
         OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
         if (functionResponse is not null)
         {
-            // Print function response details
-            Console.WriteLine("Function name: " + functionResponse.FunctionName);
-            Console.WriteLine("Plugin name: " + functionResponse.PluginName);
-            Console.WriteLine("Arguments: ");
-            foreach (var parameter in functionResponse.Parameters)
-            {
-                Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
-            }
-
             // If the function returned by OpenAI is an SKFunction registered with the kernel,
             // you can invoke it using the following code.
             if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
@@ -113,20 +97,37 @@ public static class Example59_OpenAIFunctionCalling
                     // Get another completion
                     requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
                     chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+                    chatHistory.AddAssistantMessage(chatResult);
 
-                    // Check for message response
-                    chatMessage = await chatResult.GetChatMessageAsync();
-                    if (!string.IsNullOrEmpty(chatMessage.Content))
-                    {
-                        Console.WriteLine($"Assistant response: {chatMessage.Content}");
-                        // Add the response to chat history
-                        chatHistory.AddAssistantMessage(chatMessage.Content);
-                    }
+                    await PrintChatResultAsync(chatResult);
                 }
             }
             else
             {
                 Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
+            }
+        }
+    }
+
+    private static async Task PrintChatResultAsync(IChatResult chatResult)
+    {
+        // Check for message response
+        var chatMessage = await chatResult.GetChatMessageAsync();
+        if (!string.IsNullOrEmpty(chatMessage.Content))
+        {
+            Console.WriteLine($"Assistant response: {chatMessage.Content}");
+        }
+
+        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
+        if (functionResponse is not null)
+        {
+            // Print function response details
+            Console.WriteLine("Function name: " + functionResponse.FunctionName);
+            Console.WriteLine("Plugin name: " + functionResponse.PluginName);
+            Console.WriteLine("Arguments: ");
+            foreach (var parameter in functionResponse.Parameters)
+            {
+                Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
             }
         }
     }
