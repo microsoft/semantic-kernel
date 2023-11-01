@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
+using static Microsoft.SemanticKernel.Plugins.Web.Bing.BingConnector;
 
 namespace SemanticKernel.Plugins.UnitTests.Web;
 
@@ -44,7 +44,7 @@ public sealed class WebSearchEnginePluginTests
         connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        WebSearchEngineSkill target = new(connectorMock.Object);
+        WebSearchEnginePlugin target = new(connectorMock.Object);
 
         string anyQuery = Guid.NewGuid().ToString();
 

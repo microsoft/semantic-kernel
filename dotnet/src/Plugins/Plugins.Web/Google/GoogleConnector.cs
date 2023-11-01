@@ -10,7 +10,6 @@ using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 

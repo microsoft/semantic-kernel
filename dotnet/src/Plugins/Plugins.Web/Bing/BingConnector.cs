@@ -53,7 +53,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
+        this._logger = logger is not null ? logger : NullLogger.Instance;
         this._httpClient = httpClient;
         this._uri = string.IsNullOrEmpty(uri) ? BingConnector.DefaultUri : uri;
     }
@@ -84,7 +84,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
+        WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
         List<T>? returnValues = new();
         if (data?.WebPages?.Value != null)
@@ -129,42 +129,5 @@ public sealed class BingConnector : IWebSearchEngineConnector
         }
 
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-    }
-
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class BingSearchResponse
-    {
-        [JsonPropertyName("webPages")]
-        public WebPages? WebPages { get; set; }
-    }
-
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class WebPages
-    {
-        [JsonPropertyName("value")]
-        public WebPage[]? Value { get; set; }
-    }
-
-    /// <summary>
-    /// A sealed class containing the deserialized response from the Bing Search API.
-    /// </summary>
-    /// <returns>A WebPage object containing the Bing Search API response data.</returns>
-    /// <remarks><b>Note:</b> Complex types are not compatible with the kernel for chaining yet. See <see href="https://github.com/microsoft/semantic-kernel/pull/2053#discussion_r1274782835">PR#2053</see></remarks>
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization."),
-        SuppressMessage("Performance", "CA1056:Change the type of parameter 'uri'...",
-        Justification = "A constant Uri cannot be defined, as required by this class")]
-    public sealed class WebPage
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = string.Empty;
-
-        [JsonPropertyName("snippet")]
-        public string Snippet { get; set; } = string.Empty;
     }
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.SemanticKernel.Plugins.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
@@ -16,24 +17,6 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// </summary>
 public sealed class WebSearchEnginePlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    [SuppressMessage("Performance", "CA1724:Type names should not match namespaces",
-    Justification = "Class name is required for consistancy across SK." +
-        "The 'Google.Apis.Requests.Parameters' namespace is not directly impacted by this class name.")]
-    public static class Parameters
-    {
-        /// <summary>
-        /// The amount of results to return.
-        /// </summary>
-        public const string CountParam = "count";
-
-        /// <summary>
-        /// The amount of results to skip before returning results.
-        /// </summary>
-        public const string OffsetParam = "offset";
-    }
     /// <summary>
     /// The count parameter name.
     /// </summary>
@@ -55,7 +38,6 @@ public sealed class WebSearchEnginePlugin
         this._connector = connector;
     }
 
-    [SKFunction, Description("Perform a web search and return snippets.")]
     /// <summary>
     /// Performs a web search using the provided query, count, and offset.
     /// </summary>
