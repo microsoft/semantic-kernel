@@ -230,7 +230,7 @@ public class DefaultCompletionSKFunction
                 };
 
         this.setSkillsSupplier(kernel::getSkills);
-        this.aiService = () -> kernel.getService(null, TextCompletion.class);
+        this.aiService = () -> kernel.getService(this.functionConfig.getConfig().getServiceId(), TextCompletion.class);
     }
 
     private static Mono<SKContext> performCompletionRequest(

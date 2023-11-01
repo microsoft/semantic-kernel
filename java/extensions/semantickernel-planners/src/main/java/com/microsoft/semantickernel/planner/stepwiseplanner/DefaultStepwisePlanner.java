@@ -163,6 +163,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                         promptConfig.getSchema(),
                         promptConfig.getDescription(),
                         promptConfig.getType(),
+                        promptConfig.getServiceId(),
                         new PromptTemplateConfig.CompletionConfigBuilder(
                                         promptConfig.getCompletionConfig())
                                 .maxTokens(this.config.getMaxTokens())
