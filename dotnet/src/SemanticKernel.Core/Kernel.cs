@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -44,6 +45,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
+    [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
@@ -62,15 +64,18 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory"></param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceSelector">AI service selector</param>
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory? loggerFactory)
+        ILoggerFactory? loggerFactory,
+        IAIServiceSelector? serviceSelector = null
+        )
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
@@ -81,6 +86,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._functionCollection = functionCollection;
+        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
@@ -174,6 +180,8 @@ repeat:
     {
         return new SKContext(
             new FunctionRunner(this),
+            this._aiServiceProvider,
+            this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
             loggerFactory ?? this.LoggerFactory,
@@ -210,6 +218,7 @@ repeat:
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
+    private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
     /// <summary>

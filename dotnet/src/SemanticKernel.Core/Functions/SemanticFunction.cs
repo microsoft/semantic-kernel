@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -37,9 +38,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public string Description { get; }
-
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -73,8 +71,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
-        );
-        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
+        )
+        {
+            _modelSettings = promptTemplateConfig.ModelSettings
+        };
 
         return func;
     }
@@ -93,22 +93,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        Verify.NotNull(serviceFactory);
-        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        this.RequestSettings = requestSettings;
-        return this;
+        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -116,10 +101,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (this._aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
     }
 
     /// <summary>
@@ -162,9 +143,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private Lazy<ITextCompletion>? _aiService;
+    private IAIServiceSelector? _serviceSelector;
+    private List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
-    public IPromptTemplate _promptTemplate { get; }
+    private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -188,19 +170,20 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     private async Task<FunctionResult> RunPromptAsync(
-        ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(client);
-
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
+            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            Verify.NotNull(textCompletion);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -224,6 +207,46 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     #endregion
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        Verify.NotNull(serviceFactory);
+
+        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        {
+            delegatingProvider.ServiceFactory = serviceFactory;
+        }
+        else
+        {
+            var serviceSelector = new DelegatingAIServiceSelector();
+            serviceSelector.ServiceFactory = serviceFactory;
+            this._serviceSelector = serviceSelector;
+        }
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        {
+            delegatingProvider.RequestSettings = requestSettings;
+        }
+        else
+        {
+            var configurationProvider = new DelegatingAIServiceSelector();
+            configurationProvider.RequestSettings = requestSettings;
+            this._serviceSelector = configurationProvider;
+        }
+        return this;
+    }
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
