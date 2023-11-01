@@ -3,12 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.SemanticKernel.Plugins.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
@@ -64,6 +62,14 @@ public sealed class WebSearchEnginePlugin
             : JsonSerializer.Serialize(results);
     }
 
+    /// <summary>
+    /// Performs a web search using the provided query, count, and offset.
+    /// </summary>
+    /// <param name="query">The text to search for.</param>
+    /// <param name="count">The number of results to return. Default is 1.</param>
+    /// <param name="offset">The number of results to skip. Default is 0.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>The return value contains the search results as an IEnumerable WebPage object serialized as a string</returns>
     [SKFunction, Description("Perform a web search and return complete results.")]
     public async Task<string> GetSearchResultsAsync(
         [Description("Text to search for")] string query,

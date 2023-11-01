@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Plugins.Web.Bing.BingConnector;
 
 namespace SemanticKernel.Plugins.UnitTests.Web;
 
