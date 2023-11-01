@@ -6,7 +6,7 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel import ContextVariables
 from semantic_kernel.memory import VolatileMemoryStore
 from semantic_kernel.planning.basic_planner import BasicPlanner
-from semantic_kernel.planning.plan import Plan
+from semantic_kernel.planning.basic_planner import Plan
 from utils.kernel_utils import create_kernel_for_request
 from utils.ask import Ask, AskResult, AskInput
 
@@ -74,7 +74,7 @@ class KernelServer:
             )
 
         states = [
-            AskInput(key=k, value=v) for k, v in result.variables._variables.items()
+            AskInput(key=k, value=v) for k, v in result.variables.variables.items()
         ]
         response = AskResult(value=result.result, state=states)
         return func.HttpResponse(body=response.to_json(), mimetype="application/json")

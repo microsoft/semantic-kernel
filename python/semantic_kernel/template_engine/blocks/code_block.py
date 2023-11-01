@@ -3,6 +3,8 @@
 from logging import Logger
 from typing import List, Optional, Tuple
 
+import pydantic as pdt
+
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
@@ -11,10 +13,12 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
 
-class CodeBlock(Block, CodeRenderer):
+class CodeBlock(Block):
+    _tokens: List[Block] = pdt.PrivateAttr()
+    _validated: bool = pdt.PrivateAttr(default=False)
+
     def __init__(
         self,
         content: str,

@@ -1,8 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
+
 import pytest
 
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
+
+if sys.version_info >= (3, 9):
+    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 
 @pytest.fixture(
@@ -149,3 +154,27 @@ def setup_summarize_conversation_using_skill(create_kernel):
         John: Yeah, that's a good idea."""
 
     yield kernel, ChatTranscript
+
+
+@pytest.fixture(scope="module")
+def setup_gp_text_completion_function(create_kernel, get_gp_config):
+    kernel = create_kernel
+    api_key = get_gp_config
+    # Configure LLM service
+    palm_text_completion = sk_gp.GooglePalmTextCompletion(
+        "models/text-bison-001", api_key
+    )
+    kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
+
+    # Define semantic function using SK prompt template language
+    sk_prompt = "Hello, I like {{$input}}{{$input2}}"
+
+    # Create the semantic function
+    text2text_function = kernel.create_semantic_function(
+        sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5
+    )
+
+    # User input
+    simple_input = "sleeping and "
+
+    yield kernel, text2text_function, simple_input

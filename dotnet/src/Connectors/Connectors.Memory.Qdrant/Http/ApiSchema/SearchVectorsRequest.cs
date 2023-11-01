@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -10,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 internal sealed class SearchVectorsRequest : IValidatable
 {
     [JsonPropertyName("vector")]
-    public IEnumerable<float> StartingVector { get; set; } = System.Array.Empty<float>();
+    public ReadOnlyMemory<float> StartingVector { get; set; }
 
     [JsonPropertyName("filter")]
     public Filter Filters { get; set; }
@@ -40,7 +41,7 @@ internal sealed class SearchVectorsRequest : IValidatable
         return new SearchVectorsRequest(collectionName).SimilarTo(new float[vectorSize]);
     }
 
-    public SearchVectorsRequest SimilarTo(IEnumerable<float> vector)
+    public SearchVectorsRequest SimilarTo(ReadOnlyMemory<float> vector)
     {
         this.StartingVector = vector;
         return this;

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
@@ -203,10 +203,10 @@ public interface IPineconeMemoryStore : IMemoryStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the nearest filtered matches to the <see cref="Embedding"/> of type <see cref="float"/>
+    /// Gets the nearest filtered matches to an embedding of type <see cref="float"/>
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The embedding to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="filter"> The filter to apply to the collection.</param>
     /// <param name="minRelevanceScore"></param>
@@ -222,7 +222,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// </remarks>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0.0,
@@ -231,11 +231,11 @@ public interface IPineconeMemoryStore : IMemoryStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
+    /// Gets the nearest matches to an embedding of type <see cref="float"/> from the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The embedding to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
@@ -244,18 +244,18 @@ public interface IPineconeMemoryStore : IMemoryStore
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
+    /// Gets the nearest match to an embedding of type <see cref="float"/> from the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The embedding to compare the collection's embeddings with.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -263,7 +263,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);

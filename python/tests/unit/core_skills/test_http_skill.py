@@ -7,7 +7,6 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.core_skills import HttpSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
 
 
 @pytest.mark.asyncio
@@ -45,54 +44,54 @@ async def test_get_none_url():
 
 @patch("aiohttp.ClientSession.post")
 @pytest.mark.asyncio
-async def test_post(mock_post):
+async def test_post(mock_post, context_factory):
     mock_post.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_post.return_value.__aenter__.return_value.status = 200
 
     skill = HttpSkill()
     context_variables = ContextVariables()
     context_variables.set("body", "{message: 'Hello, world!'}")
-    context = SKContext(context_variables, None, None, None)
+    context = context_factory(context_variables)
     response = await skill.post_async("https://example.org/post", context)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.post")
 @pytest.mark.asyncio
-async def test_post_nobody(mock_post):
+async def test_post_nobody(mock_post, context_factory):
     mock_post.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_post.return_value.__aenter__.return_value.status = 200
 
     skill = HttpSkill()
     context_variables = ContextVariables()
-    context = SKContext(context_variables, None, None, None)
+    context = context_factory(context_variables)
     response = await skill.post_async("https://example.org/post", context)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.put")
 @pytest.mark.asyncio
-async def test_put(mock_put):
+async def test_put(mock_put, context_factory):
     mock_put.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_put.return_value.__aenter__.return_value.status = 200
 
     skill = HttpSkill()
     context_variables = ContextVariables()
     context_variables.set("body", "{message: 'Hello, world!'}")
-    context = SKContext(context_variables, None, None, None)
+    context = context_factory(context_variables)
     response = await skill.put_async("https://example.org/put", context)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.put")
 @pytest.mark.asyncio
-async def test_put_nobody(mock_put):
+async def test_put_nobody(mock_put, context_factory):
     mock_put.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_put.return_value.__aenter__.return_value.status = 200
 
     skill = HttpSkill()
     context_variables = ContextVariables()
-    context = SKContext(context_variables, None, None, None)
+    context = context_factory(context_variables)
     response = await skill.put_async("https://example.org/put", context)
     assert response == "Hello World !"
 

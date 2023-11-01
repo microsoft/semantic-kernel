@@ -1,5 +1,10 @@
 # Book Creator Sample Learning App
 
+> [!IMPORTANT]
+> This sample will be removed in a future release. If you are looking for samples that demonstrate
+> how to use Semantic Kernel, please refer to the sample folders in the root [python](../../../python/samples/)
+> and [dotnet](../../../dotnet/samples/) folders.
+
 > **!IMPORTANT**
 > This learning sample is for educational purposes only and should not be used in any
 > production use case. It is intended to highlight concepts of Semantic Kernel and not
@@ -9,13 +14,13 @@
 
 ## Running the sample
 
-1. You will need an [Open AI Key](https://openai.com/api/) or
-   [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
+1. You will need an [OpenAI Key](https://openai.com/product/) or
+   [Azure OpenAI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample.
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. Copy **[.env.example](.env.example)** into a new file with name "**.env**".
-   > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
+    > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
 4. You will also need to **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 5. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.

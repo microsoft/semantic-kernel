@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -12,7 +13,7 @@ public static class Example05_InlineFunctionDefinition
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -28,14 +29,14 @@ public static class Example05_InlineFunctionDefinition
          */
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
-        const string FunctionDefinition = @"
+        string promptTemplate = @"
 Generate a creative reason or excuse for the given event.
 Be creative and be funny. Let your imagination run wild.
 
@@ -48,17 +49,17 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
+        var excuseFunction = kernel.CreateSemanticFunction(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
-        Console.WriteLine(result);
+        var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
+        Console.WriteLine(result.GetValue<string>());
 
-        result = await excuseFunction.InvokeAsync("sorry I forgot your birthday");
-        Console.WriteLine(result);
+        result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
+        Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", maxTokens: 100);
+        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });
 
-        result = await fixedFunction.InvokeAsync();
-        Console.WriteLine(result);
+        result = await kernel.RunAsync(fixedFunction);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -10,6 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Qdrant memory connector.
 /// </summary>
+[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use QdrantMemoryBuilderExtensions instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class QdrantKernelBuilderExtensions
 {
     /// <summary>
@@ -19,19 +23,21 @@ public static class QdrantKernelBuilderExtensions
     /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
     /// <param name="vectorSize">The size of the vectors.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use QdrantMemoryBuilderExtensions.WithQdrantMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithQdrantMemoryStore(this KernelBuilder builder,
         string endpoint,
         int vectorSize)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(parameters.Config, null, parameters.Logger),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, null, loggerFactory),
                 vectorSize,
                 endpoint,
-                parameters.Logger);
+                loggerFactory);
 
-            return new QdrantMemoryStore(client, parameters.Logger);
+            return new QdrantMemoryStore(client, loggerFactory);
         });
 
         return builder;
@@ -45,20 +51,22 @@ public static class QdrantKernelBuilderExtensions
     /// <param name="vectorSize">The size of the vectors.</param>
     /// <param name="endpoint">The Qdrant Vector Database endpoint. If not specified, the base address of the HTTP client is used.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use QdrantMemoryBuilderExtensions.WithQdrantMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithQdrantMemoryStore(this KernelBuilder builder,
         HttpClient httpClient,
         int vectorSize,
         string? endpoint = null)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 vectorSize,
                 endpoint,
-                parameters.Logger);
+                loggerFactory);
 
-            return new QdrantMemoryStore(client, parameters.Logger);
+            return new QdrantMemoryStore(client, loggerFactory);
         });
 
         return builder;

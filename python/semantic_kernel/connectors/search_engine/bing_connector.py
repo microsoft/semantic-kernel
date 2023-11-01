@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import urllib
 from logging import Logger
 from typing import List, Optional

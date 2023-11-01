@@ -4,12 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+
+#pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
 
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
@@ -19,37 +23,31 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
-        const string FunctionDefinition = @"
-Generate a creative reason or excuse for the given event.
-Be creative and be funny. Let your imagination run wild.
+        const string FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
 
-Event: I am running late.
-Excuse: I was being held ransom by giraffe gangsters.
-
-Event: I haven't been to the gym for a year
-Excuse: I've been too busy training my pet dragon.
-
-Event: {{$input}}
-";
-
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
+        var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race", new CompleteRequestSettings { ResultsPerPrompt = 3 });
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
+        var functionResult = await myFunction.InvokeAsync("Sci-fi",
+            kernel,
+            requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+
+        Console.WriteLine(functionResult.GetValue<string>());
+        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
-        textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
+        var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
+        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
+
+        Console.WriteLine(kernelResult.GetValue<string>());
+        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
@@ -58,7 +56,7 @@ Event: {{$input}}
             apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
         Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
@@ -66,23 +64,27 @@ Event: {{$input}}
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService("text-davinci-003", "Invalid Key")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
-        var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
 
-        if (failedContext.ErrorOccurred)
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
         {
-            Console.WriteLine(OutputExceptionDetail(failedContext.LastException?.InnerException));
+            await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine(OutputExceptionDetail(ex));
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         string OutputExceptionDetail(Exception? exception)
         {
             return exception switch
             {
-                RequestFailedException requestException => new { requestException.Status, requestException.Message }.AsJson(),
-                AIException aiException => new { ErrorCode = aiException.ErrorCode.ToString(), aiException.Message, aiException.Detail }.AsJson(),
-                { } e => new { e.Message }.AsJson(),
+                HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
+                { } e => e.Message,
                 _ => string.Empty
             };
         }

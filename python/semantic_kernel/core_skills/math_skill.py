@@ -1,10 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
+import typing as t
 
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
+if t.TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
-class MathSkill:
+
+class MathSkill(PydanticField):
     """
     Description: MathSkill provides a set of functions to make Math calculations.
 
@@ -23,8 +27,10 @@ class MathSkill:
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to add",
+        type="number",
+        required=True,
     )
-    def add(self, initial_value_text: str, context: SKContext) -> str:
+    def add(self, initial_value_text: str, context: "SKContext") -> str:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -42,8 +48,10 @@ class MathSkill:
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to subtract",
+        type="number",
+        required=True,
     )
-    def subtract(self, initial_value_text: str, context: SKContext) -> str:
+    def subtract(self, initial_value_text: str, context: "SKContext") -> str:
         """
         Returns the difference of numbers provided.
 
@@ -54,7 +62,9 @@ class MathSkill:
         return MathSkill.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(initial_value_text: str, context: SKContext, add: bool) -> str:
+    def add_or_subtract(
+        initial_value_text: str, context: "SKContext", add: bool
+    ) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 
@@ -76,7 +86,8 @@ class MathSkill:
                 amount = int(context_amount)
             except ValueError:
                 raise ValueError(
-                    f"Context amount provided is not in numeric format: {context_amount}"
+                    "Context amount provided is not in numeric format:"
+                    f" {context_amount}"
                 )
 
             result = initial_value + amount if add else initial_value - amount

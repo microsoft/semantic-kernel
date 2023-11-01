@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 public sealed class HuggingFaceTextCompletion : ITextCompletion
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
@@ -65,21 +63,19 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
     {
-        foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
-        {
-            yield return completion;
-        }
+        throw new NotSupportedException("Streaming capability is not supported");
     }
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
@@ -87,46 +83,36 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
-        try
+        var completionRequest = new TextCompletionRequest
         {
-            var completionRequest = new TextCompletionRequest
+            Input = text
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+
+        List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+
+        if (completionResponse is null)
+        {
+            throw new SKException("Unexpected response from model")
             {
-                Input = text
+                Data = { { "ResponseData", body } },
             };
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
-
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
-            if (!string.IsNullOrEmpty(this._apiKey))
-            {
-                httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-            }
-
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
-
-            if (completionResponse is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
-                {
-                    Data = { { "ResponseData", body } },
-                };
-            }
-
-            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
+
+        return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
 
     /// <summary>

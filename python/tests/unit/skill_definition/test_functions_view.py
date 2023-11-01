@@ -18,7 +18,7 @@ def test_add_semantic_function():
     )
     functions_view = FunctionsView()
     functions_view.add_function(view)
-    semantic_functions = functions_view._semantic_functions.get("skill1")
+    semantic_functions = functions_view.semantic_functions.get("skill1")
     assert len(semantic_functions) == 1
     assert semantic_functions[0] == view
 
@@ -34,7 +34,7 @@ def test_add_native_function():
     )
     functions_view = FunctionsView()
     functions_view.add_function(view)
-    native_functions = functions_view._native_functions.get("skill2")
+    native_functions = functions_view.native_functions.get("skill2")
     assert len(native_functions) == 1
     assert native_functions[0] == view
 
@@ -59,8 +59,8 @@ def test_add_multiple_functions():
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
     functions_view.add_function(native_function)
-    semantic_functions = functions_view._semantic_functions.get("skill1")
-    native_functions = functions_view._native_functions.get("skill2")
+    semantic_functions = functions_view.semantic_functions.get("skill1")
+    native_functions = functions_view.native_functions.get("skill2")
     assert len(semantic_functions) == 1
     assert semantic_functions[0] == semantic_function
     assert len(native_functions) == 1

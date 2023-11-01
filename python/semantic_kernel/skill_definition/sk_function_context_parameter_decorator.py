@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
-
 
 def sk_function_context_parameter(
-    *, name: str, description: str, default_value: Optional[str] = None
+    *,
+    name: str,
+    description: str,
+    default_value: str = "",
+    type: str = "string",
+    required: bool = False
 ):
     """
     Decorator for SK function context parameters.
@@ -13,6 +16,9 @@ def sk_function_context_parameter(
         name -- The name of the context parameter
         description -- The description of the context parameter
         default_value -- The default value of the context parameter
+        type -- The type of the context parameter, used for function calling
+        required -- Whether the context parameter is required
+
     """
 
     def decorator(func):
@@ -24,6 +30,8 @@ def sk_function_context_parameter(
                 "name": name,
                 "description": description,
                 "default_value": default_value,
+                "type": type,
+                "required": required,
             }
         )
         return func

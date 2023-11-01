@@ -7,7 +7,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
@@ -20,10 +22,14 @@ using RepoUtils;
  * - You are not using OpenAI or Azure OpenAI models
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
+ *
+ * Note that all text completion models are deprecated by OpenAI and will be removed in a future release.
+ *
+ * Refer to example 33 for streaming chat completion.
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -31,13 +37,13 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
 }
 
-public class MyTextCompletionStreamingResult : ITextStreamingResult
+public class MyTextCompletionStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly ModelResult _modelResult = new(new
     {
@@ -95,23 +101,23 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .WithAIService<ITextCompletion>("myService2", (_) => new MyTextCompletionService())
+            .WithAIService<ITextCompletion>("myService2", (log) => new MyTextCompletionService())
             .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
-        var result = await textValidationFunction.InvokeAsync("I mised the training session this morning");
-        Console.WriteLine(result);
+        var result = await textValidationFunction.InvokeAsync("I mised the training session this morning", kernel);
+        Console.WriteLine(result.GetValue<string>());
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
-            result.ModelResults,
+            result.GetModelResults(),
             new JsonSerializerOptions() { WriteIndented = true }
         ));
     }
@@ -121,7 +127,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training session this morning", new CompleteRequestSettings());
+        var result = await completionService.CompleteAsync("I missed the training session this morning");
 
         Console.WriteLine(result);
     }
@@ -130,7 +136,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         ITextCompletion textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";
@@ -139,7 +145,7 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new CompleteRequestSettings()
+        var requestSettings = new OpenAIRequestSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,

@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -16,7 +16,7 @@ class TextCompletionClientBase(ABC):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Logger,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -36,7 +36,7 @@ class TextCompletionClientBase(ABC):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Logger,
+        logger: Optional[Logger] = None,
     ):
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.

@@ -18,7 +18,7 @@
       },
       {
         "name": "style",
-        "description": "Joke style",
+        "description": "Give a hint about the desired joke style",
         "defaultValue": ""
       }
     ]

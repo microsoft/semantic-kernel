@@ -4,14 +4,13 @@ Install the latest package:
 
     python -m pip install --upgrade semantic-kernel
 
-
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
 
 Make sure you have an
-[Open AI API Key](https://openai.com/api/) or
-[Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+[OpenAI API Key](https://openai.com/product/) or
+[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
 
@@ -27,17 +26,17 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
 
 kernel = sk.Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_text_completion_service("dv", OpenAITextCompletion("text-davinci-003", api_key, org_id))
+kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
 # Alternative using Azure:
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-# kernel.add_text_completion_service("dv", AzureTextCompletion(deployment, endpoint, api_key))
+# kernel.add_chat_service("dv", AzureChatCompletion(deployment, endpoint, api_key))
 
 # Wrap your prompt in a function
 prompt = kernel.create_semantic_function("""
@@ -92,18 +91,18 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-* [Getting started with Semantic Kernel](../samples/notebooks/python/00-getting-started.ipynb)
-* [Loading and configuring Semantic Kernel](../samples/notebooks/python/01-basic-loading-the-kernel.ipynb)
-* [Running AI prompts from file](../samples/notebooks/python/02-running-prompts-from-file.ipynb)
-* [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks/python/03-semantic-function-inline.ipynb)
-* [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
-* [Introduction to planners](../samples/notebooks/python/05-using-the-planner.ipynb)
-* [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
-* [Using Hugging Face for Skills](../samples/notebooks/python/07-hugging-face-for-skills.ipynb)
-* [Combining native functions and semantic functions](../samples/notebooks/python/08-native-function-inline.ipynb)
-* [Groundedness Checking with Semantic Kernel](../samples/notebooks/python/09-groundedness-checking.ipynb)
-* [Returning multiple results per prompt](../samples/notebooks/python/10-multiple-results-per-prompt.ipynb)
-* [Streaming completions with Semantic Kernel](../samples/notebooks/python/11-streaming-completions.ipynb)
+- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
+- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
+- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
+- [Creating Semantic Functions at runtime (i.e. inline functions)](./notebooks/03-semantic-function-inline.ipynb)
+- [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
+- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
+- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
+- [Using Hugging Face for Skills](./notebooks/07-hugging-face-for-skills.ipynb)
+- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
+- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
+- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
+- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 

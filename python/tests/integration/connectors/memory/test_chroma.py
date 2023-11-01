@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+
 import numpy as np
 import pytest
 
@@ -16,6 +18,16 @@ except ImportError:
 pytestmark = pytest.mark.skipif(
     not chromadb_installed, reason="chromadb is not installed"
 )
+
+
+@pytest.fixture
+def setup_chroma():
+    persist_directory = "chroma/TEMP/"
+    memory = ChromaMemoryStore(persist_directory=persist_directory)
+    yield memory
+    collections = asyncio.run(memory.get_collections_async())
+    for collection in collections:
+        asyncio.run(memory.delete_collection_async(collection))
 
 
 @pytest.fixture
@@ -46,14 +58,14 @@ def memory_record2():
     )
 
 
-def test_constructor():
-    memory = ChromaMemoryStore()
+def test_constructor(setup_chroma):
+    memory = setup_chroma
     assert memory._client is not None
 
 
 @pytest.mark.asyncio
-async def test_create_and_get_collection_async():
-    memory = ChromaMemoryStore()
+async def test_create_and_get_collection_async(setup_chroma):
+    memory = setup_chroma
 
     await memory.create_collection_async("test_collection")
     result = await memory.get_collection_async("test_collection")
@@ -61,8 +73,8 @@ async def test_create_and_get_collection_async():
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async():
-    memory = ChromaMemoryStore()
+async def test_get_collections_async(setup_chroma):
+    memory = setup_chroma
 
     await memory.create_collection_async("test_collection1")
     await memory.create_collection_async("test_collection2")
@@ -73,8 +85,8 @@ async def test_get_collections_async():
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async():
-    memory = ChromaMemoryStore()
+async def test_delete_collection_async(setup_chroma):
+    memory = setup_chroma
 
     await memory.create_collection_async("test_collection")
     await memory.delete_collection_async("test_collection")
@@ -88,8 +100,8 @@ async def test_delete_collection_async():
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async():
-    memory = ChromaMemoryStore()
+async def test_does_collection_exist_async(setup_chroma):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     result = await memory.does_collection_exist_async("test_collection")
     assert result is True
@@ -99,8 +111,8 @@ async def test_does_collection_exist_async():
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async(memory_record1):
-    memory = ChromaMemoryStore()
+async def test_upsert_and_get_async(setup_chroma, memory_record1):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -118,8 +130,8 @@ async def test_upsert_and_get_async(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async_with_no_embedding(memory_record1):
-    memory = ChromaMemoryStore()
+async def test_upsert_and_get_async_with_no_embedding(setup_chroma, memory_record1):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -137,8 +149,8 @@ async def test_upsert_and_get_async_with_no_embedding(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
-    memory = ChromaMemoryStore()
+async def test_upsert_and_get_batch_async(setup_chroma, memory_record1, memory_record2):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -159,8 +171,8 @@ async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_remove_async(memory_record1):
-    memory = ChromaMemoryStore()
+async def test_remove_async(setup_chroma, memory_record1):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -173,8 +185,8 @@ async def test_remove_async(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(memory_record1, memory_record2):
-    memory = ChromaMemoryStore()
+async def test_remove_batch_async(setup_chroma, memory_record1, memory_record2):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -188,8 +200,8 @@ async def test_remove_batch_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(memory_record1, memory_record2):
-    memory = ChromaMemoryStore()
+async def test_get_nearest_matches_async(setup_chroma, memory_record1, memory_record2):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 
@@ -205,8 +217,8 @@ async def test_get_nearest_matches_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(memory_record1, memory_record2):
-    memory = ChromaMemoryStore()
+async def test_get_nearest_match_async(setup_chroma, memory_record1, memory_record2):
+    memory = setup_chroma
     await memory.create_collection_async("test_collection")
     collection = await memory.get_collection_async("test_collection")
 

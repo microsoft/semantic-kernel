@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -24,7 +25,8 @@ public class MemoryQueryResult
     /// <summary>
     /// Nullable embedding associated with the metadata returned for by a query.
     /// </summary>
-    public Embedding<float>? Embedding { get; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float>? Embedding { get; }
 
     /// <summary>
     /// Create a new instance of MemoryQueryResult
@@ -39,20 +41,25 @@ public class MemoryQueryResult
     public MemoryQueryResult(
         MemoryRecordMetadata metadata,
         double relevance,
-        Embedding<float>? embedding)
+        ReadOnlyMemory<float>? embedding)
     {
         this.Metadata = metadata;
         this.Relevance = relevance;
         this.Embedding = embedding;
     }
 
-    internal static MemoryQueryResult FromMemoryRecord(
-        MemoryRecord rec,
+    /// <summary>
+    /// Creates instance of <see cref="MemoryQueryResult"/> based on <see cref="MemoryRecord"/> and search relevance.
+    /// </summary>
+    /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
+    /// <param name="relevance">Search relevance, from 0 to 1, where 1 means perfect match.</param>
+    public static MemoryQueryResult FromMemoryRecord(
+        MemoryRecord record,
         double relevance)
     {
         return new MemoryQueryResult(
-            (MemoryRecordMetadata)rec.Metadata.Clone(),
+            (MemoryRecordMetadata)record.Metadata.Clone(),
             relevance,
-            rec.Embedding.IsEmpty ? null : rec.Embedding);
+            record.Embedding.IsEmpty ? null : record.Embedding);
     }
 }

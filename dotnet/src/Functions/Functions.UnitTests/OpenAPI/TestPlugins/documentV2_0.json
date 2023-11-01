@@ -1,0 +1,253 @@
+{
+  "basePath": "/",
+  "consumes": [],
+  "definitions": {},
+  "host": "my-key-vault.vault.azure.net",
+  "info": {
+    "description": "A sample connector for the Azure Key Vault service.  This connector is built for the Azure Key Vault REST API.  You can see the details of the API here: https://docs.microsoft.com/rest/api/keyvault/.",
+    "title": "Azure Key Vault [Sample]",
+    "version": "1.0"
+  },
+  "parameters": {},
+  "paths": {
+    "/secrets/{secret-name}": {
+      "get": {
+        "description": "Get a specified secret from a given key vault. For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecret/getsecret.",
+        "operationId": "GetSecret",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "secret-name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "7.0",
+            "in": "query",
+            "name": "api-version",
+            "required": true,
+            "type": "string",
+            "x-ms-visibility": "internal"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "default",
+            "schema": {
+              "properties": {
+                "attributes": {
+                  "description": "attributes",
+                  "properties": {
+                    "created": {
+                      "description": "created",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "description": "enabled",
+                      "type": "boolean"
+                    },
+                    "recoverylevel": {
+                      "description": "recoverylevel",
+                      "type": "string"
+                    },
+                    "updated": {
+                      "description": "updated",
+                      "format": "int32",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "id": {
+                  "description": "id",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "value",
+                  "format": "byte",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "summary": "Get secret"
+      },
+      "put": {
+        "description": "Sets a secret in a specified key vault.",
+        "operationId": "SetSecret",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "secret-name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "7.0",
+            "in": "query",
+            "name": "api-version",
+            "required": true,
+            "type": "string",
+            "x-ms-visibility": "internal"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "attributes": {
+                  "description": "attributes",
+                  "properties": {
+                    "enabled": {
+                      "description": "Determines whether the object is enabled.",
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                },
+                "value": {
+                  "description": "The value of the secret.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": false,
+            "description": "Indicates which content types, expressed as MIME types, the client is able to understand.",
+            "type": "string",
+            "default": "application/json",
+            "x-ms-visibility": "internal"
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "description": "Requested API version.",
+            "required": true,
+            "type": "integer",
+            "default": 10,
+            "x-ms-visibility": "internal",
+            "x-ms-summary": "X-API-Version"
+          },
+          {
+            "collectionFormat": "csv",
+            "description": "The comma separated list of operation ids.",
+            "in": "header",
+            "items": {
+              "type": "string"
+            },
+            "name": "X-Operation-Csv-Ids",
+            "required": false,
+            "type": "array",
+            "x-ms-summary": "Ids",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "default",
+            "schema": {
+              "properties": {
+                "attributes": {
+                  "description": "attributes",
+                  "properties": {
+                    "created": {
+                      "description": "created",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "description": "enabled",
+                      "type": "boolean"
+                    },
+                    "recoverylevel": {
+                      "description": "recoverylevel",
+                      "type": "string"
+                    },
+                    "updated": {
+                      "description": "updated",
+                      "format": "int32",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "id": {
+                  "description": "id",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "value",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "summary": "Create or update secret value"
+      }
+    },
+    "/FunPlugin/Excuses": {
+      "post": {
+        "summary": "Turn a scenario into a creative or humorous excuse to send your boss",
+        "operationId": "Excuses",
+        "consumes": [
+          "text/plain"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description":  "excuse event",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The OK response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "produces": [],
+  "responses": {},
+  "schemes": [
+    "https"
+  ],
+  "security": [
+    {
+      "oauth2_auth": []
+    }
+  ],
+  "securityDefinitions": {
+    "oauth2_auth": {
+      "authorizationUrl": "https://login.windows.net/common/oauth2/authorize",
+      "flow": "accessCode",
+      "scopes": {},
+      "tokenUrl": "https://login.windows.net/common/oauth2/authorize",
+      "type": "oauth2"
+    }
+  },
+  "swagger": "2.0",
+  "tags": []
+}
