@@ -66,11 +66,6 @@ public sealed class BingConnector : IWebSearchEngineConnector
             throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
         }
 
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
-
         Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {Uri}", uri);
