@@ -50,7 +50,7 @@ Some issues with this:
 1. You need to have a `Kernel` instance to create a semantic function, which is contrary to one of the goals of allow semantic functions to be created once and reused across multiple `Kernel` instances.
 1. `Kernel` only supports a single `IPromptTemplateEngine` so we cannot support using multiple prompt templates at the same time.
 1. `IPromptTemplateEngine` is stateless and must perform a parse of the template for each render
-1. Our semantic function extension methods relay on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.
+1. Our semantic function extension methods rely on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.
 
 #### Performance
 
@@ -136,7 +136,6 @@ Some issues:
 1. The `IPromptTemplate` interface is not used and causes confusion.
 1. There is no way to allow developers to support multiple prompt template formats at the same time.
 
-
 There is one implementation of `IPromptTemplate` provided in the Semantic Kernel core package.
 The `RenderAsync` implementation just delegates to the `IPromptTemplateEngine`.
 The `Parameters` list get's populated with the parameters defined in the `PromptTemplateConfig` and any missing variables defined in the template.
@@ -185,7 +184,6 @@ In no particular order:
 ## Considered Options
 
 * Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`.
-* 
 
 ### Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`
 
@@ -197,12 +195,8 @@ Below is an expanded example of how to create a semantic function from a prompt 
 // Semantic function can be created once
 var promptTemplateFactory = new BasicPromptTemplateFactory();
 string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
-var promptTemplateConfig = new PromptTemplateConfig();
-// Line below will replace the commented out code
-var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, new PromptTemplateConfig());
 var kindOfDay = ISKFunction.CreateSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
-// var promptTemplate = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
-// var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate);
 
 // Create Kernel after creating the semantic function
 // Later we will support passing a function collection to the KernelBuilder
@@ -214,7 +208,7 @@ IKernel kernel = Kernel.Builder
 
 kernel.ImportFunctions(new TimePlugin(), "time");
 // Optionally register the semantic function with the Kernel
-kernel.RegisterCustomFunction(kindOfDay);
+// kernel.RegisterCustomFunction(kindOfDay);
 
 var result = await kernel.RunAsync(kindOfDay);
 Console.WriteLine(result.GetValue<string>());
