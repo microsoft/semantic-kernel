@@ -23,6 +23,7 @@ import com.azure.search.documents.models.IndexDocumentsOptions;
 import com.azure.search.documents.models.IndexingResult;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.SearchQueryVector;
+import com.microsoft.semantickernel.SemanticKernelHttpSettings;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
@@ -49,8 +50,6 @@ import reactor.util.function.Tuples;
  * Cognitive Search {@see https://learn.microsoft.com/azure/search/search-what-is-azure-search}
  */
 public class AzureCognitiveSearchMemoryStore implements MemoryStore {
-
-    private static final String USER_AGENT = "Semantic-Kernel";
     private static final String SEARCH_CONFIG_NAME = "searchConfig";
 
     private final SearchIndexAsyncClient _adminClient;
@@ -477,10 +476,9 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
     // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// </summary>
     private static ClientOptions clientOptions() {
-        return new ClientOptions()
+        return SemanticKernelHttpSettings.getUserAgent()
                 .setTracingOptions(new TracingOptions())
-                .setMetricsOptions(new MetricsOptions())
-                .setApplicationId(USER_AGENT);
+                .setMetricsOptions(new MetricsOptions());
     }
 
     // Index names cannot contain special chars. We use this rule to replace a few common ones
