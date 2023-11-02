@@ -3,7 +3,7 @@
 status: accepted
 contact: semenshi
 date: 2023-10-23
-deciders: markwallace, mabolan
+deciders: markwallace-microsoft, mabolan
 consulted:
 informed:
 ---

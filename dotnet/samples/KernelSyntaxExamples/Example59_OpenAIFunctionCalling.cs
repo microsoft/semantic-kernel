@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -36,10 +37,12 @@ public static class Example59_OpenAIFunctionCalling
         // Set FunctionCall to the name of a specific function to force the model to use that function.
         requestSettings.FunctionCall = "TimePlugin-Date";
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
         await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
     private static async Task<IKernel> InitializeKernelAsync()
@@ -77,7 +80,7 @@ public static class Example59_OpenAIFunctionCalling
         }
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
             // Print function response details
@@ -118,6 +121,72 @@ public static class Example59_OpenAIFunctionCalling
             else
             {
                 Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
+            }
+        }
+    }
+
+    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
+    {
+        Console.WriteLine($"User message: {ask}");
+        chatHistory.AddUserMessage(ask);
+
+        // Send request
+        await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
+        {
+            StringBuilder chatContent = new();
+            await foreach (var message in chatResult.GetStreamingChatMessageAsync())
+            {
+                if (message.Content is not null)
+                {
+                    Console.Write(message.Content);
+                    chatContent.Append(message.Content);
+                }
+            }
+            chatHistory.AddAssistantMessage(chatContent.ToString());
+
+            var functionResponse = await chatResult.GetOpenAIStreamingFunctionResponseAsync();
+
+            if (functionResponse is not null)
+            {
+                // Print function response details
+                Console.WriteLine("Function name: " + functionResponse.FunctionName);
+                Console.WriteLine("Plugin name: " + functionResponse.PluginName);
+                Console.WriteLine("Arguments: ");
+                foreach (var parameter in functionResponse.Parameters)
+                {
+                    Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+                }
+
+                // If the function returned by OpenAI is an SKFunction registered with the kernel,
+                // you can invoke it using the following code.
+                if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+                {
+                    var kernelResult = await kernel.RunAsync(func, context);
+
+                    var result = kernelResult.GetValue<object>();
+
+                    string? resultMessage = null;
+                    if (result is RestApiOperationResponse apiResponse)
+                    {
+                        resultMessage = apiResponse.Content?.ToString();
+                    }
+                    else if (result is string str)
+                    {
+                        resultMessage = str;
+                    }
+
+                    if (!string.IsNullOrEmpty(resultMessage))
+                    {
+                        Console.WriteLine(resultMessage);
+
+                        // Add the function result to chat history
+                        chatHistory.AddAssistantMessage(resultMessage);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
+                }
             }
         }
     }
