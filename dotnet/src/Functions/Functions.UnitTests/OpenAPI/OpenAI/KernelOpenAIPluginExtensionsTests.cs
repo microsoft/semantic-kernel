@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Moq;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
