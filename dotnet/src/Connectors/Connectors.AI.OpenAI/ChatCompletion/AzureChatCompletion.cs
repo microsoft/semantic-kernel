@@ -20,6 +20,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// Create an instance of the Azure OpenAI chat completion connector with API key auth
     /// </summary>
@@ -35,6 +37,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, apiKey, httpClient, loggerFactory)
     {
+        this._metadata.Add("ModelId", modelId);
     }
 
     /// <summary>
@@ -52,6 +55,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, credentials, httpClient, loggerFactory)
     {
+        this._metadata.Add("ModelId", modelId);
     }
 
     /// <summary>
@@ -65,7 +69,12 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
+        this._metadata.Add("ModelId", modelId);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

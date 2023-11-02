@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -20,7 +21,7 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example61_CustomAIServiceSelector ========");
+        Console.WriteLine("======== Example62_CustomAIServiceSelector ========");
 
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -89,6 +90,17 @@ public class MyAIServiceSelector : IAIServiceSelector
 
     public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
     {
+        var chatServices = serviceProvider.GetServices<IChatCompletion>();
+        foreach (var service in chatServices)
+        {
+            Console.WriteLine($"Service: {service.Metadata}");
+        }
+        var services = serviceProvider.GetServices<IAIService>();
+        foreach (var service in services)
+        {
+            Console.WriteLine($"Service: {service.Metadata}");
+        }
+
         if (modelSettings is null || modelSettings.Count == 0)
         {
             var service = serviceProvider.GetService<T>(null);

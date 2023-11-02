@@ -22,6 +22,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
+    private readonly Dictionary<string, string> _metadata = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -76,6 +77,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)

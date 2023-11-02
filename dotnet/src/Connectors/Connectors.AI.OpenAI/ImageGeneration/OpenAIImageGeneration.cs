@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// OpenAI REST API endpoint
     /// </summary>
@@ -50,6 +53,10 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)

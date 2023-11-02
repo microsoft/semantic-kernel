@@ -224,10 +224,13 @@ public class OrderedIAIServiceConfigurationProviderTests
     #region private
     private sealed class AIService : IAIService
     {
+        public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
+        public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
+
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();

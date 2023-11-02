@@ -29,6 +29,8 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
+    public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
+
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>

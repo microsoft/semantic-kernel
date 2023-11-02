@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// Generation Image Operation path
     /// </summary>
@@ -97,6 +100,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

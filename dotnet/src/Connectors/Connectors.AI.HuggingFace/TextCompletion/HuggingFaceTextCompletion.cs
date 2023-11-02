@@ -25,6 +25,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+    private readonly Dictionary<string, string> _metadata = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -61,6 +62,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <inheritdoc/>
     [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]

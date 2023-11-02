@@ -20,6 +20,8 @@ using Microsoft.SemanticKernel.Orchestration;
  */
 public sealed class MyChatCompletionService : IChatCompletion
 {
+    public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
+
     public ChatHistory CreateNewChat(string? instructions = null)
     {
         var chatHistory = new MyChatHistory();

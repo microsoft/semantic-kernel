@@ -17,6 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// </summary>
 public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGeneration
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
     /// </summary>
@@ -50,6 +52,10 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, credential, httpClient, loggerFactory)
     {
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.

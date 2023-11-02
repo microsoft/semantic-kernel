@@ -72,6 +72,8 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
+        public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
+
         Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });

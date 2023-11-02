@@ -19,6 +19,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
     /// </summary>
@@ -65,6 +67,9 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(

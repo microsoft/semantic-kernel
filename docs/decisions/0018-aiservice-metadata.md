@@ -65,6 +65,11 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
+These methods would be used as follows:
+
+``` csharp
+```
+
 ## Decision Outcome
 
 Chosen option: "{title of option 1}", because

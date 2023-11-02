@@ -16,6 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// </summary>
 public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbeddingGeneration
 {
+    private readonly Dictionary<string, string> _metadata = new();
+
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
@@ -33,6 +35,9 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
