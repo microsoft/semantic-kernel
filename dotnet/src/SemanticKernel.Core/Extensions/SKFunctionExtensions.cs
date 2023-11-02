@@ -51,23 +51,7 @@ public static class SKFunctionExtensions
         CancellationToken cancellationToken = default)
     {
         var context = kernel.CreateNewContext(variables, functions, loggerFactory, culture);
-        return function.InvokeAsync(context, requestSettings, null, null, cancellationToken);
-    }
-
-    /// <summary>
-    /// Execute a function without eventHandlers.
-    /// </summary>
-    /// <param name="function">Function to execute</param>
-    /// <param name="context">SKContext to use</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
-        SKContext context,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        return function.InvokeAsync(context, requestSettings, null, null, cancellationToken);
+        return function.InvokeAsync(context, requestSettings, cancellationToken);
     }
 
     /// <summary>

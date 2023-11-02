@@ -140,15 +140,15 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         try
         {
             this.CallFunctionInvoking(context);
-            if (this.ShouldStopInvocation(context.FunctionInvokingHandler?.EventArgs, out var stopReason))
+            if (this.IsInvokingCancelOrSkipRequested(context, out var stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
 
             var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
-            var finalResult = this.CallFunctionInvoked(invokeResult, context.FunctionInvokedHandler);
+            var finalResult = this.CallFunctionInvoked(invokeResult, context);
 
-            if (this.ShouldStopInvocation(context.FunctionInvokedHandler?.EventArgs, out stopReason))
+            if (this.IsInvokedCancelRequested(context, out stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, finalResult.Value, stopReason!.Value);
             }
@@ -174,8 +174,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
-    private FunctionResult CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventWrapper)
+    private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
     {
+        var eventWrapper = context.FunctionInvokedHandler;
         if (eventWrapper?.Handler is null)
         {
             // No handlers registered, return the result as is.
@@ -196,22 +197,23 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return functionResult;
     }
 
-    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent, out StopFunctionResult.StopReason? reason)
+    private bool IsInvokingCancelOrSkipRequested(SKContext context, out StopFunctionResult.StopReason? reason)
     {
+        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
         reason = null;
 
         // When no event handler is registered, the event args are null and
         // this should not stop the function execution.
-        if (invokingEvent is null)
+        if (eventArgs is null)
         {
             return false;
         }
 
-        if (invokingEvent.IsSkipRequested)
+        if (eventArgs.IsSkipRequested)
         {
             reason = StopFunctionResult.StopReason.InvokingSkipped;
         }
-        else if (invokingEvent.CancelToken.IsCancellationRequested)
+        else if (eventArgs.CancelToken.IsCancellationRequested)
         {
             reason = StopFunctionResult.StopReason.InvokingCancelled;
         }
@@ -220,18 +222,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return (reason is not null);
     }
 
-    private bool ShouldStopInvocation(FunctionInvokedEventArgs? invokedEvent, out StopFunctionResult.StopReason? reason)
+    private bool IsInvokedCancelRequested(SKContext context, out StopFunctionResult.StopReason? reason)
     {
+        var eventArgs = context.FunctionInvokedHandler?.EventArgs;
         reason = null;
 
         // When no event handler is registered, the event args are null and
         // this should not stop the function execution.
-        if (invokedEvent is null)
+        if (eventArgs is null)
         {
             return false;
         }
 
-        if (invokedEvent.CancelToken.IsCancellationRequested)
+        if (eventArgs.CancelToken.IsCancellationRequested)
         {
             reason = StopFunctionResult.StopReason.InvokedCancelled;
         }
