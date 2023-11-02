@@ -3,11 +3,11 @@ name: Run Java Integration Tests and Samples
 on:
   workflow_dispatch:
   push:
-    branches: [ "java-development" ]
+    branches: [ "main", "java-development" ]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "java-development" ]
+    branches: [ "main", "java-development" ]
     paths:
       - 'java/**'
 
@@ -15,8 +15,31 @@ permissions:
   contents: read
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      javaChanges: ${{ steps.filter.outputs.java }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            java:
+              - 'java/**'
+              - '**/java/**'
+      # run only if 'java' files were changed
+      - name: java tests
+        if: steps.filter.outputs.java == 'true'
+        run: echo "Java file"
+      # run only if not 'java' files were changed
+      - name: not java tests
+        if: steps.filter.outputs.java != 'true'
+        run: echo "NOT java file"
   java-integration-tests:
     runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.javaChanges == 'true'
     strategy:
       fail-fast: false
       matrix:
