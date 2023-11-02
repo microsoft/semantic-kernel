@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using NCalcPlugins;
 
 /**
@@ -75,7 +76,7 @@ provides:
         using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
             loggerBuilder
                 .AddConsole()
-                .AddFilter(null, LogLevel.Warning));
+                .AddFilter(null, LogLevel.Error));
         Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
@@ -90,29 +91,41 @@ provides:
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
+        Console.WriteLine("Executing {0}", nameof(RunInteractiveAsync));
         Stopwatch sw = new();
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
-        ContextVariables? result = null;
-        string? input = null;// "Execute the flow";// can this be empty?
+        Console.WriteLine("Please type the question you'd like to ask");
+        ContextVariables? result;
+        string? goal = null;
         do
         {
-            if (result is not null)
-            {
-                Console.WriteLine("Assistant: " + result.ToString());
-            }
+            Console.WriteLine("User: ");
+            string input = Console.ReadLine() ?? string.Empty;
 
             if (string.IsNullOrEmpty(input))
             {
-                Console.WriteLine("User: ");
-                input = Console.ReadLine() ?? string.Empty;
+                Console.WriteLine("No input, exiting");
+                break;
+            }
+
+            if (string.IsNullOrEmpty(goal))
+            {
                 s_flow.Steps.First().Goal = input;
             }
 
-            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input); // This should change to be a FunctionResult or KernelResult probably
-        } while (!string.IsNullOrEmpty(result.ToString()) && result.ToString() != "[]");
+            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
+            Console.WriteLine("Assistant: " + result.ToString());
 
-        Console.WriteLine("Assistant: " + result["answer"]);
+            if (result.IsComplete(s_flow))
+            {
+                Console.WriteLine("\tEmail Address: " + result["email_addresses"]);
+                Console.WriteLine("\tEmail Payload: " + result["email"]);
+
+                Console.WriteLine("Flow completed, exiting");
+                break;
+            }
+        } while (!string.IsNullOrEmpty(result.ToString()) && result.ToString() != "[]");
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
@@ -130,7 +143,7 @@ provides:
         Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
-            { new TimePlugin(), "time" }
+            { new TimePlugin(), "Time" }
         };
 
         FlowOrchestrator orchestrator = new(
@@ -141,12 +154,14 @@ provides:
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
+        Console.WriteLine("Executing {0}", nameof(RunExampleAsync));
         Stopwatch sw = new();
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
-        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow").ConfigureAwait(false);
+        var question = s_flow.Steps.First().Goal;
+        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).ConfigureAwait(false);
 
-        Console.WriteLine("Question: " + s_flow.Steps.First().Goal);
+        Console.WriteLine("Question: " + question);
         Console.WriteLine("Answer: " + result["answer"]);
         Console.WriteLine("Assistant: " + result.ToString());
 
@@ -182,7 +197,6 @@ provides:
     {
         var config = new FlowOrchestratorConfig
         {
-            ReActModel = FlowOrchestratorConfig.ModelName.GPT35_TURBO,
             MaxStepIterations = 20
         };
 
@@ -206,6 +220,7 @@ provides:
                 UseExponentialBackoff = true,
                 MinRetryDelay = TimeSpan.FromSeconds(3),
             })
+            .WithPromptTemplateEngine(new BasicPromptTemplateEngine(loggerFactory))
             .WithLoggerFactory(loggerFactory);
     }
 
@@ -313,9 +328,10 @@ Do not expose the regex unless asked.
     }
 }
 //*****************************************************
+//Executing RunExampleAsync
 //Flow: FlowOrchestrator_Example_Flow
 //Question: What is the tallest mountain on Earth? How tall is it divided by 2?
-//Answer: The tallest mountain on Earth is Mount Everest, which has a height of 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters).
+//Answer: The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters).
 //Assistant: ["Please provide a valid email address."]
 //User: my email is bad*email&address
 //Assistant: ["I\u0027m sorry, but \u0022bad*email\u0026address\u0022 is not a valid email address. A valid email address should have the format \u0022example@example.com\u0022."]
@@ -330,7 +346,29 @@ Do not expose the regex unless asked.
 //        Email Address: ["sample@xyz.com","foo@bar.com"]
 //        Email Payload: {
 //  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
-//  "Content": "The tallest mountain on Earth is Mount Everest, which has a height of 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters)."
+//  "Content": "The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters)."
 //}
-//Time Taken: 00:00:22.7646223
+//Time Taken: 00:00:24.2450785
+//*****************************************************
+
+//*****************************************************
+//Executing RunInteractiveAsync
+//Flow: FlowOrchestrator_Example_Flow
+//Please type the question you'd like to ask
+//User:
+//What is the length of the longest river in ireland?
+//Assistant: ["Please provide a valid email address."]
+//User:
+//foo@bar.com
+//Assistant: ["Do you want to send it to another email address?"]
+//User:
+//no
+//Assistant: []
+//        Email Address: ["foo@bar.com"]
+//        Email Payload: {
+//  "Address": "[\u0022foo@bar.com\u0022]",
+//  "Content": "The longest river in Ireland is the River Shannon with a length of 360 km (223 miles)."
+//}
+//Flow completed, exiting
+//Time Taken: 00:00:44.0215449
 //*****************************************************
