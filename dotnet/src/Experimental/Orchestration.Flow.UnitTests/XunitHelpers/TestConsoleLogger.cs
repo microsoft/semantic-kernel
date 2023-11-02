@@ -3,7 +3,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace SemanticKernel.Extensions.UnitTests.XunitHelpers;
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests.XunitHelpers;
 
 /// <summary>
 /// Basic logger printing to console
