@@ -29,7 +29,7 @@ To build the Semantic Kernel for Java, you will need:
 
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
-2. Build the projet with the Maven Wrapper
+2. Build the project with the Maven Wrapper
 
         cd semantic-kernel/java
         ./mvnw install

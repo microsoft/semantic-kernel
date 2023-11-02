@@ -3,11 +3,11 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
-    branches: [ "experimental-java" ]
+    branches: [ "java-development" ]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "experimental-java" ]
+    branches: [ "java-development" ]
     paths:
       - 'java/**'
 
