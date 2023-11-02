@@ -495,8 +495,8 @@ public class KernelTests
         Assert.Equal(expectedResult, kernelResult.GetValue<string>()!.Trim());
         Assert.Equal(ExpectedInvocations, numberOfInvocations);
 
-        // ExpectedInvocations + StopFunctionResult
-        Assert.Equal(ExpectedInvocations + 1, kernelResult.FunctionResults.Count);
+        // ExpectedInvocations
+        Assert.Equal(ExpectedInvocations, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
