@@ -138,7 +138,7 @@ repeat:
                     throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
                 }
 
-                // Only non StopFunctionResult are added to the list of results
+                // Only results that wheren't stopped are added to the list of kernel results
                 allFunctionResults.Add(functionResult!);
 
                 if (this.IsRepeatRequested(skFunction, functionResult, pipelineStepCount))
@@ -155,7 +155,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Context ?? context, allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
+        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
     /// <inheritdoc/>
