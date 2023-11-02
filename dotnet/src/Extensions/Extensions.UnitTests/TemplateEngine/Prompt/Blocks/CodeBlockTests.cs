@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
@@ -59,8 +58,6 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
                 It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
 
@@ -229,15 +226,11 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
                 It.IsAny<CancellationToken>()))
             .Callback<
                 SKContext,
                 object?,
-                EventHandlerWrapper<FunctionInvokingEventArgs>,
-                EventHandlerWrapper<FunctionInvokedEventArgs>,
-                CancellationToken>((context, _, _, _, _) =>
+                CancellationToken>((context, _, _) =>
             {
                 canary0 = context!.Variables["input"];
                 canary1 = context.Variables["var1"];
@@ -250,8 +243,6 @@ public class CodeBlockTests
             .ReturnsAsync((
                 SKContext inputcontext,
                 object _,
-                EventHandlerWrapper<FunctionInvokingEventArgs> _,
-                EventHandlerWrapper<FunctionInvokedEventArgs> _,
                 CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
@@ -291,23 +282,17 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
                 It.IsAny<CancellationToken>()))
             .Callback<
                 SKContext,
                 object?,
-                EventHandlerWrapper<FunctionInvokingEventArgs>,
-                EventHandlerWrapper<FunctionInvokedEventArgs>,
-                CancellationToken>((context, _, _, _, _) =>
+                CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
             .ReturnsAsync((
                 SKContext inputcontext,
                 object _,
-                EventHandlerWrapper<FunctionInvokingEventArgs> _,
-                EventHandlerWrapper<FunctionInvokedEventArgs> _,
                 CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
@@ -339,23 +324,17 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
                 It.IsAny<CancellationToken>()))
             .Callback<
                 SKContext,
                 object?,
-                EventHandlerWrapper<FunctionInvokingEventArgs>,
-                EventHandlerWrapper<FunctionInvokedEventArgs>,
-                CancellationToken>((context, _, _, _, _) =>
+                CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
             .ReturnsAsync((
                 SKContext inputcontext,
                 object _,
-                EventHandlerWrapper<FunctionInvokingEventArgs> _,
-                EventHandlerWrapper<FunctionInvokedEventArgs> _,
                 CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
@@ -394,15 +373,11 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokingEventArgs>>(),
-                It.IsAny<EventHandlerWrapper<FunctionInvokedEventArgs>>(),
                 It.IsAny<CancellationToken>()))
             .Callback<
                 SKContext,
                 object?,
-                EventHandlerWrapper<FunctionInvokingEventArgs>,
-                EventHandlerWrapper<FunctionInvokedEventArgs>,
-                CancellationToken>((context, _, _, _, _) =>
+                CancellationToken>((context, _, _) =>
             {
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
@@ -410,8 +385,6 @@ public class CodeBlockTests
             .ReturnsAsync((
                 SKContext inputcontext,
                 object _,
-                EventHandlerWrapper<FunctionInvokingEventArgs> _,
-                EventHandlerWrapper<FunctionInvokedEventArgs> _,
                 CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
