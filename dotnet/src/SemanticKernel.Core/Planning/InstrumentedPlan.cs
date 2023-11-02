@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
 /// </summary>
-internal sealed class InstrumentedPlan : IPlan
+internal sealed class InstrumentedPlan : ISKFunction
 {
     /// <inheritdoc/>
     public string Name => this._plan.Name;
@@ -28,16 +28,13 @@ internal sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
-    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
+    /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedPlan(
-        IPlan plan,
+        ISKFunction plan,
         ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
@@ -60,17 +57,9 @@ internal sealed class InstrumentedPlan : IPlan
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._plan.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._plan.SetAIService(serviceFactory);
-
     #region private ================================================================================
 
-    private readonly IPlan _plan;
+    private readonly ISKFunction _plan;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -154,6 +143,20 @@ internal sealed class InstrumentedPlan : IPlan
     #endregion
 
     #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

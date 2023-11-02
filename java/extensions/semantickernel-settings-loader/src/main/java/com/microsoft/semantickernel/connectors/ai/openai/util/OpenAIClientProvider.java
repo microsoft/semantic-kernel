@@ -8,7 +8,10 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.util.ClientOptions;
+import com.microsoft.semantickernel.SemanticKernelHttpSettings;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
+import com.microsoft.semantickernel.settings.SettingsMap;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +50,7 @@ public class OpenAIClientProvider {
 
     @Nullable private final ClientType clientType;
     private final Map<String, String> configuredSettings;
+    private final ClientOptions clientOptions;
 
     /**
      * Create a new OpenAI client provider
@@ -58,6 +62,7 @@ public class OpenAIClientProvider {
             Map<String, String> configuredSettings, @Nullable ClientType clientType) {
         this.configuredSettings = Collections.unmodifiableMap(configuredSettings);
         this.clientType = clientType;
+        this.clientOptions = SemanticKernelHttpSettings.getUserAgent(configuredSettings);
     }
 
     private static OpenAIClientProvider buildProvider(
@@ -224,6 +229,7 @@ public class OpenAIClientProvider {
 
         return new OpenAIClientBuilder()
                 .credential(new KeyCredential(settings.getKey()))
+                .clientOptions(clientOptions)
                 .buildAsyncClient();
     }
 
