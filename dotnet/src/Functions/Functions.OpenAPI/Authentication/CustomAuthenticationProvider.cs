@@ -29,8 +29,7 @@ public sealed class CustomAuthenticationProvider
     /// Applies the header and value to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="openAIManifestAuth">The <see cref="OpenAIManifestAuthentication"/> used to authenticate.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, OpenAIManifestAuthentication? openAIManifestAuth = null)
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         var header = await this._header().ConfigureAwait(false);
         var value = await this._value().ConfigureAwait(false);

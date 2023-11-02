@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -53,7 +53,7 @@ public static class Example59_OpenAIFunctionCalling
 
         // Load functions to kernel
         kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
-        await kernel.ImportPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters());
+        await kernel.ImportOpenAIPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIPluginFunctionExecutionParameters());
 
         return kernel;
     }
