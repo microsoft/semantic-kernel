@@ -405,28 +405,28 @@ public sealed class PlanTests
 
         var childFunction1 = new Mock<ISKFunction>();
         childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, EventHandlerWrapper<FunctionInvokingEventArgs>, EventHandlerWrapper<FunctionInvokedEventArgs>, CancellationToken>((c, s, _, _, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 1 output!" + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child1", "pluginName", returnContext, returnContext.Result)));
         childFunction1.Setup(x => x.Describe()).Returns(() => new FunctionView("child1", "pluginName"));
 
         var childFunction2 = new Mock<ISKFunction>();
         childFunction2.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, EventHandlerWrapper<FunctionInvokingEventArgs>, EventHandlerWrapper<FunctionInvokedEventArgs>, CancellationToken>((c, s, _, _, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 2 is happy about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child2", "pluginName", returnContext, returnContext.Result)));
         childFunction2.Setup(x => x.Describe()).Returns(() => new FunctionView("child2", "pluginName"));
 
         var childFunction3 = new Mock<ISKFunction>();
         childFunction3.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, EventHandlerWrapper<FunctionInvokingEventArgs>, EventHandlerWrapper<FunctionInvokedEventArgs>, CancellationToken>((c, s, _, _, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 3 heard " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child3", "pluginName", returnContext, returnContext.Result)));
         childFunction3.Setup(x => x.Describe()).Returns(() => new FunctionView("child3", "pluginName"));
 
         var nodeFunction1 = new Mock<ISKFunction>();
         nodeFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, EventHandlerWrapper<FunctionInvokingEventArgs>, EventHandlerWrapper<FunctionInvokedEventArgs>, CancellationToken>((c, s, _, _, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(c.Variables.Input + " - this just happened."))
             .Returns(() => Task.FromResult(new FunctionResult("node1", "pluginName", returnContext, returnContext.Result)));
         nodeFunction1.Setup(x => x.Describe()).Returns(() => new FunctionView("node1", "pluginName"));
@@ -522,7 +522,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, EventHandlerWrapper<FunctionInvokingEventArgs>, EventHandlerWrapper<FunctionInvokedEventArgs>, CancellationToken>((c, s, _, _, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
