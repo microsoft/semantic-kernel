@@ -128,9 +128,19 @@ public static class KernelOpenAIPluginFunctionExtensions
         OpenAIPluginFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        if (executionParameters?.AuthCallback is not null &&
-            ParseOpenAIManifestForAuth(openAIManifest, out var openAIManifestAuth) &&
-            openAIManifestAuth!.Type != OpenAIAuthenticationType.None)
+        JsonNode pluginJson;
+        OpenAIManifestAuthentication openAIManifestAuth;
+        try
+        {
+            pluginJson = JsonNode.Parse(openAIManifest)!;
+            openAIManifestAuth = pluginJson["auth"].Deserialize<OpenAIManifestAuthentication>()!;
+        }
+        catch (JsonException ex)
+        {
+            throw new SKException("Parsing of Open AI manifest failed.", ex);
+        }
+
+        if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
             ((OpenApiPluginFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
@@ -141,53 +151,32 @@ public static class KernelOpenAIPluginFunctionExtensions
 
         return await kernel.ImportOpenApiPluginFunctionsAsync(
             pluginName,
-            ParseOpenAIManifestForOpenApiSpecUrl(openAIManifest),
+            ParseOpenAIManifestForOpenApiSpecUrl(pluginJson),
             executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static Uri ParseOpenAIManifestForOpenApiSpecUrl(string openAIManifest)
+    private static Uri ParseOpenAIManifestForOpenApiSpecUrl(JsonNode pluginJson)
     {
+        string? apiType = pluginJson?["api"]?["type"]?.ToString();
+        if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
+        {
+            throw new SKException($"Unexpected API type '{apiType}' found in Open AI manifest.");
+        }
+
+        string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
+        if (string.IsNullOrWhiteSpace(apiUrl))
+        {
+            throw new SKException("No Open API spec URL found in Open AI manifest.");
+        }
+
         try
         {
-            JsonNode? pluginJson = JsonNode.Parse(openAIManifest);
-
-            string? apiType = pluginJson?["api"]?["type"]?.ToString();
-            if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
-            {
-                throw new Exception("");
-            }
-
-            string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
-            if (string.IsNullOrWhiteSpace(apiUrl))
-            {
-                throw new Exception("");
-            }
-
             return new Uri(apiUrl);
         }
-        catch (System.UriFormatException)
+        catch (System.UriFormatException ex)
         {
-            throw new Exception("");
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            throw new Exception("");
-        }
-    }
-
-    private static bool ParseOpenAIManifestForAuth(string openAIManifest, out OpenAIManifestAuthentication? openAIManifestAuth)
-    {
-        try
-        {
-            JsonNode? pluginJson = JsonNode.Parse(openAIManifest);
-            openAIManifestAuth = pluginJson?["auth"].Deserialize<OpenAIManifestAuthentication>();
-            return openAIManifestAuth is not null;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            openAIManifestAuth = null;
-            return false;
+            throw new SKException("Invalid Open API spec URI found in Open AI manifest.", ex);
         }
     }
 
