@@ -121,18 +121,15 @@ repeat:
             {
                 var functionDetails = skFunction.Describe();
 
-                var invokingEventWrapper = new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking);
-                var invokedEventWrapper = new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked);
-
-                functionResult = await skFunction.InvokeAsync(context, null, invokingEventWrapper, invokedEventWrapper, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (functionResult is StopFunctionResult stopResult)
                 {
-                    if (this.ShouldCancelFlow(skFunction, stopResult.Reason, pipelineStepCount))
+                    if (this.IsCancelRequested(skFunction, stopResult.Reason, pipelineStepCount))
                     {
                         break;
                     }
 
-                    if (this.ShouldSkipFlow(skFunction, stopResult.Reason, pipelineStepCount))
+                    if (this.IsSkipRequested(skFunction, stopResult.Reason, pipelineStepCount))
                     {
                         continue;
                     }
@@ -141,11 +138,11 @@ repeat:
                     throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
                 }
 
+                // Only non StopFunctionResult are added to the list of results
                 allFunctionResults.Add(functionResult!);
 
-                if (invokedEventWrapper.EventArgs?.IsRepeatRequested ?? false)
+                if (this.IsRepeatRequested(skFunction, functionResult, pipelineStepCount))
                 {
-                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     goto repeat;
                 }
             }
@@ -157,35 +154,8 @@ repeat:
 
             pipelineStepCount++;
         }
-        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
-    }
 
-    private bool ShouldSkipFlow(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
-    {
-        if (reason == StopFunctionResult.StopReason.InvokingSkipped)
-        {
-            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool ShouldCancelFlow(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
-    {
-        if (reason == StopFunctionResult.StopReason.InvokingCancelled)
-        {
-            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-            return true;
-        }
-
-        if (reason == StopFunctionResult.StopReason.InvokedCancelled)
-        {
-            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-            return true;
-        }
-
-        return false;
+        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Context ?? context, allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
     /// <inheritdoc/>
@@ -201,6 +171,11 @@ repeat:
             this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
+            new List<EventHandlerWrapper?>
+            {
+                new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
+                new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked)
+            },
             loggerFactory ?? this.LoggerFactory,
             culture);
     }
@@ -237,6 +212,44 @@ repeat:
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
+
+    private bool IsSkipRequested(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
+    {
+        if (reason == StopFunctionResult.StopReason.InvokingSkipped)
+        {
+            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsCancelRequested(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
+    {
+        if (reason == StopFunctionResult.StopReason.InvokingCancelled)
+        {
+            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+
+        if (reason == StopFunctionResult.StopReason.InvokedCancelled)
+        {
+            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsRepeatRequested(ISKFunction skFunction, FunctionResult functionResult, int pipelineStepCount)
+    {
+        if (functionResult.Context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
+        {
+            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+        return false;
+    }
 
     #endregion
 

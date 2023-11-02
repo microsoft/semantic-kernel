@@ -8,10 +8,17 @@ using Microsoft.SemanticKernel.Events;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
+/// Flag class for storing event handler and event args for function events.
+/// </summary>
+public abstract class EventHandlerWrapper
+{
+}
+
+/// <summary>
 /// Class for storing event handler and event args for function events.
 /// </summary>
 /// <typeparam name="TEventArgs"></typeparam>
-public sealed class EventHandlerWrapper<TEventArgs> where TEventArgs : SKEventArgs
+public sealed class EventHandlerWrapper<TEventArgs> : EventHandlerWrapper where TEventArgs : SKEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="EventHandlerWrapper{TEventArgs}"/> class.

@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -70,6 +71,16 @@ public sealed class SKContext
     internal IAIServiceSelector ServiceSelector { get; }
 
     /// <summary>
+    /// Function invoking event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
+
+    /// <summary>
+    /// Function invoked event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
+
+    /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="functionRunner">Function runner reference</param>
@@ -77,6 +88,7 @@ public sealed class SKContext
     /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
+    /// <param name="eventHandlerWrappers">Event handler wrappers to be used in context</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
@@ -85,6 +97,7 @@ public sealed class SKContext
         IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
+        ICollection<EventHandlerWrapper?>? eventHandlerWrappers = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
@@ -97,6 +110,28 @@ public sealed class SKContext
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
+
+        this.InitializeEventWrappers(eventHandlerWrappers);
+    }
+
+    private void InitializeEventWrappers(ICollection<EventHandlerWrapper?>? eventHandlerWrappers)
+    {
+        if (eventHandlerWrappers is not null)
+        {
+            foreach (var handler in eventHandlerWrappers)
+            {
+                if (handler is EventHandlerWrapper<FunctionInvokingEventArgs> invokingWrapper)
+                {
+                    this.FunctionInvokingHandler = invokingWrapper;
+                    continue;
+                }
+
+                if (handler is EventHandlerWrapper<FunctionInvokedEventArgs> invokedWrapper)
+                {
+                    this.FunctionInvokedHandler = invokedWrapper;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -131,6 +166,7 @@ public sealed class SKContext
             this.ServiceSelector,
             variables ?? this.Variables.Clone(),
             functions ?? this.Functions,
+            new List<EventHandlerWrapper?> { this.FunctionInvokedHandler, this.FunctionInvokingHandler },
             this.LoggerFactory,
             this.Culture);
     }

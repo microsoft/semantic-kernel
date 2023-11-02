@@ -135,22 +135,20 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            this.CallFunctionInvoking(context, invokingHandlerWrapper);
-            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
+            this.CallFunctionInvoking(context);
+            if (this.ShouldStopInvocation(context.FunctionInvokingHandler?.EventArgs, out var stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
 
             var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
-            var finalResult = this.CallFunctionInvoked(invokeResult, invokedHandlerWrapper);
+            var finalResult = this.CallFunctionInvoked(invokeResult, context.FunctionInvokedHandler);
 
-            if (this.ShouldStopInvocation(invokedHandlerWrapper?.EventArgs, out stopReason))
+            if (this.ShouldStopInvocation(context.FunctionInvokedHandler?.EventArgs, out stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, finalResult.Value, stopReason!.Value);
             }
@@ -164,34 +162,35 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    private void CallFunctionInvoking(SKContext context, EventHandlerWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoking(SKContext context)
     {
-        if (eventDelegateWrapper?.Handler is null)
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is null)
         {
             return;
         }
 
-        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
-        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
-    private FunctionResult CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    private FunctionResult CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventWrapper)
     {
-        if (eventDelegateWrapper?.Handler is null)
+        if (eventWrapper?.Handler is null)
         {
             // No handlers registered, return the result as is.
             return result;
         }
 
-        eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
-        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Apply any changes from the event handlers to final result.
-        var functionResult = new FunctionResult(this.Name, this.PluginName, eventDelegateWrapper.EventArgs.SKContext, eventDelegateWrapper.EventArgs.SKContext.Result)
+        var functionResult = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
         {
             // Updates the eventArgs metadata during invoked handler execution
             // will reflect in the result metadata
-            Metadata = eventDelegateWrapper.EventArgs.Metadata
+            Metadata = eventWrapper.EventArgs.Metadata
         };
 
         return functionResult;

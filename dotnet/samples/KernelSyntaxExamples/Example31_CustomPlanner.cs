@@ -168,7 +168,7 @@ public class MarkupPlugin
         Console.WriteLine();
 
         var result = await context.Runner.RunAsync(plan);
-        return result.GetValue<string>()!;
+        return result?.GetValue<string>()! ?? string.Empty;
     }
 }
 

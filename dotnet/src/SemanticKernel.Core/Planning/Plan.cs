@@ -280,8 +280,6 @@ public sealed class Plan : ISKFunction
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingHandlerWrapper = null,
-        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedHandlerWrapper = null,
         CancellationToken cancellationToken = default)
     {
         var result = new FunctionResult(this.Name, this.PluginName, context);
@@ -298,14 +296,14 @@ public sealed class Plan : ISKFunction
             // Execute the step
             result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, invokingHandlerWrapper, invokedHandlerWrapper, cancellationToken)
+                .InvokeAsync(functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
-            this.CallFunctionInvoking(context, invokingHandlerWrapper);
-            if (this.ShouldStopInvocation(invokingHandlerWrapper?.EventArgs, out var stopReason))
+            this.CallFunctionInvoking(context);
+            if (this.IsInvokingCancelOrSkipRequested(context, out var stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
             }
@@ -315,32 +313,22 @@ public sealed class Plan : ISKFunction
             {
                 AddVariablesToContext(this.State, context);
                 var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
-                if (stepResult is StopFunctionResult stopResult)
-                {
-                    // Cancel subsequent flow
-                    if (stopResult.Reason is
-                        StopFunctionResult.StopReason.InvokingCancelled
-                        or StopFunctionResult.StopReason.InvokedCancelled)
-                    {
-                        // Breaks the plan execution and give the current step as the plan stop result.
-                        // This will render no result for the plan when run from the Kernel.
-                        return stepResult;
-                    }
 
-                    // Skip current step
-                    if (stopResult.Reason == StopFunctionResult.StopReason.InvokingSkipped)
-                    {
-                        continue;
-                    }
+                // If a step was cancelled before invocation
+                // Return the last result state of the plan.
+                if (stepResult is null)
+                {
+                    return result;
                 }
+
                 this.UpdateContextWithOutputs(context);
 
                 result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
                 this.UpdateFunctionResultWithOutputs(result);
             }
 
-            this.CallFunctionInvoked(result, invokedHandlerWrapper);
-            if (this.ShouldStopInvocation(invokedHandlerWrapper?.EventArgs, out stopReason))
+            this.CallFunctionInvoked(result, context);
+            if (this.IsInvokedCancelRequested(context, out stopReason))
             {
                 return new StopFunctionResult(this.Name, this.PluginName, context, result.Value, stopReason!.Value);
             }
@@ -374,18 +362,19 @@ public sealed class Plan : ISKFunction
         return result;
     }
 
-    private bool ShouldStopInvocation(FunctionInvokedEventArgs? invokedEvent, out StopFunctionResult.StopReason? reason)
+    private bool IsInvokedCancelRequested(SKContext context, out StopFunctionResult.StopReason? reason)
     {
+        var eventArgs = context.FunctionInvokedHandler?.EventArgs;
         reason = null;
 
         // When no event handler is registered, the event args are null and
         // this should not stop the function execution.
-        if (invokedEvent is null)
+        if (eventArgs is null)
         {
             return false;
         }
 
-        if (invokedEvent.CancelToken.IsCancellationRequested)
+        if (eventArgs.CancelToken.IsCancellationRequested)
         {
             reason = StopFunctionResult.StopReason.InvokedCancelled;
         }
@@ -394,22 +383,23 @@ public sealed class Plan : ISKFunction
         return (reason is not null);
     }
 
-    private bool ShouldStopInvocation(FunctionInvokingEventArgs? invokingEvent, out StopFunctionResult.StopReason? reason)
+    private bool IsInvokingCancelOrSkipRequested(SKContext context, out StopFunctionResult.StopReason? reason)
     {
+        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
         reason = null;
 
         // When no event handler is registered, the event args are null and
         // this should not stop the function execution.
-        if (invokingEvent is null)
+        if (eventArgs is null)
         {
             return false;
         }
 
-        if (invokingEvent.IsSkipRequested)
+        if (eventArgs.IsSkipRequested)
         {
             reason = StopFunctionResult.StopReason.InvokingSkipped;
         }
-        else if (invokingEvent.CancelToken.IsCancellationRequested)
+        else if (eventArgs.CancelToken.IsCancellationRequested)
         {
             reason = StopFunctionResult.StopReason.InvokingCancelled;
         }
@@ -425,7 +415,7 @@ public sealed class Plan : ISKFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -436,6 +426,12 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+
+            if (result is null)
+            {
+                // Step was cancelled
+                return null;
+            }
 
             var resultValue = result.Context.Result.Trim();
 
@@ -480,31 +476,34 @@ public sealed class Plan : ISKFunction
         throw new InvalidOperationException("There isn't a next step");
     }
 
-    private void CallFunctionInvoking(SKContext context, EventHandlerWrapper<FunctionInvokingEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoking(SKContext context)
     {
-        if (eventDelegateWrapper?.Handler is null)
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is null)
         {
             return;
         }
 
-        eventDelegateWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
-        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
-    private void CallFunctionInvoked(FunctionResult result, EventHandlerWrapper<FunctionInvokedEventArgs>? eventDelegateWrapper)
+    private void CallFunctionInvoked(FunctionResult result, SKContext context)
     {
+        var eventWrapper = context.FunctionInvokedHandler;
+
         // Not handlers registered, return the result as is
-        if (eventDelegateWrapper?.Handler is null)
+        if (eventWrapper?.Handler is null)
         {
             return;
         }
 
-        eventDelegateWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
-        eventDelegateWrapper.Handler.Invoke(this, eventDelegateWrapper.EventArgs);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution
         // will reflect in the result metadata
-        result.Metadata = eventDelegateWrapper.EventArgs.Metadata;
+        result.Metadata = eventWrapper.EventArgs.Metadata;
     }
 
     /// <summary>

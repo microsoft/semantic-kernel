@@ -21,6 +21,11 @@ public sealed class KernelResult
     internal object? Value { get; private set; } = null;
 
     /// <summary>
+    /// Instance of <see cref="SKContext"/> to pass in function pipeline.
+    /// </summary>
+    internal SKContext? Context { get; private set; }
+
+    /// <summary>
     /// Returns kernel result value.
     /// </summary>
     /// <typeparam name="T">Target type for result value casting.</typeparam>
@@ -43,13 +48,15 @@ public sealed class KernelResult
     /// <summary>
     /// Creates instance of <see cref="KernelResult"/> based on function results.
     /// </summary>
+    /// <param name="context">Kernel result context</param>
     /// <param name="value">Kernel result object.</param>
     /// <param name="functionResults">Results from all functions in pipeline.</param>
-    public static KernelResult FromFunctionResults(object? value, IReadOnlyCollection<FunctionResult> functionResults)
+    public static KernelResult FromFunctionResults(SKContext context, object? value, IReadOnlyCollection<FunctionResult> functionResults)
     {
         return new KernelResult
         {
             Value = value,
+            Context = context,
             FunctionResults = functionResults
         };
     }
