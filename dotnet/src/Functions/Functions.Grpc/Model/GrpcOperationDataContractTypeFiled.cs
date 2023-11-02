@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
 /// <summary>
 /// The gRPC operation data contract field.
 /// </summary>
-internal class GrpcOperationDataContractTypeFiled
+internal sealed class GrpcOperationDataContractTypeFiled
 {
     /// <summary>
     /// Creates an instance of a <see cref="GrpcOperationDataContractTypeFiled"/> class.

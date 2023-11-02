@@ -248,6 +248,7 @@ class Kernel:
         input_context: Optional[SKContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
+        **kwargs: Dict[str, Any],
     ) -> SKContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
@@ -300,7 +301,7 @@ class Kernel:
             pipeline_step += 1
 
             try:
-                context = await func.invoke_async(input=None, context=context)
+                context = await func.invoke_async(input=None, context=context, **kwargs)
 
                 if context.error_occurred:
                     self._log.error(
@@ -355,9 +356,11 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self) -> SKContext:
+    def create_new_context(
+        self, variables: Optional[ContextVariables] = None
+    ) -> SKContext:
         return SKContext(
-            ContextVariables(),
+            ContextVariables() if not variables else variables,
             self._memory,
             self.skills,
             self._log,
@@ -734,26 +737,22 @@ class Kernel:
             )
 
         skill_name = os.path.basename(skill_directory)
-        try:
-            spec = importlib.util.spec_from_file_location(
-                MODULE_NAME, native_py_file_path
-            )
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
 
-            class_name = next(
-                (
-                    name
-                    for name, cls in inspect.getmembers(module, inspect.isclass)
-                    if cls.__module__ == MODULE_NAME
-                ),
-                None,
-            )
-            if class_name:
-                skill_obj = getattr(module, class_name)()
-                return self.import_skill(skill_obj, skill_name)
-        except Exception:
-            pass
+        spec = importlib.util.spec_from_file_location(MODULE_NAME, native_py_file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class_name = next(
+            (
+                name
+                for name, cls in inspect.getmembers(module, inspect.isclass)
+                if cls.__module__ == MODULE_NAME
+            ),
+            None,
+        )
+        if class_name:
+            skill_obj = getattr(module, class_name)()
+            return self.import_skill(skill_obj, skill_name)
 
         return {}
 

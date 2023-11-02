@@ -12,8 +12,10 @@ namespace Microsoft.SemanticKernel;
 /// <param name="Description">Parameter description</param>
 /// <param name="DefaultValue">Default parameter value, if not provided</param>
 /// <param name="Type">Parameter type.</param>
+/// <param name="IsRequired">Whether the parameter is required.</param>
 public sealed record ParameterView(
     string Name,
     string? Description = null,
     string? DefaultValue = null,
-    ParameterViewType? Type = null);
+    ParameterViewType? Type = null,
+    bool? IsRequired = null);

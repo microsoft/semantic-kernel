@@ -4,11 +4,13 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Plugins;
 using RepoUtils;
 
@@ -32,7 +34,7 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner but not enough for the given goal.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         try
         {
@@ -78,7 +80,7 @@ internal static class Example12_SequentialPlanner
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin");
 
@@ -106,11 +108,11 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
-        kernel.ImportPlugin(new EmailPlugin(), "email");
+        kernel.ImportFunctions(new EmailPlugin(), "email");
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin");
 
@@ -148,7 +150,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
 
         // Save the plan for future use
-        var semanticMemory = GetMemory();
+        var semanticMemory = InitializeMemory();
         await semanticMemory.SaveInformationAsync(
             "plans",
             id: Guid.NewGuid().ToString(),
@@ -198,8 +200,8 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "MiscPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "MiscPlugin");
 
         var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
 
@@ -227,10 +229,11 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Plan using Memory ========");
 
-        var kernel = InitializeKernelWithMemory();
+        var kernel = InitializeKernel();
+        var memory = InitializeMemory();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin",
            "CalendarPlugin",
@@ -243,14 +246,14 @@ internal static class Example12_SequentialPlanner
            "MiscPlugin",
            "QAPlugin");
 
-        kernel.ImportPlugin(new EmailPlugin(), "email");
-        kernel.ImportPlugin(new StaticTextPlugin(), "statictext");
-        kernel.ImportPlugin(new TextPlugin(), "coretext");
+        kernel.ImportFunctions(new EmailPlugin(), "email");
+        kernel.ImportFunctions(new StaticTextPlugin(), "statictext");
+        kernel.ImportFunctions(new TextPlugin(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
         // IMPORTANT: To use memory and embeddings to find relevant plugins in the planner, set the 'Memory' property on the planner config.
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5, Memory = kernel.Memory });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.5, Memory = memory } });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -273,7 +276,7 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
-    private static IKernel InitializeKernelWithMemory()
+    private static IKernel InitializeKernel()
     {
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
         // use these to generate and store embeddings for the function descriptions.
@@ -287,24 +290,22 @@ internal static class Example12_SequentialPlanner
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         return kernel;
     }
 
-    private static ISemanticTextMemory GetMemory(IKernel? kernel = null)
+    private static SemanticTextMemory InitializeMemory()
     {
-        if (kernel is not null)
-        {
-            return kernel.Memory;
-        }
         var memoryStorage = new VolatileMemoryStore();
-        var textEmbeddingGenerator = new Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding.AzureTextEmbeddingGeneration(
+
+        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
             modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+
         return memory;
     }
 

@@ -75,7 +75,7 @@ public static class Example08_RetryHandler
 
     private static KernelBuilder InitializeKernelBuilder()
     {
-        return Kernel.Builder
+        return new KernelBuilder()
                     .WithLoggerFactory(InfoLogger.LoggerFactory)
                     // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
                     .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
@@ -110,9 +110,9 @@ public static class Example08_RetryHandler
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
-        var qaPlugin = kernel.ImportSemanticPluginFromDirectory(
+        var qaPlugin = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
             "QAPlugin");
 
@@ -120,8 +120,17 @@ public static class Example08_RetryHandler
 
         InfoLogger.Logger.LogInformation("Question: {0}", question);
         // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
-        var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
-        InfoLogger.Logger.LogInformation("Answer: {0}", answer);
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
+            InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
+        }
+        catch (Exception ex)
+        {
+            InfoLogger.Logger.LogInformation("Error: {0}", ex.Message);
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     // Basic custom retry handler factory
@@ -132,11 +141,17 @@ public static class Example08_RetryHandler
     // Basic custom empty retry handler
     public sealed class MyCustomHandler : DelegatingHandler
     {
+        public MyCustomHandler(ILoggerFactory loggerFactory)
+        {
+        }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Your custom http handling implementation
-
-            throw new NotImplementedException();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("My custom bad request override")
+            });
         }
     }
 

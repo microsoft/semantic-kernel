@@ -3,17 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -37,16 +37,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
-    public ISemanticTextMemory Memory => this._memory;
-
-    /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IReadOnlyFunctionCollection Skills => this._functionCollection;
-#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -54,10 +45,11 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
+    [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
-    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+    public IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <inheritdoc/>
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
@@ -72,132 +64,47 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory"></param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceSelector">AI service selector</param>
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory? loggerFactory,
+        IAIServiceSelector? serviceSelector = null
+        )
     {
+        loggerFactory ??= NullLoggerFactory.Instance;
+
         this.LoggerFactory = loggerFactory;
-        this._httpHandlerFactory = httpHandlerFactory;
+        this.HttpHandlerFactory = httpHandlerFactory;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._functionCollection = functionCollection;
+        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
-    {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._functionCollection.AddFunction(function);
-
-        return function;
-    }
-
-    /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null)
-    {
-        Verify.NotNull(pluginInstance);
-
-        if (string.IsNullOrWhiteSpace(pluginName))
-        {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
-            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", pluginInstance.GetType().FullName);
-        }
-        else
-        {
-            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", pluginInstance.GetType().FullName, pluginName);
-        }
-
-        Dictionary<string, ISKFunction> functions = ImportFunctions(
-            pluginInstance,
-            pluginName!,
-            this._logger,
-            this.LoggerFactory
-        );
-        foreach (KeyValuePair<string, ISKFunction> f in functions)
-        {
-            f.Value.SetDefaultFunctionCollection(this.Functions);
-            this._functionCollection.AddFunction(f.Value);
-        }
-
-        return functions;
-    }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null)
-    {
-        return this.ImportPlugin(pluginInstance, pluginName);
-    }
-#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultFunctionCollection(this.Functions);
         this._functionCollection.AddFunction(customFunction);
 
         return customFunction;
     }
 
     /// <inheritdoc/>
-    public void RegisterMemory(ISemanticTextMemory memory)
-    {
-        this._memory = memory;
-    }
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ISKFunction skFunction,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default)
-        => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
-
-    /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(this, variables);
+        var context = this.CreateNewContext(variables);
 
         FunctionResult? functionResult = null;
 
@@ -230,9 +137,16 @@ repeat:
 
                 context = functionResult.Context;
 
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
+
+                if (functionInvokedArgs is not null)
+                {
+                    // All changes to the SKContext by invoked handlers may reflect in the original function result
+                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
+                }
+
                 allFunctionResults.Add(functionResult);
 
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -258,11 +172,20 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
-            functions: this._functionCollection);
+            new FunctionRunner(this),
+            this._aiServiceProvider,
+            this._aiServiceSelector,
+            variables,
+            functions ?? this.Functions,
+            loggerFactory ?? this.LoggerFactory,
+            culture);
     }
 
     /// <inheritdoc/>
@@ -295,8 +218,8 @@ repeat:
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
+    private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
-    private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     /// <summary>
     /// Execute the OnFunctionInvoking event handlers.
@@ -336,72 +259,20 @@ repeat:
         return null;
     }
 
-    private ISKFunction CreateSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            pluginName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(this.Functions);
-
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
-
-        return func;
-    }
-
-    /// <summary>
-    /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
-    /// </summary>
-    /// <param name="pluginInstance">Class instance from which to import available native functions</param>
-    /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
-    /// <param name="logger">Application logger</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportFunctions(object pluginInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
-    {
-        MethodInfo[] methods = pluginInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        logger.LogTrace("Importing plugin name: {0}. Potential methods found: {1}", pluginName, methods.Length);
-
-        // Filter out non-SKFunctions and fail if two functions have the same name
-        Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
-        foreach (MethodInfo method in methods)
-        {
-            if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
-            {
-                ISKFunction function = SKFunction.FromNativeMethod(method, pluginInstance, pluginName, loggerFactory);
-                if (result.ContainsKey(function.Name))
-                {
-                    throw new SKException("Function overloads are not supported, please differentiate function names");
-                }
-
-                result.Add(function.Name, function);
-            }
-        }
-
-        logger.LogTrace("Methods imported {0}", result.Count);
-
-        return result;
-    }
-
     #endregion
 
     #region Obsolete ===============================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISemanticTextMemory Memory => this._memory;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IReadOnlyFunctionCollection Skills => this._functionCollection;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Functions collection instead. This will be removed in a future release.")]
@@ -410,6 +281,23 @@ repeat:
     {
         return this.Functions.GetFunction(pluginName, functionName);
     }
+
+    /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void RegisterMemory(ISemanticTextMemory memory)
+    {
+        this._memory = memory;
+    }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
+    {
+        return this.ImportFunctions(functionsInstance, pluginName);
+    }
+#pragma warning restore CS1591
 
     #endregion
 }

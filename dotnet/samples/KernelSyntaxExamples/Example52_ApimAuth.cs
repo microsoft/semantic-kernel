@@ -59,7 +59,7 @@ public static class Example52_ApimAuth
                 .AddConsole();
         });
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
             .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
                 new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory))
@@ -68,16 +68,16 @@ public static class Example52_ApimAuth
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var funSkill = kernel.ImportSemanticPluginFromDirectory(
+        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
             "FunPlugin");
 
         // Run
         var result = await kernel.RunAsync(
             "I have no homework",
-            funSkill["Excuses"]
+            funFunctions["Excuses"]
         );
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }

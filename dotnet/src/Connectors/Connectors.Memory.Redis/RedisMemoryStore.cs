@@ -247,7 +247,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Disposes the the <see cref="RedisMemoryStore"/> instance.
+    /// Disposes the <see cref="RedisMemoryStore"/> instance.
     /// </summary>
     public void Dispose()
     {

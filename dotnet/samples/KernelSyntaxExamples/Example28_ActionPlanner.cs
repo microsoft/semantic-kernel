@@ -3,8 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
+using Microsoft.SemanticKernel.Planners;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -21,10 +20,10 @@ public static class Example28_ActionPlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "FunPlugin");
+        string samplesDirectory = RepoFiles.SamplePluginsPath();
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "FunPlugin");
 
         // Create an optional config for the ActionPlanner. Use this to exclude plugins and functions if needed
         var config = new ActionPlannerConfig();

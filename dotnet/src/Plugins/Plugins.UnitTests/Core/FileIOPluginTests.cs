@@ -22,10 +22,13 @@ public class FileIOPluginTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
-        // Act - Assert no exception occurs e.g. due to reflection
-        _ = kernel.ImportPlugin(new FileIOPlugin(), "fileIO");
+        // Act
+        var functions = kernel.ImportFunctions(new FileIOPlugin(), "fileIO");
+
+        // Assert no exception occurs e.g. due to reflection
+        Assert.NotNull(functions);
     }
 
     [Fact]

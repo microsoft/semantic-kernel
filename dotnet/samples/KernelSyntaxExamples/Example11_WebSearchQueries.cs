@@ -13,11 +13,11 @@ public static class Example11_WebSearchQueries
     {
         Console.WriteLine("======== WebSearchQueries ========");
 
-        IKernel kernel = Kernel.Builder.WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Load native plugins
         var plugin = new SearchUrlPlugin();
-        var bing = kernel.ImportPlugin(plugin, "search");
+        var bing = kernel.ImportFunctions(plugin, "search");
 
         // Run
         var ask = "What's the tallest building in Europe?";
@@ -27,6 +27,6 @@ public static class Example11_WebSearchQueries
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

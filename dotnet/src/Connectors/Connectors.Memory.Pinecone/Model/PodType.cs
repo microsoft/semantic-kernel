@@ -90,7 +90,13 @@ public enum PodType
     /// Enum P2X8 for value: p2.x8
     /// </summary>
     [EnumMember(Value = "p2.x8")]
-    P2X8 = 12
+    P2X8 = 12,
+
+    /// <summary>
+    /// Enum Starter for value: starter
+    /// </summary>
+    [EnumMember(Value = "starter")]
+    Starter = 13
 }
 
 internal sealed class PodTypeJsonConverter : JsonConverter<PodType>

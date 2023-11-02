@@ -21,22 +21,11 @@ public static class AIFunctionResultExtensions
     /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
     public static IReadOnlyCollection<ModelResult>? GetModelResults(this FunctionResult result)
     {
-        if (result.Metadata.TryGetValue(ModelResultsMetadataKey, out object modelResultObject) &&
-            modelResultObject is IReadOnlyCollection<ModelResult> modelResults)
+        if (result.TryGetMetadataValue(ModelResultsMetadataKey, out IReadOnlyCollection<ModelResult>? modelResults))
         {
             return modelResults;
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Adds collection of <see cref="ModelResult"/> records to <see cref="FunctionResult"/> metadata.
-    /// </summary>
-    /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
-    /// <param name="modelResults">Collection of <see cref="ModelResult"/> records.</param>
-    internal static void AddModelResults(this FunctionResult result, IReadOnlyCollection<ModelResult> modelResults)
-    {
-        result.Metadata.Add(ModelResultsMetadataKey, modelResults);
     }
 }

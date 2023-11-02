@@ -41,17 +41,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description { get; }
-
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// List of function parameters
@@ -79,7 +70,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
@@ -117,7 +108,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, pluginName!, logger);
@@ -156,34 +147,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        // No-op for native functions; do not throw, as both Plan and PromptFunctions use this,
-        // and we don't have a way to distinguish between a native function and a Plan.
-        return this;
-    }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this.SetDefaultFunctionCollection(skills);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
     /// <summary>
     /// Dispose of resources.
     /// </summary>
@@ -207,7 +170,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private NativeFunctionDelegate _function;
+    private readonly NativeFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
@@ -216,12 +179,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-    }
-
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
     internal NativeFunction(
@@ -285,8 +242,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 functionName = functionName.Substring(0, functionName.Length - "Async".Length);
             }
         }
-
-        SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
 
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
@@ -370,11 +325,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             // Extract and return the result.
             return returnFunc(functionName, pluginName, result, context);
         }
-
-        // Add parameters applied to the method that aren't part of the signature.
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKParameterAttribute>(inherit: true)
-            .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
 
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);
@@ -517,7 +467,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             var parameterView = new ParameterView(
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
-                defaultValue?.ToString() ?? string.Empty);
+                defaultValue?.ToString() ?? string.Empty,
+                IsRequired: !parameter.IsOptional);
 
             return (parameterFunc, parameterView);
         }
@@ -906,9 +857,44 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     #region Obsolete
 
     /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => false;
+    public bool IsSemantic => true;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

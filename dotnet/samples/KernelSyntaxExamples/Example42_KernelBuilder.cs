@@ -2,7 +2,7 @@
 
 // ==========================================================================================================
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
-// You can access the builder using either Kernel.Builder or KernelBuilder.
+// You can access the builder using new KernelBuilder().
 
 #pragma warning disable CA1852
 
@@ -19,11 +19,12 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
 
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Polly;
 using Polly.Retry;
 
@@ -38,20 +39,20 @@ public static class Example42_KernelBuilder
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
-        IKernel kernel1 = Kernel.Builder.Build();
+        IKernel kernel1 = new KernelBuilder().Build();
 #pragma warning restore CA1852 // Seal internal types
 
-        IKernel kernel2 = Kernel.Builder.Build();
+        IKernel kernel2 = new KernelBuilder().Build();
 
         // ==========================================================================================================
-        // Kernel.Builder returns a new builder instance, in case you want to configure the builder differently.
+        // new KernelBuilder() returns a new builder instance, in case you want to configure the builder differently.
         // The following are 3 distinct builder instances.
 
         var builder1 = new KernelBuilder();
 
-        var builder2 = Kernel.Builder;
+        var builder2 = new KernelBuilder();
 
-        var builder3 = Kernel.Builder;
+        var builder3 = new KernelBuilder();
 
         // ==========================================================================================================
         // A builder instance can create multiple kernel instances, e.g. in case you need
@@ -77,9 +78,10 @@ public static class Example42_KernelBuilder
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
-        using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+
+        var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var plugins = new FunctionCollection();
-        var templateEngine = new PromptTemplateEngine(loggerFactory);
+        var templateEngine = new BasicPromptTemplateEngine(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
         //var httpHandlerFactory = new PollyHttpRetryHandlerFactory( your policy );
@@ -103,34 +105,10 @@ public static class Example42_KernelBuilder
         // The kernel builder purpose is to simplify this process, automating how dependencies
         // are connected, still allowing to customize parts of the composition.
 
-        // Example: how to use a custom memory and configure Azure OpenAI
-        var kernel4 = Kernel.Builder
-            .WithLoggerFactory(NullLoggerFactory.Instance)
-            .WithMemory(memory)
-            .WithAzureChatCompletionService(
-                deploymentName: azureOpenAIChatCompletionDeployment,
-                endpoint: azureOpenAIEndpoint,
-                apiKey: azureOpenAIKey)
-            .Build();
-
-        // Example: how to use a custom memory storage
-        var kernel6 = Kernel.Builder
-            .WithLoggerFactory(NullLoggerFactory.Instance)
-            .WithMemoryStorage(memoryStorage) // Custom memory storage
-            .WithAzureChatCompletionService(
-                deploymentName: azureOpenAIChatCompletionDeployment,
-                endpoint: azureOpenAIEndpoint,
-                apiKey: azureOpenAIKey) // This will be used when using AI completions
-            .WithAzureTextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingDeployment,
-                endpoint: azureOpenAIEndpoint,
-                apiKey: azureOpenAIKey) // This will be used when indexing memory records
-            .Build();
-
         // ==========================================================================================================
         // The AI services are defined with the builder
 
-        var kernel7 = Kernel.Builder
+        var kernel7 = new KernelBuilder()
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
@@ -143,7 +121,7 @@ public static class Example42_KernelBuilder
         // The default behavior can be configured or a custom retry handler can be injected that will apply to all
         // AI requests (when using the kernel).
 
-        var kernel8 = Kernel.Builder.WithRetryBasic(
+        var kernel8 = new KernelBuilder().WithRetryBasic(
             new BasicRetryConfig
             {
                 MaxRetryCount = 3,
@@ -169,11 +147,11 @@ public static class Example42_KernelBuilder
                 (ex, timespan, retryCount, _)
                     => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
 
-        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
+        var kernel9 = new KernelBuilder().WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
 
-        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+        var kernel10 = new KernelBuilder().WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
 
-        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
+        var kernel11 = new KernelBuilder().WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
 
         return Task.CompletedTask;
     }

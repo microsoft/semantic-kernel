@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /// <summary>
@@ -47,7 +47,7 @@ public static class Example07_BingAndGooglePlugins
         {
             var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportPlugin(bing, "bing");
+            kernel.ImportFunctions(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
         }
@@ -66,7 +66,7 @@ public static class Example07_BingAndGooglePlugins
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
-            var search = kernel.ImportPlugin(new WebSearchEnginePlugin(googleConnector), "google");
+            kernel.ImportFunctions(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }
@@ -82,7 +82,7 @@ public static class Example07_BingAndGooglePlugins
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -137,7 +137,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
         var answer = await kernel.RunAsync(oracle, new(questions)
         {
@@ -149,7 +149,7 @@ Answer: ";
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
-            var promptRenderer = new PromptTemplateEngine();
+            var promptRenderer = new BasicPromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
             var information = await promptRenderer.RenderAsync(result, kernel.CreateNewContext());

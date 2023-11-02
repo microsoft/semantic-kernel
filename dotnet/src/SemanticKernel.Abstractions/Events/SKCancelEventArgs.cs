@@ -29,12 +29,4 @@ public abstract class SKCancelEventArgs : SKEventArgs
     {
         this._cancelTokenSource.Cancel();
     }
-
-    /// <summary>
-    /// Dispose resources.
-    /// </summary>
-    ~SKCancelEventArgs()
-    {
-        this._cancelTokenSource.Dispose();
-    }
 }

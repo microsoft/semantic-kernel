@@ -132,7 +132,7 @@ class StepwisePlanner:
     @sk_function_context_parameter(
         name="function_descriptions", description="List of tool descriptions"
     )
-    async def execute_plan_async(self, context: SKContext):
+    async def execute_plan_async(self, context: SKContext) -> SKContext:
         question = context["question"]
 
         steps_taken: List[SystemStep] = []
@@ -229,7 +229,7 @@ class StepwisePlanner:
 
         if thought_match:
             result.thought = thought_match.group(0).strip()
-        elif not input.contains(ACTION):
+        elif ACTION not in input:
             result.thought = input
         else:
             raise ValueError("Unexpected input format")

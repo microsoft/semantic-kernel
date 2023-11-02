@@ -13,8 +13,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -35,17 +36,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description { get; }
-
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -57,27 +49,32 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="functionConfig">Semantic function configuration.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string pluginName,
         string functionName,
-        SemanticFunctionConfig functionConfig,
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(functionConfig);
+        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptTemplate);
 
         var func = new SemanticFunction(
-            template: functionConfig.PromptTemplate,
-            description: functionConfig.PromptTemplateConfig.Description,
+            template: promptTemplate,
+            description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
-        );
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
+        )
+        {
+            _modelSettings = promptTemplateConfig.ModelSettings
+        };
 
         return func;
     }
@@ -96,35 +93,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        this._functionCollection = functions;
-        return this;
-    }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this.SetDefaultFunctionCollection(skills);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        Verify.NotNull(serviceFactory);
-        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        this.RequestSettings = requestSettings;
-        return this;
+        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -132,10 +101,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (this._aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
     }
 
     /// <summary>
@@ -178,10 +143,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IReadOnlyFunctionCollection? _functionCollection;
-    private Lazy<ITextCompletion>? _aiService = null;
-    private Lazy<FunctionView> _view;
-    public IPromptTemplate _promptTemplate { get; }
+    private IAIServiceSelector? _serviceSelector;
+    private List<AIRequestSettings>? _modelSettings;
+    private readonly Lazy<FunctionView> _view;
+    private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -205,29 +170,30 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     private async Task<FunctionResult> RunPromptAsync(
-        ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(client);
-
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
+            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            Verify.NotNull(textCompletion);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
             context.Variables.Update(completion);
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
-
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result.AddModelResults(modelResults);
+            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+
+            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -243,9 +209,64 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     #region Obsolete
 
     /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        Verify.NotNull(serviceFactory);
+
+        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        {
+            delegatingProvider.ServiceFactory = serviceFactory;
+        }
+        else
+        {
+            var serviceSelector = new DelegatingAIServiceSelector();
+            serviceSelector.ServiceFactory = serviceFactory;
+            this._serviceSelector = serviceSelector;
+        }
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        {
+            delegatingProvider.RequestSettings = requestSettings;
+        }
+        else
+        {
+            var configurationProvider = new DelegatingAIServiceSelector();
+            configurationProvider.RequestSettings = requestSettings;
+            this._serviceSelector = configurationProvider;
+        }
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => true;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

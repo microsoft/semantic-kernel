@@ -43,7 +43,7 @@ public class MyTextCompletionService : ITextCompletion
     }
 }
 
-public class MyTextCompletionStreamingResult : ITextStreamingResult
+public class MyTextCompletionStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly ModelResult _modelResult = new(new
     {
@@ -113,7 +113,7 @@ public static class Example16_CustomLLM
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         var result = await textValidationFunction.InvokeAsync("I mised the training session this morning", kernel);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(

@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using Pgvector.Npgsql;
 using RepoUtils;
@@ -151,7 +151,7 @@ public static class Example15_TextMemoryPlugin
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
@@ -162,7 +162,7 @@ public static class Example15_TextMemoryPlugin
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
-        using SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+        SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 1: Store and retrieve memories using the ISemanticTextMemory (textMemory) object.
@@ -198,8 +198,8 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
-        var memorySkill = new TextMemoryPlugin(textMemory);
-        var memoryFunctions = kernel.ImportPlugin(memorySkill);
+        var memoryPlugin = new TextMemoryPlugin(textMemory);
+        var memoryFunctions = kernel.ImportFunctions(memoryPlugin);
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
@@ -218,7 +218,7 @@ public static class Example15_TextMemoryPlugin
             [TextMemoryPlugin.KeyParam] = "info5"
         }, cancellationToken);
 
-        Console.WriteLine("Memory with key 'info5':" + result?.ToString() ?? "ERROR: memory not found");
+        Console.WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ public static class Example15_TextMemoryPlugin
             ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
         Console.WriteLine();
 
         /*
@@ -292,7 +292,7 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
+        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(aboutMeOracle, new()
         {
@@ -302,7 +302,7 @@ Answer:
         }, cancellationToken);
 
         Console.WriteLine("Ask: Do I live in the same town where I grew up?");
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
 
         /*
         Approximate Output:
