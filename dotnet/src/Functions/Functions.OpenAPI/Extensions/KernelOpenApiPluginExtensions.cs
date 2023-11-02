@@ -19,12 +19,12 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 /// <summary>
-/// Provides extension methods for importing AI plugins exposed as OpenAPI v3 endpoints.
+/// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
 /// </summary>
-public static class KernelOpenApiPluginFunctionExtensions
+public static class KernelOpenApiPluginExtensions
 {
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -36,7 +36,7 @@ public static class KernelOpenApiPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         string filePath,
-        OpenApiPluginFunctionExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -48,7 +48,7 @@ public static class KernelOpenApiPluginFunctionExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginFunctionExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await RegisterOpenApiPluginAsync(
@@ -61,7 +61,7 @@ public static class KernelOpenApiPluginFunctionExtensions
     }
 
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -73,7 +73,7 @@ public static class KernelOpenApiPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         Uri uri,
-        OpenApiPluginFunctionExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -85,7 +85,7 @@ public static class KernelOpenApiPluginFunctionExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginFunctionExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -102,7 +102,7 @@ public static class KernelOpenApiPluginFunctionExtensions
     }
 
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -114,7 +114,7 @@ public static class KernelOpenApiPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         Stream stream,
-        OpenApiPluginFunctionExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -140,7 +140,7 @@ public static class KernelOpenApiPluginFunctionExtensions
     private static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiPluginAsync(
         IKernel kernel,
         string pluginName,
-        OpenApiPluginFunctionExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
         Uri? documentUri = null,
@@ -161,7 +161,7 @@ public static class KernelOpenApiPluginFunctionExtensions
 
             var plugin = new Dictionary<string, ISKFunction>();
 
-            ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginFunctionExtensions));
+            ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
             foreach (var operation in operations)
             {
                 try
@@ -198,7 +198,7 @@ public static class KernelOpenApiPluginFunctionExtensions
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
-        OpenApiPluginFunctionExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -209,7 +209,7 @@ public static class KernelOpenApiPluginFunctionExtensions
             documentUri
         );
 
-        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginFunctionExtensions)) : NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
         async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
         {

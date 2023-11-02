@@ -35,7 +35,7 @@ public static class Example23_OpenApiPlugin_GitHub
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
-            new OpenApiPluginFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -69,7 +69,7 @@ public static class Example23_OpenApiPlugin_GitHub
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
-            new OpenApiPluginFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

@@ -18,7 +18,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
-public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
+public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -36,9 +36,9 @@ public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
     private readonly IKernel _kernel;
 
     /// <summary>
-    /// Creates an instance of a <see cref="KernelApiPluginFunctionExtensionsTests"/> class.
+    /// Creates an instance of a <see cref="KernelOpenApiPluginExtensionsTests"/> class.
     /// </summary>
-    public KernelApiPluginFunctionExtensionsTests()
+    public KernelOpenApiPluginExtensionsTests()
     {
         this._kernel = KernelBuilder.Create();
 
@@ -92,7 +92,7 @@ public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginFunctionExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
         var variables = this.GetFakeContextVariables();
 
         // Act
@@ -130,7 +130,7 @@ public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginFunctionExecutionParameters { HttpClient = httpClient };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
         var variables = this.GetFakeContextVariables();
 
         // Act
@@ -175,7 +175,7 @@ public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(content);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginFunctionExecutionParameters { HttpClient = httpClient };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
         var variables = this.GetFakeContextVariables();
 
         // Act
@@ -208,7 +208,7 @@ public sealed class KernelApiPluginFunctionExtensionsTests : IDisposable
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginFunctionExecutionParameters();
+        var executionParameters = new OpenApiFunctionExecutionParameters();
         executionParameters.HttpClient = httpClient;
 
         var fakePlugin = new FakePlugin();

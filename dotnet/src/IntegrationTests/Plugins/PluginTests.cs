@@ -30,7 +30,7 @@ public class PluginTests
         var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenAIPluginFunctionExecutionParameters(httpClient));
+            new OpenAIFunctionExecutionParameters(httpClient));
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
@@ -60,7 +60,7 @@ public class PluginTests
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiPluginFunctionExecutionParameters(httpClient));
+            new OpenApiFunctionExecutionParameters(httpClient));
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
@@ -92,7 +92,7 @@ public class PluginTests
         var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenAIPluginFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
@@ -123,7 +123,7 @@ public class PluginTests
             var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
                 name,
                 stream,
-                new OpenAIPluginFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
@@ -153,7 +153,7 @@ public class PluginTests
         var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             name,
             pluginFilePath,
-            new OpenAIPluginFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;

@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 /// <summary>
 /// OpenAPI function execution parameters.
 /// </summary>
-public class OpenAIPluginFunctionExecutionParameters : OpenApiPluginFunctionExecutionParameters
+public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParameters
 {
     /// <summary>
     /// Callback for adding Open AI authentication data to HTTP requests.
@@ -19,7 +19,7 @@ public class OpenAIPluginFunctionExecutionParameters : OpenApiPluginFunctionExec
     public new OpenAIAuthenticateRequestAsyncCallback? AuthCallback { get; set; }
 
     /// <inheritdoc/>
-    public OpenAIPluginFunctionExecutionParameters(
+    public OpenAIFunctionExecutionParameters(
     HttpClient? httpClient = null,
     OpenAIAuthenticateRequestAsyncCallback? authCallback = null,
     Uri? serverUrlOverride = null,

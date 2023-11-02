@@ -15,12 +15,12 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 /// <summary>
-/// Provides extension methods for importing Open AI functions.
+/// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.
 /// </summary>
-public static class KernelOpenAIPluginFunctionExtensions
+public static class KernelOpenAIPluginExtensions
 {
     /// <summary>
-    /// Imports an Open AI function.
+    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -32,7 +32,7 @@ public static class KernelOpenAIPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         string filePath,
-        OpenAIPluginFunctionExecutionParameters? executionParameters = null,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -40,7 +40,7 @@ public static class KernelOpenAIPluginFunctionExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginFunctionExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await ImportAsync(
@@ -52,7 +52,7 @@ public static class KernelOpenAIPluginFunctionExtensions
     }
 
     /// <summary>
-    /// Imports an Open AI function.
+    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -64,7 +64,7 @@ public static class KernelOpenAIPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         Uri uri,
-        OpenAIPluginFunctionExecutionParameters? executionParameters = null,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -76,7 +76,7 @@ public static class KernelOpenAIPluginFunctionExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginFunctionExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,
@@ -91,7 +91,7 @@ public static class KernelOpenAIPluginFunctionExtensions
     }
 
     /// <summary>
-    /// Imports an Open AI function.
+    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -103,7 +103,7 @@ public static class KernelOpenAIPluginFunctionExtensions
         this IKernel kernel,
         string pluginName,
         Stream stream,
-        OpenAIPluginFunctionExecutionParameters? executionParameters = null,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -125,7 +125,7 @@ public static class KernelOpenAIPluginFunctionExtensions
         IKernel kernel,
         string openAIManifest,
         string pluginName,
-        OpenAIPluginFunctionExecutionParameters? executionParameters = null,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         JsonNode pluginJson;
@@ -143,7 +143,7 @@ public static class KernelOpenAIPluginFunctionExtensions
         if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
-            ((OpenApiPluginFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
+            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
             {
                 await callback(request, openAIManifestAuth).ConfigureAwait(false);
             };

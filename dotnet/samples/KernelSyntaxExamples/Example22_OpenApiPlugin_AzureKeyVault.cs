@@ -49,7 +49,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiPluginFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -78,7 +78,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiPluginFunctionExecutionParameters
+            new OpenApiFunctionExecutionParameters
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,
                 EnableDynamicPayload = true
