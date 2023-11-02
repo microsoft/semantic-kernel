@@ -177,7 +177,7 @@ Jane: Goodbye!
 
     private static IKernel InitializeKernel()
     {
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,

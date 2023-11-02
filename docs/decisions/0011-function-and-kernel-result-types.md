@@ -1,6 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: accepted
+contact: dmytrostruk
 date: 2023-09-21
 deciders: shawncal, dmytrostruk
 consulted: 

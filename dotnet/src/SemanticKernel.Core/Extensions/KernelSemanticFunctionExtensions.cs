@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -278,19 +277,12 @@ public static class KernelSemanticFunctionExtensions
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate)
     {
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
+        return SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
             promptTemplateConfig,
             promptTemplate,
             kernel.LoggerFactory
         );
-
-        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
-
-        return func;
     }
 }

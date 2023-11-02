@@ -32,7 +32,7 @@ public class SequentialPlanParserTests
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithRetryBasic()
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
