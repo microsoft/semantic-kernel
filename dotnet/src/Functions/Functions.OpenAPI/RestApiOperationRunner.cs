@@ -93,7 +93,7 @@ internal sealed class RestApiOperationRunner
         // If no auth callback provided, use empty function
         if (authCallback is null)
         {
-            this._authCallback = (_, __) => Task.CompletedTask;
+            this._authCallback = _ => Task.CompletedTask;
         }
         else
         {
