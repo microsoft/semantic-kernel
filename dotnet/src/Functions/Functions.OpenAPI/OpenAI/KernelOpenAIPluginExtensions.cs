@@ -7,10 +7,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 

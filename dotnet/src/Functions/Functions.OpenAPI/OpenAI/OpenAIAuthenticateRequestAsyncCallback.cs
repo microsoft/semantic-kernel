@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 /// <summary>
 /// Represents a delegate that defines the method signature for asynchronously authenticating an HTTP request.

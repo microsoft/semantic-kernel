@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 /// <summary>
 /// Represents the authentication configuration for an OpenAI plugin.
