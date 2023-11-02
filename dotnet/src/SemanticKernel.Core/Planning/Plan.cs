@@ -318,6 +318,11 @@ public sealed class Plan : ISKFunction
                 // Return the last result state of the plan.
                 if (stepResult is null)
                 {
+                    if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
+                    {
+                        continue;
+                    }
+
                     return result;
                 }
 
