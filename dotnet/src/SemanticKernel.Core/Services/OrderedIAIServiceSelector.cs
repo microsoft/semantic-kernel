@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Functions;
+namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
@@ -38,6 +37,14 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
                         return (service, model);
                     }
                 }
+                else if (!string.IsNullOrEmpty(model.ModelId))
+                {
+                    var service = this.GetServiceByModelId<T>(serviceProvider, model.ModelId!);
+                    if (service is not null)
+                    {
+                        return (service, model);
+                    }
+                }
                 else
                 {
                     // First request settings with empty or null service id is the default
@@ -57,5 +64,19 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
 
         var names = string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray());
         throw new SKException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
+    }
+
+    private T? GetServiceByModelId<T>(IAIServiceProvider serviceProvider, string modelId) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            if (service.Metadata.TryGetValue("ModelId", out var serviceModelId) && serviceModelId == modelId)
+            {
+                return service;
+            }
+        }
+
+        return default;
     }
 }

@@ -90,11 +90,11 @@ public static class Example42_KernelBuilder
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureChatCompletion(
-            modelId: azureOpenAIChatCompletionDeployment,
+            deploymentName: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
-            httpClient,
-            loggerFactory);
+            httpClient: httpClient,
+            loggerFactory: loggerFactory);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 

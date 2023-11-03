@@ -67,7 +67,27 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
 
 These methods would be used as follows:
 
+As an SK developer I want to write a custom `IAIServiceSelector` which will select an AI service based on the model id because I want to restrict which LLM is used.
+In the sample below the service selector implementation looks for the first service that is a GPT3 model.
+
 ``` csharp
+public class Gpt3xAIServiceSelector : IAIServiceSelector
+{
+    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            if (service.Metadata.TryGetValue("ModelId", out var serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Selected model: {serviceModelId}");
+                return (service, new OpenAIRequestSettings());
+            }
+        }
+
+        throw new SKException("Unable to find AI service for GPT 3.x.");
+    }
+}
 ```
 
 ## Decision Outcome

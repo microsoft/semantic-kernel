@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -23,11 +22,12 @@ public static class Example62_CustomAIServiceSelector
     {
         Console.WriteLine("======== Example62_CustomAIServiceSelector ========");
 
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string azureApiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string azureDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
             Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
@@ -42,35 +42,54 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        KernelBuilder kernelBuilder = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+                deploymentName: azureDeploymentName,
+                endpoint: azureEndpoint,
+                modelId: azureModelId,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
-            .WithAIServiceSelector(new MyAIServiceSelector())
-            .Build();
+                apiKey: openAIApiKey);
+
+        await RunWithRequestSettingsAsync(kernelBuilder, "Hello AI, what can you do for me?");
+        await RunWithRequestSettingsAsync(kernelBuilder, "Hello AI, provide an indepth description of what can you do for me as a bulleted list?");
+        await RunWithGpt3xAsync(kernelBuilder, "Hello AI, what can you do for me?");
+    }
+
+    public static async Task RunWithRequestSettingsAsync(KernelBuilder kernelBuilder, string prompt)
+    {
+        Console.WriteLine($"======== With Request Settings: {prompt} ========");
+
+        var kernel = kernelBuilder.WithAIServiceSelector(new TokenCountAIServiceSelector()).Build();
 
         var modelSettings = new List<AIRequestSettings>
         {
             new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", MaxTokens = 400 },
             new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 }
         };
+        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
-        await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
-        await RunSemanticFunctionAsync(kernel, "Hello AI, provide an indepth description of what can you do for me as a bulleted list?", modelSettings);
+        var skfunction = kernel.RegisterSemanticFunction(
+            "MyFunction",
+            promptTemplateConfig,
+            promptTemplate);
+
+        var result = await kernel.RunAsync(skfunction);
+        Console.WriteLine(result.GetValue<string>());
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, List<AIRequestSettings> modelSettings)
+    public static async Task RunWithGpt3xAsync(KernelBuilder kernelBuilder, string prompt)
     {
-        Console.WriteLine($"======== {prompt} ========");
+        Console.WriteLine($"======== Without GPT3x: {prompt} ========");
 
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+        var kernel = kernelBuilder.WithAIServiceSelector(new Gpt3xAIServiceSelector()).Build();
+
+        var promptTemplateConfig = new PromptTemplateConfig();
         var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
         var skfunction = kernel.RegisterSemanticFunction(
@@ -83,40 +102,20 @@ public static class Example62_CustomAIServiceSelector
     }
 }
 
-public class MyAIServiceSelector : IAIServiceSelector
+public class TokenCountAIServiceSelector : IAIServiceSelector
 {
     private readonly int _defaultMaxTokens = 300;
     private readonly int _minResponseTokens = 150;
 
     public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
     {
-        var chatServices = serviceProvider.GetServices<IChatCompletion>();
-        foreach (var service in chatServices)
-        {
-            Console.WriteLine($"Service: {service.Metadata}");
-        }
-        var services = serviceProvider.GetServices<IAIService>();
-        foreach (var service in services)
-        {
-            Console.WriteLine($"Service: {service.Metadata}");
-        }
-
-        if (modelSettings is null || modelSettings.Count == 0)
-        {
-            var service = serviceProvider.GetService<T>(null);
-            if (service is not null)
-            {
-                return (service, null);
-            }
-        }
-        else
+        if (modelSettings is not null)
         {
             var tokens = this.CountTokens(renderedPrompt);
 
-            string? serviceId = null;
             int fewestTokens = 0;
+            string? serviceId = null;
             AIRequestSettings? requestSettings = null;
-            AIRequestSettings? defaultRequestSettings = null;
             foreach (var model in modelSettings)
             {
                 if (!string.IsNullOrEmpty(model.ServiceId))
@@ -132,11 +131,6 @@ public class MyAIServiceSelector : IAIServiceSelector
                         }
                     }
                 }
-                else
-                {
-                    // First request settings with empty or null service id is the default
-                    defaultRequestSettings ??= model;
-                }
             }
             Console.WriteLine($"Prompt tokens: {tokens}, Response tokens: {fewestTokens}");
 
@@ -149,19 +143,11 @@ public class MyAIServiceSelector : IAIServiceSelector
                     return (service, requestSettings);
                 }
             }
-
-            if (defaultRequestSettings is not null)
-            {
-                var service = serviceProvider.GetService<T>(null);
-                if (service is not null)
-                {
-                    return (service, defaultRequestSettings);
-                }
-            }
         }
 
         throw new SKException("Unable to find AI service to handled request.");
     }
+
 
     /// <summary>
     /// MicrosoftML token counter implementation.
@@ -172,5 +158,23 @@ public class MyAIServiceSelector : IAIServiceSelector
         var tokens = tokenizer.Encode(input).Tokens;
 
         return tokens.Count;
+    }
+}
+
+public class Gpt3xAIServiceSelector : IAIServiceSelector
+{
+    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            if (service.Metadata.TryGetValue("ModelId", out var serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Selected model: {serviceModelId}");
+                return (service, new OpenAIRequestSettings());
+            }
+        }
+
+        throw new SKException("Unable to find AI service for GPT 3.x.");
     }
 }

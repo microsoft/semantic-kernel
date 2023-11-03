@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -16,11 +17,12 @@ public static class Example61_MultipleLLMs
     {
         Console.WriteLine("======== Example61_MultipleLLMs ========");
 
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string azureApiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string azureDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
         {
             Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
@@ -38,23 +40,26 @@ public static class Example61_MultipleLLMs
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+                deploymentName: azureDeploymentName,
+                endpoint: azureEndpoint,
+                modelId: azureModelId,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
             .Build();
 
-        await RunSemanticFunctionAsync(kernel, "AzureOpenAIChat");
-        await RunSemanticFunctionAsync(kernel, "OpenAIChat");
+        await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
+        await RunByServiceIdAsync(kernel, "OpenAIChat");
+        await RunByModelIdAsync(kernel, azureModelId);
+        await RunByModelIdAsync(kernel, openAIModelId);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string serviceId)
+    public static async Task RunByServiceIdAsync(IKernel kernel, string serviceId)
     {
-        Console.WriteLine($"======== {serviceId} ========");
+        Console.WriteLine($"======== Service Id: {serviceId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -63,6 +68,21 @@ public static class Example61_MultipleLLMs
            requestSettings: new AIRequestSettings()
            {
                ServiceId = serviceId
+           });
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    public static async Task RunByModelIdAsync(IKernel kernel, string modelId)
+    {
+        Console.WriteLine($"======== Model Id: {modelId} ========");
+
+        var prompt = "Hello AI, what can you do for me?";
+
+        var result = await kernel.InvokeSemanticFunctionAsync(
+           prompt,
+           requestSettings: new OpenAIRequestSettings()
+           {
+               ModelId = modelId
            });
         Console.WriteLine(result.GetValue<string>());
     }

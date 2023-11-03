@@ -38,7 +38,7 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.ModelId = modelId;
+        this.DeploymentOrModelName = modelId;
 
         var options = GetClientOptions(httpClient);
 
@@ -66,7 +66,7 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        this.ModelId = modelId;
+        this.DeploymentOrModelName = modelId;
         this.Client = openAIClient;
     }
 
@@ -76,7 +76,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
+        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
     }
 
     /// <summary>

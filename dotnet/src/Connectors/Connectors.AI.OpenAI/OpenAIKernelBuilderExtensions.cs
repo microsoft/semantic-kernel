@@ -265,6 +265,7 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         bool alsoAsTextCompletion = true,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
@@ -272,7 +273,7 @@ public static class OpenAIKernelBuilderExtensions
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
 
-            return new(deploymentName, client, loggerFactory);
+            return new(deploymentName, client, modelId, loggerFactory);
         };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -305,6 +306,7 @@ public static class OpenAIKernelBuilderExtensions
         TokenCredential credentials,
         bool alsoAsTextCompletion = true,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
@@ -312,7 +314,7 @@ public static class OpenAIKernelBuilderExtensions
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
 
-            return new(deploymentName, client, loggerFactory);
+            return new(deploymentName, client, modelId, loggerFactory);
         };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -415,11 +417,12 @@ public static class OpenAIKernelBuilderExtensions
         OpenAIClient openAIClient,
         bool alsoAsTextCompletion = true,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false)
     {
         AzureChatCompletion Factory(ILoggerFactory loggerFactory)
         {
-            return new(deploymentName, openAIClient, loggerFactory);
+            return new(deploymentName, openAIClient, modelId, loggerFactory);
         };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
