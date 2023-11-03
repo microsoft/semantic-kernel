@@ -66,7 +66,7 @@ public class PromptTemplateConfig
     /// </summary>
     [JsonPropertyName("template_format")]
     [JsonPropertyOrder(1)]
-    public string TemplateFormat { get; set; } = SEMANTICKERNEL; // TODO Mark check with Matthew
+    public string TemplateFormat { get; set; } = SEMANTICKERNEL;
 
     /// <summary>
     /// Description

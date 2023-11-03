@@ -9,10 +9,10 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public interface IPromptTemplateFactory
 {
     /// <summary>
-    /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration.
+    /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration. Return null if the specified template format is not supported.
     /// </summary>
     /// <param name="templateString">Template string using the format associated with this <see cref="IPromptTemplateFactory"/></param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
     /// <returns></returns>
-    IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
+    IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
 }
