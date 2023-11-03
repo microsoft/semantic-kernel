@@ -122,26 +122,21 @@ repeat:
                 var functionDetails = skFunction.Describe();
 
                 functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (functionResult is StopFunctionResult stopResult)
+
+                if (this.IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    if (this.IsCancelRequested(skFunction, stopResult.Reason, pipelineStepCount))
-                    {
-                        break;
-                    }
-
-                    if (this.IsSkipRequested(skFunction, stopResult.Reason, pipelineStepCount))
-                    {
-                        continue;
-                    }
-
-                    this._logger.LogError("Function {PluginName}.{FunctionName} stopped with an unexpected reason: {Reason}.", skFunction.PluginName, skFunction.Name, stopResult.Reason);
-                    throw new SKException($"Function {skFunction.PluginName}.{skFunction.Name} stopped with an unexpected reason: {stopResult.Reason}.");
+                    break;
                 }
 
-                // Only results that wheren't stopped are added to the list of kernel results
+                if (this.IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount))
+                {
+                    continue;
+                }
+
+                // Only non-stop results are considered as Kernel results
                 allFunctionResults.Add(functionResult!);
 
-                if (this.IsRepeatRequested(skFunction, functionResult, pipelineStepCount))
+                if (this.IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
                     goto repeat;
                 }
@@ -213,9 +208,16 @@ repeat:
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
-    private bool IsSkipRequested(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
+    /// <summary>
+    /// Checks if the handler requested to skip the function execution.
+    /// </summary>
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (reason == StopFunctionResult.StopReason.InvokingSkipped)
+        if (SKFunction.IsInvokingSkipRequested(context))
         {
             this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
@@ -224,15 +226,22 @@ repeat:
         return false;
     }
 
-    private bool IsCancelRequested(ISKFunction skFunction, StopFunctionResult.StopReason reason, int pipelineStepCount)
+    /// <summary>
+    /// Checks if the handler requested to cancel the function execution.
+    /// </summary>
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (reason == StopFunctionResult.StopReason.InvokingCancelled)
+        if (SKFunction.IsInvokingCancelRequested(context))
         {
             this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
         }
 
-        if (reason == StopFunctionResult.StopReason.InvokedCancelled)
+        if (SKFunction.IsInvokedCancelRequested(context))
         {
             this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
@@ -241,9 +250,16 @@ repeat:
         return false;
     }
 
-    private bool IsRepeatRequested(ISKFunction skFunction, FunctionResult functionResult, int pipelineStepCount)
+    /// <summary>
+    /// Checks if the handler requested to repeat the function execution.
+    /// </summary>
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsRepeatRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (functionResult.Context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
+        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
         {
             this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;

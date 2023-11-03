@@ -140,17 +140,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         try
         {
             this.CallFunctionInvoking(context);
-            if (this.IsInvokingCancelOrSkipRequested(context, out var stopReason))
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
             {
-                return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
+                return new FunctionResult(this.Name, this.PluginName, context);
             }
 
             var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
             var finalResult = this.CallFunctionInvoked(invokeResult, context);
 
-            if (this.IsInvokedCancelRequested(context, out stopReason))
+            if (SKFunction.IsInvokedCancelRequested(context))
             {
-                return new StopFunctionResult(this.Name, this.PluginName, context, finalResult.Value, stopReason!.Value);
+                return new FunctionResult(this.Name, this.PluginName, context, finalResult.Value);
             }
 
             return finalResult;
@@ -195,52 +195,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         };
 
         return functionResult;
-    }
-
-    private bool IsInvokingCancelOrSkipRequested(SKContext context, out StopFunctionResult.StopReason? reason)
-    {
-        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
-        reason = null;
-
-        // When no event handler is registered, the event args are null and
-        // this should not stop the function execution.
-        if (eventArgs is null)
-        {
-            return false;
-        }
-
-        if (eventArgs.IsSkipRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokingSkipped;
-        }
-        else if (eventArgs.CancelToken.IsCancellationRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokingCancelled;
-        }
-
-        // Check any event flags that interrupt this function execution;
-        return (reason is not null);
-    }
-
-    private bool IsInvokedCancelRequested(SKContext context, out StopFunctionResult.StopReason? reason)
-    {
-        var eventArgs = context.FunctionInvokedHandler?.EventArgs;
-        reason = null;
-
-        // When no event handler is registered, the event args are null and
-        // this should not stop the function execution.
-        if (eventArgs is null)
-        {
-            return false;
-        }
-
-        if (eventArgs.CancelToken.IsCancellationRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokedCancelled;
-        }
-
-        // Check any event flags that interrupt this function execution;
-        return (reason is not null);
     }
 
     /// <summary>

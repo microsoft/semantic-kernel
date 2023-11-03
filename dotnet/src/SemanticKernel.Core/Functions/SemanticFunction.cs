@@ -187,12 +187,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
-            if (this.IsInvokingCancelOrSkipRequested(context, out var stopReason))
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
             {
-                return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
+                return new FunctionResult(this.Name, this.PluginName, context);
             }
 
-            renderedPrompt = this.TryGetPromptFromEventArgsMetadata(renderedPrompt, context);
+            renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
 
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -208,9 +208,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             result.Metadata.Add(SemanticFunction.RenderedPromptMetadataKey, renderedPrompt);
 
             this.CallFunctionInvoked(result, context, renderedPrompt);
-            if (this.IsInvokedCancelRequested(context, out stopReason))
+            if (SKFunction.IsInvokedCancelRequested(context))
             {
-                return new StopFunctionResult(this.Name, this.PluginName, context, result.Value, stopReason!.Value);
+                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
             }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
@@ -221,7 +221,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return result;
     }
-    private void CallFunctionInvoking(SKContext context, string prompt)
+
+    /// <summary>
+    /// Handles the FunctionInvoking event
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <param name="renderedPrompt">Rendered prompt</param>
+    private void CallFunctionInvoking(SKContext context, string renderedPrompt)
     {
         var eventWrapper = context.FunctionInvokingHandler;
         if (eventWrapper?.Handler is null)
@@ -232,12 +238,18 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context)
         {
             Metadata = {
-                [SemanticFunction.RenderedPromptMetadataKey] = prompt
+                [SemanticFunction.RenderedPromptMetadataKey] = renderedPrompt
             }
         };
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
+    /// <summary>
+    /// Handles the FunctionInvoked event
+    /// </summary>
+    /// <param name="result">Current function result</param>
+    /// <param name="context">Execution context</param>
+    /// <param name="prompt">Prompt used by the function</param>
     private void CallFunctionInvoked(FunctionResult result, SKContext context, string prompt)
     {
         var eventWrapper = context.FunctionInvokedHandler;
@@ -258,64 +270,22 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         result.Metadata = eventWrapper.EventArgs.Metadata;
     }
 
-    private bool IsInvokingCancelOrSkipRequested(SKContext context, out StopFunctionResult.StopReason? reason)
+    /// <summary>
+    /// Try to get the prompt from the event args metadata.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="defaultPrompt">Default prompt if none is found in metadata</param>
+    /// <returns></returns>
+    private string GetPromptFromEventArgsMetadataOrDefault(SKContext context, string defaultPrompt)
     {
         var eventArgs = context.FunctionInvokingHandler?.EventArgs;
-        reason = null;
-
-        // When no event handler is registered, the event args are null and
-        // this should not stop the function execution.
-        if (eventArgs is null)
+        if (eventArgs is null || !eventArgs.Metadata.TryGetValue(RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
         {
-            return false;
+            return defaultPrompt;
         }
 
-        if (eventArgs.IsSkipRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokingSkipped;
-        }
-        else if (eventArgs.CancelToken.IsCancellationRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokingCancelled;
-        }
-
-        // Check any event flags that interrupt this function execution;
-        return (reason is not null);
-    }
-
-    private bool IsInvokedCancelRequested(SKContext context, out StopFunctionResult.StopReason? reason)
-    {
-        var eventArgs = context.FunctionInvokedHandler?.EventArgs;
-        reason = null;
-
-        // When no event handler is registered, the event args are null and
-        // this should not stop the function execution.
-        if (eventArgs is null)
-        {
-            return false;
-        }
-
-        if (eventArgs.CancelToken.IsCancellationRequested)
-        {
-            reason = StopFunctionResult.StopReason.InvokedCancelled;
-        }
-
-        // Check any event flags that interrupt this function execution;
-        return (reason is not null);
-    }
-
-    private string TryGetPromptFromEventArgsMetadata(string renderedPrompt, SKContext context)
-    {
-        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
-        if (eventArgs is null)
-        {
-            return renderedPrompt;
-        }
-
-        eventArgs.Metadata.TryGetValue(RenderedPromptMetadataKey, out var renderedPromptFromMetadata);
-
-        // If prompt was modified to null, default to a string.Empty
-        return eventArgs.Metadata[SemanticFunction.RenderedPromptMetadataKey].ToString() ?? string.Empty;
+        // If prompt key exists and was modified to null default to an empty string
+        return renderedPromptFromMetadata?.ToString() ?? string.Empty;
     }
 
     #endregion
