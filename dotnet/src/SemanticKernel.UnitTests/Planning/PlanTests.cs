@@ -1050,8 +1050,9 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
 
-        // Aborting in invoked will stop the plan result and return the step stop result value.
-        Assert.Equal("Poem", result.Value);
+        // Aborting in invoked of the first step will abort the result and
+        // the plan will render no result as no step succeeded previously.
+        Assert.Null(result.Value);
     }
 
     [Fact]
@@ -1106,11 +1107,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
         Assert.Equal(invokedListFunctions[1].Name, plan.Steps[1].Name);
 
-        // Aborting in invoked will stop the plan result and return the step stop result value.
-        Assert.Equal("Sent Email", result.Value);
+        // Aborting last step in invoked will stop the plan result
+        // and return the previous succeeded step result value.
+        Assert.Equal("WritePoem", result.Value);
     }
 
-    [Fact]
+    [Fact(Skip = "Skipping is currently not supported for plans")]
     public async Task PlapSkippingFirstStepShouldGiveSendStepResultAsync()
     {
         // Arrange
@@ -1162,7 +1164,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Skipped the first step (will not trigger invoked for it)
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[1].Name);
-        Assert.Equal("Sent Email", result.Value);
+        Assert.Equal("SendEmail", result.Value);
     }
 
     [Fact]
@@ -1218,9 +1220,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Cancelling the second step, don't block the triggering "invoked" for the first step.
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
 
-        // Aborting one any step of a plan, will render the value of the step
-        // Invoking are cancelled before the step is executes and render no value.
-        Assert.Null(result.Value);
+        // Aborting one any step of a plan, will render the value of the last executed step
+        Assert.Equal("WritePoem", result.Value);
     }
 
     private void PrepareKernelAndPlan(out IKernel kernel, out Plan plan)
@@ -1234,7 +1235,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
 
         [SKName("SendEmail")]
-        static string Function3() => "SentEmail";
+        static string Function3() => "SendEmail";
         functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";

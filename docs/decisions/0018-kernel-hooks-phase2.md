@@ -20,6 +20,12 @@ The proposal is a way to expose the prompt to the handlers.
 - Handlers should be able to see prompt after the LLM execution.
 - Calling Kernel.RunAsync(function) or ISKFunction.InvokeAsync(kernel) should trigger the events...
 
+## Out of Scope
+
+- Skip plan steps using Pre-Hooks.
+- Get the used services (Template Engine, IAIServices, etc) in the Pre/Post Hooks.
+- Get the request settings in the Pre/Post Hooks.
+
 ## Current State of Kernel for Pre/Post Hooks
 
 Current state of Kernel:
@@ -197,7 +203,7 @@ Cons:
 - Any custom functions now will have to responsibility implement the `ISKFunctionEventSupport` interface if they want to support events.
 - Handling events in another `ISKFunction` requires more complex approaches to manage the context and the prompt + any other data in different event handling methods.
 
-### Option 3: Delegate to the ISKFunction how to handle events (Delegates approach)
+### Option 3: Delegate to the ISKFunction how to handle events (InvokeAsync Delegates approach)
 
 Add Kernel event handler delegate wrappers to `ISKFunction.InvokeAsync` interface.
 This approach shares the responsibility of handling the events between the `Kernel` and the `ISKFunction` implementation, flow control will be handled by the Kernel and the `ISKFunction` will be responsible for calling the delegate wrappers and adding data to the `SKEventArgs` that will be passed to the handlers.
@@ -271,14 +277,120 @@ Cons:
 - Since Kernel needs to interact with the result of an event handler, a wrapper strategy is needed to access results by reference at the kernel level (control of flow)
 - Passing Kernel event handlers full responsibility downstream to the functions don't sound quite right (Single Responsibility)
 
+### Option 4: Delegate to the ISKFunction how to handle events (SKContext Delegates approach)
+
+Add Kernel event handler delegate wrappers to `ISKFunction.InvokeAsync` interface.
+This approach shares the responsibility of handling the events between the `Kernel` and the `ISKFunction` implementation, flow control will be handled by the Kernel and the `ISKFunction` will be responsible for calling the delegate wrappers and adding data to the `SKEventArgs` that will be passed to the handlers.
+
+```csharp
+class Kernel : IKernel
+{
+    CreateNewContext() {
+        var context = new SKContext(...);
+        context.AddEventHandlers(this.FunctionInvoking, this.FunctionInvoked);
+        return context;
+    }
+    RunAsync() {
+        functionResult = await skFunction.InvokeAsync(context, ...);
+        if (this.IsCancelRequested(functionResult.Context)))
+            break;
+        if (this.IsSkipRequested(functionResult.Context))
+            continue;
+        if (this.IsRepeatRequested(...))
+            goto repeat;
+
+        ...
+    }
+}
+
+class SKContext {
+
+    internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
+    internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
+
+    internal SKContext(
+        ...
+        ICollection<EventHandlerWrapper?>? eventHandlerWrappers = null
+    {
+        ...
+        this.InitializeEventWrappers(eventHandlerWrappers);
+    }
+
+    void InitializeEventWrappers(ICollection<EventHandlerWrapper?>? eventHandlerWrappers)
+    {
+        if (eventHandlerWrappers is not null)
+        {
+            foreach (var handler in eventHandlerWrappers)
+            {
+                if (handler is EventHandlerWrapper<FunctionInvokingEventArgs> invokingWrapper)
+                {
+                    this.FunctionInvokingHandler = invokingWrapper;
+                    continue;
+                }
+
+                if (handler is EventHandlerWrapper<FunctionInvokedEventArgs> invokedWrapper)
+                {
+                    this.FunctionInvokedHandler = invokedWrapper;
+                }
+            }
+        }
+    }
+}
+
+class SemanticFunction : ISKFunction {
+    InvokeAsync(
+        SKContext context
+    {
+        string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+
+        this.CallFunctionInvoking(context, renderedPrompt);
+        if (this.IsInvokingCancelOrSkipRequested(context, out var stopReason))
+        {
+            return new StopFunctionResult(this.Name, this.PluginName, context, stopReason!.Value);
+        }
+
+        string completion = await GetCompletionsResultContentAsync(...);
+
+        var result = new FunctionResult(this.Name, this.PluginName, context, completion);
+        result.Metadata.Add(SemanticFunction.RenderedPromptMetadataKey, renderedPrompt);
+
+        this.CallFunctionInvoked(result, context, renderedPrompt);
+        if (this.IsInvokedCancelRequested(context, out stopReason))
+        {
+            return new StopFunctionResult(this.Name, this.PluginName, context, result.Value, stopReason!.Value);
+        }
+
+        return result;
+    }
+}
+```
+
+### Pros and Cons
+
+Pros:
+
+- `ISKFunction` has less code/complexity to handle and expose data (Rendered Prompt) and state in the EventArgs.
+- `Kernel` is not aware of `SemanticFunction` implementation details or any other `ISKFunction` implementation
+- `Kernel` has less code/complexity
+- Could be extensible to show dedicated EventArgs per custom `ISKFunctions` implementation, including prompts for semantic functions
+- More extensible as `ISKFunction` interface doesn't need to change to add new events.
+- `SKContext` can be extended to add new events without introducing breaking changes.
+
+Cons:
+
+- Functions now need to implement logic to handle in-context events
+- Since Kernel needs to interact with the result of an event handler, a wrapper strategy is needed to access results by reference at the kernel level (control of flow)
+- Passing Kernel event handlers full responsibility downstream to the functions don't sound quite right (Single Responsibility)
+
 ## Decision outcome
 
-### Option 3: Delegate to the ISKFunction how to handle events (Delegates approach)
+### Option 4: Delegate to the ISKFunction how to handle events (SKContext Delegates approach)
 
 This allow the functions to implement some of the kernel logic but has the big benefit of not splitting logic in different methods for the same Execution Context.
 
 Biggest benefit:
 **`ISKFunction` has less code/complexity to handle and expose data and state in the EventArgs.**
+**`ISKFunction` interface doesn't need to change to add new events.**
 
 This implementation allows to get the renderedPrompt in the InvokeAsync without having to manage the context and the prompt in different methods.
 

@@ -181,7 +181,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
+
             var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
             Verify.NotNull(textCompletion);
