@@ -133,7 +133,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         limit: int = 1,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-        search_type: str = "near_vector",
+        search_type: str = "vector",
         alpha: float = 0.75,
     ) -> List[MemoryQueryResult]:
         """Search the memory (calls the memory store's get_nearest_matches method).
@@ -151,7 +151,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         query_embedding = (
             await self._embeddings_generator.generate_embeddings_async([query])
         )[0]
-        if search_type == "near_vector":
+        if search_type == "vector":
             results = await self._storage.get_hybrid_matches_async(
                 collection_name=collection,
                 ask=query,
@@ -160,7 +160,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
                 alpha=alpha,
                 with_embeddings=with_embeddings,
             )
-        else:  # default: nearVector
+        else:  # default: vector
             results = await self._storage.get_nearest_matches_async(
                 collection_name=collection,
                 embedding=query_embedding,

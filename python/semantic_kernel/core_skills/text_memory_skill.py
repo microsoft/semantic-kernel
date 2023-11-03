@@ -18,7 +18,7 @@ class TextMemorySkill(PydanticField):
     DEFAULT_COLLECTION = "generic"
     DEFAULT_RELEVANCE = 0.75
     DEFAULT_LIMIT = 1
-    DEFAULT_SEARCH_TYPE = "near_vector"
+    DEFAULT_SEARCH_TYPE = "vector"
 
     # @staticmethod
     @sk_function(
@@ -43,7 +43,7 @@ class TextMemorySkill(PydanticField):
     )
     @sk_function_context_parameter(
         name="search_type",
-        description="The type of search to perform: 'nearVector' or 'hybrid'",
+        description="The type of search to perform: 'vector' or 'hybrid'",
         default_value=DEFAULT_SEARCH_TYPE,
     )
     async def recall_async(self, ask: str, context: "SKContext") -> str:
