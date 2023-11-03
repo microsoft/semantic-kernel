@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 /// Represents a delegate that defines the method signature for asynchronously authenticating an HTTP request.
 /// </summary>
 /// <param name="request">The <see cref="HttpRequestMessage"/> to authenticate.</param>
+/// <param name="pluginName">The name of the plugin to be authenticated.</param>
 /// <param name="openAIManifestAuth">The <see cref="OpenAIManifestAuthentication"/> used to authenticate.</param>
 /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-public delegate Task OpenAIAuthenticateRequestAsyncCallback(HttpRequestMessage request, OpenAIManifestAuthentication openAIManifestAuth);
+public delegate Task OpenAIAuthenticateRequestAsyncCallback(HttpRequestMessage request, string pluginName, OpenAIManifestAuthentication openAIManifestAuth);

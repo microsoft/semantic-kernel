@@ -52,8 +52,10 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         var authCallbackMock = new Mock<OpenAIAuthenticateRequestAsyncCallback>();
         var executionParameters = new OpenAIFunctionExecutionParameters { HttpClient = httpClient, AuthCallback = authCallbackMock.Object };
 
+        var pluginName = "fakePlugin";
+
         //Act
-        var plugin = await this._kernel.ImportOpenAIPluginFunctionsAsync("fakePlugin", openAiDocument, executionParameters);
+        var plugin = await this._kernel.ImportOpenAIPluginFunctionsAsync(pluginName, openAiDocument, executionParameters);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -61,6 +63,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
 
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
+            It.Is<string>(expectedPluginName => expectedPluginName == pluginName),
             It.Is<OpenAIManifestAuthentication>(expectedOpenAIManifestAuth => expectedOpenAIManifestAuth.Scope == actualOpenAIManifestAuth.Scope)),
         Times.Exactly(1));
     }
