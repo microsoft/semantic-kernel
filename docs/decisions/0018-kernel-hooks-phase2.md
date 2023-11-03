@@ -98,7 +98,7 @@ MyPlugin.MyFunction : Post Execution Handler - Triggered
 Used Prompt:
 Write a random paragraph about: Overriding a prompt
 
-FunctionResut: <LLM Completion>
+FunctionResult: <LLM Completion>
 ```
 
 ## Considered Options
