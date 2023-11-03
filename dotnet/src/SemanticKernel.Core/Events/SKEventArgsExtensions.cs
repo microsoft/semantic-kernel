@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Events;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Events;
 
 /// <summary>
 /// SKEventArgs extensions
