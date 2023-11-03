@@ -42,8 +42,8 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
         mongoClientSettings.ApplicationName = GetRandomName();
 
-        this.DatabaseTestName = "dotnetMSKIntergationTests1";
-        this.ListCollectionsDatabaseTestName = "dotnetMSKIntergationTests2";
+        this.DatabaseTestName = "dotnetMSKIntegrationTests1";
+        this.ListCollectionsDatabaseTestName = "dotnetMSKIntegrationTests2";
 
         this._mongoClient = new MongoClient(mongoClientSettings);
         this.MemoryStore = new MongoDBMemoryStore(this._mongoClient, this.DatabaseTestName);
