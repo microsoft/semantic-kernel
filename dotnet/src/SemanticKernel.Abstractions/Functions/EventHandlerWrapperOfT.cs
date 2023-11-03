@@ -8,13 +8,6 @@ using Microsoft.SemanticKernel.Events;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Flag abstract class for storing event handler and event args for function events.
-/// </summary>
-public abstract class EventHandlerWrapper
-{
-}
-
-/// <summary>
 /// Class for storing event handler and event args for function events.
 /// </summary>
 /// <typeparam name="TEventArgs"></typeparam>
