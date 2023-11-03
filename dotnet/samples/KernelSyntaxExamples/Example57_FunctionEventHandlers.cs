@@ -129,8 +129,13 @@ public static class Example57_FunctionEventHandlers
 
         void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Triggered");
+            // Will be false for non semantic functions
+            if (e.TryGetRenderedPrompt(out var prompt))
+            {
+                Console.WriteLine("Used Prompt:");
+                Console.WriteLine(prompt);
+            }
         }
 
         kernel.FunctionInvoking += MyPreHandler;

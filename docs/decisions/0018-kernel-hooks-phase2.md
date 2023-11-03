@@ -18,7 +18,7 @@ The proposal is a way to expose the prompt to the handlers.
 - Prompt template should be generated just once per function execution within the Kernel.RunAsync execution.
 - Handlers should be able to see and modify the prompt before the LLM execution.
 - Handlers should be able to see prompt after the LLM execution.
-- Calling Kernel.RunAsync(function) or ISKFunction.InvokeAsync(kernel) should trigger the events...
+- Calling Kernel.RunAsync(function) or ISKFunction.InvokeAsync(kernel) should trigger the events.
 
 ## Out of Scope
 
@@ -42,6 +42,63 @@ RunAsync()
     functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken);
     var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
 }
+```
+
+## Developer Experience
+
+Below is the expected end user experience when coding using Pre/Post Hooks to get or modify prompts.
+
+```csharp
+const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
+
+var excuseFunction = kernel.CreateSemanticFunction(...);
+
+void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
+{
+    Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+
+    // Will be false for non semantic functions
+    if (e.TryGetRenderedPrompt(out var prompt))
+    {
+        Console.WriteLine("Rendered Prompt:");
+        Console.WriteLine(prompt);
+
+        // Update the prompt if needed
+        e.TryUpdateRenderedPrompt("Write a random paragraph about: Overriding a prompt");
+    }
+}
+
+void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
+{
+    Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Triggered");
+    // Will be false for non semantic functions
+    if (e.TryGetRenderedPrompt(out var prompt))
+    {
+        Console.WriteLine("Used Prompt:");
+        Console.WriteLine(prompt);
+    }
+}
+
+kernel.FunctionInvoking += MyPreHandler;
+kernel.FunctionInvoked += MyPostHandler;
+
+const string Input = "I missed the F1 final race";
+var result = await kernel.RunAsync(Input, excuseFunction);
+Console.WriteLine($"Function Result: {result.GetValue<string>()}");
+```
+
+Expected output:
+
+```
+MyPlugin.MyFunction : Pre Execution Handler - Triggered
+Rendered Prompt:
+Write a random paragraph about: I missed the F1 final race.
+
+MyPlugin.MyFunction : Post Execution Handler - Triggered
+Used Prompt:
+Write a random paragraph about: Overriding a prompt
+
+FunctionResut: <LLM Completion>
 ```
 
 ## Considered Options
@@ -217,7 +274,7 @@ class Kernel : IKernel
 
         var functionResult = await skFunction.InvokeAsync(context, functionInvokingDelegateWrapper, functionInvokingDelegateWrapper, functionInvokedDelegateWrapper);
 
-        // Kernel will analyze the delegate results and make flow related decisions...
+        // Kernel will analyze the delegate results and make flow related decisions
         if (functionInvokingDelegateWrapper.EventArgs.CancelRequested ... ) { ... }
         if (functionInvokingDelegateWrapper.EventArgs.SkipRequested ... ) { ... }
         if (functionInvokedDelegateWrapper.EventArgs.Repeat ... ) { ... }
@@ -255,7 +312,7 @@ class FunctionDelegateWrapper<TEventArgs> where TEventArgs : SKEventArgs
 {
     FunctionInvokingDelegateWrapper(EventHandler<TEventArgs> eventHandler) {}
 
-    // Set allows specialized eventargs to be set...
+    // Set allows specialized eventargs to be set.
     public TEventArgs EventArgs { get; set; }
     public EventHandler<TEventArgs> Handler => _eventHandler;
 }
