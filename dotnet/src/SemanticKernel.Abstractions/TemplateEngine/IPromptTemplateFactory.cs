@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
+
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
@@ -13,6 +15,7 @@ public interface IPromptTemplateFactory
     /// </summary>
     /// <param name="templateString">Template string using the format associated with this <see cref="IPromptTemplateFactory"/></param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
-    /// <returns></returns>
-    IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
+    /// <returns>Instance of <see cref="IPromptTemplate"/></returns>
+    /// <throws><see cref="SKException"/> if template format is not supported</throws>
+    IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
 }

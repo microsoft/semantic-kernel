@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 
@@ -22,13 +23,13 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SEMANTICKERNEL, System.StringComparison.Ordinal))
         {
             return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
         }
 
-        return null;
+        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
 }

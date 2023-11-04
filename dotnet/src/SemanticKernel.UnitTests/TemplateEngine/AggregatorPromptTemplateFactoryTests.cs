@@ -49,14 +49,14 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
 public class MyPromptTemplateFactory1 : IPromptTemplateFactory
 {
-    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
         {
             return new MyPromptTemplate1(templateString, promptTemplateConfig);
         }
 
-        return null;
+        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
 }
 
@@ -81,14 +81,14 @@ public class MyPromptTemplate1 : IPromptTemplate
 
 public class MyPromptTemplateFactory2 : IPromptTemplateFactory
 {
-    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
         {
             return new MyPromptTemplate2(templateString, promptTemplateConfig);
         }
 
-        return null;
+        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
 }
 

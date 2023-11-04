@@ -26,14 +26,20 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     /// <param name="templateString">Template string using the format associated with this <see cref="IPromptTemplateFactory"/></param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
     /// <returns></returns>
-    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         foreach (var promptTemplateFactory in this._promptTemplateFactories)
         {
-            var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
-            if (promptTemplate != null)
+            try
             {
-                return promptTemplate;
+                var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+                if (promptTemplate != null)
+                {
+                    return promptTemplate;
+                }
+            }
+            catch (SKException)
+            {
             }
         }
 
