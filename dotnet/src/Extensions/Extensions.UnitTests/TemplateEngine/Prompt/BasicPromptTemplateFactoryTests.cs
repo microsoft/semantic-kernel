@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
@@ -39,16 +40,14 @@ public sealed class BasicPromptTemplateFactoryTests
     }
 
     [Fact]
-    public void ItReturnsNullForUnknowPromptTemplateFormat()
+    public void ItThrowsExceptionForUnknowPromptTemplateFormat()
     {
         // Arrange
         var templateString = "{{$input}}";
         var target = new BasicPromptTemplateFactory();
 
         // Act
-        var result = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" });
-
         // Assert
-        Assert.Null(result);
+        Assert.Throws<SKException>(() => target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 }
