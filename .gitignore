@@ -472,6 +472,9 @@ java/.mvn/wrapper/maven-wrapper.jar
 # Java settings
 conf.properties
 
+# Intellij configuration
+*.iml
+
 # Playwright
 playwright-report/
 

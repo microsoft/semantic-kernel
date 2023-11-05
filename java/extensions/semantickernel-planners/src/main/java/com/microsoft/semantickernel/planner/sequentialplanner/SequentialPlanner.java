@@ -119,10 +119,12 @@ public class SequentialPlanner {
 
                                 LOGGER.debug("Plan result: " + planResultString);
 
-                                Plan plan =
-                                        SequentialPlanParser.toPlanFromXml(
-                                                planResultString, goal, context.getSkills());
-                                return plan;
+                                return SequentialPlanParser.toPlanFromXml(
+                                    planResultString,
+                                    goal,
+                                    context.getSkills(),
+                                    config.getAllowMissingFunctions()
+                                );
                             });
         } catch (Exception e) {
             throw new PlanningException(
