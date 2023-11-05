@@ -73,7 +73,6 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    print(context_vars.variables)
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     citations = answer.objects.get("tool", "{}")
     print(f"ChatWithYourDataBot:> {answer}")

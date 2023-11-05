@@ -88,14 +88,14 @@ class AzureChatCompletionDataSourceConfig:
 
 
 class AzureChatCompletionWithData(AzureChatCompletion):
-    _data_source_configs: list[AzureChatCompletionDataSourceConfig]
+    _data_source_configs: List[AzureChatCompletionDataSourceConfig]
 
     def __init__(
         self,
         deployment_name: str,
         endpoint: Optional[str] = None,
         api_key: Optional[str] = None,
-        data_source_configs: list[AzureChatCompletionDataSourceConfig] = [],
+        data_source_configs: List[AzureChatCompletionDataSourceConfig] = [],
         api_version: str = "2023-08-01-preview",
         logger: Optional[Logger] = None,
         ad_auth=False,
