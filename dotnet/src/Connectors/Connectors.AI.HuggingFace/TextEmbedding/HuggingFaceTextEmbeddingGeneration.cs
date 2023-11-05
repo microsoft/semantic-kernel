@@ -79,6 +79,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     }
 
     /// <inheritdoc/>
+    public string? ModelId { get; private set; }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <inheritdoc/>

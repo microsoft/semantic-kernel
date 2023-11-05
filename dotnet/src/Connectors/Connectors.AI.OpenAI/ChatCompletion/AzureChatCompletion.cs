@@ -41,7 +41,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     {
         if (!string.IsNullOrEmpty(modelId))
         {
-            this._metadata.Add("ModelId", modelId!);
+            this.ModelId = modelId;
         }
     }
 
@@ -62,10 +62,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
-        if (!string.IsNullOrEmpty(modelId))
-        {
-            this._metadata.Add("ModelId", modelId!);
-        }
+        this.ModelId = modelId;
     }
 
     /// <summary>
@@ -81,11 +78,11 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        if (!string.IsNullOrEmpty(modelId))
-        {
-            this._metadata.Add("ModelId", modelId!);
-        }
+        this.ModelId = modelId;
     }
+
+    /// <inheritdoc/>
+    public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;

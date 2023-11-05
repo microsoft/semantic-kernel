@@ -10,7 +10,7 @@ informed:
 
 ## Context and Problem Statement
 
-Developers need to be able to know more information about the `IAIService` that will eb used to execute a semantic function or a plan.
+Developers need to be able to know more information about the `IAIService` that will be used to execute a semantic function or a plan.
 Some examples of why they need this information:
 
 1. As an SK developer I want to write a `IAIServiceSelector` which allows me to select the OpenAI service to used based on the configured model id so that I cna select the optimum (could eb cheapest) model to use based on the prompt I am executing.
@@ -61,7 +61,9 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
 ## Considered Options
 
 * Option #1
-  * Extend `IAIService` to include this property `IReadOnlyDictionary<string, string> Metadata { get; }` which returns the metadata as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
+  * Extend `IAIService` to include the following properties:
+    * `string? ModelId { get; }` which returns the model id. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate value.
+    * `IReadOnlyDictionary<string, string> Metadata { get; }` which returns the metadata as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
@@ -78,9 +80,9 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
         var services = serviceProvider.GetServices<T>();
         foreach (var service in services)
         {
-            if (service.Metadata.TryGetValue("ModelId", out var serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(service.ModelId) && service.ModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"Selected model: {serviceModelId}");
+                Console.WriteLine($"Selected model: {service.ModelId}");
                 return (service, new OpenAIRequestSettings());
             }
         }

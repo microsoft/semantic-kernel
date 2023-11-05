@@ -168,9 +168,9 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
         var services = serviceProvider.GetServices<T>();
         foreach (var service in services)
         {
-            if (service.Metadata.TryGetValue("ModelId", out var serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(service.ModelId) && service.ModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"Selected model: {serviceModelId}");
+                Console.WriteLine($"Selected model: {service.ModelId}");
                 return (service, new OpenAIRequestSettings());
             }
         }

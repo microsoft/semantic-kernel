@@ -54,8 +54,10 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+    public string? ModelId { get; private set; }
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.

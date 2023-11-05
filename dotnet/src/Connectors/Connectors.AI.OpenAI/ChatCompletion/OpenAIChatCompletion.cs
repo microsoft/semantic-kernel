@@ -36,7 +36,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this._metadata.Add("ModelId", modelId);
+        this.ModelId = modelId;
     }
 
     /// <summary>
@@ -50,8 +50,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
-        this._metadata.Add("ModelId", modelId);
+        this.ModelId = modelId;
     }
+
+    /// <inheritdoc/>
+    public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;

@@ -43,8 +43,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
-        this._metadata.Add("ModelId", config.CompletionModelId);
+        this.ModelId = config.CompletionModelId;
     }
+
+    /// <inheritdoc/>
+    public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;

@@ -37,6 +37,9 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
     }
 
     /// <inheritdoc/>
+    public string? ModelId { get; private set; }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <summary>

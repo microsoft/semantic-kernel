@@ -69,6 +69,9 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
+    public string? ModelId { get; private set; }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Metadata => this._metadata;
 
     /// <inheritdoc/>

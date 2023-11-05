@@ -216,6 +216,8 @@ public class ServiceRegistryTests
     // A test service implementation
     private sealed class TestService : IAIService
     {
+        public string? ModelId { get; }
+
         public IReadOnlyDictionary<string, string> Metadata => new Dictionary<string, string>();
     }
 }
