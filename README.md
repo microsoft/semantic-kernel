@@ -52,7 +52,7 @@ feature parity between our currently supported languages.
       <td>
         <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
         <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md">Using Semantic Kernel in Java</a>
+          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
         </div>
       </td>
     </tr>
@@ -80,8 +80,9 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ### For Java:
 
-1. Clone and checkout the experimental Java branch: `git clone -b experimental-java https://github.com/microsoft/semantic-kernel.git`
-2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
+    1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
 ## Learning how to use Semantic Kernel
 
