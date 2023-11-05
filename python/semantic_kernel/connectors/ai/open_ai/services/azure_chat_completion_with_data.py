@@ -1,19 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from logging import Logger
-from typing import List, Dict, Tuple, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import aiohttp
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
-    AzureChatCompletion,
-)
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
 
 
 class AzureChatCompletionDataSourceConfig:

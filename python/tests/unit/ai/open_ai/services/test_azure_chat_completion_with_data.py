@@ -1,14 +1,14 @@
 from logging import Logger
+
 import pytest
 
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion_with_data import (
     AzureChatCompletionDataSourceConfig,
     AzureChatCompletionWithData,
-)
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
-    AzureChatCompletion,
 )
 
 
@@ -24,23 +24,23 @@ class TestAzureChatCompletionDataSourceConfig:
         assert config._index_name == "test_index"
         # Optional, fallback to default
         assert config._type == "AzureCognitiveSearch"
-        assert config._fields_mapping == None
-        assert config._in_scope == True
+        assert config._fields_mapping is None
+        assert config._in_scope is True
         assert config._top_n_documents == 5
         assert config._query_type == "simple"
-        assert config._semantic_configuration == None
-        assert config._role_information == None
-        assert config._filter == None
-        assert config._embedding_endpoint == None
-        assert config._embedding_key == None
-        assert config._embedding_deployment_name == None
+        assert config._semantic_configuration is None
+        assert config._role_information is None
+        assert config._filter is None
+        assert config._embedding_endpoint is None
+        assert config._embedding_key is None
+        assert config._embedding_deployment_name is None
 
     def test_datasource_provide_both_embedding_configs(self):
         with pytest.raises(
             ValueError,
             match="Either provide embedding_endpoint and embedding_key or only embedding_deployment_name",
         ):
-            config = AzureChatCompletionDataSourceConfig(
+            AzureChatCompletionDataSourceConfig(
                 endpoint="test_endpoint",
                 key="test_key",
                 index_name="test_index",

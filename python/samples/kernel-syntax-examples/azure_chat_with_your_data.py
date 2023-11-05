@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
-import json
 import asyncio
-from pprint import pprint
+import json
 import logging
+import os
+from pprint import pprint
 
 from dotenv import load_dotenv
 
@@ -76,7 +76,7 @@ async def chat() -> bool:
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     citations = answer.objects.get("tool", "{}")
     print(f"ChatWithYourDataBot:> {answer}")
-    print(f"Tool message:>")
+    print("Tool message:>")
     pprint(json.loads(citations))
     return True
 
