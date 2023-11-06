@@ -1,7 +1,7 @@
 ﻿{
   "OpenAI": {
-    "ServiceId": "text-davinci-003",
-    "ModelId": "text-davinci-003",
+    "ServiceId": "gpt-4",
+    "ModelId": "gpt-4",
     "ApiKey": ""
   },
   "AzureOpenAI": {

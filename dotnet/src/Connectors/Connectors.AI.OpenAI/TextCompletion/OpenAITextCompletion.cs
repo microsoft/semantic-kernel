@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// OpenAI text completion service.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
+[Obsolete("OpenAI text completion service will be removed in future release. Use OpenAIChatCompletion class instead.")]
 public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
 {
     /// <summary>

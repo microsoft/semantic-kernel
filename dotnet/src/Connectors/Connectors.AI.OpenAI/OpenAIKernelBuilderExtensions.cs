@@ -129,6 +129,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
+    [Obsolete($"OpenAI text completion service will be removed in future release. Use {nameof(WithOpenAIChatCompletionService)} method instead.")]
     public static KernelBuilder WithOpenAITextCompletionService(this KernelBuilder builder,
         string modelId,
         string apiKey,

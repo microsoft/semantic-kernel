@@ -5,12 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
-
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
@@ -46,7 +45,7 @@ public static class Example40_DIContainer
         {
             return new KernelBuilder()
             .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
-            .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
         });
 
@@ -75,7 +74,7 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey));
+        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();

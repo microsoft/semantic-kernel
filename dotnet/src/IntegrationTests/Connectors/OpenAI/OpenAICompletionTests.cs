@@ -53,7 +53,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = this._kernelBuilder
             .WithLoggerFactory(this._logger)
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey,
@@ -153,7 +153,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IKernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
             .WithRetryBasic(retryConfig)
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
@@ -211,7 +211,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         IKernel target = this._kernelBuilder
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
