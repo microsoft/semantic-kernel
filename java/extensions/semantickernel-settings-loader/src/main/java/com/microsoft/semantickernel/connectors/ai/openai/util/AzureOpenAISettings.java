@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */
 public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
-    private static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
-    private static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
-    private static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
+    public static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
+    public static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
+    public static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
 
     @Nullable private final String key;
 
