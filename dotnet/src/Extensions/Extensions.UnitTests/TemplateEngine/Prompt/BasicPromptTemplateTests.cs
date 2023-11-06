@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Moq;
@@ -21,12 +22,10 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
-[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
-[EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class PromptTemplateEngineTests
+public sealed class BasicPromptTemplateTests
 {
     private const string DateFormat = "M/d/yyyy";
-    private readonly BasicPromptTemplateEngine _target;
+    private readonly BasicPromptTemplateFactory _factory;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
@@ -35,10 +34,10 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IAIServiceProvider> _serviceProvider;
     private readonly Mock<IAIServiceSelector> _serviceSelector;
 
-    public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
+    public BasicPromptTemplateTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new BasicPromptTemplateEngine(TestConsoleLogger.LoggerFactory);
+        this._factory = new BasicPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
@@ -53,10 +52,11 @@ public sealed class PromptTemplateEngineTests
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
                        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         // Act
-        var blocks = this._target.ExtractBlocks(template);
-        var updatedBlocks = this._target.RenderVariables(blocks, this._variables);
+        var blocks = target.ExtractBlocks(template);
+        var updatedBlocks = target.RenderVariables(blocks, this._variables);
 
         // Assert
         Assert.Equal(10, blocks.Count);
@@ -105,8 +105,8 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("d", "d value");
 
         // Act
-        blocks = this._target.ExtractBlocks(template);
-        updatedBlocks = this._target.RenderVariables(blocks, this._variables);
+        blocks = target.ExtractBlocks(template);
+        updatedBlocks = target.RenderVariables(blocks, this._variables);
 
         // Assert
         Assert.Equal(10, blocks.Count);
@@ -167,13 +167,14 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(functions[0]);
 
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await target.RenderAsync(context);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -195,12 +196,13 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await target.RenderAsync(context);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -216,7 +218,7 @@ public sealed class PromptTemplateEngineTests
             [Description("Slogan"), SKName("slogan")] string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
-            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
+            var dateStr = date.ToString(BasicPromptTemplateTests.DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
@@ -228,12 +230,13 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await target.RenderAsync(context);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -249,7 +252,7 @@ public sealed class PromptTemplateEngineTests
             [Description("Slogan"), SKName("slogan")] string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
-            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
+            var dateStr = date.ToString(BasicPromptTemplateTests.DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
@@ -260,10 +263,11 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         var context = this.MockContext();
 
         // Act
-        var result = await Assert.ThrowsAsync<SKException>(() => this._target.RenderAsync(template, context));
+        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(context));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -278,7 +282,7 @@ public sealed class PromptTemplateEngineTests
             [Description("Date"), SKName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
-            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
+            var dateStr = date.ToString(BasicPromptTemplateTests.DateFormat, CultureInfo.InvariantCulture);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
@@ -290,13 +294,14 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
 
         var template = "foo-{{function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
 
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await target.RenderAsync(context);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -307,6 +312,7 @@ public sealed class PromptTemplateEngineTests
     {
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         this._variables.Update("BAR");
         this._variables.Set("myVar", "BAZ");
 
@@ -340,7 +346,7 @@ public sealed class PromptTemplateEngineTests
         this.MockFunctionRunner(functions);
 
         // Act
-        var result = await this._target.RenderAsync(template, this.MockContext());
+        var result = await target.RenderAsync(this.MockContext());
 
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
@@ -363,10 +369,11 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("myVar", "BAR");
 
         var template = "foo-{{function $myVar}}-baz";
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await target.RenderAsync(context);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);
