@@ -53,7 +53,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         var template = handlebars.Compile(this._templateString);
 
-        var prompt = template(executionContext.Variables);
+        var prompt = template(this.GetVariables(executionContext));
 
         return await Task.FromResult(prompt).ConfigureAwait(true);
     }
@@ -76,6 +76,26 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         return result.Values.ToList();
     }
+
+    private Dictionary<string, string> GetVariables(SKContext executionContext)
+    {
+        Dictionary<string, string> variables = new();
+        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        {
+            if (!string.IsNullOrEmpty(p.DefaultValue))
+            {
+                variables[p.Name] = p.DefaultValue;
+            }
+        }
+
+        foreach (var kvp in executionContext.Variables)
+        {
+            variables.Add(kvp.Key, kvp.Value);
+        }
+
+        return variables;
+    }
+
     #endregion
 
 }
