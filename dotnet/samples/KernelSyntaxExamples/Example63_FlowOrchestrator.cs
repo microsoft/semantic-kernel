@@ -19,7 +19,6 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using NCalcPlugins;
 
 /**
@@ -220,7 +219,6 @@ provides:
                 UseExponentialBackoff = true,
                 MinRetryDelay = TimeSpan.FromSeconds(3),
             })
-            .WithPromptTemplateEngine(new BasicPromptTemplateEngine(loggerFactory))
             .WithLoggerFactory(loggerFactory);
     }
 
