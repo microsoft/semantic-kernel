@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 using Resources;
@@ -90,12 +91,12 @@ public static class Example30_ChatWithPrompts
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.RenderAsync(systemPromptTemplate, context);
+        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(context);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.RenderAsync(userPromptTemplate, context);
+        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(context);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
