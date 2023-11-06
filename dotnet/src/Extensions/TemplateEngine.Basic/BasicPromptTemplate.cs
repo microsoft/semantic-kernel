@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,31 +24,63 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
-[EditorBrowsable(EditorBrowsableState.Never)]
-public class BasicPromptTemplateEngine : IPromptTemplateEngine
+public sealed class BasicPromptTemplate : IPromptTemplate
 {
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger _logger;
-    private readonly TemplateTokenizer _tokenizer;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="BasicPromptTemplateEngine"/> class.
+    /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public BasicPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    /// <param name="templateString">Prompt template string.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    public BasicPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplateEngine));
+        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplate));
+        this._templateString = templateString;
+        this._promptTemplateConfig = promptTemplateConfig;
+        this._parameters = new(() => this.InitParameters());
+        this._blocks = new(() => this.ExtractBlocks(this._templateString));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
+
+    /// <inheritdoc/>
+    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Rendering string template: {0}", templateText);
-        var blocks = this.ExtractBlocks(templateText);
-        return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
+        return await this.RenderAsync(this._blocks.Value, executionContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    #region private
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger _logger;
+    private readonly string _templateString;
+    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly TemplateTokenizer _tokenizer;
+    private readonly Lazy<IReadOnlyList<ParameterView>> _parameters;
+    private readonly Lazy<IList<Block>> _blocks;
+
+    private List<ParameterView> InitParameters()
+    {
+        // Parameters from prompt template configuration
+        Dictionary<string, ParameterView> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        {
+            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
+        }
+
+        // Parameters from the template
+        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+        foreach (var variableName in variableNames)
+        {
+            if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
+            {
+                result.Add(variableName!, new ParameterView(variableName!));
+            }
+        }
+
+        return result.Values.ToList();
     }
 
     /// <summary>
@@ -132,4 +163,5 @@ public class BasicPromptTemplateEngine : IPromptTemplateEngine
             ? block
             : new TextBlock(((ITextRendering)block).Render(variables), this._loggerFactory)).ToList();
     }
+    #endregion
 }
