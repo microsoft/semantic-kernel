@@ -534,7 +534,7 @@ public class SemanticFunctionTests
         return method.Method;
     }
 
-    private class TestChatMessage : ChatMessageBase
+    private sealed class TestChatMessage : ChatMessageBase
     {
         public TestChatMessage(AuthorRole role, string content) : base(role, content)
         {
