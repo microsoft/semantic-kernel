@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// Required configuration for Azure OpenAI chat completion with data.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
-public class AzureChatCompletionWithDataConfig
+public class AzureOpenAIChatCompletionWithDataConfig
 {
     /// <summary>
     /// Azure OpenAI model ID or deployment name, see <see href="https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource"/>

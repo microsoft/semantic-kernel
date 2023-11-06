@@ -32,6 +32,6 @@ public sealed class OpenAITextEmbeddingRequest : TextEmbeddingRequest
 /// <summary>
 /// An Azure OpenAI embedding request
 /// </summary>
-public sealed class AzureTextEmbeddingRequest : TextEmbeddingRequest
+public sealed class AzureOpenAITextEmbeddingRequest : TextEmbeddingRequest
 {
 }

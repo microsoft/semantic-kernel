@@ -27,13 +27,13 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: deploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
