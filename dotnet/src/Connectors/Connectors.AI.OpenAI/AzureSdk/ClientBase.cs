@@ -263,6 +263,16 @@ public abstract class ClientBase
         return new OpenAIChatHistory(instructions);
     }
 
+    /// <summary>
+    /// Create a new chat instance based on chat history.
+    /// </summary>
+    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
+    /// <returns>Chat object</returns>
+    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
+    {
+        return new OpenAIChatHistory(chatHistory);
+    }
+
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
         AIRequestSettings? requestSettings,
@@ -292,6 +302,12 @@ public abstract class ClientBase
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        if (ChatPromptParser.TryGetChatHistory(text, out var chatHistory) && chatHistory is not null)
+        {
+            return InternalCreateNewChat(chatHistory);
+        }
+
         var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         return chat;
