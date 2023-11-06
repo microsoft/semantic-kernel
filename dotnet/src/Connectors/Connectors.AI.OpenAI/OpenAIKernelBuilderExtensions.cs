@@ -54,7 +54,9 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
             var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+#pragma warning disable CS0618 // Class is obsolete. Will be removed in future release.
             return new AzureTextCompletion(deploymentName, client, loggerFactory);
+#pragma warning restore CS0618 // Class is obsolete. Will be removed in future release.
         }, setAsDefault);
 
         return builder;
@@ -84,7 +86,9 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
             var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
+#pragma warning disable CS0618 // Class is obsolete. Will be removed in future release.
             return new AzureTextCompletion(deploymentName, client, loggerFactory);
+#pragma warning restore CS0618 // Class is obsolete. Will be removed in future release.
         }, setAsDefault);
 
         return builder;
@@ -108,12 +112,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory) =>
+#pragma warning disable CS0618 // Class is obsolete. Will be removed in future release.
             new AzureTextCompletion(
                 deploymentName,
                 openAIClient,
                 loggerFactory),
+#pragma warning restore CS0618 // Class is obsolete. Will be removed in future release.
             setAsDefault);
-
         return builder;
     }
 
@@ -139,12 +144,14 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
+#pragma warning disable CS0618 // Class is obsolete. Will be removed in future release.
             new OpenAITextCompletion(
                 modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
+#pragma warning restore CS0618 // Class is obsolete. Will be removed in future release.
             setAsDefault);
         return builder;
     }
