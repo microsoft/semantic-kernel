@@ -70,12 +70,11 @@ public static class Example62_CustomAIServiceSelector
         Console.WriteLine($"======== {prompt} ========");
 
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
-        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
         var skfunction = kernel.RegisterSemanticFunction(
             "MyFunction",
-            promptTemplateConfig,
-            promptTemplate);
+            prompt,
+            promptTemplateConfig);
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());
