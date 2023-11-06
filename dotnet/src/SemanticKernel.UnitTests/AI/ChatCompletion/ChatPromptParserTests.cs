@@ -5,6 +5,9 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 
+/// <summary>
+/// Unit tests for <see cref="ChatPromptParser"/> class.
+/// </summary>
 public class ChatPromptParserTests
 {
     [Theory]
