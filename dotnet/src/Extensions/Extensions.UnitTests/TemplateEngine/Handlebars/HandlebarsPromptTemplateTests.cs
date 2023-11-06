@@ -134,7 +134,7 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal("Foo Bar Baz", prompt);
     }
 
-    private class Foo
+    private sealed class Foo
     {
         [SKFunction, Description("Return Bar")]
         public string Bar() => "Bar";
