@@ -45,68 +45,70 @@ public sealed class AggregatorPromptTemplateFactoryTests
         // Assert
         Assert.Throws<SKException>(() => target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
-}
 
-public class MyPromptTemplateFactory1 : IPromptTemplateFactory
-{
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    #region private
+    private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
+        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
-            return new MyPromptTemplate1(templateString, promptTemplateConfig);
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
+            {
+                return new MyPromptTemplate1(templateString, promptTemplateConfig);
+            }
+
+            throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+        }
+    }
+
+    private sealed class MyPromptTemplate1 : IPromptTemplate
+    {
+        private readonly string _templateString;
+        private readonly PromptTemplateConfig _promptTemplateConfig;
+
+        public MyPromptTemplate1(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            this._templateString = templateString;
+            this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
-    }
-}
+        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
-public class MyPromptTemplate1 : IPromptTemplate
-{
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
-
-    public MyPromptTemplate1(string templateString, PromptTemplateConfig promptTemplateConfig)
-    {
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
-    }
-
-    public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
-
-    public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._templateString);
-    }
-}
-
-public class MyPromptTemplateFactory2 : IPromptTemplateFactory
-{
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
-    {
-        if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
+        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
         {
-            return new MyPromptTemplate2(templateString, promptTemplateConfig);
+            return Task.FromResult(this._templateString);
+        }
+    }
+
+    private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
+    {
+        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
+            {
+                return new MyPromptTemplate2(templateString, promptTemplateConfig);
+            }
+
+            throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+        }
+    }
+
+    private sealed class MyPromptTemplate2 : IPromptTemplate
+    {
+        private readonly string _templateString;
+        private readonly PromptTemplateConfig _promptTemplateConfig;
+
+        public MyPromptTemplate2(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            this._templateString = templateString;
+            this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
+
+        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(this._templateString);
+        }
     }
-}
-
-public class MyPromptTemplate2 : IPromptTemplate
-{
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
-
-    public MyPromptTemplate2(string templateString, PromptTemplateConfig promptTemplateConfig)
-    {
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
-    }
-
-    public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
-
-    public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._templateString);
-    }
+    #endregion
 }

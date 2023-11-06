@@ -17,7 +17,7 @@ public class PromptTemplateConfig
     /// <summary>
     /// Semantic Kernel template format.
     /// </summary>
-    public static readonly string SEMANTICKERNEL = "semantic-kernel";
+    public const string SemanticKernelTemplateFormat = "semantic-kernel";
 
     /// <summary>
     /// Input parameter for semantic functions.
@@ -66,7 +66,7 @@ public class PromptTemplateConfig
     /// </summary>
     [JsonPropertyName("template_format")]
     [JsonPropertyOrder(1)]
-    public string TemplateFormat { get; set; } = SEMANTICKERNEL;
+    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
 
     /// <summary>
     /// Description

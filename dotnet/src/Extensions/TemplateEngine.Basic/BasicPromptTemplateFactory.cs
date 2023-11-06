@@ -25,7 +25,7 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
     /// <inheritdoc/>
     public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
-        if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SEMANTICKERNEL, System.StringComparison.Ordinal))
+        if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
             return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
         }

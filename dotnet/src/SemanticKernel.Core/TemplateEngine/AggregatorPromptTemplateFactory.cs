@@ -40,6 +40,7 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
             }
             catch (SKException)
             {
+                // Ignore the exception and try the next factory
             }
         }
 

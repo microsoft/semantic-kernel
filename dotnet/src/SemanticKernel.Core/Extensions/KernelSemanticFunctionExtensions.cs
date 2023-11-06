@@ -382,20 +382,22 @@ public static class KernelSemanticFunctionExtensions
     }
 
     #endregion
-}
 
-[Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
-internal sealed class PromptTemplateFactory : IPromptTemplateFactory
-{
-    private readonly IPromptTemplateEngine _promptTemplateEngine;
-
-    public PromptTemplateFactory(IPromptTemplateEngine promptTemplateEngine)
+    #region Obsolete
+    [Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
+    internal sealed class PromptTemplateFactory : IPromptTemplateFactory
     {
-        this._promptTemplateEngine = promptTemplateEngine;
-    }
+        private readonly IPromptTemplateEngine _promptTemplateEngine;
 
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
-    {
-        return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
+        public PromptTemplateFactory(IPromptTemplateEngine promptTemplateEngine)
+        {
+            this._promptTemplateEngine = promptTemplateEngine;
+        }
+
+        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
+        }
     }
+    #endregion
 }
