@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions;
@@ -181,10 +182,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
             var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
-            Verify.NotNull(textCompletion);
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
-            string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+            var (completion, completionResults) = await this.GetCompletionAsync(renderedPrompt, requestSettings, serviceSelector, context, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
             context.Variables.Update(completion);
@@ -202,6 +200,67 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
 
         return result;
+    }
+
+    private async Task<(string, IReadOnlyList<IResultBase>)> GetCompletionAsync(
+        string renderedPrompt,
+        AIRequestSettings? requestSettings,
+        IAIServiceSelector serviceSelector,
+        SKContext context,
+        CancellationToken cancellationToken)
+    {
+        if (ChatPromptParser.TryGetChatHistory(renderedPrompt, out var chatHistory))
+        {
+            return await this
+                .GetChatCompletionAsync(renderedPrompt, chatHistory, requestSettings, serviceSelector, context, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return await this
+            .GetTextCompletionAsync(renderedPrompt, requestSettings, serviceSelector, context, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<(string, IReadOnlyList<IResultBase>)> GetTextCompletionAsync(
+        string renderedPrompt,
+        AIRequestSettings? requestSettings,
+        IAIServiceSelector serviceSelector,
+        SKContext context,
+        CancellationToken cancellationToken)
+    {
+        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+
+        Verify.NotNull(textCompletion);
+
+        IReadOnlyList<ITextResult> completionResults = await textCompletion
+            .GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken)
+            .ConfigureAwait(false);
+
+        var completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+
+        return (completion, completionResults);
+    }
+
+    private async Task<(string, IReadOnlyList<IResultBase>)> GetChatCompletionAsync(
+        string renderedPrompt,
+        ChatHistory? chatHistory,
+        AIRequestSettings? requestSettings,
+        IAIServiceSelector serviceSelector,
+        SKContext context,
+        CancellationToken cancellationToken)
+    {
+        Verify.NotNull(chatHistory);
+
+        (var chatCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<IChatCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+
+        Verify.NotNull(chatCompletion);
+
+        IReadOnlyList<IChatResult> completionResults = await chatCompletion
+            .GetChatCompletionsAsync(chatHistory, requestSettings ?? defaultRequestSettings, cancellationToken)
+            .ConfigureAwait(false);
+
+        var chatMessage = await completionResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        return (chatMessage.Content, completionResults);
     }
 
     #endregion

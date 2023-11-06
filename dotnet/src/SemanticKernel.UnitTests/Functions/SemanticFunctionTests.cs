@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -169,7 +170,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
 
@@ -218,7 +219,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
 
@@ -266,7 +267,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
         var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
@@ -306,7 +307,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
 
@@ -334,7 +335,7 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
@@ -357,7 +358,7 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var mockTextCompletion = this.SetupTextCompletionMock();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
@@ -390,7 +391,7 @@ public class SemanticFunctionTests
         const string PluginName = "MyPlugin";
         const string Prompt = "Write a simple phrase about UnitTests";
 
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
+        var mockTextCompletion = this.SetupTextCompletionMock("Result3");
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
@@ -414,19 +415,129 @@ public class SemanticFunctionTests
         Assert.Equal("Result3", functionResult3.GetValue<string>());
     }
 
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
+    [Fact]
+    public async Task ItUsesTextCompletionServiceWithTextPromptAsync()
+    {
+        // Arrange
+        const string Prompt = "This is text completion prompt {{$input}}.";
+
+        var mockTextCompletion = this.SetupTextCompletionMock("Text response from LLM.");
+        var mockChatCompletion = this.SetupChatCompletionMock("Chat response from LLM.");
+
+        var sut = new KernelBuilder()
+            .WithAIService<ITextCompletion>("text-completion", mockTextCompletion.Object)
+            .WithAIService<IChatCompletion>("chat-completion", mockChatCompletion.Object)
+            .Build();
+
+        var semanticFunction = sut.CreateSemanticFunction(Prompt);
+
+        // Act
+        var result = await sut.RunAsync("test", semanticFunction);
+
+        // Assert
+        Assert.Equal("Text response from LLM.", result.ToString());
+
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(
+            Prompt, It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        mockChatCompletion.Verify(m => m.GetChatCompletionsAsync(
+            It.IsAny<ChatHistory>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()),
+            Times.Never());
+    }
+
+    [Fact]
+    public async Task ItUsesChatCompletionServiceWithChatPromptAsync()
+    {
+        // Arrange
+        const string Prompt = @"
+            <message role='system'>System Message</message>
+            <message role='user'>This is chat completion prompt {{$input}}.</message>
+        ";
+
+        var expectedChatHistory = new ChatHistory();
+        expectedChatHistory.AddSystemMessage("System Message");
+        expectedChatHistory.AddUserMessage("This is chat completion prompt {{$input}}.");
+
+        var mockTextCompletion = this.SetupTextCompletionMock("Text response from LLM.");
+        var mockChatCompletion = this.SetupChatCompletionMock("Chat response from LLM.");
+
+        var sut = new KernelBuilder()
+            .WithAIService<ITextCompletion>("text-completion", mockTextCompletion.Object)
+            .WithAIService<IChatCompletion>("chat-completion", mockChatCompletion.Object)
+            .Build();
+
+        var semanticFunction = sut.CreateSemanticFunction(Prompt);
+
+        // Act
+        var result = await sut.RunAsync("test", semanticFunction);
+
+        // Assert
+        Assert.Equal("Chat response from LLM.", result.ToString());
+
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(
+            It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()),
+            Times.Never());
+
+        mockChatCompletion.Verify(m => m.GetChatCompletionsAsync(
+            It.Is<ChatHistory>(actualChatHistory => this.CompareChatHistory(expectedChatHistory, actualChatHistory)),
+            It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    private bool CompareChatHistory(ChatHistory expectedChatHistory, ChatHistory actualChatHistory)
+    {
+        for (var i = 0; i < expectedChatHistory.Count; i++)
+        {
+            if ((expectedChatHistory[i].Role != actualChatHistory[i].Role) ||
+                (expectedChatHistory[i].Content != actualChatHistory[i].Content))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Mock<ITextCompletion> SetupTextCompletionMock(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
+        mockTextResult
+            .Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
+        mockTextCompletion
+            .Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
 
-        return (mockTextResult, mockTextCompletion);
+        return mockTextCompletion;
+    }
+
+    private Mock<IChatCompletion> SetupChatCompletionMock(string? completionResult = null)
+    {
+        var mockChatResult = new Mock<IChatResult>();
+        mockChatResult
+            .Setup(m => m.GetChatMessageAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TestChatMessage(AuthorRole.Assistant, completionResult ?? "LLM Result about UnitTests"));
+
+        var mockChatCompletion = new Mock<IChatCompletion>();
+        mockChatCompletion
+            .Setup(m => m.GetChatCompletionsAsync(It.IsAny<ChatHistory>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<IChatResult> { mockChatResult.Object });
+
+        return mockChatCompletion;
     }
 
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
+    }
+
+    private class TestChatMessage : ChatMessageBase
+    {
+        public TestChatMessage(AuthorRole role, string content) : base(role, content)
+        {
+        }
     }
 }
