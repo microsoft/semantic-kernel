@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
@@ -163,6 +164,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Milvus", "src\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj", "{8B754E80-7A97-4585-8D7E-1D588FA5F727}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Memory", "src\Plugins\Plugins.Memory\Plugins.Memory.csproj", "{E91365A1-8B01-4AB8-825F-67E3515EADCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "experimental", "experimental", "{A2357CF8-3BB9-45A1-93F1-B366C9B63658}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow", "src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj", "{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{CB6E74CD-3A25-459F-A578-DEF25A414335}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{C17DD7E1-E588-46AF-A87E-DF8829A021DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -405,6 +414,24 @@ Global
 		{E91365A1-8B01-4AB8-825F-67E3515EADCD}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E91365A1-8B01-4AB8-825F-67E3515EADCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E91365A1-8B01-4AB8-825F-67E3515EADCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB6E74CD-3A25-459F-A578-DEF25A414335}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -464,6 +491,10 @@ Global
 		{CC77DCFA-A419-4202-A98A-868CDF457792} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
 		{8B754E80-7A97-4585-8D7E-1D588FA5F727} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{E91365A1-8B01-4AB8-825F-67E3515EADCD} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
+		{A2357CF8-3BB9-45A1-93F1-B366C9B63658} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
+		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{CB6E74CD-3A25-459F-A578-DEF25A414335} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{C17DD7E1-E588-46AF-A87E-DF8829A021DC} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
