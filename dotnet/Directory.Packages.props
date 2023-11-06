@@ -60,9 +60,9 @@
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
     <!-- Memory stores -->
-    <PackageVersion Include="Pgvector" Version="0.1.4"/>
-    <PackageVersion Include="NRedisStack" Version="0.9.0"/>
-    <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6"/>
+    <PackageVersion Include="Pgvector" Version="0.1.4" />
+    <PackageVersion Include="NRedisStack" Version="0.9.0" />
+    <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <!-- Analyzers -->
@@ -106,5 +106,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageVersion Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 </Project>
