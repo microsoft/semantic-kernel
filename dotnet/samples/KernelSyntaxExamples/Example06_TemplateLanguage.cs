@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
@@ -52,7 +53,8 @@ Is it weekend time (weekend/not weekend)?
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new BasicPromptTemplateFactory();
-        var renderedPrompt = await promptTemplateFactory.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
+        var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
