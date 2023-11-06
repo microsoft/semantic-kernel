@@ -52,7 +52,7 @@ public sealed class BasicPromptTemplateTests
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
                        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         // Act
         var blocks = target.ExtractBlocks(template);
@@ -167,7 +167,7 @@ public sealed class BasicPromptTemplateTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(functions[0]);
 
@@ -196,7 +196,7 @@ public sealed class BasicPromptTemplateTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
         var context = this.MockContext();
@@ -230,7 +230,7 @@ public sealed class BasicPromptTemplateTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
         var context = this.MockContext();
@@ -263,7 +263,7 @@ public sealed class BasicPromptTemplateTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         var context = this.MockContext();
 
         // Act
@@ -294,7 +294,7 @@ public sealed class BasicPromptTemplateTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
 
         var template = "foo-{{function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         this.MockFunctionRunner(func);
 
@@ -312,7 +312,7 @@ public sealed class BasicPromptTemplateTests
     {
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         this._variables.Update("BAR");
         this._variables.Set("myVar", "BAZ");
 
@@ -369,7 +369,7 @@ public sealed class BasicPromptTemplateTests
         this._variables.Set("myVar", "BAR");
 
         var template = "foo-{{function $myVar}}-baz";
-        var target = (BasicPromptTemplate)this._factory.CreatePromptTemplate(template, new PromptTemplateConfig());
+        var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
         var context = this.MockContext();
 
         // Act

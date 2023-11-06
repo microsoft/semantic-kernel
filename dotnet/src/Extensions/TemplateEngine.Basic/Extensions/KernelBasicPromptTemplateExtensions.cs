@@ -28,7 +28,7 @@ public static class KernelBasicPromptTemplateExtensions
         PromptTemplateConfig promptTemplateConfig)
     {
         var promptTemplateFactory = new BasicPromptTemplateFactory(loggerFactory: kernel.LoggerFactory);
-        var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+        var promptTemplate = promptTemplateFactory.Create(templateString, promptTemplateConfig);
         return kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, promptTemplate);
     }
 
@@ -49,7 +49,7 @@ public static class KernelBasicPromptTemplateExtensions
         PromptTemplateConfig promptTemplateConfig)
     {
         var promptTemplateFactory = new BasicPromptTemplateFactory(loggerFactory: kernel.LoggerFactory);
-        var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+        var promptTemplate = promptTemplateFactory.Create(templateString, promptTemplateConfig);
         return kernel.RegisterSemanticFunction(pluginName, functionName, promptTemplateConfig, promptTemplate);
     }
 }

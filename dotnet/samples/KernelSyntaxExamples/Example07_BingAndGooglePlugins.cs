@@ -151,7 +151,7 @@ Answer: ";
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
             var promptTemplateFactory = new BasicPromptTemplateFactory();
-            var promptTemplate = promptTemplateFactory.CreatePromptTemplate(result, new PromptTemplateConfig());
+            var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
 
             Console.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplateFactory.RenderAsync(result, kernel.CreateNewContext());

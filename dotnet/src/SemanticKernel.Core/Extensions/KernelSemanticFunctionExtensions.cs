@@ -127,7 +127,7 @@ public static class KernelSemanticFunctionExtensions
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
         var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(kernel);
-        IPromptTemplate promptTemplateInstance = factory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
+        IPromptTemplate promptTemplateInstance = factory.Create(promptTemplate, promptTemplateConfig);
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(pluginName)
@@ -266,12 +266,10 @@ public static class KernelSemanticFunctionExtensions
                 if (!File.Exists(promptPath)) { continue; }
 
                 // Load prompt configuration. Note: the configuration is optional.
-                var promptTemplateConfig = new PromptTemplateConfig();
                 var configPath = Path.Combine(dir, ConfigFile);
-                if (File.Exists(configPath))
-                {
-                    promptTemplateConfig = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
-                }
+                var promptTemplateConfig = File.Exists(configPath) ?
+                    PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
+                    new PromptTemplateConfig();
 
                 logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
                 if (logger.IsEnabled(LogLevel.Trace))
@@ -281,7 +279,7 @@ public static class KernelSemanticFunctionExtensions
 
                 // Load prompt template
                 var promptTemplate = File.ReadAllText(promptPath);
-                IPromptTemplate? promptTemplateInstance = factory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
+                IPromptTemplate? promptTemplateInstance = factory.Create(promptTemplate, promptTemplateConfig);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
@@ -394,7 +392,7 @@ public static class KernelSemanticFunctionExtensions
             this._promptTemplateEngine = promptTemplateEngine;
         }
 
-        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
             return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
         }

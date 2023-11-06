@@ -21,8 +21,8 @@ public sealed class AggregatorPromptTemplateFactoryTests
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
-        var result1 = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
-        var result2 = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
+        var result1 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
+        var result2 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
 
         // Assert
         Assert.NotNull(result1);
@@ -39,17 +39,17 @@ public sealed class AggregatorPromptTemplateFactoryTests
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
-        var result1 = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
-        var result2 = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
+        var result1 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
+        var result2 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
 
         // Assert
-        Assert.Throws<SKException>(() => target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
             if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
             {
@@ -81,7 +81,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
-        public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
             if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
             {

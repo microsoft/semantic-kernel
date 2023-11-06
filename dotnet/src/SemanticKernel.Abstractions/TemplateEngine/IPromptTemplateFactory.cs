@@ -17,5 +17,5 @@ public interface IPromptTemplateFactory
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
     /// <returns>Instance of <see cref="IPromptTemplate"/></returns>
     /// <throws><see cref="SKException"/> if template format is not supported</throws>
-    IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
+    IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig);
 }

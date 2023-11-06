@@ -17,6 +17,13 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     /// <param name="promptTemplateFactories">List of <see cref="IPromptTemplateFactory"/> instances</param>
     public AggregatorPromptTemplateFactory(params IPromptTemplateFactory[] promptTemplateFactories)
     {
+        Verify.NotNull(promptTemplateFactories);
+
+        if (promptTemplateFactories.Length == 0)
+        {
+            throw new SKException("At least one prompt template factory must be specified.");
+        }
+
         this._promptTemplateFactories = promptTemplateFactories;
     }
 
@@ -26,13 +33,13 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     /// <param name="templateString">Template string using the format associated with this <see cref="IPromptTemplateFactory"/></param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
     /// <returns></returns>
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         foreach (var promptTemplateFactory in this._promptTemplateFactories)
         {
             try
             {
-                var promptTemplate = promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+                var promptTemplate = promptTemplateFactory.Create(templateString, promptTemplateConfig);
                 if (promptTemplate != null)
                 {
                     return promptTemplate;

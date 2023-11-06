@@ -17,7 +17,7 @@ public sealed class BasicPromptTemplateFactoryTests
         var target = new BasicPromptTemplateFactory();
 
         // Act
-        var result = target.CreatePromptTemplate(templateString, new PromptTemplateConfig());
+        var result = target.Create(templateString, new PromptTemplateConfig());
 
         // Assert
         Assert.NotNull(result);
@@ -32,7 +32,7 @@ public sealed class BasicPromptTemplateFactoryTests
         var target = new BasicPromptTemplateFactory();
 
         // Act
-        var result = target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "semantic-kernel" });
+        var result = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "semantic-kernel" });
 
         // Assert
         Assert.NotNull(result);
@@ -48,6 +48,6 @@ public sealed class BasicPromptTemplateFactoryTests
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => target.CreatePromptTemplate(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 }

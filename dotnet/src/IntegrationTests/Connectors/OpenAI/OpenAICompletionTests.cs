@@ -360,11 +360,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var defaultFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket1",
             defaultConfig,
-            promptTemplateFactory.CreatePromptTemplate(prompt, defaultConfig));
+            promptTemplateFactory.Create(prompt, defaultConfig));
         var azureFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket2",
             azureConfig,
-            promptTemplateFactory.CreatePromptTemplate(prompt, defaultConfig));
+            promptTemplateFactory.Create(prompt, defaultConfig));
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
