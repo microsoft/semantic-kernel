@@ -42,6 +42,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
+    [Obsolete($"AzureOpenAI text completion service will be removed in future release. Use {nameof(WithAzureChatCompletionService)} method instead.")]
     public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -71,6 +72,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
+    [Obsolete($"AzureOpenAI text completion service will be removed in future release. Use {nameof(WithAzureChatCompletionService)} method instead.")]
     public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -98,6 +100,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <returns>Self instance</returns>
+    [Obsolete($"AzureOpenAI text completion service will be removed in future release. Use {nameof(WithAzureChatCompletionService)} method instead.")]
     public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         OpenAIClient openAIClient,

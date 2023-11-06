@@ -74,7 +74,7 @@ public sealed class PlanTests : IDisposable
     public async Task CanExecuteAsChatAsync(string inputToEmail, string expectedEmail)
     {
         // Arrange
-        IKernel target = this.InitializeKernel(false, true);
+        IKernel target = this.InitializeKernel(false);
 
         var emailFunctions = target.ImportFunctions(new EmailPluginFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
@@ -499,7 +499,7 @@ public sealed class PlanTests : IDisposable
         Assert.Equal($"Sent email to: default@email.com. Body: Roses are red, violets are blue, {input} is hard, so is this test.", result.GetValue<string>());
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -511,20 +511,10 @@ public sealed class PlanTests : IDisposable
             .WithLoggerFactory(this._loggerFactory)
             .WithRetryBasic();
 
-        if (useChatModel)
-        {
-            builder.WithAzureChatCompletionService(
+        builder.WithAzureChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
 
         if (useEmbeddings)
         {

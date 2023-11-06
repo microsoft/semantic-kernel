@@ -41,14 +41,16 @@ public sealed class StepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Theory]
-    [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    [Fact]
+    public void CanCreateStepwisePlan()
     {
         // Arrange
+        const string Prompt = "Who is the current president of the United States? What is his current age divided by 2";
+        const string ExpectedFunction = "ExecutePlan";
+        const string ExpectedPlugin = "StepwisePlanner";
+
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        IKernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
@@ -57,24 +59,22 @@ public sealed class StepwisePlannerTests : IDisposable
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
-        var plan = planner.CreatePlan(prompt);
+        var plan = planner.CreatePlan(Prompt);
 
         // Assert
         Assert.Empty(plan.Steps);
-        Assert.Equal(expectedFunction, plan.Name);
-        Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(ExpectedFunction, plan.Name);
+        Assert.Contains(ExpectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
 
     [RetryTheory(maxRetries: 3)]
-    [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
-    [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
-    [InlineData(false, "What is the weather in Seattle?", "Seattle")]
-    [InlineData(true, "What is the weather in Seattle?", "Seattle")]
-    public async Task CanExecuteStepwisePlanAsync(bool useChatModel, string prompt, string partialExpectedAnswer)
+    [InlineData("What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
+    [InlineData("What is the weather in Seattle?", "Seattle")]
+    public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer)
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        IKernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
@@ -139,7 +139,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -151,20 +151,10 @@ public sealed class StepwisePlannerTests : IDisposable
             .WithLoggerFactory(this._loggerFactory)
             .WithRetryBasic();
 
-        if (useChatModel)
-        {
-            builder.WithAzureChatCompletionService(
+        builder.WithAzureChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
 
         if (useEmbeddings)
         {

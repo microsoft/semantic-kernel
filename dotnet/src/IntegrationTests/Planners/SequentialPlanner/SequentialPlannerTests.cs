@@ -34,28 +34,30 @@ public sealed class SequentialPlannerTests : IDisposable
             .Build();
     }
 
-    [Theory]
-    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    [Fact]
+    public async Task CreatePlanFunctionFlowAsync()
     {
         // Arrange
+        const string Prompt = "Write a joke and send it in an e-mail to Kai.";
+        const string ExpectedFunction = "SendEmail";
+        const string ExpectedPlugin = FunctionCollection.GlobalFunctionsPluginName;
+
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        IKernel kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportFunctions(new EmailPluginFake());
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await planner.CreatePlanAsync(Prompt);
 
         // Assert
         Assert.Contains(
             plan.Steps,
             step =>
-                step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
+                step.Name.Equals(ExpectedFunction, StringComparison.OrdinalIgnoreCase) &&
+                step.PluginName.Equals(ExpectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
     [RetryTheory]
@@ -109,7 +111,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -120,20 +122,10 @@ public sealed class SequentialPlannerTests : IDisposable
         var builder = new KernelBuilder().WithLoggerFactory(this._logger);
         builder.WithRetryBasic();
 
-        if (useChatModel)
-        {
-            builder.WithAzureChatCompletionService(
+        builder.WithAzureChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
 
         if (useEmbeddings)
         {

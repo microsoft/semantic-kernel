@@ -17,7 +17,7 @@ public class AIServicesOpenAIExtensionsTests
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
         KernelBuilder targetBuilder = new();
-        targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", "azure");
+        targetBuilder.WithAzureChatCompletionService("depl", "https://url", "key", serviceId: "azure");
         targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url", "key", "azure");
 
         IKernel targetKernel = targetBuilder.Build();
@@ -29,7 +29,7 @@ public class AIServicesOpenAIExtensionsTests
     public void ItTellsIfAServiceIsAvailable()
     {
         KernelBuilder targetBuilder = new();
-        targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", serviceId: "azure");
+        targetBuilder.WithAzureChatCompletionService("depl", "https://url", "key", serviceId: "azure");
         targetBuilder.WithOpenAITextCompletionService("model", "apikey", serviceId: "oai");
         targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url2", "key", serviceId: "azure");
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model2", "apikey2", serviceId: "oai2");
@@ -49,8 +49,8 @@ public class AIServicesOpenAIExtensionsTests
         KernelBuilder targetBuilder = new();
 
         // Act - Assert no exception occurs
-        targetBuilder.WithAzureTextCompletionService("dep", "https://localhost", "key", serviceId: "one");
-        targetBuilder.WithAzureTextCompletionService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
 
         targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");
         targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");

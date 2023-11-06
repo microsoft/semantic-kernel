@@ -21,11 +21,9 @@ public static class Example51_StepwisePlanner
 {
     // Used to override the max allowed tokens when running the plan
     internal static int? ChatMaxTokens = null;
-    internal static int? TextMaxTokens = null;
 
     // Used to quickly modify the chat model used by the planner
     internal static string? ChatModelOverride = null; //"gpt-35-turbo";
-    internal static string? TextModelOverride = null; //"text-davinci-003";
 
     internal static string? Suffix = null;
 
@@ -45,7 +43,6 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletionAsync(question);
                 await RunChatCompletionAsync(question);
             }
         }
@@ -84,21 +81,12 @@ public static class Example51_StepwisePlanner
 
     private static readonly List<ExecutionResult> s_executionResults = new();
 
-    private static async Task RunTextCompletionAsync(string question)
-    {
-        Console.WriteLine("RunTextCompletion");
-        ExecutionResult currentExecutionResult = default;
-        currentExecutionResult.mode = "RunTextCompletion";
-        var kernel = GetKernel(ref currentExecutionResult);
-        await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
-    }
-
     private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
         Console.WriteLine("RunChatCompletion");
         ExecutionResult currentExecutionResult = default;
         currentExecutionResult.mode = "RunChatCompletion";
-        var kernel = GetKernel(ref currentExecutionResult, true, model);
+        var kernel = GetKernel(ref currentExecutionResult, model);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
@@ -196,32 +184,18 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-    private static IKernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
+    private static IKernel GetKernel(ref ExecutionResult result, string? model = null)
     {
-        var builder = new KernelBuilder();
-        var maxTokens = 0;
-        if (useChat)
-        {
-            builder.WithAzureChatCompletionService(
+        var builder = new KernelBuilder()
+            .WithAzureChatCompletionService(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
 
-            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
-            result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
-
-            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
-            result.model = model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName;
-        }
+        var maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
+        result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
         Console.WriteLine($"Model: {result.model} ({maxTokens})");
 
