@@ -20,7 +20,7 @@ public interface IPromptTemplate
     /// <summary>
     /// Render the template using the information in the context
     /// </summary>
-    /// <param name="executionContext">Kernel execution context helpers</param>
+    /// <param name="executionContext">Kernel execution context</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Prompt rendered to string</returns>
     public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default);
