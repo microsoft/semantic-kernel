@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
@@ -108,7 +107,6 @@ steps:
         var builder = new KernelBuilder()
             .WithLoggerFactory(this._logger)
             .WithRetryBasic()
-            .WithPromptTemplateEngine(new BasicPromptTemplateEngine(this._logger))
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,

@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -683,7 +684,8 @@ internal class FlowExecutor : IFlowExecutor
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
+        var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
+        var template = factory.Create(promptTemplate, config);
 
         return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
     }
