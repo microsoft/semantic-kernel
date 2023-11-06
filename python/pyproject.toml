@@ -19,7 +19,7 @@ pydantic = "<2"
 motor = "^3.3.1"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "3.3.3"
+pre-commit = "3.5.0"
 black = {version = "23.10.1", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.2"
