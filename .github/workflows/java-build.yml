@@ -77,7 +77,7 @@ jobs:
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u
