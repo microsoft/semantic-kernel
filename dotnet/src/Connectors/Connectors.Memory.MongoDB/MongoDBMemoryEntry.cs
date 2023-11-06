@@ -28,6 +28,8 @@ public sealed class MongoDBMemoryEntry
     /// Source content embedding.
     /// </summary>
 #pragma warning disable CA1819 // Properties should not return arrays
+    // MongoDBMemoryEntry class is not part of public API, and its usage correctness is ensured by MongoDBMemoryStore.
+    // This is an interim solution until ReadOnlyMemory<T> serialization is supported natively by MongoDB Driver (https://jira.mongodb.org/browse/CSHARP-4807).
     [BsonElement("embedding")]
     public float[] Embedding { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays

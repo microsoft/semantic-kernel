@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
