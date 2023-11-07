@@ -8,9 +8,9 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 /// <summary>
-/// Represents the authentication configuration for an OpenAI plugin.
+/// Represents the authentication section for an OpenAI plugin.
 /// </summary>
-public record OpenAIAuthentication
+public record OpenAIAuthenticationConfig
 {
     /// <summary>
     /// The type of authentication.
@@ -39,8 +39,7 @@ public record OpenAIAuthentication
     /// <summary>
     /// The authorization content type.
     /// </summary>
-    [JsonPropertyName("authorization_content_type")]
-    public string? AuthorizationContentType { get; set; }
+    public OpenAIAuthorizationContentType? AuthorizationContentType { get; set; }
 
     /// <summary>
     /// The authorization scope.
@@ -95,13 +94,13 @@ public enum OpenAIAuthorizationType
     /// <summary>
     /// Basic authorization.
     /// </summary>
-    [EnumMember(Value = "basic")]
+    [EnumMember(Value = "Basic")]
     Basic,
 
     /// <summary>
     /// Bearer authorization.
     /// </summary>
-    [EnumMember(Value = "bearer")]
+    [EnumMember(Value = "Bearer")]
     Bearer
 }
 

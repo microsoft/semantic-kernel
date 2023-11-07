@@ -43,7 +43,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         //Arrange
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
         JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
-        var actualOpenAIAuth = openAIDocumentContent["auth"].Deserialize<OpenAIAuthentication>()!;
+        var actualOpenAIAuthConfig = openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
@@ -64,7 +64,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
             It.Is<string>(expectedPluginName => expectedPluginName == pluginName),
-            It.Is<OpenAIAuthentication>(expectedOpenAIAuth => expectedOpenAIAuth.Scope == actualOpenAIAuth.Scope)),
+            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig.Scope)),
         Times.Exactly(1));
     }
 

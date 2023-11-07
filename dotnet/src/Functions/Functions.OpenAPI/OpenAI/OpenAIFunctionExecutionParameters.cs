@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 /// <summary>
-/// OpenAPI function execution parameters.
+/// OpenAI function execution parameters
 /// </summary>
 public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParameters
 {

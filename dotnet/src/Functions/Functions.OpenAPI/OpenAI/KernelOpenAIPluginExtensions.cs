@@ -128,11 +128,11 @@ public static class KernelOpenAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         JsonNode pluginJson;
-        OpenAIAuthentication openAIAuth;
+        OpenAIAuthenticationConfig openAIAuthConfig;
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuth = pluginJson["auth"].Deserialize<OpenAIAuthentication>()!;
+            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
         }
         catch (JsonException ex)
         {
@@ -144,7 +144,7 @@ public static class KernelOpenAIPluginExtensions
             var callback = executionParameters.AuthCallback;
             ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
             {
-                await callback(request, pluginName, openAIAuth).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig).ConfigureAwait(false);
             };
         }
 

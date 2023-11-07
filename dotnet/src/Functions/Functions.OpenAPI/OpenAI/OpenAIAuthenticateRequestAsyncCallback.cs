@@ -10,6 +10,6 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 /// </summary>
 /// <param name="request">The <see cref="HttpRequestMessage"/> to authenticate.</param>
 /// <param name="pluginName">The name of the plugin to be authenticated.</param>
-/// <param name="openAIAuth">The <see cref="OpenAIAuthentication"/> used to authenticate.</param>
+/// <param name="openAIAuthConfig">The <see cref="OpenAIAuthenticationConfig"/> used to authenticate.</param>
 /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-public delegate Task OpenAIAuthenticateRequestAsyncCallback(HttpRequestMessage request, string pluginName, OpenAIAuthentication openAIAuth);
+public delegate Task OpenAIAuthenticateRequestAsyncCallback(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig);
