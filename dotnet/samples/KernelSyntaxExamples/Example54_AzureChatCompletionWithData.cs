@@ -30,7 +30,7 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
+        var chatCompletion = new AzureOpenAIChatCompletionWithData(GetCompletionWithDataConfig());
         var chatHistory = chatCompletion.CreateNewChat();
 
         // First question without previous context based on uploaded content.
@@ -91,7 +91,7 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         IKernel kernel = new KernelBuilder()
-            .WithAzureChatCompletionService(config: completionWithDataConfig)
+            .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
             .Build();
 
         var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
@@ -120,11 +120,11 @@ public static class Example54_AzureChatCompletionWithData
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureChatCompletionWithDataConfig"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureChatCompletionWithDataConfig GetCompletionWithDataConfig()
+    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
     {
-        return new AzureChatCompletionWithDataConfig
+        return new AzureOpenAIChatCompletionWithDataConfig
         {
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
