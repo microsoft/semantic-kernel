@@ -20,7 +20,7 @@
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0-rc.2.23479.6" />
     <!-- Tokenizers -->
-    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0-preview.23266.6" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0-preview.23511.1" />
     <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.2" />
     <PackageVersion Include="SharpToken" Version="1.2.12" />
     <!-- Microsoft.Extensions.Logging -->
