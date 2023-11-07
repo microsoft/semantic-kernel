@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object> _attributes = new();
 
     /// <summary>
     /// Generation Image Operation path
@@ -108,7 +108,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

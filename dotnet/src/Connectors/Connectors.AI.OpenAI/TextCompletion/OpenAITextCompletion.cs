@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
 {
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object> _attributes = new();
 
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
@@ -47,7 +47,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(

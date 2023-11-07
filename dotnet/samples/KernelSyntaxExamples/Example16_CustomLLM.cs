@@ -31,7 +31,7 @@ public class MyTextCompletionService : ITextCompletion
 {
     public string? ModelId { get; private set; }
 
-    public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, string>();
 
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {

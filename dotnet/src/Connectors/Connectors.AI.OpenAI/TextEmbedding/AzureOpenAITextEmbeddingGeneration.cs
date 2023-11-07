@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// </summary>
 public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGeneration
 {
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object> _attributes = new();
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance using API Key auth.
@@ -65,7 +65,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
