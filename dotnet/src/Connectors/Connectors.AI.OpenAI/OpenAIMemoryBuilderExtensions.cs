@@ -24,7 +24,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static MemoryBuilder WithAzureTextEmbeddingGenerationService(
+    public static MemoryBuilder WithAzureOpenAITextEmbeddingGenerationService(
         this MemoryBuilder builder,
         string deploymentName,
         string endpoint,
@@ -34,7 +34,7 @@ public static class OpenAIMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
-            new AzureTextEmbeddingGeneration(
+            new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 apiKey,
@@ -56,7 +56,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static MemoryBuilder WithAzureTextEmbeddingGenerationService(
+    public static MemoryBuilder WithAzureOpenAITextEmbeddingGenerationService(
         this MemoryBuilder builder,
         string deploymentName,
         string endpoint,
@@ -66,7 +66,7 @@ public static class OpenAIMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
-            new AzureTextEmbeddingGeneration(
+            new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 credential,
