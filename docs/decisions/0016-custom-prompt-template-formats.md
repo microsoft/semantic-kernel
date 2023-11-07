@@ -2,10 +2,11 @@
 status: approved
 contact: markwallace-microsoft
 date: 2023-10-26
-deciders: mabolan, markwallace-microsoft, semenshi, rbarreto
+deciders: matthewbolanos, markwallace-microsoft, SergeyMenshykh, RogerBarreto
 consulted: dmytrostruk
-informed: 
+informed:
 ---
+
 # Custom Prompt Template Formats
 
 ## Context and Problem Statement
@@ -57,7 +58,7 @@ The `BasicPromptTemplateEngine` uses the `TemplateTokenizer` to parse the templa
 Then it renders the template i.e. inserts variables and executes functions. Some sample timings for these operations:
 
 | Operation        | Ticks   | Milliseconds |
-|------------------|---------|--------------|
+| ---------------- | ------- | ------------ |
 | Extract blocks   | 1044427 | 103          |
 | Render variables | 168     | 0            |
 
@@ -67,10 +68,10 @@ Sample template used was: `"{{variable1}} {{variable2}} {{variable3}} {{variable
 
 Using `HandlebarsDotNet` for the same use case results in the following timings:
 
-| Operation        | Ticks   | Milliseconds |
-|------------------|---------|--------------|
-| Compile template | 66277   | 6            |
-| Render variables | 4173    | 0            |
+| Operation        | Ticks | Milliseconds |
+| ---------------- | ----- | ------------ |
+| Compile template | 66277 | 6            |
+| Render variables | 4173  | 0            |
 
 **By separating the extract blocks/compile from the render variables operation it will be possible to optimise performance by compiling templates just once.**
 
@@ -135,7 +136,6 @@ Some issues:
 1. The `IPromptTemplate` interface is not used and causes confusion.
 1. There is no way to allow developers to support multiple prompt template formats at the same time.
 
-
 There is one implementation of `IPromptTemplate` provided in the Semantic Kernel core package.
 The `RenderAsync` implementation just delegates to the `IPromptTemplateEngine`.
 The `Parameters` list get's populated with the parameters defined in the `PromptTemplateConfig` and any missing variables defined in the template.
@@ -175,16 +175,16 @@ and then register the helpers. This means we cannot take advantage of the perfor
 
 In no particular order:
 
-* Support creating a semantic function without a `IKernel`instance.
-* Support late binding of functions i.e., having functions resolved when the prompt is rendered.
-* Support allowing the prompt template to be parsed (compiled) just once to optimize performance if needed.
-* Support using multiple prompt template formats with a single `Kernel` instance.
-* Provide simple abstractions which allow third parties to implement support for custom prompt template formats.
+- Support creating a semantic function without a `IKernel`instance.
+- Support late binding of functions i.e., having functions resolved when the prompt is rendered.
+- Support allowing the prompt template to be parsed (compiled) just once to optimize performance if needed.
+- Support using multiple prompt template formats with a single `Kernel` instance.
+- Provide simple abstractions which allow third parties to implement support for custom prompt template formats.
 
 ## Considered Options
 
-* Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`.
-* 
+- Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`.
+-
 
 ### Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`
 
@@ -221,9 +221,9 @@ Console.WriteLine(result.GetValue<string>());
 
 **Notes:**
 
-* `BasicPromptTemplateFactory` will be the default implementation and will be automatically provided in `KernelSemanticFunctionExtensions`. Developers will also be able to provide their own implementation.
-* The factory uses the new `PromptTemplateConfig.TemplateFormat` to create the appropriate `IPromptTemplate` instance.
-* We should look to remove `promptTemplateConfig` as a parameter to `CreateSemanticFunction`. That change is outside of the scope of this ADR.
+- `BasicPromptTemplateFactory` will be the default implementation and will be automatically provided in `KernelSemanticFunctionExtensions`. Developers will also be able to provide their own implementation.
+- The factory uses the new `PromptTemplateConfig.TemplateFormat` to create the appropriate `IPromptTemplate` instance.
+- We should look to remove `promptTemplateConfig` as a parameter to `CreateSemanticFunction`. That change is outside of the scope of this ADR.
 
 The `BasicPromptTemplateFactory` and `BasicPromptTemplate` implementations look as follows:
 
@@ -280,8 +280,8 @@ public sealed class BasicPromptTemplate : IPromptTemplate
 
 **Note:**
 
-* The call to `ExtractBlocks` is called lazily once for each prompt template
-* The `RenderAsync` doesn't need to extract the blocks every time
+- The call to `ExtractBlocks` is called lazily once for each prompt template
+- The `RenderAsync` doesn't need to extract the blocks every time
 
 ## Decision Outcome
 
