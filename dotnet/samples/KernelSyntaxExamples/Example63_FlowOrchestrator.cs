@@ -207,7 +207,7 @@ provides:
         var builder = new KernelBuilder();
 
         return builder
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,

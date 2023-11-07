@@ -18,17 +18,17 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// Azure OpenAI chat completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
+public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
     /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector with API key auth
+    /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureChatCompletion(
+    public AzureOpenAIChatCompletion(
         string modelId,
         string endpoint,
         string apiKey,
@@ -38,14 +38,14 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector with AAD auth
+    /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with AAD auth.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureChatCompletion(
+    public AzureOpenAIChatCompletion(
         string modelId,
         string endpoint,
         TokenCredential credentials,
@@ -55,12 +55,12 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <summary>
-    /// Creates a new AzureChatCompletion client instance using the specified OpenAIClient
+    /// Creates a new <see cref="AzureOpenAIChatCompletion"/> client instance using the specified <see cref="OpenAIClient"/>.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureChatCompletion(
+    public AzureOpenAIChatCompletion(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
