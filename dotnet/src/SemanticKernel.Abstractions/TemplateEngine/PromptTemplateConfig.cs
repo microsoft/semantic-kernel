@@ -15,6 +15,11 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public class PromptTemplateConfig
 {
     /// <summary>
+    /// Semantic Kernel template format.
+    /// </summary>
+    public const string SemanticKernelTemplateFormat = "semantic-kernel";
+
+    /// <summary>
     /// Input parameter for semantic functions.
     /// </summary>
     public class InputParameter
@@ -57,11 +62,11 @@ public class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Schema - Not currently used.
+    /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
     /// </summary>
-    [JsonPropertyName("schema")]
+    [JsonPropertyName("template_format")]
     [JsonPropertyOrder(1)]
-    public int Schema { get; set; } = 1;
+    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
 
     /// <summary>
     /// Description
@@ -97,19 +102,24 @@ public class PromptTemplateConfig
 
     #region Obsolete
     /// <summary>
+    /// Schema - Not currently used.
+    /// </summary>
+    [JsonPropertyName("schema")]
+    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
+    public int Schema { get; set; } = 1;
+
+    /// <summary>
     /// Type, such as "completion", "embeddings", etc.
     /// </summary>
     /// <remarks>TODO: use enum</remarks>
     [JsonPropertyName("type")]
-    [JsonPropertyOrder(5)]
-    [Obsolete("Type property is no longer required. This will be removed in a future release.")]
+    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
     public string Type { get; set; } = "completion";
 
     /// <summary>
     /// Completion configuration parameters.
     /// </summary>
     [JsonPropertyName("completion")]
-    [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.ModelSettings collection instead. This will be removed in a future release.")]
     public AIRequestSettings? Completion
@@ -128,7 +138,6 @@ public class PromptTemplateConfig
     /// Default AI services to use.
     /// </summary>
     [JsonPropertyName("default_services")]
-    [JsonPropertyOrder(7)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Obsolete("DefaultServices property is not being used. This will be removed in a future release.")]
     public List<string> DefaultServices { get; set; } = new();
