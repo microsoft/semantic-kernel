@@ -23,7 +23,7 @@ public sealed class FunctionResult
     public string PluginName { get; internal set; }
 
     /// <summary>
-    /// Attributes for storing additional information about function execution result.
+    /// Metadata for storing additional information about function execution result.
     /// </summary>
     public Dictionary<string, object> Metadata
     {

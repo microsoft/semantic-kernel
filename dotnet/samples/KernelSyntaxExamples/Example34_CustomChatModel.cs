@@ -22,7 +22,7 @@ public sealed class MyChatCompletionService : IChatCompletion
 {
     public string? ModelId { get; private set; }
 
-    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
 
     public ChatHistory CreateNewChat(string? instructions = null)
     {

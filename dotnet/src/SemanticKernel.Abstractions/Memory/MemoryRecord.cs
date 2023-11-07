@@ -21,7 +21,7 @@ public class MemoryRecord : DataEntryBase
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
-    /// Attributes associated with a Semantic Kernel memory.
+    /// Metadata associated with a Semantic Kernel memory.
     /// </summary>
     [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
@@ -138,7 +138,7 @@ public class MemoryRecord : DataEntryBase
     /// <summary>
     /// Create a memory record from a memory record's metadata.
     /// </summary>
-    /// <param name="metadata">Attributes associated with a memory.</param>
+    /// <param name="metadata">Metadata associated with a memory.</param>
     /// <param name="embedding">Optional embedding associated with a memory record.</param>
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
