@@ -16,7 +16,7 @@ using RepoUtils;
 public static class Example64_MultiplePromptTemplates
 {
     /// <summary>
-    /// Show how to combine multiple propmpt template factories.
+    /// Show how to combine multiple prompt template factories.
     /// </summary>
     public static async Task RunAsync()
     {
