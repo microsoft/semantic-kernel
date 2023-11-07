@@ -315,7 +315,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         string? outputType = method.GetCustomAttribute<SKOutputAttribute>(inherit: true)?.Type;
         string? outputRange = method.GetCustomAttribute<SKOutputAttribute>(inherit: true)?.Range;
 
-        var output = new OutputView(outputDescription ?? string.Empty, outputType, outputRange ?? string.Empty);
+        var output = new OutputView(outputDescription ?? string.Empty, outputType ?? string.Empty, outputRange ?? string.Empty);
 
         var result = new MethodDetails
         {
