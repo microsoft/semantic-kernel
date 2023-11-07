@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
 /// Image generation response
 /// </summary>
-public class AzureImageGenerationResponse
+public class AzureOpenAIImageGenerationResponse
 {
     /// <summary>
     /// Image generation result

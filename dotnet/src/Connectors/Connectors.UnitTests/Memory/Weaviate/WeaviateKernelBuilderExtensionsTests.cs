@@ -47,7 +47,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
 #pragma warning disable CS0618 // This will be removed in a future release.
         builder.WithWeaviateMemoryStore(this._httpClient, "https://fake-random-test-weaviate-host", "fake-api-key", apiVersion);
 #pragma warning restore CS0618 // This will be removed in a future release.
-        builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
+        builder.WithAzureOpenAITextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
         var kernel = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.
 
         //Act
