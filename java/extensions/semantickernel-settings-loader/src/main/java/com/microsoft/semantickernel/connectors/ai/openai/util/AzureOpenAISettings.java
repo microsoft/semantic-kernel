@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */
 public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
-    public static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
-    public static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
-    public static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
+    private static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
+    private static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
+    private static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
 
     @Nullable private final String key;
 
@@ -79,5 +79,32 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
         }
 
         return true;
+    }
+
+    /**
+     * Get the DEFAULT_SETTINGS_PREFIX value
+     *
+     * @return the DEFAULT_SETTINGS_PREFIX value
+     */
+    public static String getDefaultSettingsPrefix() {
+      return DEFAULT_SETTINGS_PREFIX;
+    }
+
+    /**
+     * Get the AZURE_OPEN_AI_ENDPOINT_SUFFIX value
+     *
+     * @return the AZURE_OPEN_AI_ENDPOINT_SUFFIX value
+     */
+    public static String getAzureOpenAiEndpointSuffix() {
+        return AZURE_OPEN_AI_ENDPOINT_SUFFIX;
+    }
+
+    /**
+     * Get the AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX value
+     *
+     * @return the AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX value
+     */
+    public static String getAzureOpenAiDeploymentNameSuffix() {
+        return AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX;
     }
 }
