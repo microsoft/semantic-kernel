@@ -1,0 +1,20 @@
+{
+    "schema_version": "v1",
+    "name_for_model": "AzureKeyVault",
+    "name_for_human": "AzureKeyVault",
+    "description_for_model": "An Azure Key Vault plugin for interacting with secrets.",
+    "description_for_human": "An Azure Key Vault plugin for interacting with secrets.",
+    "auth": {
+        "type": "oauth",
+        "scope": "",
+        "authorization_url": "https://login.windows.net/common/oauth2/authorize",
+        "content_type": "application/x-www-form-urlencoded"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "./openapi.json"
+    },
+    "logo_url": "",
+    "contact_email": "",
+    "legal_info_url": ""
+}

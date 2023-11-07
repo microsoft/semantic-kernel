@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
@@ -15,15 +14,30 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenApiPlugin_AzureKeyVault
 {
-    private static readonly Uri s_pluginManifestUri = new("https://localhost:40443/.well-known/ai-plugin.json");
+    private const string ResourceName = $"{PluginResourceNames.AzureKeyVault}.ai-plugin.json";
     private const string SecretName = "Foo";
     private const string SecretValue = "Bar";
 
+    /// <summary>
+    /// This example demonstrates how to connect an Azure Key Vault plugin to the Semantic Kernel.
+    /// To use this example, there are a few requirements:
+    ///   1. Register a client application with the Microsoft identity platform.
+    ///   https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
+    ///
+    ///   2. Create an Azure Key Vault
+    ///   https://learn.microsoft.com/en-us/azure/key-vault/general/quick-create-portal
+    ///
+    ///   3. Add a permission for Azure Key Vault to your client application
+    ///   https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-access-web-apis
+    ///
+    ///   4. Set your Key Vault endpoint, client ID, and client secret as user secrets using:
+    ///   dotnet user-secrets set "KeyVault.Endpoint" "your_endpoint"
+    ///   dotnet user-secrets set "KeyVault.ClientId" "your_client_id"
+    ///   dotnet user-secrets set "KeyVault.ClientSecret" "your_secret"
+    /// </summary>
     public static async Task RunAsync()
     {
-        // To run this example, you must register a client application with the Microsoft identity platform.
-        // Instructions here: https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
-        var authenticationProvider = new DynamicAuthenticationProvider(
+        var authenticationProvider = new DynamicOpenAIAuthenticationProvider(
             new Dictionary<string, Dictionary<string, string>>()
             {
                 {
@@ -43,7 +57,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         await GetSecretFromAzureKeyVaultWithRetryAsync(authenticationProvider);
     }
 
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(DynamicAuthenticationProvider authenticationProvider)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(DynamicOpenAIAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -54,11 +68,15 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             })
             .Build();
 
-        // Import AI Plugin
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var type = typeof(PluginResourceNames);
+
+        var stream = type.Assembly.GetManifestResourceStream(type, ResourceName);
+
+        // Import an Open AI Plugin via Stream
+        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
-            s_pluginManifestUri,
-            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            ResourceName,
+            new OpenAIFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -74,15 +92,15 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync(DynamicAuthenticationProvider authenticationProvider)
+    public static async Task AddSecretToAzureKeyVaultAsync(DynamicOpenAIAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Import AI Plugin
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
-            s_pluginManifestUri,
-            new OpenApiFunctionExecutionParameters
+            ResourceName,
+            new OpenAIFunctionExecutionParameters
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,
                 EnableDynamicPayload = true
