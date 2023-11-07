@@ -2,13 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,26 +19,12 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 /// <summary>
-/// Provides extension methods for importing AI plugins exposed as OpenAPI v3 endpoints or through OpenAI's ChatGPT format.
+/// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
 /// </summary>
-public static class KernelAIPluginExtensions
+public static class KernelOpenApiPluginExtensions
 {
-    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
-        this IKernel kernel,
-        string pluginName,
-        string filePath,
-        OpenApiFunctionExecutionParameters? executionParameters = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await kernel.ImportPluginFunctionsAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
-    }
-#pragma warning restore CS1591
-
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -49,7 +32,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         string filePath,
@@ -63,38 +46,22 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromFilePathAsync(
-            kernel,
+        var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            executionParameters,
-            httpClient,
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImportAsync(
+        return await RegisterOpenApiPluginAsync(
             kernel,
-            pluginContents,
             pluginName,
-            httpClient,
             executionParameters,
+            httpClient,
+            openApiSpec,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
-        this IKernel kernel,
-        string pluginName,
-        Uri uri,
-        OpenApiFunctionExecutionParameters? executionParameters = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await kernel.ImportPluginFunctionsAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
-    }
-#pragma warning restore CS1591
-
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -102,7 +69,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Uri uri,
@@ -116,25 +83,26 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromUriAsync(
-            kernel,
+        var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            executionParameters,
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             httpClient,
+            executionParameters?.AuthCallback,
+            executionParameters?.UserAgent,
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImportAsync(
+        return await RegisterOpenApiPluginAsync(
             kernel,
-            pluginContents,
             pluginName,
-            httpClient,
             executionParameters,
+            httpClient,
+            openApiSpec,
             uri,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// Imports a plugin that is exposed as an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -142,7 +110,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Stream stream,
@@ -156,50 +124,20 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromStreamAsync(kernel, stream).ConfigureAwait(false);
+        var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
 
-        return await CompleteImportAsync(
+        return await RegisterOpenApiPluginAsync(
             kernel,
-            pluginContents,
             pluginName,
-            httpClient,
             executionParameters,
+            httpClient,
+            openApiSpec,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     #region private
 
-    private static async Task<IDictionary<string, ISKFunction>> CompleteImportAsync(
-        IKernel kernel,
-        string pluginContents,
-        string pluginName,
-        HttpClient httpClient,
-        OpenApiFunctionExecutionParameters? executionParameters,
-        Uri? documentUri = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
-        {
-            return await kernel
-                .ImportPluginFunctionsAsync(
-                    pluginName,
-                    new Uri(openApiUrl),
-                    executionParameters,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return await LoadPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            pluginContents,
-            documentUri,
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
+    private static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiPluginAsync(
         IKernel kernel,
         string pluginName,
         OpenApiFunctionExecutionParameters? executionParameters,
@@ -223,7 +161,7 @@ public static class KernelAIPluginExtensions
 
             var plugin = new Dictionary<string, ISKFunction>();
 
-            ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions));
+            ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
             foreach (var operation in operations)
             {
                 try
@@ -241,84 +179,6 @@ public static class KernelAIPluginExtensions
             }
 
             return plugin;
-        }
-    }
-
-    private static async Task<string> LoadDocumentFromUriAsync(
-        IKernel kernel,
-        Uri uri,
-        OpenApiFunctionExecutionParameters? executionParameters,
-        HttpClient httpClient,
-        CancellationToken cancellationToken)
-    {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
-
-        requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
-
-        using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-    }
-
-    private static async Task<string> LoadDocumentFromFilePathAsync(
-        IKernel kernel,
-        string filePath,
-        OpenApiFunctionExecutionParameters? executionParameters,
-        HttpClient httpClient,
-        CancellationToken cancellationToken)
-    {
-        var pluginJson = string.Empty;
-
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
-        }
-
-        kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)).LogTrace("Importing AI Plugin from {0}", filePath);
-
-        using (var sr = File.OpenText(filePath))
-        {
-            return await sr.ReadToEndAsync().ConfigureAwait(false); //must await here to avoid stream reader being disposed before the string is read
-        }
-    }
-
-    private static async Task<string> LoadDocumentFromStreamAsync(
-        IKernel kernel,
-        Stream stream)
-    {
-        using StreamReader reader = new(stream);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
-    }
-
-    private static bool TryParseAIPluginForUrl(string gptPluginJson, out string? openApiUrl)
-    {
-        try
-        {
-            JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
-
-            string? apiType = gptPlugin?["api"]?["type"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
-            {
-                openApiUrl = null;
-
-                return false;
-            }
-
-            openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(openApiUrl))
-            {
-                return false;
-            }
-
-            return true;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            openApiUrl = null;
-
-            return false;
         }
     }
 
@@ -349,7 +209,7 @@ public static class KernelAIPluginExtensions
             documentUri
         );
 
-        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
         async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
         {
