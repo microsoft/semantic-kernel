@@ -148,7 +148,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     private readonly IPromptTemplate _promptTemplate;
-    internal const string RenderedPromptMetadataKey = "RenderedPrompt";
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -205,7 +204,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             result = new FunctionResult(this.Name, this.PluginName, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
-            result.Metadata.Add(SemanticFunction.RenderedPromptMetadataKey, renderedPrompt);
+            result.Metadata.Add(SKEventArgs.RenderedPromptMetadataKey, renderedPrompt);
 
             this.CallFunctionInvoked(result, context, renderedPrompt);
             if (SKFunction.IsInvokedCancelRequested(context))
@@ -238,7 +237,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context)
         {
             Metadata = {
-                [SemanticFunction.RenderedPromptMetadataKey] = renderedPrompt
+                [SKEventArgs.RenderedPromptMetadataKey] = renderedPrompt
             }
         };
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
@@ -254,7 +253,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         var eventWrapper = context.FunctionInvokedHandler;
 
-        result.Metadata[RenderedPromptMetadataKey] = prompt;
+        result.Metadata[SKEventArgs.RenderedPromptMetadataKey] = prompt;
 
         // Not handlers registered, return the result as is
         if (eventWrapper?.Handler is null)
@@ -279,7 +278,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private string GetPromptFromEventArgsMetadataOrDefault(SKContext context, string defaultPrompt)
     {
         var eventArgs = context.FunctionInvokingHandler?.EventArgs;
-        if (eventArgs is null || !eventArgs.Metadata.TryGetValue(RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
+        if (eventArgs is null || !eventArgs.Metadata.TryGetValue(SKEventArgs.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
         {
             return defaultPrompt;
         }

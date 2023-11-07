@@ -88,7 +88,8 @@ public sealed class SKContext
     /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
-    /// <param name="eventHandlerWrappers">Event handler wrappers to be used in context</param>
+    /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
+    /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
@@ -97,7 +98,8 @@ public sealed class SKContext
         IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
-        ICollection<EventHandlerWrapper?>? eventHandlerWrappers = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
@@ -110,28 +112,8 @@ public sealed class SKContext
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
-
-        this.InitializeEventWrappers(eventHandlerWrappers);
-    }
-
-    private void InitializeEventWrappers(ICollection<EventHandlerWrapper?>? eventHandlerWrappers)
-    {
-        if (eventHandlerWrappers is not null)
-        {
-            foreach (var handler in eventHandlerWrappers)
-            {
-                if (handler is EventHandlerWrapper<FunctionInvokingEventArgs> invokingWrapper)
-                {
-                    this.FunctionInvokingHandler = invokingWrapper;
-                    continue;
-                }
-
-                if (handler is EventHandlerWrapper<FunctionInvokedEventArgs> invokedWrapper)
-                {
-                    this.FunctionInvokedHandler = invokedWrapper;
-                }
-            }
-        }
+        this.FunctionInvokingHandler = invokingWrapper;
+        this.FunctionInvokedHandler = invokedWrapper;
     }
 
     /// <summary>
@@ -166,7 +148,8 @@ public sealed class SKContext
             this.ServiceSelector,
             variables ?? this.Variables.Clone(),
             functions ?? this.Functions,
-            new List<EventHandlerWrapper?> { this.FunctionInvokedHandler, this.FunctionInvokingHandler },
+            this.FunctionInvokingHandler,
+            this.FunctionInvokedHandler,
             this.LoggerFactory,
             this.Culture);
     }

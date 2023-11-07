@@ -183,11 +183,8 @@ repeat:
             this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
-            new List<EventHandlerWrapper?>
-            {
-                new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
-                new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked)
-            },
+            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
+            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,
             culture);
     }

@@ -146,8 +146,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
 
             var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
-            var finalResult = this.CallFunctionInvoked(invokeResult, context);
 
+            var finalResult = this.CallFunctionInvoked(invokeResult, context);
             if (SKFunction.IsInvokedCancelRequested(context))
             {
                 return new FunctionResult(this.Name, this.PluginName, context, finalResult.Value);

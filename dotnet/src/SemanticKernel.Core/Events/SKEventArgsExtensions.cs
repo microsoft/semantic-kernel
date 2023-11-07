@@ -17,7 +17,7 @@ public static class SKEventArgsExtensions
     /// <returns>True if the prompt was present</returns>
     public static bool TryGetRenderedPrompt(this SKEventArgs eventArgs, out string? renderedPrompt)
     {
-        var found = eventArgs.Metadata.TryGetValue(SemanticFunction.RenderedPromptMetadataKey, out var renderedPromptObject);
+        var found = eventArgs.Metadata.TryGetValue(SKEventArgs.RenderedPromptMetadataKey, out var renderedPromptObject);
         renderedPrompt = renderedPromptObject?.ToString();
 
         return found;
@@ -31,9 +31,9 @@ public static class SKEventArgsExtensions
     /// <returns>True if the prompt exist and was updated</returns>
     public static bool TryUpdateRenderedPrompt(this SKEventArgs eventArgs, string newPrompt)
     {
-        if (eventArgs.Metadata.ContainsKey(SemanticFunction.RenderedPromptMetadataKey))
+        if (eventArgs.Metadata.ContainsKey(SKEventArgs.RenderedPromptMetadataKey))
         {
-            eventArgs.Metadata[SemanticFunction.RenderedPromptMetadataKey] = newPrompt;
+            eventArgs.Metadata[SKEventArgs.RenderedPromptMetadataKey] = newPrompt;
             return true;
         }
 

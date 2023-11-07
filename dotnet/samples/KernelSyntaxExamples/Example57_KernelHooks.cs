@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example57_FunctionEventHandlers
+public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
@@ -123,7 +123,7 @@ public static class Example57_FunctionEventHandlers
                 Console.WriteLine(prompt);
 
                 // Update the prompt
-                e.TryUpdateRenderedPrompt("Write a random paragraph about: Overriding a prompt");
+                e.TryUpdateRenderedPrompt($"{prompt}. USE SHORT, CLEAR, COMPLETE SENTENCES.");
             }
         }
 
