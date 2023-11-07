@@ -1,15 +1,17 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: accepted
-contact: semenshi
+contact: SergeyMenshykh
 date: 2023-06-23
 deciders: shawncal
 consulted: stephentoub
 informed:
 ---
+
 # Error handling improvements
 
 ## Disclaimer
+
 This ADR describes problems and their solutions for improving the error handling aspect of SK. It does not address logging, resiliency, or observability aspects.
 
 ## Context and Problem Statement
