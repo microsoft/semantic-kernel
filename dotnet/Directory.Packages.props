@@ -45,7 +45,7 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rc.2.23510.2" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.12" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.13" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
