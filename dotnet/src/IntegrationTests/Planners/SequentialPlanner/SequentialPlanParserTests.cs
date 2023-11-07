@@ -34,7 +34,7 @@ public class SequentialPlanParserTests
 
         IKernel kernel = new KernelBuilder()
             .WithRetryBasic()
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
