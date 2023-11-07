@@ -13,7 +13,7 @@ informed:
 Developers need to be able to know more information about the `IAIService` that will be used to execute a semantic function or a plan.
 Some examples of why they need this information:
 
-1. As an SK developer I want to write a `IAIServiceSelector` which allows me to select the OpenAI service to used based on the configured model id so that I cna select the optimum (could eb cheapest) model to use based on the prompt I am executing.
+1. As an SK developer I want to write a `IAIServiceSelector` which allows me to select the OpenAI service to used based on the configured model id so that I can select the optimum (could eb cheapest) model to use based on the prompt I am executing.
 2. As an SK developer I want to write a pre-invocation hook which will compute the token size of a prompt before the prompt is sent to the LLM, so that I can determine the optimum `IAIService` to use. The library I am using to compute the token size of the prompt requires the model id.
 
 
