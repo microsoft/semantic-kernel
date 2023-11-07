@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "description": "Given the chat history, determine if user would like to execute the previous task for one more time. If not concluded, generate the next message for follow up.",
+  "type": "completion",
+  "completion": {
+    "max_tokens": 400,
+    "temperature": 0,
+    "top_p": 1,
+    "presence_penalty": 0,
+    "frequency_penalty": 0,
+    "stop_sequences": [ "[RESPONSE]", "[Goal]" ]
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "goal",
+        "description": "The goal of proposed step",
+        "defaultValue": ""
+      },
+      {
+        "name": "transitionMessage",
+        "description": "The transition message",
+        "defaultValue": "Did you want to try the previous step again?"
+      },
+      {
+        "name": "agentScratchPad",
+        "description": "The agent's scratch pad",
+        "defaultValue": ""
+      }
+    ]
+  }
+}
