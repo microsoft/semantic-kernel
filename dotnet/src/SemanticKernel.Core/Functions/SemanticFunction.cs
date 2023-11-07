@@ -45,6 +45,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <summary>
+    /// Function output
+    /// </summary>
+    public OutputView Output { get; }
+
+    /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
     /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
@@ -70,6 +75,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
+            output: new OutputView(promptTemplateConfig.Output.Type,
+                                    promptTemplateConfig.Output.Range,
+                                    promptTemplateConfig.Output.Description),
             loggerFactory: loggerFactory
         )
         {
@@ -82,7 +90,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
+        return new FunctionView(this.Name, this.PluginName, this.Description) {
+            Parameters = this.Parameters,
+            Output = this.Output
+        };
     }
 
     /// <inheritdoc/>
@@ -120,6 +131,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string pluginName,
         string functionName,
         string description,
+        OutputView output,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -134,6 +146,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this.Name = functionName;
         this.PluginName = pluginName;
         this.Description = description;
+        this.Output = output;
 
         this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }

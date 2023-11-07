@@ -15,14 +15,21 @@ namespace Microsoft.SemanticKernel;
 /// <param name="PluginName">Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}</param>
 /// <param name="Description">Function description. The description is used in combination with embeddings when searching relevant functions.</param>
 /// <param name="Parameters">Optional list of function parameters</param>
+/// <param name="Output">Optional function output</param>
 public sealed record FunctionView(
     string Name,
     string PluginName,
     string Description = "",
-    IReadOnlyList<ParameterView>? Parameters = null)
+    IReadOnlyList<ParameterView>? Parameters = null,
+    OutputView? Output = null)
 {
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters { get; init; } = Parameters ?? Array.Empty<ParameterView>();
+
+    /// <summary>
+    /// Function output
+    /// </summary>
+    public OutputView Output { get; init; } = Output ?? new OutputView();
 }

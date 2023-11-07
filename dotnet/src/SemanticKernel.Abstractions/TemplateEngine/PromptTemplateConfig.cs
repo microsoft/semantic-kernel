@@ -62,6 +62,33 @@ public class PromptTemplateConfig
     }
 
     /// <summary>
+    /// Output for semantic functions.
+    /// </summary>
+    public class OutputConfig
+    {
+        /// <summary>
+        /// Output return type.
+        /// </summary>
+        [JsonPropertyName("type")]
+        [JsonPropertyOrder(1)]
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Output return range of included values. Can also specify what values to exclude. Can be qualitative or quantitative.
+        /// </summary>
+        [JsonPropertyName("range")]
+        [JsonPropertyOrder(2)]
+        public string Range { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Description of output beyond type and range.
+        /// </summary>
+        [JsonPropertyName("description")]
+        [JsonPropertyOrder(3)]
+        public string Description { get; set; } = string.Empty;
+    }
+
+    /// <summary>
     /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
     /// </summary>
     [JsonPropertyName("template_format")]
@@ -91,6 +118,14 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<AIRequestSettings> ModelSettings { get; set; } = new();
+
+    /// <summary>
+    /// Output for semantic functions.
+    /// </summary>
+    [JsonPropertyName("output")]
+    [JsonPropertyOrder(5)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OutputConfig Output { get; set; } = new();
 
     /// <summary>
     /// Return the default <see cref="AIRequestSettings"/>
