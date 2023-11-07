@@ -14,7 +14,7 @@ public static class Example28_ActionPlanner
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)

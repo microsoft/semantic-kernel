@@ -58,7 +58,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var embeddingGenerator = new AzureTextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
+        var embeddingGenerator = new AzureOpenAITextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
             azureOpenAIConfiguration.Endpoint,
             azureOpenAIConfiguration.ApiKey);
 
