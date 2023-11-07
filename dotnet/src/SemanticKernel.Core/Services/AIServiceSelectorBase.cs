@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Base classe for implementing <see cref="IAIServiceSelector"/>.
+/// Base class for implementing <see cref="IAIServiceSelector"/>.
 /// </summary>
 public abstract class AIServiceSelectorBase : IAIServiceSelector
 {
@@ -32,7 +32,7 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     }
 
     /// <summary>
-    /// Return the AI service and requesting settings if the specified provider is the vaid choice.
+    /// Return the AI service and requesting settings if the specified provider is the valid choice.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="renderedPrompt"></param>
