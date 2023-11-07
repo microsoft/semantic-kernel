@@ -59,12 +59,12 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
-        AzureChatCompletion azureChatCompletion = new(
+        AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await StartChatAsync(azureChatCompletion);
+        await StartChatAsync(azureOpenAIChatCompletion);
     }
 
     private static async Task StartChatAsync(IChatCompletion chatGPT)

@@ -3,10 +3,10 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 /// <summary>
-/// Azure image generation response status
+/// Azure OpenAI image generation response status
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
-public static class AzureImageOperationStatus
+public static class AzureOpenAIImageOperationStatus
 {
     /// <summary>
     /// Image generation Succeeded
