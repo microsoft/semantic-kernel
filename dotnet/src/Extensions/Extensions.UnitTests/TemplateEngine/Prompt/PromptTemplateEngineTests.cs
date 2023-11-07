@@ -21,6 +21,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
+[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromptTemplateEngineTests
 {
     private const string DateFormat = "M/d/yyyy";

@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
@@ -32,7 +33,7 @@ public class SequentialPlanParserTests
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
-        kernelMock.SetupGet(k => k.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernelMock.SetupGet(k => k.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         return kernelMock;
     }
