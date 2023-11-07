@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,6 +25,8 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
+[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public class BasicPromptTemplateEngine : IPromptTemplateEngine
 {
     private readonly ILoggerFactory _loggerFactory;
@@ -37,7 +41,7 @@ public class BasicPromptTemplateEngine : IPromptTemplateEngine
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplateEngine));
-        this._tokenizer = new TemplateTokenizer(loggerFactory);
+        this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
     /// <inheritdoc/>

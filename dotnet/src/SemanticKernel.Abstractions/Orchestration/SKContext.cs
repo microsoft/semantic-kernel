@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -62,22 +63,43 @@ public sealed class SKContext
     /// <summary>
     /// AI service provider
     /// </summary>
-    public IAIServiceProvider ServiceProvider { get; }
+    internal IAIServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// AIService selector implementation
+    /// </summary>
+    internal IAIServiceSelector ServiceSelector { get; }
+
+    /// <summary>
+    /// Function invoking event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
+
+    /// <summary>
+    /// Function invoked event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="functionRunner">Function runner reference</param>
     /// <param name="serviceProvider">AI service provider</param>
+    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
+    /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
+    /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
         IFunctionRunner functionRunner,
         IAIServiceProvider serviceProvider,
+        IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
@@ -85,10 +107,13 @@ public sealed class SKContext
 
         this.Runner = functionRunner;
         this.ServiceProvider = serviceProvider;
+        this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
+        this.FunctionInvokingHandler = invokingWrapper;
+        this.FunctionInvokedHandler = invokedWrapper;
     }
 
     /// <summary>
@@ -120,8 +145,11 @@ public sealed class SKContext
         return new SKContext(
             this.Runner,
             this.ServiceProvider,
+            this.ServiceSelector,
             variables ?? this.Variables.Clone(),
             functions ?? this.Functions,
+            this.FunctionInvokingHandler,
+            this.FunctionInvokedHandler,
             this.LoggerFactory,
             this.Culture);
     }

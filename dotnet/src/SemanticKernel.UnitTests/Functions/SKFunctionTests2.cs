@@ -1046,10 +1046,12 @@ public sealed class SKFunctionTests2
     {
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
 
         return new SKContext(
             functionRunner.Object,
             serviceProvider.Object,
+            serviceSelector.Object,
             new ContextVariables(input)
         );
     }

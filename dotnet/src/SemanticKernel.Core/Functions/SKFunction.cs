@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -50,4 +51,46 @@ public static class SKFunction
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null)
             => NativeFunction.FromNativeFunction(nativeFunction, pluginName, functionName, description, parameters, loggerFactory);
+
+    /// <summary>
+    /// Default implementation to identify if a function was cancelled or skipped.
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <returns>True if it was cancelled or skipped</returns>
+    internal static bool IsInvokingCancelOrSkipRequested(SKContext context)
+    {
+        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
+
+        return IsInvokingCancelRequested(context) || IsInvokingSkipRequested(context);
+    }
+
+    /// <summary>
+    /// Default implementation to identify if a function was skipped.
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <returns>True if it was cancelled or skipped</returns>
+    internal static bool IsInvokingSkipRequested(SKContext context)
+    {
+        return context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested == true;
+    }
+
+    /// <summary>
+    /// Default implementation to identify if a function was cancelled in the pre hook.
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <returns>True if it was cancelled or skipped</returns>
+    internal static bool IsInvokingCancelRequested(SKContext context)
+    {
+        return context.FunctionInvokingHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
+    }
+
+    /// <summary>
+    /// Default implementation to identify if a function was cancelled in the post hook.
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <returns>True if it was cancelled or skipped</returns>
+    internal static bool IsInvokedCancelRequested(SKContext context)
+    {
+        return context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
+    }
 }
