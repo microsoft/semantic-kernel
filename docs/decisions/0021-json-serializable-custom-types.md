@@ -11,6 +11,9 @@ informed:
 
 ## Context and Problem Statement
 
+This ADR aims to simplify the usage of custom types by allowing developers to use any type that can be serialized using `System.Text.Json`.
+Standardizing on JSON, rather than allowing the developer choose the serialization format, will help enable the use of `JsonSchema` for planner functional manuals.
+
 Today, use of custom types within Semantic Kernel requires developers to implement a custom `TypeConverter` to convert to/from the string representation of the type. This is demonstrated in [Example60_AdvancedNativeFunctions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/KernelSyntaxExamples/Example60_AdvancedNativeFunctions.cs#L202C44-L202C44) as seen below:
 
 ```csharp
@@ -37,8 +40,6 @@ Today, use of custom types within Semantic Kernel requires developers to impleme
         }
     }
 ```
-
-This ADR aims to simplify the usage of custom types by allowing developers to use any type that can be serialized using `System.Text.Json`.
 
 ## Considered Options
 
