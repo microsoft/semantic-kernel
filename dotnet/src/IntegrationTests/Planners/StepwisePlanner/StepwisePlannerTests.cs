@@ -147,11 +147,13 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
+        var builder = new KernelBuilder()
+            .WithLoggerFactory(this._loggerFactory)
+            .WithRetryBasic();
 
         if (useChatModel)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
@@ -166,7 +168,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);

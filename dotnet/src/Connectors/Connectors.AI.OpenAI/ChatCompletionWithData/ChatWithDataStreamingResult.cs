@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult
+internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
     public ModelResult ModelResult { get; }
 

@@ -15,7 +15,7 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
