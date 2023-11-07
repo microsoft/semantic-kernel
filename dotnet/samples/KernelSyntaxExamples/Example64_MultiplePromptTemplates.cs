@@ -3,20 +3,20 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using RepoUtils;
-
-namespace KernelSyntaxExamples;
 
 /**
  * This example shows how to use multiple prompt template formats.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example64_MultiplePromptTemplates
 {
     /// <summary>
-    /// Show how to run a semantic function and specify a specific service to use.
+    /// Show how to combine multiple propmpt template factories.
     /// </summary>
     public static async Task RunAsync()
     {
@@ -41,11 +41,20 @@ public static class Example64_MultiplePromptTemplates
                 apiKey: apiKey)
             .Build();
 
+        var promptTemplateFactory = new AggregatorPromptTemplateFactory(
+            new BasicPromptTemplateFactory(),
+            new HandlebarsPromptTemplateFactory());
+
+        var skPrompt = "Hello AI, my name is {{$name}}. What is the origin of my name?";
+        var handlebarsPrompt = "Hello AI, my name is {{name}}. What is the origin of my name?";
+
+        await RunSemanticFunctionAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
+        await RunSemanticFunctionAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
 
     public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
-        Console.WriteLine($"======== {templateFormat} ========");
+        Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var skfunction = kernel.CreateSemanticFunction(
             promptTemplate: prompt,
@@ -56,7 +65,13 @@ public static class Example64_MultiplePromptTemplates
             },
             promptTemplateFactory: promptTemplateFactory
         );
-        var result = await kernel.RunAsync(skfunction);
+
+        var variables = new ContextVariables()
+        {
+            { "name", "Bob" }
+        };
+
+        var result = await kernel.RunAsync(skfunction, variables);
         Console.WriteLine(result.GetValue<string>());
     }
 }
