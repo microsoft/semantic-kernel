@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example57_FunctionEventHandlers
+public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
@@ -32,6 +32,8 @@ public static class Example57_FunctionEventHandlers
 
         await GetUsageAsync();
 
+        await GetRenderedPromptAsync();
+
         await ChangingResultAsync();
 
         await BeforeInvokeCancellationAsync();
@@ -45,7 +47,7 @@ public static class Example57_FunctionEventHandlers
 
     private static async Task GetUsageAsync()
     {
-        Console.WriteLine("\n======== Get Rendered Prompt and Usage Data ========\n");
+        Console.WriteLine("\n======== Get Usage Data ========\n");
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -85,6 +87,59 @@ public static class Example57_FunctionEventHandlers
         // Adding and Removing a handler
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
+
+        const string Input = "I missed the F1 final race";
+        var result = await kernel.RunAsync(Input, excuseFunction);
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
+    }
+
+    private static async Task GetRenderedPromptAsync()
+    {
+        Console.WriteLine("\n======== Get Rendered Prompt ========\n");
+
+        IKernel kernel = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
+
+        const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
+
+        var excuseFunction = kernel.CreateSemanticFunction(
+            FunctionPrompt,
+            pluginName: "MyPlugin",
+            functionName: "Excuse",
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+
+        void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
+        {
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+
+            if (e.TryGetRenderedPrompt(out var prompt))
+            {
+                // Get the rendered prompt when available
+                Console.WriteLine("Rendered Prompt:");
+                Console.WriteLine(prompt);
+
+                // Update the prompt
+                e.TryUpdateRenderedPrompt($"{prompt}. USE SHORT, CLEAR, COMPLETE SENTENCES.");
+            }
+        }
+
+        void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
+        {
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Triggered");
+            // Will be false for non semantic functions
+            if (e.TryGetRenderedPrompt(out var prompt))
+            {
+                Console.WriteLine("Used Prompt:");
+                Console.WriteLine(prompt);
+            }
+        }
+
+        kernel.FunctionInvoking += MyPreHandler;
+        kernel.FunctionInvoked += MyPostHandler;
 
         const string Input = "I missed the F1 final race";
         var result = await kernel.RunAsync(Input, excuseFunction);
