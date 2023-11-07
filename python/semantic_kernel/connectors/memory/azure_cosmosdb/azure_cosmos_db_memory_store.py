@@ -12,7 +12,12 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
 
 # Load environment variables
-cosmos_api, cosmos_connstr, cosmos_database_name, cosmos_container_name = azure_cosmos_db_settings_from_dot_env()
+(
+    cosmos_api,
+    cosmos_connstr,
+    cosmos_database_name,
+    cosmos_container_name,
+) = azure_cosmos_db_settings_from_dot_env()
 
 # OpenAI Ada Embeddings Dimension
 VECTOR_DIMENSION = 1536
@@ -99,9 +104,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     async def ensure(self, num_lists, similarity, vector_dimensions):
         assert self.mongoClient.is_mongos
-        self.collection = self.mongoClient[cosmos_database_name][
-            cosmos_container_name
-        ]
+        self.collection = self.mongoClient[cosmos_database_name][cosmos_container_name]
 
         indexes = self.collection.index_information()
         if indexes.get("embedding_cosmosSearch") is None:
@@ -219,17 +222,17 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                     "cosmosSearch": {
                         "vector": embedding.tolist(),
                         "path": "embedding",
-                        "k": limit},
-                    "returnStoredSource": True}
+                        "k": limit,
+                    },
+                    "returnStoredSource": True,
+                }
             },
             {
                 "$project": {
-                    "similarityScore": {
-                        "$meta": "searchScore"
-                    },
-                    "document": "$$ROOT"
+                    "similarityScore": {"$meta": "searchScore"},
+                    "document": "$$ROOT",
                 }
-            }
+            },
         ]
         nearest_results = []
         # Perform vector search
@@ -242,7 +245,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 text=aggResult["document"]["text"],
                 description=aggResult["document"]["description"],
                 additional_metadata=aggResult["document"]["metadata"],
-                timestamp=aggResult["document"]["timestamp"]
+                timestamp=aggResult["document"]["timestamp"],
             )
             if aggResult["similarityScore"] < min_relevance_score:
                 continue

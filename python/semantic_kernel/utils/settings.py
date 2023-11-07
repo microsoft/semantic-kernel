@@ -211,9 +211,15 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str, str, str]:
     cosmos_database_name = config.get("AZCOSMOS_DATABASE_NAME")
     cosmos_container_name = config.get("AZCOSMOS_CONTAINER_NAME")
 
-    assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
-    assert cosmos_database_name is not None, "Azure Cosmos Database Name not found in .env file"
-    assert cosmos_container_name is not None, "Azure Cosmos Container Name not found in .env file"
+    assert (
+        cosmos_connstr is not None
+    ), "Azure Cosmos Connection String not found in .env file"
+    assert (
+        cosmos_database_name is not None
+    ), "Azure Cosmos Database Name not found in .env file"
+    assert (
+        cosmos_container_name is not None
+    ), "Azure Cosmos Container Name not found in .env file"
 
     return cosmos_api, cosmos_connstr, cosmos_database_name, cosmos_container_name
 
