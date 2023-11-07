@@ -51,7 +51,7 @@ internal static class RestApiOperationExtensions
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
             // Register the "server-url" parameter if override is provided
-            new RestApiOperationParameter(
+            new(
                 name: RestApiOperation.ServerUrlArgumentName,
                 type: "string",
                 isRequired: false,

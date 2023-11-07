@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV2_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />
