@@ -48,6 +48,26 @@ public class SequentialPlanParser {
     // result for a plan.
     private static final String AppendToResultTag = "appendToResult".toLowerCase(Locale.ROOT);
 
+
+
+    /**
+     * Convert a plan xml string to a plan
+     *
+     * @param xmlString The plan xml string
+     * @param goal The goal for the plan
+     * @param skills The skills to use
+     * @return The plan
+     * @throws PlanningException If the plan xml is invalid
+     */
+    public static Plan toPlanFromXml(
+        String xmlString,
+        String goal,
+        ReadOnlySkillCollection skills
+    ) throws PlanningException {
+      // to maintain backward compatibility -- uses the preexisting signature and behavior
+      return toPlanFromXml(xmlString, goal, skills, true);
+    }
+
     /**
      * Convert a plan xml string to a plan
      *
