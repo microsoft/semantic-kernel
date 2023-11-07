@@ -24,16 +24,16 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// Azure OpenAI Chat Completion with data client.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
-public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompletion
+public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCompletion
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithData"/> class.
     /// </summary>
-    /// <param name="config">Instance of <see cref="AzureChatCompletionWithDataConfig"/> class with completion configuration.</param>
+    /// <param name="config">Instance of <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class with completion configuration.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">Instance of <see cref="ILoggerFactory"/> to use for logging.</param>
-    public AzureChatCompletionWithData(
-        AzureChatCompletionWithDataConfig config,
+    public AzureOpenAIChatCompletionWithData(
+        AzureOpenAIChatCompletionWithDataConfig config,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -117,12 +117,12 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private const string DefaultApiVersion = "2023-06-01-preview";
 
-    private readonly AzureChatCompletionWithDataConfig _config;
+    private readonly AzureOpenAIChatCompletionWithDataConfig _config;
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
 
-    private void ValidateConfig(AzureChatCompletionWithDataConfig config)
+    private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
 
