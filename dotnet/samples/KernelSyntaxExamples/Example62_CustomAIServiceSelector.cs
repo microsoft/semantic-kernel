@@ -29,7 +29,7 @@ public static class Example62_CustomAIServiceSelector
 
         if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -44,10 +44,9 @@ public static class Example62_CustomAIServiceSelector
 
         KernelBuilder kernelBuilder = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
-                modelId: azureModelId,
                 serviceId: "AzureOpenAIChat",
                 apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
@@ -72,12 +71,11 @@ public static class Example62_CustomAIServiceSelector
             new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 }
         };
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
-        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
         var skfunction = kernel.RegisterSemanticFunction(
             "MyFunction",
-            promptTemplateConfig,
-            promptTemplate);
+            prompt,
+            promptTemplateConfig);
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());
@@ -90,12 +88,11 @@ public static class Example62_CustomAIServiceSelector
         var kernel = kernelBuilder.WithAIServiceSelector(new Gpt3xAIServiceSelector()).Build();
 
         var promptTemplateConfig = new PromptTemplateConfig();
-        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
         var skfunction = kernel.RegisterSemanticFunction(
             "MyFunction",
-            promptTemplateConfig,
-            promptTemplate);
+            prompt,
+            promptTemplateConfig);
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());
@@ -147,7 +144,6 @@ public class TokenCountAIServiceSelector : IAIServiceSelector
 
         throw new SKException("Unable to find AI service to handled request.");
     }
-
 
     /// <summary>
     /// MicrosoftML token counter implementation.

@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,7 +20,6 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new BasicPromptTemplateEngine();
     }
 
     [Fact]
@@ -63,7 +61,6 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     }
 
     private readonly RedirectOutput _logger;
-    private readonly BasicPromptTemplateEngine _target;
 
     public void Dispose()
     {
