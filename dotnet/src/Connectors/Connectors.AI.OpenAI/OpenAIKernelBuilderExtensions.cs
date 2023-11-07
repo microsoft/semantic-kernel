@@ -39,6 +39,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
@@ -47,13 +48,14 @@ public static class OpenAIKernelBuilderExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
             var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
-            return new AzureTextCompletion(deploymentName, client, loggerFactory);
+            return new AzureTextCompletion(deploymentName, client, modelId, loggerFactory);
         }, setAsDefault);
 
         return builder;
@@ -68,6 +70,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
@@ -76,13 +79,14 @@ public static class OpenAIKernelBuilderExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
             var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
-            return new AzureTextCompletion(deploymentName, client, loggerFactory);
+            return new AzureTextCompletion(deploymentName, client, modelId, loggerFactory);
         }, setAsDefault);
 
         return builder;
@@ -96,18 +100,21 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         OpenAIClient openAIClient,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory) =>
             new AzureTextCompletion(
                 deploymentName,
                 openAIClient,
+                modelId,
                 loggerFactory),
             setAsDefault);
 
@@ -158,6 +165,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
@@ -166,6 +174,7 @@ public static class OpenAIKernelBuilderExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
@@ -174,6 +183,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
+                modelId,
                 HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
@@ -189,6 +199,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
@@ -197,6 +208,7 @@ public static class OpenAIKernelBuilderExtensions
         string endpoint,
         TokenCredential credential,
         string? serviceId = null,
+        string? modelId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
@@ -205,6 +217,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 credential,
+                modelId,
                 HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);

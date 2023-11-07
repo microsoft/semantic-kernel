@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
-    private readonly Dictionary<string, string> _metadata = new();
+    private readonly Dictionary<string, string> _attributes = new();
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
@@ -39,10 +39,8 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        if (!string.IsNullOrEmpty(modelId))
-        {
-            this.ModelId = modelId;
-        }
+        this.ModelId = modelId;
+        this._attributes.Add(DeploymentNameAttribute, deploymentName);
     }
 
     /// <summary>
@@ -63,6 +61,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
         this.ModelId = modelId;
+        this._attributes.Add(DeploymentNameAttribute, deploymentName);
     }
 
     /// <summary>
@@ -79,13 +78,14 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
         this.ModelId = modelId;
+        this._attributes.Add(DeploymentNameAttribute, deploymentName);
     }
 
     /// <inheritdoc/>
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

@@ -73,7 +73,7 @@ public static class Example42_KernelBuilder
         var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            modelId: azureOpenAIEmbeddingDeployment,
+            deploymentName: azureOpenAIEmbeddingDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);

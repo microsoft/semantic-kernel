@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, string> _metadata = new();
+    private readonly Dictionary<string, string> _attributes = new();
 
     /// <summary>
     /// Generation Image Operation path
@@ -71,6 +71,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this._attributes.Add(EndpointAttribute, endpoint);
     }
 
     /// <summary>
@@ -99,13 +100,15 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this._attributes.Add(EndpointAttribute, endpoint);
+        this._attributes.Add(ApiVersionAttribute, apiVersion);
     }
 
     /// <inheritdoc/>
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

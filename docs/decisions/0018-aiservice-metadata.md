@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: {proposed}
 date: {2023-10-25}
-deciders: semenshi, markwallace, rbarreto, dmytrostruk
+deciders: SergeyMenshykh, markwallace, rbarreto, dmytrostruk
 consulted: 
 informed: 
 ---
@@ -63,7 +63,7 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
 * Option #1
   * Extend `IAIService` to include the following properties:
     * `string? ModelId { get; }` which returns the model id. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate value.
-    * `IReadOnlyDictionary<string, string> Metadata { get; }` which returns the metadata as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
+    * `IReadOnlyDictionary<string, object> Attributes { get; }` which returns the attributes as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 

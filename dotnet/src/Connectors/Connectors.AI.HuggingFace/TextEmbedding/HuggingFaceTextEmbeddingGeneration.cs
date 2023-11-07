@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -19,10 +20,14 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private readonly string _model;
+    /// <summary>
+    /// Attribute name used to store the endpoint in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string EndpointAttribute = "Endpoint";
+
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly Dictionary<string, string> _metadata = new();
+    private readonly Dictionary<string, string> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -35,8 +40,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
+        this.ModelId = model;
+
         this._endpoint = endpoint.AbsoluteUri;
-        this._model = model;
+        this._attributes.Add(EndpointAttribute, this._endpoint);
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
@@ -51,9 +58,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(endpoint);
 
-        this._model = model;
-        this._endpoint = endpoint;
+        this.ModelId = model;
 
+        this._endpoint = endpoint;
+        this._attributes.Add(EndpointAttribute, this._endpoint);
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -68,9 +76,15 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
 
-        this._model = model;
+        this.ModelId = model;
+
         this._endpoint = endpoint;
         this._httpClient = httpClient;
+
+        if (!string.IsNullOrEmpty(endpoint))
+        {
+            this._attributes.Add(EndpointAttribute, endpoint!);
+        }
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
@@ -82,7 +96,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     public string? ModelId { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Metadata => this._metadata;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
@@ -140,7 +154,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             throw new SKException("No endpoint or HTTP client base address has been provided");
         }
 
-        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
+        return new Uri($"{baseUrl!.TrimEnd('/')}/{this.ModelId}");
     }
 
     #endregion

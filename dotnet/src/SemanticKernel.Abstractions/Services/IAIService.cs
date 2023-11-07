@@ -18,7 +18,7 @@ public interface IAIService
     string? ModelId { get; }
 
     /// <summary>
-    /// Gets the AI service metadata.
+    /// Gets the AI service attributes.
     /// </summary>
-    IReadOnlyDictionary<string, string> Metadata { get; }
+    IReadOnlyDictionary<string, string> Attributes { get; }
 }

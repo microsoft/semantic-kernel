@@ -18,7 +18,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     public bool IsRepeatRequested => this._repeatRequested;
 
     /// <summary>
-    /// Metadata for storing additional information about function execution result.
+    /// Attributes for storing additional information about function execution result.
     /// </summary>
     public Dictionary<string, object> Metadata => this._metadata ??= new();
 
