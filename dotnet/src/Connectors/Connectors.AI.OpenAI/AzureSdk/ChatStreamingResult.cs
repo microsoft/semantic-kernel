@@ -15,17 +15,15 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
-    private readonly ModelResult _modelResult;
     private readonly StreamingChatChoice _choice;
+    public ModelResult ModelResult { get; }
 
     public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice)
     {
         Verify.NotNull(choice);
-        this._modelResult = new ModelResult(resultData);
+        this.ModelResult = new(new ChatStreamingModelResult(resultData, choice));
         this._choice = choice;
     }
-
-    public ModelResult ModelResult => this._modelResult;
 
     /// <inheritdoc/>
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
@@ -47,7 +45,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            if (message.Content is { Length: > 0 })
+            if (message.FunctionCall is not null || message.Content is { Length: > 0 })
             {
                 yield return new SKChatMessage(message);
             }

@@ -73,7 +73,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -265,7 +265,7 @@ internal static class Example12_SequentialPlanner
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -282,11 +282,11 @@ internal static class Example12_SequentialPlanner
         // use these to generate and store embeddings for the function descriptions.
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureTextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGenerationService(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
@@ -299,7 +299,7 @@ internal static class Example12_SequentialPlanner
     {
         var memoryStorage = new VolatileMemoryStore();
 
-        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
+        var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
             modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
