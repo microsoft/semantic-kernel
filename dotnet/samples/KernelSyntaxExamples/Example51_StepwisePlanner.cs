@@ -187,7 +187,7 @@ public static class Example51_StepwisePlanner
     private static IKernel GetKernel(ref ExecutionResult result, string? model = null)
     {
         var builder = new KernelBuilder()
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,

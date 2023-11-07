@@ -122,14 +122,14 @@ public sealed class SequentialPlannerTests : IDisposable
         var builder = new KernelBuilder().WithLoggerFactory(this._logger);
         builder.WithRetryBasic();
 
-        builder.WithAzureChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+        builder.WithAzureOpenAIChatCompletionService(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);

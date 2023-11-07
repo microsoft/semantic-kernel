@@ -22,7 +22,7 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
-        var chatCompletion = new AzureChatCompletion(
+        var chatCompletion = new AzureOpenAIChatCompletion(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);

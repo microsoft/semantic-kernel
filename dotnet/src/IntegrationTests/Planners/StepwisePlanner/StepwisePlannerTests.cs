@@ -151,14 +151,14 @@ public sealed class StepwisePlannerTests : IDisposable
             .WithLoggerFactory(this._loggerFactory)
             .WithRetryBasic();
 
-        builder.WithAzureChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+        builder.WithAzureOpenAIChatCompletionService(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);

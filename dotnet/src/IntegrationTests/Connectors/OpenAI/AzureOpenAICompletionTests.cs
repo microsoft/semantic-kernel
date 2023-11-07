@@ -49,7 +49,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
 
         var target = new KernelBuilder()
              .WithLoggerFactory(this._logger)
-             .WithAzureChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
+             .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
              .WithHttpHandlerFactory(defaultHttpRetryHandlerFactory)
              .Build();
 
@@ -78,7 +78,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
 
         var target = new KernelBuilder()
              .WithLoggerFactory(this._logger)
-             .WithAzureChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
+             .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
              .Build();
 
         // Act

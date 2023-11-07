@@ -461,7 +461,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureChatCompletionService(
+        kernelBuilder.WithAzureOpenAIChatCompletionService(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
