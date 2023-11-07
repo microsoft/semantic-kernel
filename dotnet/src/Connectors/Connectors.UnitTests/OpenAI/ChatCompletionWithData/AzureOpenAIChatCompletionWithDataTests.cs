@@ -11,16 +11,16 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 
 /// <summary>
-/// Unit tests for <see cref="AzureChatCompletionWithData"/>
+/// Unit tests for <see cref="AzureOpenAIChatCompletionWithData"/>
 /// </summary>
-public sealed class AzureChatCompletionWithDataTests : IDisposable
+public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 {
-    private readonly AzureChatCompletionWithDataConfig _config;
+    private readonly AzureOpenAIChatCompletionWithDataConfig _config;
 
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public AzureChatCompletionWithDataTests()
+    public AzureOpenAIChatCompletionWithDataTests()
     {
         this._config = this.GetConfig();
 
@@ -33,7 +33,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
     {
         // Arrange
         const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
-        var chatCompletion = new AzureChatCompletionWithData(this._config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithData(this._config, this._httpClient);
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
@@ -58,7 +58,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
         var config = this.GetConfig();
         config.CompletionApiVersion = string.Empty;
 
-        var chatCompletion = new AzureChatCompletionWithData(config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithData(config, this._httpClient);
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
@@ -75,9 +75,9 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    private AzureChatCompletionWithDataConfig GetConfig()
+    private AzureOpenAIChatCompletionWithDataConfig GetConfig()
     {
-        return new AzureChatCompletionWithDataConfig
+        return new AzureOpenAIChatCompletionWithDataConfig
         {
             CompletionModelId = "fake-completion-model-id",
             CompletionEndpoint = "https://fake-completion-endpoint",
