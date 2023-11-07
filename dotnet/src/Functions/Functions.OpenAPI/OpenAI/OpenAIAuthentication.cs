@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 /// <summary>
 /// Represents the authentication configuration for an OpenAI plugin.
 /// </summary>
-public record OpenAIManifestAuthentication
+public record OpenAIAuthentication
 {
     /// <summary>
     /// The type of authentication.
