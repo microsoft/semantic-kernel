@@ -25,13 +25,13 @@ public static class Example58_ConfigureRequestSettings
 
         if (serviceId == null || apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
