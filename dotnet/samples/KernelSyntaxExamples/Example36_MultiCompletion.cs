@@ -22,7 +22,7 @@ public static class Example36_MultiCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        var chatCompletion = new AzureChatCompletion(
+        var chatCompletion = new AzureOpenAIChatCompletion(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
