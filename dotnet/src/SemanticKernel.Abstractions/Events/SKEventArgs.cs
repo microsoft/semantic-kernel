@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Events;
 public abstract class SKEventArgs : EventArgs
 {
     /// <summary>
-    /// Metadata key for storing the rendered prompt when available.
-    /// </summary>
-    public const string RenderedPromptMetadataKey = "RenderedPrompt";
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="SKEventArgs"/> class.
     /// </summary>
     /// <param name="functionView">Function view details</param>

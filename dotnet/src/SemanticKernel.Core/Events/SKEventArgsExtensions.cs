@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Events;
 public static class SKEventArgsExtensions
 {
     /// <summary>
+    /// Metadata key for storing the rendered prompt when available.
+    /// </summary>
+    public const string RenderedPromptMetadataKey = "RenderedPrompt";
+
+    /// <summary>
     /// Only tries to get the rendered prompt from the event args metadata if it exists.
     /// </summary>
     /// <param name="eventArgs">Target event args to extend</param>
@@ -17,7 +22,7 @@ public static class SKEventArgsExtensions
     /// <returns>True if the prompt was present</returns>
     public static bool TryGetRenderedPrompt(this SKEventArgs eventArgs, out string? renderedPrompt)
     {
-        var found = eventArgs.Metadata.TryGetValue(SKEventArgs.RenderedPromptMetadataKey, out var renderedPromptObject);
+        var found = eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptObject);
         renderedPrompt = renderedPromptObject?.ToString();
 
         return found;
@@ -31,9 +36,9 @@ public static class SKEventArgsExtensions
     /// <returns>True if the prompt exist and was updated</returns>
     public static bool TryUpdateRenderedPrompt(this SKEventArgs eventArgs, string newPrompt)
     {
-        if (eventArgs.Metadata.ContainsKey(SKEventArgs.RenderedPromptMetadataKey))
+        if (eventArgs.Metadata.ContainsKey(SKEventArgsExtensions.RenderedPromptMetadataKey))
         {
-            eventArgs.Metadata[SKEventArgs.RenderedPromptMetadataKey] = newPrompt;
+            eventArgs.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = newPrompt;
             return true;
         }
 
