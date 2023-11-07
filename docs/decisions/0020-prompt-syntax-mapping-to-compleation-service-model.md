@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 date: 2023-10-27
 contact: SergeyMenshykh
 deciders: markwallace, mabolan
@@ -54,3 +54,4 @@ Cons:
  - Prompts can be run by Kernel.RunAsync method only.
 
 ## Decision Outcome
+It was agreed to go with the option 1 - `1. Completion connector classes` since it a more flexible solution and allows adding new connectors without modifying the `SemanticFunction` class.
