@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Any, List, Optional, Union
 
-import openai
+from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -130,7 +130,12 @@ class OpenAITextCompletion(TextCompletionClientBase):
             model_args["model"] = self._model_id
 
         try:
-            response: Any = await openai.Completion.acreate(
+            client = AsyncOpenAI(
+                api_key=self._api_key,
+                base_url=self._endpoint,
+                organization=self._org_id,
+            )
+            response: Any = await client.completions.create(
                 **model_args,
                 api_key=self._api_key,
                 api_type=self._api_type,
