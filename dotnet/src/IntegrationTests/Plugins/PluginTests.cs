@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
@@ -13,8 +14,37 @@ public class PluginTests
 {
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
+    public async Task QueryKlarnaOpenAIPluginAsync(
+    string pluginEndpoint,
+    string name,
+    string functionName,
+    string query,
+    int size,
+    int budget,
+    string countryCode)
+    {
+        // Arrange
+        var kernel = new KernelBuilder().Build();
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+            name,
+            new Uri(pluginEndpoint),
+            new OpenAIFunctionExecutionParameters(httpClient));
+
+        var contextVariables = new ContextVariables();
+        contextVariables["q"] = query;
+        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["countryCode"] = countryCode;
+
+        // Act
+        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+    }
+
+    [Theory]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaPluginAsync(
+    public async Task QueryKlarnaOpenApiPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -27,7 +57,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -59,10 +89,10 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
@@ -90,10 +120,10 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportPluginFunctionsAsync(
+            var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
                 name,
                 stream,
-                new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
@@ -120,10 +150,10 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             name,
             pluginFilePath,
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
