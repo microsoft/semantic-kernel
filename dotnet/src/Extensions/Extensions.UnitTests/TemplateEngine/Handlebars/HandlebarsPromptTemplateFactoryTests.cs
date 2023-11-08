@@ -13,7 +13,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     public void ItCreatesHandlebarsPromptTemplate()
     {
         // Arrange
-        var templateString = "{{$input}}";
+        var templateString = "{{input}}";
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
@@ -28,7 +28,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     public void ItThrowsExceptionForUnknowPromptTemplateFormat()
     {
         // Arrange
-        var templateString = "{{$input}}";
+        var templateString = "{{input}}";
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
