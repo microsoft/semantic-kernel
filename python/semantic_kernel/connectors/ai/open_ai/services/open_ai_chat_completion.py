@@ -225,11 +225,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             )
 
         model_args = {
-            "api_key": self._api_key,
-            "api_type": self._api_type,
-            "api_base": self._endpoint,
-            "api_version": self._api_version,
-            "organization": self._org_id,
             "engine"
             if self._api_type in ["azure", "azure_ad"]
             else "model": self._model_id,
@@ -266,39 +261,14 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             else:
                 model_args["functions"] = functions
 
-        formatted_messages = [
-            {"role": role, "content": message} for role, message in messages
-        ]
-
         try:
             client = AsyncOpenAI(
                 api_key=self._api_key,
                 base_url=self._endpoint,
                 organization=self._org_id,
+                version=self._api_version
             )
-            response: Any = await client.chat.completions.create(
-                **model_args,
-                messages=formatted_messages,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                n=request_settings.number_of_responses,
-                stream=stream,
-                stop=(
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                max_tokens=request_settings.max_tokens,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-            )
+            response: Any = await client.chat.completions.create(**model_args)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
