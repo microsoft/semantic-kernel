@@ -13,19 +13,19 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
 /// <summary>
-/// Provides dynamic authentication for HTTP requests to OpenAI using OAuth or verification tokens.
+/// Provides authentication for HTTP requests to OpenAI using OAuth or verification tokens.
 /// </summary>
-public class DynamicOpenAIAuthenticationProvider
+public class OpenAIAuthenticationProvider
 {
     private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues;
     private readonly Dictionary<string, string> _credentials;
 
     /// <summary>
-    /// Creates an instance of the <see cref="DynamicOpenAIAuthenticationProvider"/> class.
+    /// Creates an instance of the <see cref="OpenAIAuthenticationProvider"/> class.
     /// </summary>
     /// <param name="oAuthValues">A dictionary containing OAuth values for each authentication scheme.</param>
     /// <param name="credentials">A dictionary containing credentials for each authentication scheme.</param>
-    public DynamicOpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
+    public OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
     {
         this._oAuthValues = oAuthValues ?? new();
         this._credentials = credentials ?? new();

@@ -45,7 +45,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     /// </summary>
     public static async Task RunAsync()
     {
-        var authenticationProvider = new DynamicOpenAIAuthenticationProvider(
+        var authenticationProvider = new OpenAIAuthenticationProvider(
             new Dictionary<string, Dictionary<string, string>>()
             {
                 {
@@ -145,7 +145,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         }
 
         using var httpClient = new HttpClient();
-        using var newRequest = new HttpRequestMessage()
+        using var newRequest = new HttpRequestMessage() // construct a new request because the same one cannot be sent twice
         {
             Content = request.Content,
             Method = request.Method,
