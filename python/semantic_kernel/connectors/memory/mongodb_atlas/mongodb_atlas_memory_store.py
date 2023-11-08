@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
+from importlib import metadata
 from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 from motor import MotorCommandCursor, core, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
+from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
@@ -44,6 +46,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,
+            driver=DriverInfo(
+                "Microsoft Semantic Kernel", metadata.version("semantic-kernel")
+            ),
         )
         self._logger = logger or NullLogger()
         self.__database_name = database_name or DEFAULT_DB_NAME
