@@ -7,8 +7,6 @@ import com.google.inject.Injector;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
-import java.util.ArrayList;
-
 public class CompletionFunctionExample {
 
     private final CompletionFunctionFactory completionFunctionFactory;

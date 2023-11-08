@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.SKException;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
@@ -48,8 +47,6 @@ public class SequentialPlanParser {
     // result for a plan.
     private static final String AppendToResultTag = "appendToResult".toLowerCase(Locale.ROOT);
 
-
-
     /**
      * Convert a plan xml string to a plan
      *
@@ -59,13 +56,10 @@ public class SequentialPlanParser {
      * @return The plan
      * @throws PlanningException If the plan xml is invalid
      */
-    public static Plan toPlanFromXml(
-        String xmlString,
-        String goal,
-        ReadOnlySkillCollection skills
-    ) throws PlanningException {
-      // to maintain backward compatibility -- uses the preexisting signature and behavior
-      return toPlanFromXml(xmlString, goal, skills, true);
+    public static Plan toPlanFromXml(String xmlString, String goal, ReadOnlySkillCollection skills)
+            throws PlanningException {
+        // to maintain backward compatibility -- uses the preexisting signature and behavior
+        return toPlanFromXml(xmlString, goal, skills, true);
     }
 
     /**
@@ -79,11 +73,11 @@ public class SequentialPlanParser {
      * @throws PlanningException If the plan xml is invalid
      */
     public static Plan toPlanFromXml(
-        String xmlString,
-        String goal,
-        ReadOnlySkillCollection skills,
-        boolean allowMissingFunctions
-    ) throws PlanningException {
+            String xmlString,
+            String goal,
+            ReadOnlySkillCollection skills,
+            boolean allowMissingFunctions)
+            throws PlanningException {
 
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -153,15 +147,14 @@ public class SequentialPlanParser {
                                     skillFunctionName);
 
                             if (allowMissingFunctions) {
-                              plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
+                                plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
                             } else {
-                              String errorMessage = String.format(
-                                  "Failed to find function '%s' in plugin '%s'.",
-                                  skillFunctionName,
-                                  skillName
-                              );
-                              // this is rethrown later as a PlanningException with more details.
-                              throw new RuntimeException(errorMessage);
+                                String errorMessage =
+                                        String.format(
+                                                "Failed to find function '%s' in plugin '%s'.",
+                                                skillFunctionName, skillName);
+                                // this is rethrown later as a PlanningException with more details.
+                                throw new RuntimeException(errorMessage);
                             }
                         }
 

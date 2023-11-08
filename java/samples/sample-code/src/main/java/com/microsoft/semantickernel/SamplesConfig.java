@@ -4,7 +4,6 @@ package com.microsoft.semantickernel;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-
 import java.io.File;
 import java.util.List;
 

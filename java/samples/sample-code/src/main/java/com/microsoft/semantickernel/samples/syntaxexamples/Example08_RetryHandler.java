@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCATIONS;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -15,10 +17,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.settings.SettingsMap;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import java.time.Duration;
-
-import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCATIONS;
 
 /**
  * Demonstrates customizing the configuration of the Open AI client.

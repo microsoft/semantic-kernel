@@ -13,7 +13,6 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import java.io.IOException;
 
 /**

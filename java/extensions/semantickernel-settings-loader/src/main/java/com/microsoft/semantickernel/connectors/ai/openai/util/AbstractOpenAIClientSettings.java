@@ -31,6 +31,6 @@ public abstract class AbstractOpenAIClientSettings {
      * @return the KEY_SUFFIX value
      */
     public static String getKeySuffix() {
-      return KEY_SUFFIX;
+        return KEY_SUFFIX;
     }
 }

@@ -2,17 +2,16 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 
+import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles.Assistant;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import reactor.core.publisher.Mono;
-
 import java.util.function.BiFunction;
-
-import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles.Assistant;
+import reactor.core.publisher.Mono;
 
 /**
  * Demonstrates how to use Semantic Kernel with Text Completion as streaming

@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.postgresql;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
@@ -12,7 +18,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,7 +48,8 @@ public class PostgreSQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        builder = new PostgreSQLMemoryStore.Builder()
+        builder =
+                new PostgreSQLMemoryStore.Builder()
                         .withConnection(
                                 DriverManager.getConnection(
                                         CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD));

@@ -103,7 +103,7 @@ public class SequentialPlannerRequestSettings {
     }
 
     public boolean getAllowMissingFunctions() {
-      return allowMissingFunctions;
+        return allowMissingFunctions;
     }
 
     public SequentialPlannerRequestSettings addExcludedFunctions(String function) {

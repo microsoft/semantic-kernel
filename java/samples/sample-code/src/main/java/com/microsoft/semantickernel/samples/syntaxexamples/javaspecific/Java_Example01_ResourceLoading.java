@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.samples.syntaxexamples.javaspecific;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-
 import java.io.IOException;
 
 /**

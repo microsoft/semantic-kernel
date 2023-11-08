@@ -13,9 +13,8 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
+import reactor.core.publisher.Mono;
 
 /**
  * Define a Semantic Function inline with Java code.
