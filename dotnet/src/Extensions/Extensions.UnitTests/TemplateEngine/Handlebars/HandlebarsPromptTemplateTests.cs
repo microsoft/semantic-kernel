@@ -60,7 +60,6 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersFunctionsAsync()
     {
         // Arrange
-        this._variables.Set("bar", "Bar");
         this._kernel.ImportFunctions(new Foo(), "Foo");
         var template = "Foo {{Foo_Bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
@@ -71,6 +70,22 @@ public sealed class HandlebarsPromptTemplateTests
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
+    }
+
+    [Fact]
+    public async Task ItRendersAsyncFunctionsAsync()
+    {
+        // Arrange
+        this._kernel.ImportFunctions(new Foo(), "Foo");
+        var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
+        var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
+        var context = this._kernel.CreateNewContext(this._variables);
+
+        // Act
+        var prompt = await target.RenderAsync(context);
+
+        // Assert   
+        Assert.Equal("Foo Bar Baz", prompt);
     }
 
     [Fact]
@@ -140,6 +155,10 @@ public sealed class HandlebarsPromptTemplateTests
         public string Bar() => "Bar";
 
         [SKFunction, Description("Return Baz")]
-        public string Baz() => "Baz";
+        public async Task<string> BazAsync()
+        {
+            await Task.Delay(1000);
+            return await Task.FromResult("Baz");
+        }
     }
 }

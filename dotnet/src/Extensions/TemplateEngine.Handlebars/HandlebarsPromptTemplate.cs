@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
@@ -42,13 +41,11 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         foreach (FunctionView functionView in functionViews)
         {
             var skfunction = executionContext.Functions.GetFunction(functionView.PluginName, functionView.Name);
-#pragma warning disable VSTHRD101 // Avoid unsupported async delegates
-            handlebars.RegisterHelper($"{functionView.PluginName}_{functionView.Name}", async (writer, hcontext, parameters) =>
+            handlebars.RegisterHelper($"{functionView.PluginName}_{functionView.Name}", (writer, hcontext, parameters) =>
             {
-                var result = await skfunction.InvokeAsync(executionContext).ConfigureAwait(true);
+                var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
                 writer.WriteSafeString(result.GetValue<string>());
             });
-#pragma warning restore VSTHRD101 // Avoid unsupported async delegates
         }
 
         var template = handlebars.Compile(this._templateString);
@@ -67,14 +64,13 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
     private List<ParameterView> InitParameters()
     {
-        // Parameters from prompt template configuration
-        Dictionary<string, ParameterView> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        List<ParameterView> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
+            parameters.Add(new ParameterView(p.Name, p.Description, p.DefaultValue));
         }
 
-        return result.Values.ToList();
+        return parameters;
     }
 
     private Dictionary<string, string> GetVariables(SKContext executionContext)
