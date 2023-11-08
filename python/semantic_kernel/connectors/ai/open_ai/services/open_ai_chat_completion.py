@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-import openai
+from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 
@@ -266,8 +266,39 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             else:
                 model_args["functions"] = functions
 
+        formatted_messages = [
+            {"role": role, "content": message} for role, message in messages
+        ]
+
         try:
-            response: Any = await openai.ChatCompletion.acreate(**model_args)
+            client = AsyncOpenAI(
+                api_key=self._api_key,
+                base_url=self._endpoint,
+                organization=self._org_id,
+            )
+            response: Any = await client.chat.completions.create(
+                **model_args,
+                messages=formatted_messages,
+                temperature=request_settings.temperature,
+                top_p=request_settings.top_p,
+                n=request_settings.number_of_responses,
+                stream=stream,
+                stop=(
+                    request_settings.stop_sequences
+                    if request_settings.stop_sequences is not None
+                    and len(request_settings.stop_sequences) > 0
+                    else None
+                ),
+                max_tokens=request_settings.max_tokens,
+                presence_penalty=request_settings.presence_penalty,
+                frequency_penalty=request_settings.frequency_penalty,
+                logit_bias=(
+                    request_settings.token_selection_biases
+                    if request_settings.token_selection_biases is not None
+                    and len(request_settings.token_selection_biases) > 0
+                    else {}
+                ),
+            )
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,

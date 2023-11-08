@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Any, List, Optional
 
-import openai
+from openai import AsyncOpenAI
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -48,7 +48,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._api_key = api_key
         self._api_type = api_type
         self._api_version = api_version
-        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
+        self._endpoint = endpoint
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
@@ -66,21 +66,21 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
             batch_size = batch_size or len(texts)
             for i in range(0, len(texts), batch_size):
                 batch = texts[i : i + batch_size]
-                response: Any = await openai.Embedding.acreate(
-                    **model_args,
+                client = AsyncOpenAI(
                     api_key=self._api_key,
-                    api_type=self._api_type,
-                    api_base=self._endpoint,
-                    api_version=self._api_version,
+                    base_url=self._endpoint,
                     organization=self._org_id,
+                )
+                response: Any = await client.embeddings.create(
+                    **model_args,
                     input=batch,
                 )
                 # make numpy arrays from the response
-                raw_embeddings.extend([array(x["embedding"]) for x in response["data"]])
+                raw_embeddings.extend([array(x.embedding) for x in response.data])
             return array(raw_embeddings)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                f"{self.__class__.__name__} failed to generate embeddings",
+                "OpenAI service failed to generate embeddings",
                 ex,
             )
