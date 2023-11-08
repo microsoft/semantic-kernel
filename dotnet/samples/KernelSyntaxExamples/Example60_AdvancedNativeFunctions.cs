@@ -55,12 +55,12 @@ public static class Example60_AdvancedNativeFunctions
         {
             // Execute another function
             var result = await context.Runner.RunAsync(PluginName, "Function2");
-            var value = result.GetValue<MyCustomType>()!;
+            var value = result?.GetValue<MyCustomType>()!;
 
             return new MyCustomType
             {
-                Number = 2 * value.Number,
-                Text = "From Function1 + " + value.Text
+                Number = 2 * value?.Number ?? 0,
+                Text = "From Function1 + " + value?.Text
             };
         }
 

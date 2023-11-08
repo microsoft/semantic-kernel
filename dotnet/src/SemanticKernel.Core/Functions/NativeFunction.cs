@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -138,13 +139,62 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            return await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            this.CallFunctionInvoking(context);
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context);
+            }
+
+            var invokeResult = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+
+            var finalResult = this.CallFunctionInvoked(invokeResult, context);
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context, finalResult.Value);
+            }
+
+            return finalResult;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
             this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
             throw;
         }
+    }
+
+    private void CallFunctionInvoking(SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
+
+    private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
+        if (eventWrapper?.Handler is null)
+        {
+            // No handlers registered, return the result as is.
+            return result;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+
+        // Apply any changes from the event handlers to final result.
+        var functionResult = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+        {
+            // Updates the eventArgs metadata during invoked handler execution
+            // will reflect in the result metadata
+            Metadata = eventWrapper.EventArgs.Metadata
+        };
+
+        return functionResult;
     }
 
     /// <summary>
