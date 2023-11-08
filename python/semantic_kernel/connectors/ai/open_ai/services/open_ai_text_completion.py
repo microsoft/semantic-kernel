@@ -137,11 +137,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
             )
             response: Any = await client.completions.create(
                 **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
