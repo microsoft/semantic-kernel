@@ -2,11 +2,12 @@
 # These are optional elements. Feel free to remove any of them.
 status: accepted
 contact: markwallace-microsoft
-date: 2023-=9-15
+date: 2023-9-15
 deciders: shawncal
-consulted: stoub, lemiller, dmytrostruk
-informed: 
+consulted: stephentoub, lemillermicrosoft, dmytrostruk
+informed:
 ---
+
 # Refactor to support generic LLM request settings
 
 ## Context and Problem Statement
@@ -25,18 +26,18 @@ Link to issue raised by the implementer of the Oobabooga AI service: <https://gi
 
 ## Decision Drivers
 
-* Semantic Kernel abstractions must be AI Service agnostic i.e., remove OpenAI specific properties.
-* Solution must continue to support loading Semantic Function configuration (which includes AI request settings) from `config.json`.
-* Provide good experience for developers e.g., must be able to program with type safety, intellisense, etc.
-* Provide a good experience for implementors of AI services i.e., should be clear how to define the appropriate AI Request Settings abstraction for the service they are supporting.
-* Semantic Kernel implementation and sample code should avoid specifying OpenAI specific request settings in code that is intended to be used with multiple AI services.
-* Semantic Kernel implementation and sample code must be clear if an implementation is intended to be OpenAI specific.
+- Semantic Kernel abstractions must be AI Service agnostic i.e., remove OpenAI specific properties.
+- Solution must continue to support loading Semantic Function configuration (which includes AI request settings) from `config.json`.
+- Provide good experience for developers e.g., must be able to program with type safety, intellisense, etc.
+- Provide a good experience for implementors of AI services i.e., should be clear how to define the appropriate AI Request Settings abstraction for the service they are supporting.
+- Semantic Kernel implementation and sample code should avoid specifying OpenAI specific request settings in code that is intended to be used with multiple AI services.
+- Semantic Kernel implementation and sample code must be clear if an implementation is intended to be OpenAI specific.
 
 ## Considered Options
 
-* Use `dynamic` to pass request settings
-* Use `object` to pass request settings
-* Define a base class for AI request settings which all implementations must extend
+- Use `dynamic` to pass request settings
+- Use `object` to pass request settings
+- Define a base class for AI request settings which all implementations must extend
 
 Note: Using generics was discounted during an earlier investigation which Dmytro conducted.
 
@@ -96,11 +97,11 @@ await kernel.RunAsync(func);
 
 PR: <https://github.com/microsoft/semantic-kernel/pull/2807>
 
-* Good, SK abstractions contain no references  to OpenAI specific request settings
-* Neutral, because anonymous types can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
-* Bad, because it's not clear to developers what they should pass when creating a semantic function
-* Bad, because it's not clear to implementors of a chat/text completion service what they should accept or how to add service specific properties.
-* Bad, there is no compiler type checking for code paths where the dynamic argument has not been resolved which will impact code quality. Type issues manifest as `RuntimeBinderException`'s and may be difficult to troubleshoot. Special care needs to be taken with return types e.g., may be necessary to specify an explicit type rather than just `var` again to avoid errors such as `Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'`
+- Good, SK abstractions contain no references to OpenAI specific request settings
+- Neutral, because anonymous types can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
+- Bad, because it's not clear to developers what they should pass when creating a semantic function
+- Bad, because it's not clear to implementors of a chat/text completion service what they should accept or how to add service specific properties.
+- Bad, there is no compiler type checking for code paths where the dynamic argument has not been resolved which will impact code quality. Type issues manifest as `RuntimeBinderException`'s and may be difficult to troubleshoot. Special care needs to be taken with return types e.g., may be necessary to specify an explicit type rather than just `var` again to avoid errors such as `Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'`
 
 ### Use `object` to pass request settings
 
@@ -127,11 +128,11 @@ The calling pattern is the same as for the `dynamic` case i.e. use either an ano
 
 PR: <https://github.com/microsoft/semantic-kernel/pull/2819>
 
-* Good, SK abstractions contain no references  to OpenAI specific request settings
-* Neutral, because anonymous types can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
-* Bad, because it's not clear to developers what they should pass when creating a semantic function
-* Bad, because it's not clear to implementors of a chat/text completion service what they should accept or how to add service specific properties.
-* Bad, code is needed to perform type checks and explicit casts. The situation is slightly better than for the `dynamic` case.
+- Good, SK abstractions contain no references to OpenAI specific request settings
+- Neutral, because anonymous types can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
+- Bad, because it's not clear to developers what they should pass when creating a semantic function
+- Bad, because it's not clear to implementors of a chat/text completion service what they should accept or how to add service specific properties.
+- Bad, code is needed to perform type checks and explicit casts. The situation is slightly better than for the `dynamic` case.
 
 ### Define a base class for AI request settings which all implementations must extend
 
@@ -221,12 +222,12 @@ this._summarizeConversationFunction = kernel.CreateSemanticFunction(
 
 The caveat with this pattern is, assuming a more specific implementation of `AIRequestSettings` uses JSON serialization/deserialization to hydrate an instance from the base `AIRequestSettings`, this will only work if all properties are supported by the default JsonConverter e.g.,
 
-* If we have `MyAIRequestSettings` which includes a `Uri` property. The implementation of `MyAIRequestSettings` would make sure to load a URI converter so that it can serialize/deserialize the settings correctly.
-* If the settings for `MyAIRequestSettings` are sent to an AI service which relies on the default JsonConverter then a `NotSupportedException` exception will be thrown.
+- If we have `MyAIRequestSettings` which includes a `Uri` property. The implementation of `MyAIRequestSettings` would make sure to load a URI converter so that it can serialize/deserialize the settings correctly.
+- If the settings for `MyAIRequestSettings` are sent to an AI service which relies on the default JsonConverter then a `NotSupportedException` exception will be thrown.
 
 PR: <https://github.com/microsoft/semantic-kernel/pull/2829>
 
-* Good, SK abstractions contain no references  to OpenAI specific request settings
-* Good, because it is clear to developers what they should pass when creating a semantic function and it is easy to discover what service specific request setting implementations exist.
-* Good, because it is clear to implementors of a chat/text completion service what they should accept and how to extend the base abstraction to add service specific properties.
-* Neutral, because `ExtensionData` can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
+- Good, SK abstractions contain no references to OpenAI specific request settings
+- Good, because it is clear to developers what they should pass when creating a semantic function and it is easy to discover what service specific request setting implementations exist.
+- Good, because it is clear to implementors of a chat/text completion service what they should accept and how to extend the base abstraction to add service specific properties.
+- Neutral, because `ExtensionData` can be used which allows a developer to pass in properties that may be supported by multiple AI services e.g., `temperature` or combine properties for different AI services e.g., `max_tokens` (OpenAI) and `max_new_tokens` (Oobabooga).
