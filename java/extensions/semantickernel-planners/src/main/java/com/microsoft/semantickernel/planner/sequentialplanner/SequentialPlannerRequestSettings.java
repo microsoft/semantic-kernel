@@ -53,19 +53,26 @@ public class SequentialPlannerRequestSettings {
     /// </summary>
     private int maxTokens = 1024;
 
+    /// <summary>
+    /// Whether to allow missing functions in the plan.
+    /// </summary>
+    private boolean allowMissingFunctions = false;
+
     public SequentialPlannerRequestSettings(
             @Nullable Float relevancyThreshold,
             int maxRelevantFunctions,
             Set<String> excludedSkills,
             Set<String> excludedFunctions,
             Set<String> includedFunctions,
-            int maxTokens) {
+            int maxTokens,
+            boolean allowMissingFunctions) {
         this.relevancyThreshold = relevancyThreshold;
         this.maxRelevantFunctions = maxRelevantFunctions;
         this.excludedSkills = Collections.unmodifiableSet(excludedSkills);
         this.excludedFunctions = Collections.unmodifiableSet(excludedFunctions);
         this.includedFunctions = Collections.unmodifiableSet(includedFunctions);
         this.maxTokens = maxTokens;
+        this.allowMissingFunctions = allowMissingFunctions;
     }
 
     public SequentialPlannerRequestSettings() {}
@@ -95,6 +102,10 @@ public class SequentialPlannerRequestSettings {
         return maxTokens;
     }
 
+    public boolean getAllowMissingFunctions() {
+      return allowMissingFunctions;
+    }
+
     public SequentialPlannerRequestSettings addExcludedFunctions(String function) {
         HashSet<String> ex = new HashSet<>(excludedFunctions);
         ex.add(function);
@@ -104,7 +115,8 @@ public class SequentialPlannerRequestSettings {
                 excludedSkills,
                 ex,
                 includedFunctions,
-                maxTokens);
+                maxTokens,
+                allowMissingFunctions);
     }
 
     public SequentialPlannerRequestSettings addExcludedSkillName(String skillName) {
@@ -116,6 +128,7 @@ public class SequentialPlannerRequestSettings {
                 ex,
                 excludedFunctions,
                 includedFunctions,
-                maxTokens);
+                maxTokens,
+                allowMissingFunctions);
     }
 }
