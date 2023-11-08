@@ -60,7 +60,6 @@ public static class Example64_SemanticFunctionWithKernelResultExtended
     }
 }
 
-
 public record KernelResultExtSummarize : KernelResultExtended
 {
     /// <summary>
