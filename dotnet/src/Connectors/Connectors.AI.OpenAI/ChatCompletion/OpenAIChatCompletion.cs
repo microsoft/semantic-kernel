@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly OpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -36,12 +37,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-
-        if (!string.IsNullOrWhiteSpace(organization))
+        this._attributes = new OpenAIServiceAttributes()
         {
-            this._attributes.Add(OrganizationAttribute, organization!);
-        }
+            ModelId = modelId,
+            Organization = organization
+        };
     }
 
     /// <summary>
@@ -55,14 +55,17 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
-        this.ModelId = modelId;
+        this._attributes = new OpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

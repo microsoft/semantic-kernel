@@ -9,7 +9,6 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
@@ -17,11 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// </summary>
 public abstract class AzureOpenAIClientBase : ClientBase
 {
-    /// <summary>
-    /// Attribute name used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string DeploymentNameAttribute = "DeploymentName";
-
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>

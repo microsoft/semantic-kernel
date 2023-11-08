@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -43,14 +44,17 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
-        this.ModelId = config.CompletionModelId;
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = config.CompletionModelId,
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
@@ -128,7 +132,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly AzureOpenAIServiceAttributes _attributes;
 
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {

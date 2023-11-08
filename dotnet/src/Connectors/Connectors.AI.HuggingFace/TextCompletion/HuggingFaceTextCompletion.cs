@@ -20,17 +20,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 public sealed class HuggingFaceTextCompletion : ITextCompletion
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    /// <summary>
-    /// Attribute name used to store the endpoint in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string EndpointAttribute = "Endpoint";
-
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly HuggingFaceServiceAttributes _attributes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -44,10 +39,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint.AbsoluteUri;
-        this._attributes.Add(EndpointAttribute, this._endpoint);
-
-        this.ModelId = model;
-
+        this._attributes = new()
+        {
+            ModelId = model,
+            Endpoint = this._endpoint,
+        };
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -67,16 +63,18 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
-        this._attributes.Add(EndpointAttribute, this._endpoint ?? HuggingFaceApiEndpoint);
-
-        this.ModelId = model;
+        this._attributes = new()
+        {
+            ModelId = model,
+            Endpoint = this._endpoint ?? HuggingFaceApiEndpoint,
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
@@ -150,7 +148,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
         }
 
-        return new Uri($"{baseUrl!.TrimEnd('/')}/{this.ModelId}");
+        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._attributes.ModelId}");
     }
 
     #endregion

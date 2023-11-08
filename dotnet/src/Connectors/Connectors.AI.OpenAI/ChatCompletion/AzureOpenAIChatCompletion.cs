@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly AzureOpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
@@ -39,8 +40,11 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <summary>
@@ -60,8 +64,11 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <summary>
@@ -77,15 +84,18 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

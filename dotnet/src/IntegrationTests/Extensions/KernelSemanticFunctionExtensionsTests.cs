@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,9 +70,10 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
-        public string? ModelId => null;
-
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+        public T? GetAttributes<T>() where T : AIServiceAttributes
+        {
+            return new AIServiceAttributes() as T;
+        }
 
         Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {

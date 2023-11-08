@@ -66,11 +66,18 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
     * `IReadOnlyDictionary<string, object> Attributes { get; }` which returns the attributes as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
+* Option #2
+  * Extend `IAIService` to include the following method:
+    * `T? GetAttributes<T>() where T : AIServiceAttributes;` which returns an instance of `AIServiceAttributes`. It will be the responsibility of each `IAIService` implementation to define it's own servic eattributes class and populate this with the appropriate values.
+  * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
+  * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
-These methods would be used as follows:
+These options would be used as follows:
 
 As an SK developer I want to write a custom `IAIServiceSelector` which will select an AI service based on the model id because I want to restrict which LLM is used.
 In the sample below the service selector implementation looks for the first service that is a GPT3 model.
+
+### Option 1
 
 ``` csharp
 public class Gpt3xAIServiceSelector : IAIServiceSelector
@@ -83,6 +90,29 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
             if (!string.IsNullOrEmpty(service.ModelId) && service.ModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine($"Selected model: {service.ModelId}");
+                return (service, new OpenAIRequestSettings());
+            }
+        }
+
+        throw new SKException("Unable to find AI service for GPT 3.x.");
+    }
+}
+```
+
+## Option 2
+
+``` csharp
+public class Gpt3xAIServiceSelector : IAIServiceSelector
+{
+    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            var serviceModelId = service.GetAttributes<AIServiceAttributes>()?.ModelId;
+            if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Selected model: {serviceModelId}");
                 return (service, new OpenAIRequestSettings());
             }
         }

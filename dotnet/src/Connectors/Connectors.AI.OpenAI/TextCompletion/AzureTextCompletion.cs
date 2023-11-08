@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly AzureOpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
@@ -38,8 +39,11 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <summary>
@@ -59,8 +63,11 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <summary>
@@ -76,15 +83,18 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(

@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
@@ -20,21 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 /// <summary>Base type for OpenAI clients.</summary>
 public abstract class OpenAIClientBase
 {
-    /// <summary>
-    /// Attribute name used to store the orhanization in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string OrganizationAttribute = "Organization";
-
-    /// <summary>
-    /// Attribute name used to store the endpoint in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string EndpointAttribute = "Endpoint";
-
-    /// <summary>
-    /// Attribute name used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string ApiVersionAttribute = "ApiVersion";
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>

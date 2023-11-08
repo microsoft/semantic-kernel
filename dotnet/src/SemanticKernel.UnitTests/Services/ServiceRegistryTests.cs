@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
@@ -216,8 +215,9 @@ public class ServiceRegistryTests
     // A test service implementation
     private sealed class TestService : IAIService
     {
-        public string? ModelId { get; }
-
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+        public T? GetAttributes<T>() where T : AIServiceAttributes
+        {
+            return new AIServiceAttributes() as T;
+        }
     }
 }

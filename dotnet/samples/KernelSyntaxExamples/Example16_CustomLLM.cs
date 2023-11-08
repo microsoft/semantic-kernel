@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -29,14 +30,13 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public string? ModelId { get; private set; }
-
-    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return new AIServiceAttributes() as T;
+    }
 
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
-        this.ModelId = requestSettings?.ModelId;
-
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
             new MyTextCompletionStreamingResult()

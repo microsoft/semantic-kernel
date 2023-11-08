@@ -9,6 +9,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -17,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// </summary>
 public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly AzureOpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance using API Key auth.
@@ -36,8 +37,12 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName,
+            Endpoint = endpoint
+        };
     }
 
     /// <summary>
@@ -57,15 +62,19 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            ModelId = modelId,
+            DeploymentName = deploymentName,
+            Endpoint = endpoint
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.

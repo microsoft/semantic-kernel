@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly OpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// OpenAI REST API endpoint
@@ -53,17 +53,17 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        if (!string.IsNullOrEmpty(organization))
+        this._attributes = new OpenAIServiceAttributes()
         {
-            this._attributes.Add(OrganizationAttribute, organization!);
-        }
+            Organization = organization
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)

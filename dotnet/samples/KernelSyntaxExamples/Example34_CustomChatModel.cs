@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 /**
  * The following example shows how to plug use a custom chat model.
@@ -20,9 +21,10 @@ using Microsoft.SemanticKernel.Orchestration;
  */
 public sealed class MyChatCompletionService : IChatCompletion
 {
-    public string? ModelId { get; private set; }
-
-    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return new AIServiceAttributes() as T;
+    }
 
     public ChatHistory CreateNewChat(string? instructions = null)
     {

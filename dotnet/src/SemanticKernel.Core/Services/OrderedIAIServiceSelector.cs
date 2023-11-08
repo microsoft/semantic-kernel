@@ -71,7 +71,8 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         var services = serviceProvider.GetServices<T>();
         foreach (var service in services)
         {
-            if (!string.IsNullOrEmpty(service.ModelId) && service.ModelId == modelId)
+            var serviceModelId = service.GetAttributes<AIServiceAttributes>()?.ModelId;
+            if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
             {
                 return service;
             }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
+    private readonly AzureOpenAIServiceAttributes _attributes;
 
     /// <summary>
     /// Generation Image Operation path
@@ -71,7 +71,11 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this._attributes.Add(EndpointAttribute, endpoint);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            Endpoint = endpoint,
+            ApiVersion = apiVersion
+        };
     }
 
     /// <summary>
@@ -100,15 +104,18 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this._attributes.Add(EndpointAttribute, endpoint);
-        this._attributes.Add(ApiVersionAttribute, apiVersion);
+        this._attributes = new AzureOpenAIServiceAttributes()
+        {
+            Endpoint = endpoint,
+            ApiVersion = apiVersion
+        };
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public T? GetAttributes<T>() where T : AIServiceAttributes
+    {
+        return this._attributes as T;
+    }
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

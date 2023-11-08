@@ -223,16 +223,18 @@ public class OrderedIAIServiceConfigurationProviderTests
     #region private
     private sealed class AIService : IAIService
     {
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
-
-        public string? ModelId { get; }
+        public T? GetAttributes<T>() where T : AIServiceAttributes
+        {
+            return new AIServiceAttributes() as T;
+        }
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
-
-        public string? ModelId { get; }
+        public T? GetAttributes<T>() where T : AIServiceAttributes
+        {
+            return new AIServiceAttributes() as T;
+        }
 
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
