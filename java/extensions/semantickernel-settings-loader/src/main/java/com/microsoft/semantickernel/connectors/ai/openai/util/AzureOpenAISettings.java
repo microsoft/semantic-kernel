@@ -100,7 +100,7 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
      * @return the DEFAULT_SETTINGS_PREFIX value
      */
     public static String getDefaultSettingsPrefix() {
-      return DEFAULT_SETTINGS_PREFIX;
+        return DEFAULT_SETTINGS_PREFIX;
     }
 
     /**

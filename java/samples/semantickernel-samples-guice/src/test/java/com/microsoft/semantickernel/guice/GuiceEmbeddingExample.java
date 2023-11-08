@@ -4,9 +4,7 @@ package com.microsoft.semantickernel.guice;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-
 import jakarta.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 
