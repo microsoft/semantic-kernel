@@ -304,7 +304,7 @@ public abstract class ClientBase
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        if (PromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
             return InternalCreateNewChat(chatHistory);
         }

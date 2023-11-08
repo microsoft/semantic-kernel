@@ -7,11 +7,20 @@ using System;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
+/// <summary>
+/// Chat Prompt parser.
+/// </summary>
 internal static class ChatPromptParser
 {
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";
 
+    /// <summary>
+    /// Parses collection of <see cref="PromptNode"/> instances and sets output as <see cref="ChatHistory"/>.
+    /// </summary>
+    /// <param name="nodes">Collection of <see cref="PromptNode"/> to parse.</param>
+    /// <param name="chatHistory">Parsing output as <see cref="ChatHistory"/>.</param>
+    /// <returns>Returns true if parsing was successful, otherwise false.</returns>
     public static bool TryParse(List<PromptNode> nodes, out ChatHistory chatHistory)
     {
         chatHistory = new ChatHistory();
@@ -30,6 +39,10 @@ internal static class ChatPromptParser
         return chatHistory.Count != 0;
     }
 
+    /// <summary>
+    /// Checks if <see cref="PromptNode"/> is valid chat message.
+    /// </summary>
+    /// <param name="node">Instance of <see cref="PromptNode"/>.</param>
     private static bool IsValidChatMessage(PromptNode node)
     {
         return

@@ -5,8 +5,17 @@ using System.Xml;
 
 namespace Microsoft.SemanticKernel.Prompt;
 
-public static class PromptParser
+/// <summary>
+/// Class to parse text prompt from XML format.
+/// </summary>
+public static class XmlPromptParser
 {
+    /// <summary>
+    /// Parses text prompt and sets output as collection of <see cref="PromptNode"/> instances.
+    /// </summary>
+    /// <param name="prompt">Text prompt to parse.</param>
+    /// <param name="result">Parsing output as collection of <see cref="PromptNode"/> instances.</param>
+    /// <returns>Returns true if parsing was successful, otherwise false.</returns>
     public static bool TryParse(string prompt, out List<PromptNode> result)
     {
         result = new List<PromptNode>();
@@ -35,6 +44,10 @@ public static class PromptParser
         return result.Count != 0;
     }
 
+    /// <summary>
+    /// Gets an instance of <see cref="PromptNode"/> from <see cref="XmlNode"/> and child nodes recursively.
+    /// </summary>
+    /// <param name="node">Instance of <see cref="XmlNode"/> class.</param>
     private static PromptNode? GetPromptNode(XmlNode node)
     {
         if (node.NodeType != XmlNodeType.Element)

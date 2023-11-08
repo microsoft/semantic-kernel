@@ -8,9 +8,9 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Prompt;
 
 /// <summary>
-/// Unit tests for <see cref="PromptParser"/> class.
+/// Unit tests for <see cref="XmlPromptParser"/> class.
 /// </summary>
-public class PromptParserTests
+public class XmlPromptParserTests
 {
     [Theory]
     [InlineData("This is plain prompt")]
@@ -18,7 +18,7 @@ public class PromptParserTests
     public void ItReturnsEmptyListWhenPromptIsPlainText(string prompt)
     {
         // Act
-        var result = PromptParser.TryParse(prompt, out var nodes);
+        var result = XmlPromptParser.TryParse(prompt, out var nodes);
 
         // Assert
         Assert.False(result);
@@ -64,7 +64,7 @@ Second line.
         };
 
         // Act
-        var result = PromptParser.TryParse(Prompt, out var actualNodes);
+        var result = XmlPromptParser.TryParse(Prompt, out var actualNodes);
 
         // Assert
         Assert.True(result);
