@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Class used to copy and export data about functino output for planner and related scenarios.
+/// Class used to copy and export data about function output for planner and related scenarios.
 /// </summary>
 /// <param name="Description">Function output description</param>
 /// <param name="Type">Function output return type</param>
