@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -10,12 +12,16 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+using System.Threading;
+using System.Text;
+using System.Net.Mime;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenApiPlugin_AzureKeyVault
 {
-    private const string ResourceName = $"{PluginResourceNames.AzureKeyVault}.ai-plugin.json";
+    private const string OpenAIManifestResourceName = $"{PluginResourceNames.AzureKeyVault}.ai-plugin.json";
+    private const string OpenApiSpecResourceName = $"{PluginResourceNames.AzureKeyVault}.openapi.json";
     private const string SecretName = "Foo";
     private const string SecretValue = "Bar";
 
@@ -35,6 +41,8 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     ///   dotnet user-secrets set "KeyVault.Endpoint" "your_endpoint"
     ///   dotnet user-secrets set "KeyVault.ClientId" "your_client_id"
     ///   dotnet user-secrets set "KeyVault.ClientSecret" "your_secret"
+    ///
+    /// 5. Replace your tenant ID with the1 "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
     /// </summary>
     public static async Task RunAsync()
     {
@@ -54,59 +62,35 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             new Dictionary<string, string>()
         );
 
-        await AddSecretToAzureKeyVaultAsync(authenticationProvider);
-        await GetSecretFromAzureKeyVaultWithRetryAsync(authenticationProvider);
-    }
-
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(DynamicOpenAIAuthenticationProvider authenticationProvider)
-    {
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true
-            })
-            .Build();
-
-        var type = typeof(PluginResourceNames);
-
-        var stream = type.Assembly.GetManifestResourceStream(type, ResourceName);
-
-        // Import an Open AI Plugin via Stream
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
-            PluginResourceNames.AzureKeyVault,
-            ResourceName,
-            new OpenAIFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
-
-        // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("secret-name", SecretName);
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
-        contextVariables.Set("api-version", "7.0");
-
-        // Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
-
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
-
-        Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
-    }
-
-    public static async Task AddSecretToAzureKeyVaultAsync(DynamicOpenAIAuthenticationProvider authenticationProvider)
-    {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        // Import AI Plugin
+        var type = typeof(PluginResourceNames);
+        using StreamReader reader = new(type.Assembly.GetManifestResourceStream(type, OpenApiSpecResourceName)!);
+        var content = await reader.ReadToEndAsync().ConfigureAwait(false);
+        var messageStub = new HttpMessageHandlerStub(content);
+        var httpClient = new HttpClient(messageStub);
+
+        // Import Open AI Plugin
+        var stream = type.Assembly.GetManifestResourceStream(type, OpenAIManifestResourceName);
         var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
-            ResourceName,
+            stream!,
             new OpenAIFunctionExecutionParameters
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,
+                HttpClient = httpClient,
                 EnableDynamicPayload = true
             });
 
+        await AddSecretToAzureKeyVaultAsync(kernel, plugin);
+        await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
+
+        messageStub.Dispose();
+        httpClient.Dispose();
+    }
+
+    public static async Task AddSecretToAzureKeyVaultAsync(IKernel kernel, IDictionary<string, ISKFunction> plugin)
+    {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("secret-name", SecretName);
@@ -121,5 +105,56 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var result = kernelResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
+    }
+
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(IKernel kernel, IDictionary<string, ISKFunction> plugin)
+    {
+        // Add arguments for required parameters, arguments for optional ones can be skipped.
+        var contextVariables = new ContextVariables();
+        contextVariables.Set("secret-name", SecretName);
+        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
+        contextVariables.Set("api-version", "7.0");
+
+        // Run
+        var kernelResult = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
+
+        var result = kernelResult.GetValue<RestApiOperationResponse>();
+
+        Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
+    }
+}
+
+internal sealed class HttpMessageHandlerStub : DelegatingHandler
+{
+    public HttpResponseMessage ResponseToReturn { get; set; }
+
+    public HttpMessageHandlerStub(string responseToReturn, Func<Uri, bool>? Filter = null)
+    {
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseToReturn, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (request.RequestUri!.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
+        {
+            return this.ResponseToReturn;
+        }
+
+        using var httpClient = new HttpClient();
+        using var newRequest = new HttpRequestMessage()
+        {
+            Content = request.Content,
+            Method = request.Method,
+            RequestUri = request.RequestUri,
+        };
+
+        foreach (var header in request.Headers)
+        {
+            newRequest.Headers.Add(header.Key, header.Value);
+        }
+        return await httpClient.SendAsync(newRequest, cancellationToken).ConfigureAwait(false);
     }
 }

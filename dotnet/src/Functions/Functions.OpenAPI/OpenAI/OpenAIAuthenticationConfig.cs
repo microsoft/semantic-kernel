@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
@@ -15,49 +15,49 @@ public record OpenAIAuthenticationConfig
     /// <summary>
     /// The type of authentication.
     /// </summary>
-    [JsonPropertyName("type")]
+    [JsonProperty("type")]
     public OpenAIAuthenticationType Type { get; set; } = OpenAIAuthenticationType.None;
 
     /// <summary>
     /// The type of authorization.
     /// </summary>
-    [JsonPropertyName("authorization_type")]
+    [JsonProperty("authorization_type")]
     public OpenAIAuthorizationType? AuthorizationType { get; set; }
 
     /// <summary>
     /// The client URL.
     /// </summary>
-    [JsonPropertyName("client_url")]
+    [JsonProperty("client_url")]
     public Uri? ClientUrl { get; set; }
 
     /// <summary>
     /// The authorization URL.
     /// </summary>
-    [JsonPropertyName("authorization_url")]
+    [JsonProperty("authorization_url")]
     public Uri? AuthorizationUrl { get; set; }
 
     /// <summary>
     /// The authorization content type.
     /// </summary>
+    [JsonProperty("authorization_content_type")]
     public OpenAIAuthorizationContentType? AuthorizationContentType { get; set; }
 
     /// <summary>
     /// The authorization scope.
     /// </summary>
-    [JsonPropertyName("scope")]
+    [JsonProperty("scope")]
     public string? Scope { get; set; }
 
     /// <summary>
     /// The verification tokens.
     /// </summary>
-    [JsonPropertyName("verification_tokens")]
+    [JsonProperty("verification_tokens")]
     public Dictionary<string, string>? VerificationTokens { get; set; }
 }
 
 /// <summary>
 /// Represents the type of authentication for an OpenAI plugin.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OpenAIAuthenticationType
 {
     /// <summary>
@@ -88,7 +88,6 @@ public enum OpenAIAuthenticationType
 /// <summary>
 /// Represents the type of authorization for an OpenAI plugin.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OpenAIAuthorizationType
 {
     /// <summary>
@@ -107,7 +106,6 @@ public enum OpenAIAuthorizationType
 /// <summary>
 /// Represents the type of content used for authorization for an OpenAI plugin.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OpenAIAuthorizationContentType
 {
     /// <summary>

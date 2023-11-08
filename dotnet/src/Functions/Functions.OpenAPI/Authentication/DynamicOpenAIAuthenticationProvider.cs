@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
@@ -52,7 +53,7 @@ public class DynamicOpenAIAuthenticationProvider
                 ?? throw new SKException("No OAuth values found for the provided authorization URL.");
 
             var values = new Dictionary<string, string>(domainOAuthValues) {
-                { "scope", openAIAuthConfig .Scope ?? "" },
+                { "scope", openAIAuthConfig.Scope ?? "" },
             };
 
             HttpContent? content = null;
@@ -62,7 +63,7 @@ public class DynamicOpenAIAuthenticationProvider
                     content = new FormUrlEncodedContent(values);
                     break;
                 case OpenAIAuthorizationContentType.JSON:
-                    content = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, openAIAuthConfig.AuthorizationContentType.ToString());
+                    content = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, OpenAIAuthorizationContentType.JSON.ToString());
                     break;
                 default:
                     // Handle other cases as needed
@@ -77,7 +78,8 @@ public class DynamicOpenAIAuthenticationProvider
             if (response.IsSuccessStatusCode)
             {
                 // Read the token
-                var tokenResponse = JsonNode.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false))!;
+                var res = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var tokenResponse = JsonNode.Parse(res)!;
 
                 // Get the token type and value
                 scheme = tokenResponse["token_type"]?.ToString()

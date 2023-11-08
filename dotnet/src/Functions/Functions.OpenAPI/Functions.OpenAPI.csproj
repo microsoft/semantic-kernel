@@ -17,6 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Plugins\AzureKeyVaultPlugin\ai-plugin.json" />
+    <EmbeddedResource Include="Plugins\AzureKeyVaultPlugin\ai-plugin.json" />
     <None Remove="Plugins\AzureKeyVaultPlugin\openapi.json" />
     <EmbeddedResource Include="Plugins\AzureKeyVaultPlugin\openapi.json" />
   </ItemGroup>

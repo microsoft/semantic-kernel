@@ -29,8 +29,7 @@ public class BasicAuthenticationProvider
     /// Applies the authentication content to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="authConfig">The <see cref="OpenAIAuthenticationManifest"/> used to authenticate.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, OpenAIAuthenticationManifest? authConfig = null)
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         // Base64 encode
         string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));

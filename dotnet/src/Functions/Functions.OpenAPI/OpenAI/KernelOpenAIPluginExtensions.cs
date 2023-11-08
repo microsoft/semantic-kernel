@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Newtonsoft.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
@@ -132,7 +132,11 @@ public static class KernelOpenAIPluginExtensions
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
+            JsonSerializerSettings settings = new()
+            {
+                Converters = new List<JsonConverter> { new Newtonsoft.Json.Converters.StringEnumConverter() }
+            };
+            openAIAuthConfig = JsonConvert.DeserializeObject<OpenAIAuthenticationConfig>(pluginJson["auth"]!.ToJsonString(), settings)!;
         }
         catch (JsonException ex)
         {
