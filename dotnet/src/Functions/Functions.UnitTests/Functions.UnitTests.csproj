@@ -16,9 +16,16 @@
 
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
+    <None Remove="Monikers.imagemanifest" />
     <None Remove="OpenAPI\TestPlugins\documentV3_1.yaml" />
     <None Remove="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenAPI\TestPlugins\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <content Include="Monikers.imagemanifest">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </content>
   </ItemGroup>
 
   <ItemGroup>

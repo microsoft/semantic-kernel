@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 public static class KernelSemanticFunctionYamlExtensions
 {
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// 
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="resourceName"></param>
@@ -42,26 +42,11 @@ public static class KernelSemanticFunctionYamlExtensions
         using StreamReader reader = new(stream);
         var text = reader.ReadToEnd();
 
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .Build();
-
-        var semanticFunctionModel = deserializer.Deserialize<SemanticFunctionModel>(text);
-
-        var functionName = semanticFunctionModel.Name;
-        var pluginName = semanticFunctionModel.PluginName;
-        var promptTemplate = semanticFunctionModel.Template;
-        var promptTemplateConfig = semanticFunctionModel.GetPromptTemplateConfig();
-
-        return kernel.CreateSemanticFunction(
-           promptTemplate: promptTemplate,
-           promptTemplateConfig: promptTemplateConfig,
-           functionName: functionName,
-           pluginName: pluginName);
+        return kernel.CreateSemanticFunctionFromYaml(text);
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// 
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="text"></param>

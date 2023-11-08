@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Yaml.Extensions;
 
-public class KernelSemanticFunctionYamlExtensionTests
+public class KernelSemanticFunctionMarkdownExtensionTests
 {
     [Fact]
     public void ItShouldCreateSemanticFunctionFromYaml()
@@ -18,6 +18,9 @@ public class KernelSemanticFunctionYamlExtensionTests
 
         // Assert
         Assert.NotNull(skfunction);
+        Assert.Equal("SayHello", skfunction.Name);
+        Assert.Equal("DemoPlugin", skfunction.PluginName);
+        Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
     }
 
     private readonly string _yaml = @"
