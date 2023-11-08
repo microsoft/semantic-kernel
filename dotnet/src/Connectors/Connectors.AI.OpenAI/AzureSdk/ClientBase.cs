@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Prompt;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -303,7 +304,7 @@ public abstract class ClientBase
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        if (ChatPromptParser.TryGetChatHistory(text, out var chatHistory) && chatHistory is not null)
+        if (PromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
             return InternalCreateNewChat(chatHistory);
         }
