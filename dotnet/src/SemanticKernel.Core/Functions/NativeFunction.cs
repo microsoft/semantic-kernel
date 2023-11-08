@@ -52,7 +52,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <summary>
     /// Function output
-    /// </summary
+    /// </summary>
     public OutputView Output { get; }
 
     /// <summary>
@@ -266,8 +266,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this.Description = description;
         this.Output = output;
 
-        this._view = new(() => new (functionName, pluginName, description) 
-        { 
+        this._view = new(() => new (functionName, pluginName, description)
+        {
             Parameters = this.Parameters,
             Output = this.Output
         });
@@ -312,10 +312,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
         string? outputDescription = method.GetCustomAttribute<SKOutputAttribute>(inherit: true)?.Description;
-        string? outputType = method.GetCustomAttribute<SKOutputAttribute>(inherit: true)?.Type;
-        string? outputRange = method.GetCustomAttribute<SKOutputAttribute>(inherit: true)?.Range;
 
-        var output = new OutputView(outputDescription ?? string.Empty, outputType ?? string.Empty, outputRange ?? string.Empty);
+        var output = new OutputView(outputDescription ?? string.Empty, method.ReturnType);
 
         var result = new MethodDetails
         {

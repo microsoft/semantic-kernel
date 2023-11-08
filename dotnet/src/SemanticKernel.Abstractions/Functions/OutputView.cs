@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -10,8 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 /// <param name="Description">Function output description</param>
 /// <param name="Type">Function output return type</param>
-/// <param name="Range">Function output return range of values.</param>
 public sealed record OutputView(
     string? Description = null,
-    string? Type = null, //ParameterViewType? Type = null,
-    string? Range = null);
+    System.Type? Type = null);

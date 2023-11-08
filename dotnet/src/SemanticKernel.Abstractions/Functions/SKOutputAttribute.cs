@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 
@@ -20,20 +20,10 @@ public sealed class SKOutputAttribute : Attribute
     /// Initializes the attribute with its (native function return) type and semantic description.
     /// </summary>
     /// <param name="description">The semantic description of the output.</param>
-    /// <param name="type">Function output return type</param>
-    /// <param name="range">The range out output included and excluded.</param>
-    public SKOutputAttribute(string description, string type, string range)
+    public SKOutputAttribute(string description)
     {
         this.Description = description;
-        this.Type = type;
-        this.Range = range;
     }
     /// <summary>Gets the specified output description.</summary>
     public string Description { get; }
-
-    /// <summary>Gets the specified output return type.</summary>
-    public string Type { get; }
-
-    /// <summary>Gets the specified output range.</summary>
-    public string Range { get; }
 }
