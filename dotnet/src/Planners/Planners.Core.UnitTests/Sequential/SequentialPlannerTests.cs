@@ -46,8 +46,14 @@ public sealed class SequentialPlannerTests
             functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, object, CancellationToken>((context, settings, cancellationToken) =>
+                    x.InvokeAsync(
+                        It.IsAny<SKContext>(),
+                        It.IsAny<AIRequestSettings>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<
+                    SKContext,
+                    object,
+                    CancellationToken>((context, settings, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(name, pluginName, context));
@@ -95,7 +101,10 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
+        )).Callback<
+            SKContext,
+            object,
+            CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, planString)));
 
@@ -170,7 +179,10 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
+        )).Callback<
+            SKContext,
+            object,
+            CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, planString)));
 
