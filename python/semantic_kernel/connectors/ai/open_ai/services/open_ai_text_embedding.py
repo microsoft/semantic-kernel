@@ -70,6 +70,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
                     api_key=self._api_key,
                     base_url=self._endpoint,
                     organization=self._org_id,
+                    version=self._api_version
                 )
                 response: Any = await client.embeddings.create(
                     **model_args,
