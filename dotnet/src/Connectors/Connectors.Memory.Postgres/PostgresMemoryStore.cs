@@ -210,7 +210,9 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            this._dataSource?.Dispose();
+            // Avoid error when running in .Net 7 where it throws
+            // Could not load type 'System.Data.Common.DbDataSource' from assembly 'Npgsql, Version=7.*
+            (this._dataSource as IDisposable)?.Dispose();
         }
     }
 
