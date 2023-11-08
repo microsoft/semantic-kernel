@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
  */
 public abstract class AbstractOpenAIClientSettings {
 
-    public static final String KEY_SUFFIX = "key";
+    protected static final String KEY_SUFFIX = "key";
 
     /**
      * Check if the settings are valid
@@ -24,4 +24,13 @@ public abstract class AbstractOpenAIClientSettings {
      * @return OpenAI client key
      */
     public abstract String getKey() throws ConfigurationException;
+
+    /**
+     * Get the KEY_SUFFIX value
+     *
+     * @return the KEY_SUFFIX value
+     */
+    public static String getKeySuffix() {
+      return KEY_SUFFIX;
+    }
 }
