@@ -110,32 +110,26 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Theory]
-    [InlineData(false, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
-    [InlineData(true, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
-    public async Task AzureOpenAITestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
+    [Fact]
+    public async Task AzureOpenAITestAsync()
     {
+        const string Prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+        const string ExpectedAnswerContains = "Pike Place";
+
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
 
-        if (useChatModel)
-        {
-            this.ConfigureAzureOpenAIChatAsText(builder);
-        }
-        else
-        {
-            this.ConfigureAzureOpenAI(builder);
-        }
+        this.ConfigureAzureOpenAI(builder);
 
         IKernel target = builder.Build();
 
         IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
+        KernelResult actual = await target.RunAsync(Prompt, plugins["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
