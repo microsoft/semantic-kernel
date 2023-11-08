@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -12,11 +15,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
-using System.Threading;
-using System.Text;
-using System.Net.Mime;
 
-#pragma warning disable CA1861 // Avoid constant arrays as arguments
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenApiPlugin_AzureKeyVault
 {
@@ -42,7 +41,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     ///   dotnet user-secrets set "KeyVault.ClientId" "your_client_id"
     ///   dotnet user-secrets set "KeyVault.ClientSecret" "your_secret"
     ///
-    /// 5. Replace your tenant ID with the1 "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
+    /// 5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
     /// </summary>
     public static async Task RunAsync()
     {
@@ -124,11 +123,13 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     }
 }
 
+#region Utility Classes
+
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
     public HttpResponseMessage ResponseToReturn { get; set; }
 
-    public HttpMessageHandlerStub(string responseToReturn, Func<Uri, bool>? Filter = null)
+    public HttpMessageHandlerStub(string responseToReturn)
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
@@ -158,3 +159,5 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         return await httpClient.SendAsync(newRequest, cancellationToken).ConfigureAwait(false);
     }
 }
+
+#endregion

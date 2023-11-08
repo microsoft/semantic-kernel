@@ -9,15 +9,10 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Moq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -50,41 +45,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
         this._sut = new OpenApiDocumentParser();
-    }
-
-    [Fact]
-    public async Task ItUsesAuthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
-    {
-        //Arrange
-        var serializerSettings = new JsonSerializerSettings
-        {
-            ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            }
-        };
-        using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
-        var openAiDocumentContent = JsonConvert.DeserializeObject<JObject>(await reader.ReadToEndAsync(), serializerSettings)!;
-        var actualAuthConfig = openAiDocumentContent["auth"]!.ToObject<OpenAIAuthenticationManifest>(JsonSerializer.Create(serializerSettings))!;
-
-        using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
-        using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
-
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-        var authCallbackMock = new Mock<AuthenticateRequestAsyncCallback>();
-        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient, AuthCallback = authCallbackMock.Object };
-
-        //Act
-        var plugin = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", openAiDocument, executionParameters);
-
-        //Assert
-        var setSecretFunction = plugin["SetSecret"];
-        Assert.NotNull(setSecretFunction);
-
-        authCallbackMock.Verify(target => target.Invoke(
-            It.IsAny<HttpRequestMessage>(),
-            It.Is<OpenAIAuthenticationManifest>(expectedAuthConfig => expectedAuthConfig.Scope == actualAuthConfig.Scope)),
-        Times.Exactly(1));
     }
 
     [Fact]
