@@ -167,6 +167,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{C17DD7E1-E588-46AF-A87E-DF8829A021DC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.OpenAI", "src\Planners\Planners.OpenAI\Planners.OpenAI.csproj", "{348BBF45-23B4-4599-83A6-8AE1795227FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -411,6 +413,12 @@ Global
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{348BBF45-23B4-4599-83A6-8AE1795227FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -471,6 +479,7 @@ Global
 		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{CB6E74CD-3A25-459F-A578-DEF25A414335} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{348BBF45-23B4-4599-83A6-8AE1795227FB} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
