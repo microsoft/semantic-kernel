@@ -19,7 +19,7 @@ public sealed class KustoMemoryRecord
     public string Key { get; set; }
 
     /// <summary>
-    /// Attributes associated with memory entity.
+    /// Metadata associated with memory entity.
     /// </summary>
     public MemoryRecordMetadata Metadata { get; set; }
 
