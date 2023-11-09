@@ -7,8 +7,8 @@ using Microsoft.SemanticKernel.Planners;
 using Plugins;
 using RepoUtils;
 
-namespace KernelSyntaxExamples;
-public static class Example64_FunctionCallingStepwisePlanner
+// ReSharper disable once InconsistentNaming
+public static class Example66_FunctionCallingStepwisePlanner
 {
     internal static string? ChatModelOverride = null; //"gpt-35-turbo-0613"
 

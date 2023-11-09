@@ -1,0 +1,13 @@
+Create a step-by-step plan to satisfy the user's goal, using only the available functions or your own capabilities.
+
+[AVAILABLE FUNCTIONS]
+
+{{$available_functions}}
+
+[END AVAILABLE FUNCTIONS]
+
+To create the plan, follow these steps:
+0. Each step should be something that is capable of being done by the list of available functions.
+1. Each step should describe the action, inputs, and outputs of the step.
+2. Steps can use output from one or more previous steps as input, if appropriate.
+3. The plan should be as short as possible.

@@ -14,6 +14,8 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
+using System.Globalization;
+using System;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -94,7 +96,7 @@ public class FunctionCallingStepwisePlanner
                 if (finalAnswerMatch.Success)
                 {
                     return new FunctionCallingStepwisePlannerResult(
-                        messageContent.Replace(finalAnswerMatch.Value, string.Empty),
+                        finalAnswerMatch.Groups[1].Value.Trim(),
                         chatHistoryForSteps
                         );
                 }
@@ -187,7 +189,7 @@ public class FunctionCallingStepwisePlanner
         var systemContext = this._kernel.CreateNewContext();
         systemContext.Variables.Set(GoalKey, goal);
         systemContext.Variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(systemContext, cancellationToken).ConfigureAwait(false);
+        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(systemContext, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 
