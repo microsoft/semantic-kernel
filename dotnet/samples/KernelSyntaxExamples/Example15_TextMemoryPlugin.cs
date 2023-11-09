@@ -90,7 +90,7 @@ public static class Example15_TextMemoryPlugin
 
     private static IMemoryStore CreateSampleMongoDBMemoryStore()
     {
-        IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memorySkillExample");
+        IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
         return store;
     }
 
