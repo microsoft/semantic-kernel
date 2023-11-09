@@ -126,7 +126,7 @@ public class FunctionViewTests
         Assert.Equal("function description", fv.Description);
         Assert.Equal("first parameter description", fv.Parameters[0].Description);
         Assert.Equal("second parameter description", fv.Parameters[1].Description);
-        Assert.Equal("return parameter description", fv.ReturnParameter.Description); //getting ""
+        Assert.Equal("return parameter description", fv.ReturnParameter.Description);
     }
 
     [Fact]
