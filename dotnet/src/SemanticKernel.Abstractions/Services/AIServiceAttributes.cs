@@ -35,7 +35,7 @@ public class AIServiceAttributes
     /// </summary>
     public string? ModelId
     {
-        get => this.InternalAttributes.ContainsKey(ModelIdKey) ? this.InternalAttributes[ModelIdKey] as string : null;
+        get => this.InternalAttributes.TryGetValue(ModelIdKey, out var value) ? value as string : null;
         init => this.InternalAttributes[ModelIdKey] = value ?? string.Empty;
     }
 
@@ -44,7 +44,7 @@ public class AIServiceAttributes
     /// </summary>
     public string? Endpoint
     {
-        get => this.InternalAttributes.ContainsKey(EndpointKey) ? this.InternalAttributes[EndpointKey] as string : null;
+        get => this.InternalAttributes.TryGetValue(EndpointKey, out var value) ? value as string : null;
         init => this.InternalAttributes[EndpointKey] = value ?? string.Empty;
     }
 
@@ -53,7 +53,7 @@ public class AIServiceAttributes
     /// </summary>
     public string? ApiVersion
     {
-        get => this.InternalAttributes.ContainsKey(ApiVersionKey) ? this.InternalAttributes[ApiVersionKey] as string : null;
+        get => this.InternalAttributes.TryGetValue(ApiVersionKey, out var value) ? value as string : null;
         init => this.InternalAttributes[ApiVersionKey] = value ?? string.Empty;
     }
 

@@ -19,7 +19,7 @@ public class AzureOpenAIServiceAttributes : AIServiceAttributes
     /// </summary>
     public string? DeploymentName
     {
-        get => this.InternalAttributes.ContainsKey(DeploymentNameKey) ? this.InternalAttributes[DeploymentNameKey] as string : null;
+        get => this.InternalAttributes.TryGetValue(DeploymentNameKey, out var value) ? value as string : null;
         init => this.InternalAttributes[DeploymentNameKey] = value ?? string.Empty;
     }
 }

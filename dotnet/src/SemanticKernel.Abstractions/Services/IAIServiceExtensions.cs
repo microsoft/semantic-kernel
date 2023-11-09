@@ -46,6 +46,6 @@ public static class IAIServiceExtensions
     public static string? GetAttribute(this IAIService service, string key)
     {
         var attributes = service.GetAttributes<AIServiceAttributes>();
-        return attributes?.Attributes.ContainsKey(key) == true ? attributes.Attributes[key] as string : null;
+        return attributes?.Attributes.TryGetValue(key, out var value) == true ? value as string : null;
     }
 }

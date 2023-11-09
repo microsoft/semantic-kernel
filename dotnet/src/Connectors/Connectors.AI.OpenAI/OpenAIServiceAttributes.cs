@@ -19,7 +19,7 @@ public class OpenAIServiceAttributes : AIServiceAttributes
     /// </summary>
     public string? Organization
     {
-        get => this.InternalAttributes.ContainsKey(OrganizationKey) ? this.InternalAttributes[OrganizationKey] as string : null;
+        get => this.InternalAttributes.TryGetValue(OrganizationKey, out var value) ? value as string : null;
         init => this.InternalAttributes[OrganizationKey] = value ?? string.Empty;
     }
 }
