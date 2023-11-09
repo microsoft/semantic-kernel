@@ -134,13 +134,15 @@ public abstract class ClientBase
 
         var options = this.CreateCompletionsOptions(text, textRequestSettings);
 
-        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
+        StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
             () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        using StreamingCompletions streamingChatCompletions = response.Value;
-        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        await foreach (Completions completions in response)
         {
-            yield return new TextStreamingResult(streamingChatCompletions, choice);
+            foreach(var choice in completions.Choices)
+            {
+                // Will I get all the choices for each chuck of IAsyncEnumerable?
+            }
         }
     }
 
@@ -196,10 +198,10 @@ public abstract class ClientBase
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
+        var chatOptions = this.CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
