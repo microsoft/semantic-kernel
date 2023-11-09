@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example22_OpenApiPlugin_AzureKeyVault
+public static class Example22_OpenAIPlugin_AzureKeyVault
 {
     private const string OpenAIManifestResourceName = $"{PluginResourceNames.AzureKeyVault}.ai-plugin.json";
     private const string OpenApiSpecResourceName = $"{PluginResourceNames.AzureKeyVault}.openapi.json";
@@ -37,11 +37,11 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     ///   https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-access-web-apis
     ///
     ///   4. Set your Key Vault endpoint, client ID, and client secret as user secrets using:
-    ///   dotnet user-secrets set "KeyVault.Endpoint" "your_endpoint"
-    ///   dotnet user-secrets set "KeyVault.ClientId" "your_client_id"
-    ///   dotnet user-secrets set "KeyVault.ClientSecret" "your_secret"
+    ///   dotnet user-secrets set "KeyVault:Endpoint" "your_endpoint"
+    ///   dotnet user-secrets set "KeyVault:ClientId" "your_client_id"
+    ///   dotnet user-secrets set "KeyVault:ClientSecret" "your_secret"
     ///
-    /// 5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
+    ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
     /// </summary>
     public static async Task RunAsync()
     {
