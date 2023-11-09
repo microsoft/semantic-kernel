@@ -2,16 +2,11 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -26,12 +21,11 @@ public sealed class KernelBuilder
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
     private IAIServiceSelector? _serviceSelector;
-
-    private static bool s_promptTemplateEngineInitialized = false;
-    private static Type? s_promptTemplateEngineType = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -49,15 +43,19 @@ public sealed class KernelBuilder
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS0618 // Type or member is obsolete
         var instance = new Kernel(
             new FunctionCollection(),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
+            this._promptTemplateEngine,
             this._memoryFactory.Invoke(),
             this._httpHandlerFactory,
             this._loggerFactory,
             this._serviceSelector
         );
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS8604 // Possible null reference argument.
 
         // TODO: decouple this from 'UseMemory' kernel extension
         if (this._memoryStorageFactory != null)
@@ -157,6 +155,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="promptTemplateEngine">Prompt template engine to add.</param>
     /// <returns>Updated kernel builder including the prompt template engine.</returns>
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithPromptTemplateEngine(IPromptTemplateEngine promptTemplateEngine)
     {
         Verify.NotNull(promptTemplateEngine);
@@ -259,69 +259,5 @@ public sealed class KernelBuilder
     {
         this._serviceSelector = serviceSelector;
         return this;
-    }
-
-    /// <summary>
-    /// Create a default prompt template engine.
-    ///
-    /// This is a temporary solution to avoid breaking existing clients.
-    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
-    ///
-    /// </summary>
-    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
-    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
-    {
-        if (!s_promptTemplateEngineInitialized)
-        {
-            s_promptTemplateEngineType = this.GetPromptTemplateEngineType();
-            s_promptTemplateEngineInitialized = true;
-        }
-
-        if (s_promptTemplateEngineType is not null)
-        {
-            var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
-            if (constructor is not null)
-            {
-#pragma warning disable CS8601 // Null logger factory is OK
-                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
-#pragma warning restore CS8601
-            }
-        }
-
-        return new NullPromptTemplateEngine();
-    }
-
-    /// <summary>
-    /// Get the prompt template engine type if available
-    /// </summary>
-    /// <returns>The type for the prompt template engine if available</returns>
-    private Type? GetPromptTemplateEngineType()
-    {
-        try
-        {
-            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.Basic");
-
-            return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals("BasicPromptTemplateEngine", StringComparison.Ordinal) &&
-                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            return null;
-        }
-    }
-}
-
-/// <summary>
-/// No-operation IPromptTemplateEngine which performs no rendering of the template.
-///
-/// This is a temporary solution to avoid breaking existing clients.
-/// </summary>
-internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
-{
-    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(templateText);
     }
 }
