@@ -14,12 +14,24 @@ public class OpenAIChatHistory : ChatHistory
     /// <summary>
     /// Create a new and empty chat history
     /// </summary>
-    /// <param name="assistantInstructions">Optional instructions for the assistant</param>
-    public OpenAIChatHistory(string? assistantInstructions = null)
+    /// <param name="systemMessage">Optional instructions for the assistant</param>
+    public OpenAIChatHistory(string? systemMessage = null)
     {
-        if (!assistantInstructions.IsNullOrWhitespace())
+        if (!systemMessage.IsNullOrWhitespace())
         {
-            this.AddSystemMessage(assistantInstructions);
+            this.AddSystemMessage(systemMessage);
         }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIChatHistory"/> class based on <see cref="ChatHistory"/>.
+    /// </summary>
+    /// <param name="chatHistory"></param>
+    public OpenAIChatHistory(ChatHistory chatHistory)
+    {
+        chatHistory.ForEach(message =>
+        {
+            this.AddMessage(message.Role, message.Content);
+        });
     }
 }
