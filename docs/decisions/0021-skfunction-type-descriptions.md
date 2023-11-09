@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: in review
 date: 2023-11-8
-contact: bentho
+contact: alliscode
 deciders: markwallace, mabolan
 consulted: SergeyMenshykh
 informed:
@@ -14,7 +14,7 @@ informed:
 
 Today, Semantic Kernel only retains a small amount of information about the parameters of SKFunctions, and no information at all about the output of an SKFunction. This has a large negative impact on the effectiveness of our planners because it is not possible to adequately describe the schema of the the plugin function's inputs and outputs.
 
-Planners depend on a description of the plugins available to it, which we refer to as a Functions Manual. Think of this as the user manual that is provided to the LLM and is in intended to explain to the LLM the functions that are available to it and how they can be used. An example of a current Functions Manual from our Sequential planner looks like this:
+Planners depend on a description of the plugins available to it, which we refer to as a Functions Manual. Think of this as the user manual that is provided to the LLM and is intended to explain to the LLM the functions that are available to it and how they can be used. An example of a current Functions Manual from our Sequential planner looks like this:
 
 ```
 DatePluginSimpleComplex.GetDate1:
@@ -28,7 +28,7 @@ WeatherPluginSimpleComplex.GetWeatherForecast1:
     - date: The date for the forecast
 ```
 
-This Functions Manual describes two plugin functions that are available to the LLM, one to get the current date with an offset in days, and one to get the weather forecast for a given date. A simple question that our customer might want our planners to be able to answer with these plugin functions would be "What is the weather forecast tomorrow?". Creating a plan to answer this question would require invoking the first function, and then passing the result of that as a parameter to the invocation of the second function. If written in pseudo code, the plan would look something like this:
+This Functions Manual describes two plugin functions that are available to the LLM, one to get the current date with an offset in days, and one to get the weather forecast for a given date. A simple question that our customer might want our planners to be able to answer with these plugin functions would be "What is the weather forecast for tomorrow?". Creating and executing a plan to answer this question would require invoking the first function, and then passing the result of that as a parameter to the invocation of the second function. If written in pseudo code, the plan would look something like this:
 
 ```csharp
 var dateResponse = DatePluginSimpleComplex.GetDate1(1);
@@ -36,7 +36,7 @@ var forecastResponse = WeatherPluginSimpleComplex.GetWeatherForecast1(dateRespon
 return forecastResponse;
 ```
 
-This seems like a reasonable plan, and this is indeed comparable to what out Sequential planner would come up with. This might also work, as long as the unknown return type of the first function happens to match the unknown parameter type of the second function. The Functions Manual that we are providing to the LLM however, does not specify the necessary information to know if these types will match up and this plan will work.
+This seems like a reasonable plan, and this is indeed comparable to what out Sequential planner would come up with. This might also work, as long as the unknown return type of the first function happens to match the unknown parameter type of the second function. The Functions Manual that we are providing to the LLM however, does not specify the necessary information to know if these types will match up.
 
 One way that we could provide the missing type information is to use Json Schema. This also happens to be the same way that OpenAPI specs provide type information for inputs and outputs, and this provides a cohesive solution for local and remote plugins. If we utilize Json Schema, then our Functions Manual can look more like this:
 
@@ -98,7 +98,7 @@ One way that we could provide the missing type information is to use Json Schema
 ]
 ```
 
-This Functions Manual provides much more information about the the inputs and outputs of the functions that the LLM has access to. This also come with an increase in the amount of tokens used, but the increase in functionality outweighs this expense. With this information we can now expect the LLM to generate a plan that includes an understanding of how values should be extracted from outputs and passed to inputs. One effective method that we've used in testing is to ask the LLM to specify inputs as a Json Path into the appropriate output. An equivalent plan shown in pseudo code would look like this:
+This Functions Manual provides much more information about the the inputs and outputs of the functions that the LLM has access to. It allows to see that the output of the first functions is a complex objects that contain the information required by the second function. This also comes with an increase in the amount of tokens used, however the increase in functionality derived the type information outweighs this expense. With this information we can now expect the LLM to generate a plan that includes an understanding of how values should be extracted from outputs and passed to inputs. One effective method that we've used in testing is to ask the LLM to specify inputs as a Json Path into the appropriate output. An equivalent plan shown in pseudo code would look like this:
 
 ```csharp
 var dateResponse = DatePluginSimpleComplex.GetDate1(1);
@@ -108,7 +108,7 @@ return forecastResponse.degreesFahrenheit;
 
 ## Proposal
 
-In order to be able to generate complete Function Manuals such as the Json Schema based examples above, SKFunctions and their associated Function Views will need to maintain more information about their parameter types and return types. Function Views currently have the following information:
+In order to be able to generate complete Function Manuals such as the Json Schema based examples above, SKFunctions and their associated Function Views will need to maintain more information about their parameter types and return types. Function Views currently have the following definition:
 
 ```csharp
 public sealed record FunctionView(
@@ -124,7 +124,7 @@ public sealed record FunctionView(
 }
 ```
 
-The function parameters are described by the collection of `ParameterView` objects which provides a place to add more information for them, however there is no place to put the type information and semantic description of the function output. To fix this we will add a new property called `OutputView` to the `FunctionView`:
+The function parameters are described by the collection of `ParameterView` objects which contain a semantic description, and provide a place to add more type information. There is however no existing place to put the type information and semantic description of the function output. To fix this we will add a new property called `OutputView` to the `FunctionView`:
 
 ```csharp
 public sealed record FunctionView(
