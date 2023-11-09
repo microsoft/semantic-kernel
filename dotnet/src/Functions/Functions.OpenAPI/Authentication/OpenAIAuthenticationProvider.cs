@@ -56,14 +56,14 @@ public class OpenAIAuthenticationProvider
                 { "scope", openAIAuthConfig.Scope ?? "" },
             };
 
-            HttpContent? content = null;
+            HttpContent? requestContent = null;
             switch (openAIAuthConfig.AuthorizationContentType)
             {
                 case OpenAIAuthorizationContentType.FormUrlEncoded:
-                    content = new FormUrlEncodedContent(values);
+                    requestContent = new FormUrlEncodedContent(values);
                     break;
                 case OpenAIAuthorizationContentType.JSON:
-                    content = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, OpenAIAuthorizationContentType.JSON.ToString());
+                    requestContent = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, OpenAIAuthorizationContentType.JSON.ToString());
                     break;
                 default:
                     // Handle other cases as needed
@@ -72,21 +72,23 @@ public class OpenAIAuthenticationProvider
 
             // Request the token
             using var client = new HttpClient();
-            var response = await client.PostAsync(openAIAuthConfig.AuthorizationUrl, content).ConfigureAwait(false);
-            content?.Dispose();
+            var response = await client.PostAsync(openAIAuthConfig.AuthorizationUrl, requestContent).ConfigureAwait(false);
+            requestContent?.Dispose();
 
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                // Read the token
-                var res = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var tokenResponse = JsonNode.Parse(res)!;
-
-                // Get the token type and value
-                scheme = tokenResponse["token_type"]?.ToString()
-                    ?? throw new SKException("No token type found in the response.");
-                credential = tokenResponse["access_token"]?.ToString()
-                    ?? throw new SKException("No access token found in the response.");
+                throw new SKException($"Failed to get token from {openAIAuthConfig.AuthorizationUrl}.");
             }
+
+            // Read the token
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var tokenResponse = JsonNode.Parse(responseContent)!;
+
+            // Get the token type and value
+            scheme = tokenResponse["token_type"]?.ToString()
+                ?? throw new SKException("No token type found in the response.");
+            credential = tokenResponse["access_token"]?.ToString()
+                ?? throw new SKException("No access token found in the response.");
         }
         else
         {
