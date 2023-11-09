@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -15,41 +16,101 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
-    private readonly StreamingChatChoice _choice;
-    public ModelResult ModelResult { get; }
+    private readonly IReadOnlyList<StreamingChatCompletionsUpdate> _chatUpdates;
 
-    public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice)
+    public ModelResult ModelResult { get; private set; }
+    private bool _isStreamEnded = false;
+
+    public ChatStreamingResult(IReadOnlyList<StreamingChatCompletionsUpdate> chatUpdates)
     {
-        Verify.NotNull(choice);
-        this.ModelResult = new(new ChatStreamingModelResult(resultData, choice));
-        this._choice = choice;
+        Verify.NotNull(chatUpdates);
+        this.ModelResult = new(chatUpdates);
+        this._chatUpdates = chatUpdates;
     }
 
     /// <inheritdoc/>
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
-                                                .LastOrDefaultAsync(cancellationToken)
-                                                .ConfigureAwait(false);
+        var fullMessage = new StringBuilder();
+        var role = string.Empty;
 
-        if (chatMessage is null)
+        await foreach(var message in this.GetStreamingChatMessageAsync(cancellationToken))
+        {
+            if (string.IsNullOrEmpty(role))
+            {
+                role = message.Role.ToString();
+            }
+
+            fullMessage.Append(message.Content);
+        }
+
+        if (fullMessage.Length == 0)
         {
             throw new SKException("Unable to get chat message from stream");
         }
 
-        return new SKChatMessage(chatMessage);
+        return new SKChatMessage(role, fullMessage.ToString());
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
+        string role = string.Empty;
+        int currentIndex = -1;
+        CompletionsFinishReason? finishReason = null;
+        string? messageId = null;
+        DateTimeOffset? created = null;
+
+        while (currentIndex < this._chatUpdates.Count)
         {
-            if (message.FunctionCall is not null || message.Content is { Length: > 0 })
+            var message = this._chatUpdates[currentIndex];
+
+            if (message.Role.HasValue)
             {
-                yield return new SKChatMessage(message);
+                role = message.Role.Value.ToString();
+            }
+
+            if (message.FinishReason.HasValue)
+            {
+                finishReason = message.FinishReason.Value;
+            }
+
+            if (!string.IsNullOrEmpty(message.Id))
+            {
+                messageId = message.Id;
+            }
+
+            if (message.Created != default)
+            {
+                created = message.Created;
+            }
+
+            if (message.ContentUpdate is { Length: > 0 })
+            {
+                yield return new SKChatMessage(role, message.ContentUpdate);
+            }
+
+            // Might need to retouch this part to expose the function name and arguments as new properties of a message.
+            // FunctionName and FunctionArgumentsUpdate are considered as valid messages
+            if (message.FunctionName.Length > 0)
+            {
+                yield return new SKChatMessage(role, message.FunctionName);
+            }
+
+            if (message.FunctionArgumentsUpdate is { Length: > 0 })
+            {
+                yield return new SKChatMessage(role, message.FunctionArgumentsUpdate);
+            }
+
+            // Wait for next choice update...
+            while (!this._isStreamEnded && currentIndex >= this._chatUpdates.Count)
+            {
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
         }
+
+        // In the end of the stream is supposed to have all the information to create a ModelResult
+        this.ModelResult = new(new ChatStreamingModelResult(finishReason!.Value, messageId!, created!.Value));
     }
 
     /// <inheritdoc/>
@@ -68,5 +129,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                 yield return content;
             }
         }
+    }
+
+    internal void EndOfStream()
+    {
+        this._isStreamEnded = true;
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -19,23 +18,15 @@ public class ChatStreamingModelResult
     public DateTimeOffset Created { get; }
 
     /// <summary>
-    /// Content filtering results for zero or more prompts in the request.
+    /// The reason the chat stream ended.
     /// </summary>
-    public IReadOnlyList<PromptFilterResult> PromptFilterResults { get; }
+    public CompletionsFinishReason FinishReason { get; }
 
-    /// <summary>
-    /// The completion choice associated with this completion result.
-    /// </summary>
-    public StreamingChatChoice Choice { get; }
-
-    /// <summary> Initializes a new instance of TextModelResult. </summary>
-    /// <param name="completionsData"> A completions response object to populate the fields relative the response.</param>
-    /// <param name="choiceData"> A choice object to populate the fields relative to the resulting choice.</param>
-    internal ChatStreamingModelResult(StreamingChatCompletions completionsData, StreamingChatChoice choiceData)
+    /// <summary> Initializes a new instance of <see cref="ChatStreamingModelResult"/>. </summary>
+    internal ChatStreamingModelResult(CompletionsFinishReason finishReason, string id, DateTimeOffset created)
     {
-        this.Id = completionsData.Id;
-        this.Created = completionsData.Created;
-        this.PromptFilterResults = completionsData.PromptFilterResults;
-        this.Choice = choiceData;
+        this.Id = id;
+        this.Created = created;
+        this.FinishReason = finishReason;
     }
 }

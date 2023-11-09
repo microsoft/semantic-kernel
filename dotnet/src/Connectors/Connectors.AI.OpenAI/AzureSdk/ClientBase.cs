@@ -94,10 +94,10 @@ public abstract class ClientBase
         OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
-        var options = CreateCompletionsOptions(text, textRequestSettings);
+        var options = this.CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -132,10 +132,10 @@ public abstract class ClientBase
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(text, textRequestSettings);
+        var options = this.CreateCompletionsOptions(text, textRequestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         using StreamingCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
@@ -157,10 +157,10 @@ public abstract class ClientBase
         var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
-            var options = new EmbeddingsOptions(text);
+            var options = new EmbeddingsOptions(this.ModelId, new[] { text });
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+                () => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
 
             if (response is null)
             {
@@ -233,23 +233,37 @@ public abstract class ClientBase
         Verify.NotNull(chat);
 
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
+        var options = this.CreateChatCompletionsOptions(chatRequestSettings, chat);
 
-        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+        StreamingResponse<StreamingChatCompletionsUpdate>? response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
             throw new SKException("Chat completions null response");
         }
 
-        using StreamingChatCompletions streamingChatCompletions = response.Value;
-        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        var cachedChoices = new Dictionary<int, List<StreamingChatCompletionsUpdate>>();
+        var results = new List<ChatStreamingResult>();
+        await foreach (StreamingChatCompletionsUpdate update in response)
         {
-            yield return new ChatStreamingResult(response.Value, choice);
+            // Stores the streaming updates by index in 
+            if (!cachedChoices.ContainsKey(update.ChoiceIndex ?? 0))
+            {
+                cachedChoices.Add(update.ChoiceIndex ?? 0, new());
+
+                var result = new ChatStreamingResult(cachedChoices[update.ChoiceIndex ?? 0]);
+                results.Add(result);
+                yield return result;
+            }
+            cachedChoices[update.ChoiceIndex ?? 0].Add(update);
+        }
+
+        foreach (var result in results)
+        {
+            result.EndOfStream();
         }
     }
 
@@ -297,7 +311,7 @@ public abstract class ClientBase
         return chat;
     }
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIRequestSettings requestSettings)
+    private CompletionsOptions CreateCompletionsOptions(string text, OpenAIRequestSettings requestSettings)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -306,6 +320,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
+            DeploymentName = this.ModelId,
             Prompts = { text.NormalizeLineEndings() },
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
@@ -335,7 +350,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    private ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -344,6 +359,7 @@ public abstract class ClientBase
 
         var options = new ChatCompletionsOptions
         {
+            DeploymentName = this.ModelId,
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
