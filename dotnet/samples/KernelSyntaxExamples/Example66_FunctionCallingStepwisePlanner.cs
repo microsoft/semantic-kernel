@@ -32,7 +32,8 @@ public static class Example66_FunctionCallingStepwisePlanner
             FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(question);
             Console.WriteLine($"Q: {question}\nA: {result.Message}");
 
-            // You can examine `result.ChatHistory` to see the planner's process for completing the request.
+            // You can uncomment the line below to see the planner's process for completing the request.
+            // Console.WriteLine($"Chat history:\n{result.ChatHistory.AsJson()}");
         }
     }
 

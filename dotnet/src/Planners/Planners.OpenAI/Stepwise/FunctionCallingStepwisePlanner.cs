@@ -86,7 +86,7 @@ public class FunctionCallingStepwisePlanner
             }
 
             // For each step, request another completion to select a function for that step
-            chatHistoryForSteps.AddUserMessage("Perform the next step of the plan, or reply with the final answer prefixed with [FINAL ANSWER]");
+            chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
             var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.AddAssistantMessage(chatResult);
 
@@ -232,10 +232,16 @@ public class FunctionCallingStepwisePlanner
     private const string RestrictedPluginName = "OpenAIFunctionsStepwisePlanner_Excluded";
 
     /// <summary>
+    /// The user message to add to the chat history for each step of the plan.
+    /// </summary>
+    private const string StepwiseUserMessage = "Perform the next step of the plan, or reply with the final answer prefixed with [FINAL ANSWER]";
+
+    /// <summary>
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
+    // Context variable keys
     private const string AvailableFunctionsKey = "available_functions";
     private const string InitialPlanKey = "initial_plan";
     private const string GoalKey = "goal";
