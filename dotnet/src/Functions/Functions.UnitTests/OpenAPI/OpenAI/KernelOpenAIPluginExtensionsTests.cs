@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Moq;
+using Newtonsoft.Json;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -43,7 +44,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         //Arrange
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
         JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
-        var actualOpenAIAuthConfig = openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
+        var actualOpenAIAuthConfig = JsonConvert.DeserializeObject<OpenAIAuthenticationConfig>(openAIDocumentContent["auth"]!.ToJsonString());
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
@@ -64,7 +65,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
             It.Is<string>(expectedPluginName => expectedPluginName == pluginName),
-            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig.Scope)),
+            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig!.Scope)),
         Times.Exactly(1));
     }
 
