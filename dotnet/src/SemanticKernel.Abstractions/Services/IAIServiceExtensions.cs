@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Extension menthods for <see cref="AIServiceAttributes"/>.
+/// Extension methods for <see cref="AIServiceAttributes"/>.
 /// </summary>
 public static class IAIServiceExtensions
 {

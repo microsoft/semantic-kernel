@@ -14,7 +14,6 @@ public class AzureOpenAIServiceAttributes : AIServiceAttributes
     /// </summary>
     public const string DeploymentNameKey = "DeploymentName";
 
-
     /// <summary>
     /// Deployment Name.
     /// </summary>
