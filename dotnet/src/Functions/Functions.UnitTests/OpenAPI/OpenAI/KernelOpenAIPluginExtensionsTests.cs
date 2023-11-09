@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -44,6 +43,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         //Arrange
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
         JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
+
         var actualOpenAIAuthConfig = JsonConvert.DeserializeObject<OpenAIAuthenticationConfig>(openAIDocumentContent["auth"]!.ToJsonString());
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
