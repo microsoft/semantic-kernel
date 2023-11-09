@@ -311,7 +311,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
 
         string? methodDescription = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-        string? outputDescription = method.ReturnType.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+        string? outputDescription = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
         var output = new OutputView(outputDescription ?? string.Empty, method.ReturnType);
 
