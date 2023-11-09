@@ -395,11 +395,11 @@ public abstract class ClientBase
             if (message.AdditionalProperties?.TryGetValue("Name", out string? name) is true)
             {
                 azureMessage.Name = name;
-            }
 
-            if (message.AdditionalProperties?.TryGetValue("Arguments", out string? arguments) is true)
-            {
-                azureMessage.FunctionCall = new FunctionCall(azureMessage.Name, arguments);
+                if (message.AdditionalProperties?.TryGetValue("Arguments", out string? arguments) is true)
+                {
+                    azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                }
             }
 
             options.Messages.Add(azureMessage);
