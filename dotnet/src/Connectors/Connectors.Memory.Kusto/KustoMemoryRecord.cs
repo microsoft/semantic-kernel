@@ -44,7 +44,7 @@ public sealed class KustoMemoryRecord
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
     /// </summary>
     /// <param name="key">Entity key.</param>
-    /// <param name="metadata">Attributes associated with memory entity.</param>
+    /// <param name="metadata">Metadata associated with memory entity.</param>
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="timestamp">Optional timestamp.</param>
     public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, ReadOnlyMemory<float> embedding, DateTimeOffset? timestamp = null)
