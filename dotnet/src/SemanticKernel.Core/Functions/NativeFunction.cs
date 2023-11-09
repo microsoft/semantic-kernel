@@ -51,9 +51,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
-    /// Function output
+    /// Function return parameter
     /// </summary>
-    public OutputView Output { get; }
+    public ReturnParameterView ReturnParameter { get; }
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
@@ -89,7 +89,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             pluginName: pluginName!,
             functionName: methodDetails.Name,
             description: methodDetails.Description,
-            output: methodDetails.Output,
+            returnParameter: methodDetails.ReturnParameter,
             logger: logger);
     }
 
@@ -101,7 +101,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="output">SK function output</param>
+    /// <param name="returnParameter">SK function return parameter</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
@@ -110,7 +110,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        OutputView? output = null,
+        ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
         ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ISKFunction)) : NullLogger.Instance;
@@ -125,7 +125,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         functionName ??= methodDetails.Name;
         parameters ??= methodDetails.Parameters;
         description ??= methodDetails.Description;
-        output ??= methodDetails.Output;
+        returnParameter ??= methodDetails.ReturnParameter;
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
@@ -133,7 +133,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             description: description,
             pluginName: pluginName!,
             functionName: functionName,
-            output: output,
+            returnParameter: returnParameter,
             logger: logger);
     }
 
@@ -239,7 +239,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public OutputView Output { get; set; }
+        public ReturnParameterView ReturnParameter { get; set; }
     }
 
     internal NativeFunction(
@@ -248,7 +248,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         string pluginName,
         string functionName,
         string description,
-        OutputView output,
+        ReturnParameterView returnParameter,
         ILogger logger)
     {
         Verify.NotNull(delegateFunction);
@@ -264,12 +264,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this.Name = functionName;
         this.PluginName = pluginName;
         this.Description = description;
-        this.Output = output;
+        this.ReturnParameter = returnParameter;
 
         this._view = new(() => new (functionName, pluginName, description)
         {
             Parameters = this.Parameters,
-            Output = this.Output
+            ReturnParameter = this.ReturnParameter
         });
     }
 
@@ -311,15 +311,15 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
 
         string? methodDescription = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-        string? outputDescription = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+        string? returnParameterDescription = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
-        var output = new OutputView(outputDescription ?? string.Empty, method.ReturnType);
+        var returnParameter = new ReturnParameterView(returnParameterDescription ?? string.Empty);
 
         var result = new MethodDetails
         {
             Name = functionName!,
             Description = methodDescription ?? string.Empty,
-            Output = output,
+            ReturnParameter = returnParameter,
         };
 
         (result.Function, result.Parameters) = GetDelegateInfo(functionName!, pluginName, target, method);

@@ -41,7 +41,7 @@ public static class SKFunction
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="output">SK function output</param>
+    /// <param name="returnParameter">SK function return parameter</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
@@ -50,9 +50,9 @@ public static class SKFunction
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        OutputView? output = null,
+        ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
-            => NativeFunction.FromNativeFunction(nativeFunction, pluginName, functionName, description, parameters, output, loggerFactory);
+            => NativeFunction.FromNativeFunction(nativeFunction, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
     /// Default implementation to identify if a function was cancelled or skipped.

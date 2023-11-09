@@ -9,7 +9,5 @@ namespace Microsoft.SemanticKernel;
 /// Class used to copy and export data about function output for planner and related scenarios.
 /// </summary>
 /// <param name="Description">Function output description</param>
-/// <param name="Type">Function output return type</param>
-public sealed record OutputView(
-    string? Description = null,
-    System.Type? Type = null);
+public sealed record ReturnParameterView(
+    string? Description = null);

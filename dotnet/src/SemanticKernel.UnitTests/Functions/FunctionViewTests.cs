@@ -48,19 +48,18 @@ public class FunctionViewTests
     }
 
     [Fact]
-    public void ItReturnsFunctionOutput()
+    public void ItReturnsFunctionReturnParameter()
     {
         // Arrange
-        var outputViewA = new OutputView("outputA", typeof(int));
+        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA");
 
         // Act
-        var funcViewA = new FunctionView("funcA", "s1", "", null, outputViewA);
+        var funcViewA = new FunctionView("funcA", "s1", "", null, ReturnParameterViewA);
 
         // Assert
         Assert.NotNull(funcViewA);
 
-        Assert.Equal("outputA", funcViewA.Output.Description);
-        Assert.Equal(typeof(int), funcViewA.Output.Type);
+        Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
     }
 
     [Fact]
@@ -111,7 +110,7 @@ public class FunctionViewTests
     {
         // Arrange
         [Description("function description")]
-        [return: Description("output description")]
+        [return: Description("return parameter description")]
         static void TestFunctionName(
             [Description("first parameter description")] int p1,
             [Description("second parameter description")] int p2)
@@ -127,7 +126,7 @@ public class FunctionViewTests
         Assert.Equal("function description", fv.Description);
         Assert.Equal("first parameter description", fv.Parameters[0].Description);
         Assert.Equal("second parameter description", fv.Parameters[1].Description);
-        Assert.Equal("output description", fv.Output.Description); //getting ""
+        Assert.Equal("return parameter description", fv.ReturnParameter.Description); //getting ""
     }
 
     [Fact]
@@ -146,8 +145,7 @@ public class FunctionViewTests
         Assert.Equal(string.Empty, fv.Description);
         Assert.Equal(string.Empty, fv.Parameters[0].Description);
         Assert.Equal(string.Empty, fv.Parameters[1].Description);
-        Assert.Equal(string.Empty, fv.Output.Description);
-        Assert.Equal(typeof(void), fv.Output.Type);
+        Assert.Equal(string.Empty, fv.ReturnParameter.Description);
     }
 
     [Fact]
