@@ -4,12 +4,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planners;
-using Microsoft.SemanticKernel.Planners.Stepwise;
 using Plugins;
 using RepoUtils;
 
 namespace KernelSyntaxExamples;
-internal class Example64_FunctionCallingStepwisePlanner
+public static class Example64_FunctionCallingStepwisePlanner
 {
     internal static string? ChatModelOverride = null; //"gpt-35-turbo-0613"
 
