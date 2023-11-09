@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <param name="PluginName">Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}</param>
 /// <param name="Description">Function description. The description is used in combination with embeddings when searching relevant functions.</param>
 /// <param name="Parameters">Optional list of function parameters</param>
-/// <param name="ReturnParameter">Function return paramete view</param>
+/// <param name="ReturnParameter">Function return parameter view</param>
 public sealed record FunctionView(
     string Name,
     string PluginName,
