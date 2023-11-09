@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json;
+using Markdig.Syntax;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Functions.Markdown.Models;
@@ -16,7 +19,7 @@ internal class SemanticFunctionModel
 
     public string TemplateFormat { get; set; } = string.Empty;
 
-    public IList<string> Templates { get; set; } = new List<string>();
+    public string Template { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
 
@@ -24,7 +27,7 @@ internal class SemanticFunctionModel
 
     public IList<InputParameterModel> InputParameters { get; set; } = new List<InputParameterModel>();
 
-    public List<Dictionary<string, object>> ModelSettings { get; set; } = new();
+    public List<AIRequestSettings> ModelSettings { get; set; } = new();
 
     public PromptTemplateConfig GetPromptTemplateConfig()
     {
@@ -45,15 +48,37 @@ internal class SemanticFunctionModel
 
         foreach (var modelSettings in this.ModelSettings)
         {
-            promptTemplateConfig.ModelSettings.Add(new AI.AIRequestSettings
+            promptTemplateConfig.ModelSettings.Add(modelSettings);
+        }
+        return promptTemplateConfig;
+    }
+
+    public static SemanticFunctionModel FromMarkdown(string text)
+    {
+        var model = new SemanticFunctionModel();
+        var document = Markdig.Markdown.Parse(text);
+        var enumerator = document.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            if (enumerator.Current is FencedCodeBlock codeBlock)
             {
-                ServiceId = modelSettings["service_id"]?.ToString(),
-                ModelId = modelSettings["model_id"]?.ToString(),
-                ExtensionData = modelSettings
-            });
+                if (codeBlock.Info == "sk.prompt")
+                {
+                    model.Template = codeBlock.Lines.ToString();
+                }
+                else if (codeBlock.Info == "sk.model_settings")
+                {
+                    var modelSettings = codeBlock.Lines.ToString();
+                    var requestSettings = JsonSerializer.Deserialize<AIRequestSettings>(modelSettings);
+                    if (requestSettings is not null)
+                    {
+                        model.ModelSettings.Add(requestSettings);
+                    }
+                }
+            }
         }
 
-        return promptTemplateConfig;
+        return model;
     }
 
     public class InputParameterModel

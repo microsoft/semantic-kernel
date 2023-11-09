@@ -2,9 +2,7 @@
 
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
-using Markdig.Syntax;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Functions.Markdown.Models;
 
 namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 
@@ -46,6 +44,7 @@ public static class KernelSemanticFunctionMarkdownExtensions
     /// 
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="name"></param>
     /// <param name="text"></param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunctionFromMarkdown(
@@ -53,33 +52,11 @@ public static class KernelSemanticFunctionMarkdownExtensions
         string name,
         string text)
     {
-        var document = Markdig.Markdown.Parse(text);
-        var enumerator = document.GetEnumerator();
-        var promptTemplate = string.Empty;
-        var promptTemplateConfig = new TemplateEngine.PromptTemplateConfig();
-        while (enumerator.MoveNext())
-        {
-            if (enumerator.Current is FencedCodeBlock codeBlock)
-            {
-                if (codeBlock.Info == "sk.prompt")
-                {
-                    promptTemplate = codeBlock.Lines.ToString();
-                }
-                else if (codeBlock.Info == "sk.model_settings")
-                {
-                    var modelSettings = codeBlock.Lines.ToString();
-                    var requestSettings = JsonSerializer.Deserialize<AIRequestSettings>(modelSettings);
-                    if (requestSettings is not null)
-                    {
-                        promptTemplateConfig.ModelSettings.Add(requestSettings);
-                    }
-                }
-            }
-        }
+        var model = SemanticFunctionModel.FromMarkdown(text);
 
         return kernel.CreateSemanticFunction(
-           promptTemplate: promptTemplate,
-           promptTemplateConfig: promptTemplateConfig,
+           promptTemplate: model.Template,
+           promptTemplateConfig: model.GetPromptTemplateConfig(),
            functionName: name);
     }
 }
