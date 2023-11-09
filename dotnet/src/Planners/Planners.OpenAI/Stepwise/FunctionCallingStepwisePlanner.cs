@@ -1,20 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
-using Microsoft.SemanticKernel.TemplateEngine;
+using System.Text.Json;
+using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using System.Text.Json;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Planners.Stepwise;
 internal class FunctionCallingStepwisePlanner
@@ -30,7 +29,6 @@ internal class FunctionCallingStepwisePlanner
         // Initialize prompt renderer
         this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
 
-        // TODO: handle config and request settings
         // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
@@ -46,13 +44,11 @@ internal class FunctionCallingStepwisePlanner
     /// Execute a plan
     /// </summary>
     /// <param name="question">The question to answer</param>
-    /// <param name="context">The context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The context with the result</returns>
+    /// <returns>Result containing the model's response message and chat history.</returns>
     /// <exception cref="SKException"></exception>
-    public async Task<string> ExecuteAsync(
+    public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
         string question,
-        //SKContext context,
         CancellationToken cancellationToken = default)
     {
         string planResponse = string.Empty;
@@ -69,7 +65,6 @@ internal class FunctionCallingStepwisePlanner
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
         string resultContent = string.Empty;
 
-        bool finalAnswer = false; // TODO
         for (int i = 0; i < this.Config.MaxIterations; i++)
         {
             // sleep for a bit to avoid rate limiting
@@ -94,8 +89,10 @@ internal class FunctionCallingStepwisePlanner
                 Match finalAnswerMatch = s_finalAnswerRegex.Match(messageContent);
                 if (finalAnswerMatch.Success)
                 {
-                    finalAnswer = true;
-                    //resultContent = messageContent;
+                    return new FunctionCallingStepwisePlannerResult(
+                        messageContent.Replace(finalAnswerMatch.Value, string.Empty),
+                        chatHistoryForSteps
+                        );
                 }
 
                 continue;
@@ -104,7 +101,7 @@ internal class FunctionCallingStepwisePlanner
             // Look up SKFunction
             if (!this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
             {
-                // TODO: what if not found? (hallucination)
+                // TODO: handle more gracefully?
                 throw new SKException($"Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found in kernel.");
             }
             chatHistoryForSteps.AddAssistantMessage($"FunctionCall: {functionResponse.PluginName}-{functionResponse.FunctionName}\nArguments: {JsonSerializer.Serialize(functionResponse.Parameters)}");
@@ -129,11 +126,10 @@ internal class FunctionCallingStepwisePlanner
             chatHistoryForSteps.AddAssistantMessage($"Result from function {functionResponse.PluginName}-{functionResponse.FunctionName}:\n{resultContent}");
         }
 
-        // AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        // context.Variables.Update(NoFinalAnswerFoundMessage);
-
-        //return context;
-        return planResponse;
+        return new FunctionCallingStepwisePlannerResult(
+            string.Empty,
+            chatHistoryForSteps
+            );
     }
 
     private async Task<IChatResult> GetCompletionWithFunctionsAsync(
@@ -230,11 +226,6 @@ internal class FunctionCallingStepwisePlanner
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-    /// <summary>
-    /// The message to include when no final answer is found
-    /// </summary>
-    private const string NoFinalAnswerFoundMessage = "Result not found, review 'stepsTaken' to see what happened.";
 
     private const string AvailableFunctionsKey = "available_functions";
     private const string InitialPlanKey = "initial_plan";
