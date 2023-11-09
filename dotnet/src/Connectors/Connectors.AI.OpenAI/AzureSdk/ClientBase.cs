@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Prompt;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -263,6 +264,16 @@ public abstract class ClientBase
         return new OpenAIChatHistory(instructions);
     }
 
+    /// <summary>
+    /// Create a new chat instance based on chat history.
+    /// </summary>
+    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
+    /// <returns>Chat object</returns>
+    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
+    {
+        return new OpenAIChatHistory(chatHistory);
+    }
+
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
         AIRequestSettings? requestSettings,
@@ -292,6 +303,12 @@ public abstract class ClientBase
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        {
+            return InternalCreateNewChat(chatHistory);
+        }
+
         var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         return chat;
