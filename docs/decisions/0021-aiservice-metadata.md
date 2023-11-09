@@ -68,7 +68,16 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 * Option #2
   * Extend `IAIService` to include the following method:
-    * `T? GetAttributes<T>() where T : AIServiceAttributes;` which returns an instance of `AIServiceAttributes`. It will be the responsibility of each `IAIService` implementation to define it's own servic eattributes class and populate this with the appropriate values.
+    * `T? GetAttributes<T>() where T : AIServiceAttributes;` which returns an instance of `AIServiceAttributes`. It will be the responsibility of each `IAIService` implementation to define it's own service attributes class and populate this with the appropriate values.
+  * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
+  * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
+* Option #3 
+* Option #2
+  * Extend `IAIService` to include the following properties:
+    * `public IReadOnlyDictionary<string, object> Attributes => this.InternalAttributes;` which returns a read only dictionary. It will be the responsibility of each `IAIService` implementation to define it's own service attributes class and populate this with the appropriate values.
+    * `ModelId`
+    * `Endpoint`
+    * `ApiVersion`
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
@@ -119,6 +128,27 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
 
         throw new SKException("Unable to find AI service for GPT 3.x.");
     }
+}
+```
+
+## Option 3
+```csharp
+public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+{
+    var services = serviceProvider.GetServices<T>();
+    foreach (var service in services)
+    {
+        var serviceModelId = service.GetModelId();
+        var serviceOrganization = service.GetAttribute(OpenAIServiceAttributes.OrganizationKey);
+        var serviceDeploymentName = service.GetAttribute(AzureOpenAIServiceAttributes.DeploymentNameKey);
+        if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Selected model: {serviceModelId}");
+            return (service, new OpenAIRequestSettings());
+        }
+    }
+
+    throw new SKException("Unable to find AI service for GPT 3.x.");
 }
 ```
 

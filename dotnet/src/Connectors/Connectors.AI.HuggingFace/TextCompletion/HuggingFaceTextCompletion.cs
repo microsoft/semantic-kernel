@@ -25,7 +25,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
-    private readonly HuggingFaceServiceAttributes _attributes;
+    private readonly AIServiceAttributes _attributes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.

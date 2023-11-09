@@ -164,7 +164,9 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
         var services = serviceProvider.GetServices<T>();
         foreach (var service in services)
         {
-            var serviceModelId = service.GetAttributes<AIServiceAttributes>()?.ModelId;
+            var serviceModelId = service.GetModelId();
+            var serviceOrganization = service.GetAttribute(OpenAIServiceAttributes.OrganizationKey);
+            var serviceDeploymentName = service.GetAttribute(AzureOpenAIServiceAttributes.DeploymentNameKey);
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine($"Selected model: {serviceModelId}");
