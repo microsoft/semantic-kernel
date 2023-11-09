@@ -5,16 +5,20 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
-internal class FunctionCallingStepwisePlannerResult
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
+
+public class FunctionCallingStepwisePlannerResult
 {
     public string Message { get; } = string.Empty;
 
-    public ChatHistory History { get; }
+    public ChatHistory ChatHistory { get; }
 
     public FunctionCallingStepwisePlannerResult(string message, ChatHistory history)
     {
         this.Message = message;
-        this.History = history;
+        this.ChatHistory = history;
     }
 }

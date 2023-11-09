@@ -15,8 +15,12 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
-internal class FunctionCallingStepwisePlanner
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
+
+public class FunctionCallingStepwisePlanner
 {
     public FunctionCallingStepwisePlanner(
         IKernel kernel,
