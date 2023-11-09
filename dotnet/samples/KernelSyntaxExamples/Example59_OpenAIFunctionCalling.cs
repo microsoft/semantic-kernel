@@ -75,7 +75,7 @@ public static class Example59_OpenAIFunctionCalling
         await PrintChatResultAsync(chatResult);
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
             // If the function returned by OpenAI is an SKFunction registered with the kernel,
