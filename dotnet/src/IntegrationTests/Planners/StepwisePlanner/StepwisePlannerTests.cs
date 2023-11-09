@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -125,7 +125,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportOpenAIPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
 
@@ -153,7 +153,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useChatModel)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
@@ -168,7 +168,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
