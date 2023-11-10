@@ -313,7 +313,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
         }
 
-        string? methodDescription = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+        string? functionDescription = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
         string? returnParameterDescription = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
         var returnParameter = new ReturnParameterView(returnParameterDescription ?? string.Empty);
@@ -321,7 +321,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         var result = new MethodDetails
         {
             Name = functionName!,
-            Description = methodDescription ?? string.Empty,
+            Description = functionDescription ?? string.Empty,
             ReturnParameter = returnParameter,
         };
 
