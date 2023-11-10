@@ -201,7 +201,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
-                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
+                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                CreateRestApiOperationResponses(operationItem.Responses)
             );
 
             operations.Add(operation);
@@ -285,6 +286,73 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
+    }
+
+    private static RestApiOperationResponse? CreateRestApiOperationResponses(OpenApiResponses responses)
+    {
+        if (responses == null)
+        {
+            return null;
+        }
+
+        // TODO: support default/no response code
+        // TODO: support other response codes
+        var response = responses.FirstOrDefault(r => r.Key == "200");
+
+        if (response.Value == null)
+        {
+            return null;
+        }
+
+        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
+        if (mediaType == null)
+        {
+            throw new SKException($"Neither of the media types of {response.Key} response is supported.");
+        }
+
+        var mediaTypeMetadata = response.Value.Content[mediaType];
+
+        // Parse schema
+        var schema = ParseSchema(mediaTypeMetadata.Schema);
+
+        return new RestApiOperationResponse(mediaType, response.Value.Description ?? mediaTypeMetadata.Schema?.Description ?? string.Empty, schema);
+    }
+
+    private static RestApiOperationResponseSchema? ParseSchema(OpenApiSchema schema)
+    {
+        if (schema == null)
+        {
+            return null;
+        }
+
+        var apiResponseSchema = new RestApiOperationResponseSchema
+        {
+            Title = schema.Title,
+            Type = schema.Type
+            // Add other properties as needed
+        };
+
+        if (schema.Type == "object" && schema.Properties != null)
+        {
+            foreach (var property in schema.Properties)
+            {
+                // Recursively parse nested schemas
+                var parsedSchema = ParseSchema(property.Value);
+                if (parsedSchema != null)
+                {
+                    apiResponseSchema.Properties.Add(property.Key, parsedSchema);
+                }
+            }
+        }
+
+        // TODO Handle other schema types (arrays, primitives, etc.) as needed
+
+        if (schema.Type == "array")
+        {
+            apiResponseSchema.Items = ParseSchema(schema.Items);
+        }
+
+        return apiResponseSchema;
     }
 
     /// <summary>

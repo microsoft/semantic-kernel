@@ -271,6 +271,7 @@ public static class KernelOpenApiPluginExtensions
         var function = SKFunction.Create(
             method: ExecuteAsync,
             parameters: parameters,
+            // output: new OutputView(operation.ResponseType),
             description: operation.Description,
             pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),

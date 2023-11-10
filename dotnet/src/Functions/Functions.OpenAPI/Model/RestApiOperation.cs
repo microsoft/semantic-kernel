@@ -60,6 +60,11 @@ public sealed class RestApiOperation
     public IList<RestApiOperationParameter> Parameters { get; }
 
     /// <summary>
+    /// The list of possible operation responses.
+    /// </summary>
+    public IList<RestApiOperationResponse> Responses { get; } = new List<RestApiOperationResponse>();
+
+    /// <summary>
     /// The operation payload.
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
@@ -75,6 +80,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
+    /// <param name="response">The operation response.</param>
     public RestApiOperation(
         string id,
         Uri? serverUrl,
@@ -83,7 +89,8 @@ public sealed class RestApiOperation
         string description,
         IList<RestApiOperationParameter> parameters,
         IDictionary<string, string> headers,
-        RestApiOperationPayload? payload = null)
+        RestApiOperationPayload? payload = null,
+        RestApiOperationResponse? response = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -93,6 +100,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
+        if (response != null) { this.Responses.Add(response); } // TODO should this remain a collection or not
     }
 
     /// <summary>
