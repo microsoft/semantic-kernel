@@ -158,7 +158,11 @@ public class SequentialPlanParser {
                                     parentNodeName,
                                     skillFunctionName);
                             if (allowMissingFunctions) {
-                                plan.addSteps(new Plan(childNode.getTextContent(), () -> skills, aiServiceSupplier));
+                                plan.addSteps(
+                                        new Plan(
+                                                childNode.getTextContent(),
+                                                () -> skills,
+                                                aiServiceSupplier));
                             } else {
                                 String errorMessage =
                                         String.format(
