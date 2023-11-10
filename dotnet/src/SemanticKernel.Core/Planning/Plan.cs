@@ -79,7 +79,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonPropertyName("model_settings")]
-    public List<AIRequestSettings>? ModelSettings { get; private set; }
+    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
 
     #endregion ISKFunction implementation
 
