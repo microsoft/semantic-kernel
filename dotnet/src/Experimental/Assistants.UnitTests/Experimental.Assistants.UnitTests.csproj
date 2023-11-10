@@ -10,6 +10,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Assistants\Assistants.csproj" />
+    <ProjectReference Include="..\Assistants\Experimental.Assistants.csproj" />
   </ItemGroup>
 </Project>
