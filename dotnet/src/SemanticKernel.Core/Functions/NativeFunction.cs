@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -44,6 +45,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public string Description { get; }
+
+    /// <inheritdoc/>
+    public ReadOnlyCollection<AIRequestSettings> ModelSettings => Array.Empty<AIRequestSettings>().ToList<AIRequestSettings>().AsReadOnly();
 
     /// <summary>
     /// List of function parameters

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -30,6 +31,9 @@ internal sealed class InstrumentedSKFunction : ISKFunction
 
     /// <inheritdoc/>
     public string Description => this._function.Description;
+
+    /// <inheritdoc/>
+    public ReadOnlyCollection<AIRequestSettings> ModelSettings => this._function.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
