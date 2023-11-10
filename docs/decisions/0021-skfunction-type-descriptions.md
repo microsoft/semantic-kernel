@@ -63,7 +63,7 @@ One way that we could provide the missing type information is to use Json Schema
             "schema": {
               "type": "object",
               "properties": { "date": { "type": "string" } },
-              "description": "The forecasted temperature in Fahrenheit."
+              "description": "The date."
             }
           }
         }
