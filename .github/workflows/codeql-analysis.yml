@@ -6,7 +6,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: ["main", "experimental*", "feature*"]
+    branches: ["main", "experimental*", "feature*", "*-development"]
   schedule:
     - cron: "17 11 * * 2"
 
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["csharp", "python"]
+        language: ["csharp", "python", "java"]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both

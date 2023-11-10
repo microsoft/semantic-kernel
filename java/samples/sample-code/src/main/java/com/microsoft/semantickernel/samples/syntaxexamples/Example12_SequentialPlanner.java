@@ -3,8 +3,8 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
@@ -14,10 +14,9 @@ import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlannerR
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Set;
 
 /**
  * Demonstrates the <a href=
@@ -183,16 +182,16 @@ public class Example12_SequentialPlanner {
     private static Kernel initializeKernel() throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.chatCompletion()
+                .withDefaultAIService(SKBuilders.textCompletion()
                         .withOpenAIClient(client)
-                        .withModelId("gpt-35-turbo")
+                        .withModelId("gpt-35-turbo-instruct")
                         .build())
                 .withMemory(SKBuilders
                         .semanticTextMemory()
                         .withEmbeddingGenerator(
                                 SKBuilders.textEmbeddingGeneration()
                                         .withOpenAIClient(client)
-                                        .withModelId("gpt-35-turbo")
+                                        .withModelId("text-embedding-ada-002")
                                         .build()
                         )
                         .withStorage(new VolatileMemoryStore())
@@ -215,7 +214,8 @@ public class Example12_SequentialPlanner {
                 Set.of(),
                 Set.of(),
                 Set.of(),
-                maxTokens
+                maxTokens,
+                false
         ), null);
     }
 }

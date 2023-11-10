@@ -7,15 +7,18 @@ import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */
 public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
+
     private static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
     private static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
     private static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
+    private static final String AZURE_OPEN_AI_CREDENTIALS_TYPE = "credentialtype";
 
     @Nullable private final String key;
 
     @Nullable private final String endpoint;
 
     @Nullable private final String deploymentName;
+    @Nullable private final AzureCredentialType credentialType;
     private final String settingsPrefix;
 
     public AzureOpenAISettings(Map<String, String> settings) {
@@ -27,6 +30,12 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
         key = settings.get(settingsPrefix + "." + KEY_SUFFIX);
         endpoint = settings.get(settingsPrefix + "." + AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         deploymentName = settings.get(settingsPrefix + "." + AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX);
+
+        String credType =
+                settings.getOrDefault(settingsPrefix + "." + AZURE_OPEN_AI_CREDENTIALS_TYPE, "key")
+                        .toUpperCase();
+
+        credentialType = AzureCredentialType.valueOf(credType);
     }
 
     /**
@@ -65,6 +74,10 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
         return key;
     }
 
+    public AzureCredentialType getAzureOpenAiCredentialsType() {
+        return credentialType;
+    }
+
     @Override
     public boolean assertIsValid() throws ConfigurationException {
         if (key == null) {
@@ -79,5 +92,32 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
         }
 
         return true;
+    }
+
+    /**
+     * Get the DEFAULT_SETTINGS_PREFIX value
+     *
+     * @return the DEFAULT_SETTINGS_PREFIX value
+     */
+    public static String getDefaultSettingsPrefix() {
+        return DEFAULT_SETTINGS_PREFIX;
+    }
+
+    /**
+     * Get the AZURE_OPEN_AI_ENDPOINT_SUFFIX value
+     *
+     * @return the AZURE_OPEN_AI_ENDPOINT_SUFFIX value
+     */
+    public static String getAzureOpenAiEndpointSuffix() {
+        return AZURE_OPEN_AI_ENDPOINT_SUFFIX;
+    }
+
+    /**
+     * Get the AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX value
+     *
+     * @return the AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX value
+     */
+    public static String getAzureOpenAiDeploymentNameSuffix() {
+        return AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX;
     }
 }

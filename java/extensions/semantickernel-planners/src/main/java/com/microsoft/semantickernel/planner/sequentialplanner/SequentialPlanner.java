@@ -123,13 +123,12 @@ public class SequentialPlanner {
 
                                 LOGGER.debug("Plan result: " + planResultString);
 
-                                Plan plan =
-                                        SequentialPlanParser.toPlanFromXml(
-                                                planResultString,
-                                                goal,
-                                                context.getSkills(),
-                                                kernel::getService);
-                                return plan;
+                                return SequentialPlanParser.toPlanFromXml(
+                                        planResultString,
+                                        goal,
+                                        context.getSkills(),
+                                        kernel::getService,
+                                        config.getAllowMissingFunctions());
                             });
         } catch (Exception e) {
             throw new PlanningException(

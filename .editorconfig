@@ -369,10 +369,10 @@ csharp_style_expression_bodied_local_functions = false:silent
 [*.java]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
+indent_size = 4
 indent_style = space
 insert_final_newline = false
-tab_width = 2
+tab_width = 4
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_smart_tabs = false

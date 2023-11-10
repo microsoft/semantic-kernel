@@ -7,6 +7,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.ClientOptions;
 import com.microsoft.semantickernel.SemanticKernelHttpSettings;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -79,7 +80,7 @@ public class OpenAIClientProvider {
         return new OpenAIClientProvider(settings, clientType);
     }
 
-    private static Map<String, String> getSettings(@Nullable List<File> propertyFileLocations)
+    static Map<String, String> getSettings(@Nullable List<File> propertyFileLocations)
             throws ConfigurationException {
         Map<String, String> settings;
 
@@ -235,19 +236,27 @@ public class OpenAIClientProvider {
     private OpenAIAsyncClient buildAzureOpenAIClient() throws ConfigurationException {
         AzureOpenAISettings settings = new AzureOpenAISettings(configuredSettings);
 
-        try {
-            settings.assertIsValid();
-        } catch (ConfigurationException e) {
-            LOGGER.warn("Could not instantiate Azure OpenAI client");
-            LOGGER.warn(e.getMessage());
-            throw e;
+        OpenAIClientBuilder builder = new OpenAIClientBuilder().endpoint(settings.getEndpoint());
+
+        TokenCredential tokenCredential = null;
+
+        if (settings.getAzureOpenAiCredentialsType() != null) {
+            tokenCredential = settings.getAzureOpenAiCredentialsType().getTokenCredential();
         }
 
-        OpenAIClientBuilder builder =
-                new OpenAIClientBuilder()
-                        .endpoint(settings.getEndpoint())
-                        .clientOptions(clientOptions)
-                        .credential(new AzureKeyCredential(settings.getKey()));
+        if (tokenCredential != null) {
+            builder.credential(tokenCredential);
+        } else {
+            try {
+                settings.assertIsValid();
+            } catch (ConfigurationException e) {
+                LOGGER.warn("Could not instantiate Azure OpenAI client");
+                LOGGER.warn(e.getMessage());
+                throw e;
+            }
+
+            builder.credential(new AzureKeyCredential(settings.getKey()));
+        }
 
         return builder.buildAsyncClient();
     }

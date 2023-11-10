@@ -13,7 +13,6 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-import java.awt.*;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;

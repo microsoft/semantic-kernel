@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvid
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import java.io.IOException;
 import reactor.core.publisher.Mono;
 

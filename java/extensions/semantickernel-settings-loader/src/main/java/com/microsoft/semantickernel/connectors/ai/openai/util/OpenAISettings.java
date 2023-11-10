@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 public class OpenAISettings extends AbstractOpenAIClientSettings {
-    public static final String OPEN_AI_ORGANIZATION_SUFFIX = "organizationid";
+    private static final String OPEN_AI_ORGANIZATION_SUFFIX = "organizationid";
     private static final String DEFAULT_SETTINGS_PREFIX = "client.openai";
 
     @Nullable private final String key;
@@ -47,5 +47,23 @@ public class OpenAISettings extends AbstractOpenAIClientSettings {
                     settingsPrefix + "." + KEY_SUFFIX);
         }
         return true;
+    }
+
+    /**
+     * Get the OPEN_AI_ORGANIZATION_SUFFIX value
+     *
+     * @return the OPEN_AI_ORGANIZATION_SUFFIX value
+     */
+    public static String getOpenAiOrganizationSuffix() {
+        return OPEN_AI_ORGANIZATION_SUFFIX;
+    }
+
+    /**
+     * Get the DEFAULT_SETTINGS_PREFIX value
+     *
+     * @return the DEFAULT_SETTINGS_PREFIX value
+     */
+    public static String getDefaultSettingsPrefix() {
+        return DEFAULT_SETTINGS_PREFIX;
     }
 }

@@ -15,9 +15,8 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
+import reactor.core.publisher.Mono;
 
 /**
  * Getting started

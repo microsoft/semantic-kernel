@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
@@ -25,7 +25,7 @@ public class Example28_ActionPlanner {
 
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textCompletion()
-                        .withModelId("text-davinci-002")
+                        .withModelId("text-davinci-003")
                         .withOpenAIClient(client)
                         .build())
                 .build();

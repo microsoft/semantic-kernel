@@ -5,7 +5,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.10-alpha-SNAPSHOT</version>
+    <version>0.2.12-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -107,6 +107,11 @@
                 <version>1.0.0-beta.5</version>
             </dependency>
             <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-identity</artifactId>
+                <version>1.10.4</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>2.0.7</version>
@@ -141,7 +146,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
-                <version>1.13.8</version>
+                <version>1.13.10</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -203,6 +208,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.9-alpha</tag>
+        <tag>java-0.2.11-alpha</tag>
     </scm>
 </project>

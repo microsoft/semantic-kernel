@@ -3,16 +3,15 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import reactor.core.publisher.Mono;
-
 import java.time.Duration;
+import reactor.core.publisher.Mono;
 
 /**
  * Demonstrates how the Kernel uses functions loaded from skills.
