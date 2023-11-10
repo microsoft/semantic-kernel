@@ -196,7 +196,8 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var sut = new KernelBuilder().Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -241,7 +242,8 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = new KernelBuilder().Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
 

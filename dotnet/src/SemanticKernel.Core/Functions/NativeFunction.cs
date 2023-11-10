@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -102,25 +103,77 @@ internal sealed class NativeFunction : ISKFunction
     {
         try
         {
-            if (this._logger.IsEnabled(LogLevel.Trace))
+            // Invoke pre hook, and stop if skipping requested.
+            this.CallFunctionInvoking(context);
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
             {
-                this._logger.LogTrace("Function {Plugin}.{Name} invoked.", this.PluginName, this.Name);
+                if (this._logger.IsEnabled(LogLevel.Trace))
+                {
+                    this._logger.LogTrace("Function {Plugin}.{Name} canceled or skipped prior to invocation.", this.PluginName, this.Name);
+                }
+
+                return new FunctionResult(this.Name, this.PluginName, context);
             }
 
-            FunctionResult result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Function {Plugin}.{Name} invoking.", this.PluginName, this.Name);
+            }
+
+            // Invoke the function.
+            var result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+
+            // Invoke the post hook.
+            result = this.CallFunctionInvoked(result, context);
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Function {Plugin}.{Name} invocation completed: {Result}", this.PluginName, this.Name, result.GetValue<object>()?.ToString());
+                this._logger.LogTrace("Function {Plugin}.{Name} invocation {Completion}: {Result}",
+                    this.PluginName, this.Name,
+                    SKFunction.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                    result.Value);
             }
 
             return result;
         }
         catch (Exception e)
         {
-            this._logger.LogError(e, "Function {Plugin}.{Name} execution failed: {Error}", this.PluginName, this.Name, e.Message);
+            if (this._logger.IsEnabled(LogLevel.Error))
+            {
+                this._logger.LogError(e, "Function {Plugin}.{Name} execution failed: {Error}", this.PluginName, this.Name, e.Message);
+            }
             throw;
         }
+    }
+
+    private void CallFunctionInvoking(SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is EventHandler<FunctionInvokingEventArgs> handler)
+        {
+            eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+            handler.Invoke(this, eventWrapper.EventArgs);
+        }
+    }
+
+    private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
+        if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
+        {
+            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+            handler.Invoke(this, eventWrapper.EventArgs);
+
+            // Apply any changes from the event handlers to final result.
+            result = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+            {
+                // Updates the eventArgs metadata during invoked handler execution
+                // will reflect in the result metadata
+                Metadata = eventWrapper.EventArgs.Metadata
+            };
+        }
+
+        return result;
     }
 
     /// <summary>

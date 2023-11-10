@@ -173,11 +173,15 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
+
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
+        )).Callback<
+            SKContext,
+            object,
+            CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
@@ -219,9 +223,14 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+            mockFunction.Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+                .Returns<
+                    SKContext,
+                    AIRequestSettings,
+                    CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(name, pluginName, context));
