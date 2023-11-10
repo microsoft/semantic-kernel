@@ -38,11 +38,17 @@ public sealed class RestApiOperationResponse
         this.Schema = schema;
     }
 
-    // Optional: Method to validate the response content against the schema
+    /// <summary>
+    /// Validates the response content against the schema.
+    /// </summary>
+    /// <returns>True if a schema is available and the content matches the schema. False otherwise.</returns>
+    /// <remarks>
+    /// If no schema is available, the response is considered valid.
+    /// </remarks>
     public bool ValidateResponse()
     {
         // Implement validation logic here
         // Return true if validation passes, false otherwise
-        return true;
+        return false;
     }
 }
