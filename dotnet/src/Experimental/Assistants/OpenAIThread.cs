@@ -9,37 +9,48 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// Represents an OpenAI assitant chat thread
+/// Represents an OpenAI assistant chat thread
 /// </summary>
 public class OpenAIThread : IThread
 {
     private const string BaseUrl = "https://api.openai.com/v1/threads";
 
+    /// <inheritdoc/>
     public string Id { get; set; }
 
+    /// <inheritdoc/>
     public string Name { get { return this.Id; } }
 
+    /// <inheritdoc/>
     public string PluginName { get; }
 
+    /// <inheritdoc/>
     public string Description => throw new NotImplementedException();
 
+    /// <inheritdoc/>
     public AIRequestSettings? RequestSettings => throw new NotImplementedException();
 
+    /// <inheritdoc/>
     public string SkillName => throw new NotImplementedException();
 
+    /// <inheritdoc/>
     public bool IsSemantic => throw new NotImplementedException();
 
     private readonly Assistant _primaryAssistant;
 
-    private string _apiKey;
+    private readonly string _apiKey;
 
     private readonly HttpClient _client = new();
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
     public OpenAIThread(string id, string apiKey, Assistant primaryAssistant)
     {
         this.PluginName = primaryAssistant.Name;
@@ -48,11 +59,13 @@ public class OpenAIThread : IThread
         this._primaryAssistant = primaryAssistant;
     }
 
+    /// <inheritdoc/>
     public async Task AddUserMessageAsync(string message)
     {
         await this.AddMessageAsync(new ModelMessage(message)).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task AddMessageAsync(ModelMessage message)
     {
         var requestData = new
@@ -61,7 +74,7 @@ public class OpenAIThread : IThread
             content = message.Content.ToString()
         };
 
-        var url = $"{BaseUrl}/{Id}/messages";
+        var url = $"{BaseUrl}/{this.Id}/messages";
         using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
 
         httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -72,9 +85,10 @@ public class OpenAIThread : IThread
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task<ModelMessage> RetrieveMessageAsync(string messageId)
     {
-        var url = $"{BaseUrl}/{Id}/messages/"+messageId;
+        var url = $"{BaseUrl}/{this.Id}/messages/"+messageId;
         using var httpRequestMessage = HttpRequest.CreateGetRequest(url);
 
         httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -119,7 +133,7 @@ public class OpenAIThread : IThread
             while (threadRunModel.Status == "queued" || threadRunModel.Status == "in_progress" || threadRunModel.Status == "requires_action")
             {
                 // Add a delay
-                await Task.Delay(300).ConfigureAwait(false);
+                await Task.Delay(300, cancellationToken).ConfigureAwait(false);
 
                 // If the run requires action, then we need to run the tool calls
                 if (threadRunModel.Status == "requires_action")
@@ -128,12 +142,12 @@ public class OpenAIThread : IThread
                     threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
 
                     // TODO: make this more efficient through parallelization
-                    foreach(ThreadRunStepModel threadRunStep in threadRunSteps.Data)
+                    foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
                     {
                         // Retrieve all of the steps that require action
                         if (threadRunStep.Status == "in_progress" && threadRunStep.StepDetails.Type == "tool_calls")
                         {
-                            foreach(var toolCall in threadRunStep.StepDetails.ToolCalls)
+                            foreach (var toolCall in threadRunStep.StepDetails.ToolCalls)
                             {
                                 // Run function
                                 var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
@@ -164,7 +178,7 @@ public class OpenAIThread : IThread
 
             // Check step details
             var messages = new List<ModelMessage>();
-            foreach(ThreadRunStepModel threadRunStep in threadRunSteps.Data)
+            foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
             {
                 if (threadRunStep.StepDetails.Type == "message_creation")
                 {
@@ -247,9 +261,11 @@ public class OpenAIThread : IThread
                 }
             }
 
-            tools.Add(new {
+            tools.Add(new
+            {
                 type = "function",
-                function = new {
+                function = new
+                {
                     name = OpenAIFunction.Name,
                     description = OpenAIFunction.Description,
                     parameters = new
@@ -333,36 +349,43 @@ public class OpenAIThread : IThread
         };
     }
 
+    /// <inheritdoc/>
     public Task<Orchestration.FunctionResult> InvokeAsync(Orchestration.SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public Task<List<ModelMessage>> ListMessagesAsync()
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public FunctionView Describe()
     {
         throw new NotImplementedException();

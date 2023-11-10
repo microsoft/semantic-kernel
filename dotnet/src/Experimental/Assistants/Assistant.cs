@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
@@ -277,7 +278,7 @@ public class Assistant : IPlugin
         using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody)!;
-        return new OpenAIThread(threadModel.Id, _apiKey, this);
+        return new OpenAIThread(threadModel.Id, this._apiKey, this);
     }
 
     // This is the function that is provided as part of the IPlugin interface

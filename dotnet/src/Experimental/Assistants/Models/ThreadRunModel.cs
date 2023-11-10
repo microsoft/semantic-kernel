@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 public class ThreadRunModel
 {

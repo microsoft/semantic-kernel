@@ -1,4 +1,4 @@
-﻿namespace Microsoft.SemanticKernel.Experimental.Assistants;
+﻿namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 public class AssistantKernelModel
 {
