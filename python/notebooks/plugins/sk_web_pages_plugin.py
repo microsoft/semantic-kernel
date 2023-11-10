@@ -22,7 +22,7 @@ class WebPagesPlugin:
         """
         if not input:
             raise ValueError("url cannot be `None` or empty")
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers={'User-Agent': 'Mozilla/5.0'}) as session:
             async with session.get(input, raise_for_status=True) as response:
                 html = await response.text()
                 soup = BeautifulSoup(html, features="html.parser")
