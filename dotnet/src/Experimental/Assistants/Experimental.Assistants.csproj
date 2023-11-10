@@ -15,4 +15,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants.UnitTests" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
 </Project>
