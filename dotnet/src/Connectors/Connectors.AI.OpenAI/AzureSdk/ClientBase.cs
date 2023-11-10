@@ -142,21 +142,50 @@ public abstract class ClientBase
 
         var cachedChoices = new Dictionary<int, List<Choice>>();
         var results = new List<TextStreamingResult>();
+        bool streamingStarted = false;
 
-        await foreach (Completions completions in response)
+        _ = Task.Run(async () =>
         {
-            foreach (var choice in completions.Choices)
+            await foreach (Completions completions in response)
             {
-                if (!cachedChoices.ContainsKey(choice.Index))
+                // first yield;
+                foreach (var choice in completions.Choices)
                 {
-                    cachedChoices.Add(choice.Index, new());
+                    if (!cachedChoices.ContainsKey(choice.Index))
+                    {
+                        cachedChoices.Add(choice.Index, new());
+                        cachedChoices[choice.Index].Add(choice);
+                        var result = new TextStreamingResult(completions, cachedChoices[choice.Index]);
+                        results.Add(result);
+                    }
+                    else
+                    {
+                        cachedChoices[choice.Index].Add(choice);
+                    }
 
-                    var result = new TextStreamingResult(completions, cachedChoices[choice.Index]);
-                    results.Add(result);
-                    yield return result;
+                    if (!streamingStarted)
+                    {
+                        streamingStarted = true;
+                    }
                 }
-                cachedChoices[choice.Index].Add(choice);
             }
+
+            // Updates all results to flag end of stream
+            foreach (var result in results)
+            {
+                result.EndOfStream();
+            }
+        }, cancellationToken);
+
+        // Wait for streaming to start
+        while (!streamingStarted)
+        {
+            await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+        }
+
+        foreach (var result in results)
+        {
+            yield return result;
         }
     }
 

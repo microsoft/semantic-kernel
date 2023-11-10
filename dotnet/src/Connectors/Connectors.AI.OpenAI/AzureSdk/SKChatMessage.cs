@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -11,6 +12,16 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// </summary>
 public class SKChatMessage : ChatMessageBase
 {
+    /// <summary>
+    /// Key for the function call arguments in the additional properties dictionary
+    /// </summary>
+    public const string FunctionCallArgumentsKey = "FunctionCall.Arguments";
+
+    /// <summary>
+    /// Key for the function call name in the additional properties dictionary
+    /// </summary>
+    public const string FunctionCallNameKey = "FunctionCall.Name";
+
     private readonly ChatMessage? _message;
 
     /// <summary>
@@ -18,7 +29,13 @@ public class SKChatMessage : ChatMessageBase
     /// </summary>
     /// <param name="message">OpenAI SDK chat message representation</param>
     public SKChatMessage(Azure.AI.OpenAI.ChatMessage message)
-        : base(new AuthorRole(message.Role.ToString()), message.Content)
+        : base(new AuthorRole(message.Role.ToString()), message.Content,
+            new Dictionary<string, string>() {
+                { nameof(message.Name), message.Name },
+                { FunctionCallArgumentsKey, message.FunctionCall.Arguments },
+                { FunctionCallNameKey, message.FunctionCall.Name }
+            }
+        )
     {
         this._message = message;
     }
