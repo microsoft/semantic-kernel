@@ -51,14 +51,11 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        if (!string.IsNullOrEmpty(organization))
-        {
-            this._attributes.Add(OrganizationAttribute, organization!);
-        }
+        this.AddAttribute(OrganizationKey, organization!);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)

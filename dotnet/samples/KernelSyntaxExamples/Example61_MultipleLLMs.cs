@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -43,6 +42,7 @@ public static class Example61_MultipleLLMs
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
+                modelId: azureModelId,
                 apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
@@ -50,8 +50,8 @@ public static class Example61_MultipleLLMs
                 apiKey: openAIApiKey)
             .Build();
 
-        await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
-        await RunByServiceIdAsync(kernel, "OpenAIChat");
+        //await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
+        //await RunByServiceIdAsync(kernel, "OpenAIChat");
         await RunByModelIdAsync(kernel, azureModelId);
         await RunByModelIdAsync(kernel, openAIModelId);
     }
@@ -79,7 +79,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokeSemanticFunctionAsync(
            prompt,
-           requestSettings: new OpenAIRequestSettings()
+           requestSettings: new AIRequestSettings()
            {
                ModelId = modelId
            });

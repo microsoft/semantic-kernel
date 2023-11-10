@@ -218,6 +218,6 @@ public class ServiceRegistryTests
     {
         public string? ModelId { get; }
 
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
     }
 }

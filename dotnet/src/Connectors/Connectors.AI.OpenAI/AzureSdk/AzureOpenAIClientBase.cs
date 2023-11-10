@@ -96,6 +96,8 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = openAIClient;
+
+        this.AddAttribute(DeploymentNameKey, deploymentName);
     }
 
     /// <summary>

@@ -223,14 +223,14 @@ public class OrderedIAIServiceConfigurationProviderTests
     #region private
     private sealed class AIService : IAIService
     {
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
         public string? ModelId { get; }
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
         public string? ModelId { get; }
 

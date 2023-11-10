@@ -99,8 +99,8 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint);
-        this._attributes.Add(IAIServiceExtensions.ApiVersionKey, apiVersion);
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
     /// <inheritdoc/>

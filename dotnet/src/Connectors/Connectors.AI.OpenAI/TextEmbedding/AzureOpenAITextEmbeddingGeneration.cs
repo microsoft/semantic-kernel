@@ -9,6 +9,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -34,7 +35,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.StoreAttributes(deploymentName, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -54,7 +55,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.StoreAttributes(deploymentName, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>

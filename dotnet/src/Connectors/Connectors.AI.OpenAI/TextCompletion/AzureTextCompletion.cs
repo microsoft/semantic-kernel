@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -36,7 +37,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.StoreAttributes(deploymentName, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.StoreAttributes(deploymentName, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -72,7 +73,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.StoreAttributes(deploymentName, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
