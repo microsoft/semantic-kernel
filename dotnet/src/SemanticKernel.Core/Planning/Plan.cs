@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -80,7 +79,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonPropertyName("model_settings")]
-    public ReadOnlyCollection<AIRequestSettings> ModelSettings => this.Function is not null ? this.Function.ModelSettings : Array.Empty<AIRequestSettings>().ToList<AIRequestSettings>().AsReadOnly();
+    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
 
     #endregion ISKFunction implementation
 

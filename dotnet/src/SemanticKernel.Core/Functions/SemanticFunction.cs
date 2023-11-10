@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -42,7 +41,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Description => this._promptTemplateConfig.Description;
 
     /// <inheritdoc/>
-    public ReadOnlyCollection<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
+    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
 
     /// <summary>
     /// List of function parameters

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +37,7 @@ public interface ISKFunction
     /// <summary>
     /// Model request settings.
     /// </summary>
-    public ReadOnlyCollection<AIRequestSettings> ModelSettings { get; }
+    public IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.

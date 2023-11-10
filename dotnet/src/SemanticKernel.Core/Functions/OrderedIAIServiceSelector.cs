@@ -19,7 +19,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
     {
         var serviceProvider = context.ServiceProvider;
         var modelSettings = skfunction.ModelSettings;
-        if (modelSettings is null || modelSettings.Count == 0)
+        if (modelSettings is null || !modelSettings.Any())
         {
             var service = serviceProvider.GetService<T>(null);
             if (service is not null)
