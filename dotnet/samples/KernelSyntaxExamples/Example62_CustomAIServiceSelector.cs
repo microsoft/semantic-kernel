@@ -72,6 +72,7 @@ public static class Example62_CustomAIServiceSelector
             var services = context.ServiceProvider.GetServices<T>();
             foreach (var service in services)
             {
+                // Find the first service that has a model id that starts with "gpt-3"
                 var serviceModelId = service.GetModelId();
                 var endpoint = service.GetEndpoint();
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
