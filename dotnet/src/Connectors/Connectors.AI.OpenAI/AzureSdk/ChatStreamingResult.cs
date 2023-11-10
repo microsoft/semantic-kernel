@@ -89,7 +89,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                 yield return new SKChatMessage(role, message.ContentUpdate);
             }
 
-            // This part may change to expose the function name and arguments as new properties of a message.
+            // This part may change to expose the function name and arguments as new properties of a message (not mix with the actual content)
             // FunctionName and FunctionArgumentsUpdate are considered as valid messages
             if (message.FunctionName.Length > 0)
             {
