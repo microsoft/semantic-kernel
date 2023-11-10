@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
@@ -94,7 +97,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -127,7 +130,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -160,7 +163,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -193,7 +196,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -226,7 +229,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -260,7 +263,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -299,7 +302,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -402,28 +405,28 @@ public sealed class PlanTests
 
         var childFunction1 = new Mock<ISKFunction>();
         childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 1 output!" + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child1", "pluginName", returnContext, returnContext.Result)));
         childFunction1.Setup(x => x.Describe()).Returns(() => new FunctionView("child1", "pluginName"));
 
         var childFunction2 = new Mock<ISKFunction>();
         childFunction2.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 2 is happy about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child2", "pluginName", returnContext, returnContext.Result)));
         childFunction2.Setup(x => x.Describe()).Returns(() => new FunctionView("child2", "pluginName"));
 
         var childFunction3 = new Mock<ISKFunction>();
         childFunction3.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 3 heard " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("child3", "pluginName", returnContext, returnContext.Result)));
         childFunction3.Setup(x => x.Describe()).Returns(() => new FunctionView("child3", "pluginName"));
 
         var nodeFunction1 = new Mock<ISKFunction>();
         nodeFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(c.Variables.Input + " - this just happened."))
             .Returns(() => Task.FromResult(new FunctionResult("node1", "pluginName", returnContext, returnContext.Result)));
         nodeFunction1.Setup(x => x.Describe()).Returns(() => new FunctionView("node1", "pluginName"));
@@ -483,7 +486,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -519,7 +522,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -603,7 +606,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -681,14 +684,14 @@ public sealed class PlanTests
 
         var outlineMock = new Mock<ISKFunction>();
         outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("outline", "pluginName", returnContext, returnContext.Result)));
         outlineMock.Setup(x => x.Describe()).Returns(() => new FunctionView("outline", "pluginName"));
 
         var elementAtIndexMock = new Mock<ISKFunction>();
         elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
             })
@@ -697,7 +700,7 @@ public sealed class PlanTests
 
         var novelChapterMock = new Mock<ISKFunction>();
         novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 returnContext.Variables.Update(
                     $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
@@ -803,7 +806,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         var functionMock = new Mock<ISKFunction>();
         functionMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a payload '{c.Variables["payload"]}' for " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
         functionMock.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -826,6 +829,429 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         Assert.Equal(expected, result.Context.Result);
         Assert.Equal(expected, result.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ConPlanStepsTriggerKernelEventsAsync()
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("WritePoem")]
+        static string Function2() => "Poem";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("SendEmail")]
+        static string Function3() => "Sent Email";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        var plan = new Plan(goal);
+        plan.AddSteps(functions.ToArray());
+
+        var expectedInvocations = 3;
+        var sut = new KernelBuilder().Build();
+
+        // 1 - Plan - Write poem and send email goal
+        // 2 - Plan - Step 1 - WritePoem
+        // 3 - Plan - Step 2 - WritePoem
+
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvocations, invokingCalls);
+        Assert.Equal(expectedInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, functions[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, functions[1].Name);
+
+        // Expected invoked sequence
+        Assert.Equal(invokedListFunctions[0].Name, functions[0].Name);
+        Assert.Equal(invokedListFunctions[1].Name, functions[1].Name);
+        Assert.Equal(invokedListFunctions[2].Name, plan.Name);
+    }
+
+    [Fact]
+    public async Task PlanIsCancelledWhenInvokingHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 0;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.PluginName == "Plan")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Aborting at the plan level, will render no result
+        Assert.Null(result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheStepWhenInvokingHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 0;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Aborting at any step of a plan, will invalidate the full plan result
+        Assert.Null(result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheStepWhenInvokedHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 1;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Cancel();
+            }
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+
+        // Aborting in invoked of the first step will abort the result and
+        // the plan will render no result as no step succeeded previously.
+        Assert.Null(result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtFinalStepWhenInvokedHandlerTriggersCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 2;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+
+            if (e.FunctionView.Name == "SendEmail")
+            {
+                e.Cancel();
+            }
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+        Assert.Equal(invokedListFunctions[1].Name, plan.Steps[1].Name);
+
+        // Aborting last step in invoked will stop the plan result
+        // and return the previous succeeded step result value.
+        Assert.Equal("WritePoem", result.Value);
+    }
+
+    [Fact(Skip = "Skipping is currently not supported for plans")]
+    public async Task PlapSkippingFirstStepShouldGiveSendStepResultAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 2;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "WritePoem")
+            {
+                e.Skip();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Skipped the first step (will not trigger invoked for it)
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[1].Name);
+        Assert.Equal("SendEmail", result.Value);
+    }
+
+    [Fact]
+    public async Task PlanStopsAtTheMiddleStepWhenHandlerTriggersInvokingCancelAsync()
+    {
+        // Arrange
+        this.PrepareKernelAndPlan(out var sut, out var plan);
+
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 1;
+        var invokingCalls = 0;
+        var invokedCalls = 0;
+        var invokingListFunctions = new List<FunctionView>();
+        var invokedListFunctions = new List<FunctionView>();
+
+        void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokingListFunctions.Add(e.FunctionView);
+            invokingCalls++;
+
+            if (e.FunctionView.Name == "SendEmail")
+            {
+                e.Cancel();
+            }
+        }
+
+        void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
+        {
+            invokedListFunctions.Add(e.FunctionView);
+            invokedCalls++;
+        }
+
+        sut.FunctionInvoking += FunctionInvoking;
+        sut.FunctionInvoked += FunctionInvoked;
+
+        // Act
+        var result = await sut.RunAsync("PlanInput", plan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
+
+        // Expected invoking sequence
+        Assert.Equal(invokingListFunctions[0].Name, plan.Name);
+        Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
+
+        // Expected invoked sequence
+        Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
+
+        // Cancelling the second step, don't block the triggering "invoked" for the first step.
+        Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+
+        // Aborting one any step of a plan, will render the value of the last executed step
+        Assert.Equal("WritePoem", result.Value);
+    }
+
+    private void PrepareKernelAndPlan(out IKernel kernel, out Plan plan)
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("WritePoem")]
+        static string Function2() => "WritePoem";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("SendEmail")]
+        static string Function3() => "SendEmail";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        plan = new Plan(goal);
+        plan.AddSteps(functions.ToArray());
+
+        kernel = new KernelBuilder().Build();
+
+        // 1 - Plan - Write poem and send email goal
+        // 2 - Plan - Step 1 - WritePoem
+        // 3 - Plan - Step 2 - WritePoem
+    }
+
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
     }
 
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernelMock(IFunctionCollection? functions = null)

@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -39,9 +41,6 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
 
-    /// <inheritdoc/>
-    public IPromptTemplateEngine PromptTemplateEngine { get; }
-
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
@@ -66,25 +65,44 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory">Semantic text Memory</param>
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="serviceSelector">AI service selector</param>
+    /// <param name="serviceSelector">AI Service selector</param>
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
-        IPromptTemplateEngine promptTemplateEngine,
+        IPromptTemplateEngine? promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null
-        )
+        IAIServiceSelector? serviceSelector = null) : this(functionCollection, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
+    {
+        this.PromptTemplateEngine = promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(loggerFactory);
+    }
+
+    /// <summary>
+    /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
+    /// </summary>
+    /// <param name="functionCollection">function collection</param>
+    /// <param name="aiServiceProvider">AI Service Provider</param>
+    /// <param name="memory">Semantic text Memory</param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceSelector">AI Service selector</param>
+    public Kernel(
+        IFunctionCollection functionCollection,
+        IAIServiceProvider aiServiceProvider,
+        ISemanticTextMemory memory,
+        IDelegatingHandlerFactory httpHandlerFactory,
+        ILoggerFactory? loggerFactory,
+        IAIServiceSelector? serviceSelector = null)
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
         this.LoggerFactory = loggerFactory;
         this.HttpHandlerFactory = httpHandlerFactory;
-        this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
-        this._promptTemplateEngine = promptTemplateEngine;
         this._functionCollection = functionCollection;
         this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
@@ -120,42 +138,23 @@ repeat:
             {
                 var functionDetails = skFunction.Describe();
 
-                var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
-                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                if (this.IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     break;
                 }
 
-                if (functionInvokingArgs?.IsSkipRequested ?? false)
+                if (this.IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     continue;
                 }
 
-                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                // Only non-stop results are considered as Kernel results
+                allFunctionResults.Add(functionResult!);
 
-                context = functionResult.Context;
-
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
-
-                if (functionInvokedArgs is not null)
+                if (this.IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    // All changes to the SKContext by invoked handlers may reflect in the original function result
-                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
-                }
-
-                allFunctionResults.Add(functionResult);
-
-                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-                    break;
-                }
-
-                if (functionInvokedArgs?.IsRepeatRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     goto repeat;
                 }
             }
@@ -168,7 +167,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
+        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
     /// <inheritdoc/>
@@ -184,6 +183,8 @@ repeat:
             this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
+            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
+            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,
             culture);
     }
@@ -216,52 +217,77 @@ repeat:
 
     private readonly IFunctionCollection _functionCollection;
     private ISemanticTextMemory _memory;
-    private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Execute the OnFunctionInvoking event handlers.
+    /// Checks if the handler requested to skip the function execution.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext before function invocation</param>
-    /// <returns>FunctionInvokingEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokingEventArgs? OnFunctionInvoking(FunctionView functionView, SKContext context)
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (this.FunctionInvoking is not null)
+        if (SKFunction.IsInvokingSkipRequested(context))
         {
-            var args = new FunctionInvokingEventArgs(functionView, context);
-            this.FunctionInvoking.Invoke(this, args);
-
-            return args;
+            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     /// <summary>
-    /// Execute the OnFunctionInvoked event handlers.
+    /// Checks if the handler requested to cancel the function execution.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="result">Function result after invocation</param>
-    /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, FunctionResult result)
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (this.FunctionInvoked is not null)
+        if (SKFunction.IsInvokingCancelRequested(context))
         {
-            var args = new FunctionInvokedEventArgs(functionView, result);
-            this.FunctionInvoked.Invoke(this, args);
-
-            return args;
+            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
         }
 
-        return null;
+        if (SKFunction.IsInvokedCancelRequested(context))
+        {
+            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the handler requested to repeat the function execution.
+    /// </summary>
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsRepeatRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
+    {
+        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
+        {
+            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+        return false;
     }
 
     #endregion
 
     #region Obsolete ===============================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public IPromptTemplateEngine? PromptTemplateEngine { get; }
 
     /// <inheritdoc/>
     [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
@@ -300,4 +326,81 @@ repeat:
 #pragma warning restore CS1591
 
     #endregion
+
+    #region Private ====================================================================================
+
+    private static bool s_promptTemplateEngineInitialized = false;
+    private static Type? s_promptTemplateEngineType = null;
+
+    /// <summary>
+    /// Create a default prompt template engine.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
+    /// </summary>
+    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
+    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    {
+        if (!s_promptTemplateEngineInitialized)
+        {
+            s_promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            s_promptTemplateEngineInitialized = true;
+        }
+
+        if (s_promptTemplateEngineType is not null)
+        {
+            var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+#pragma warning restore CS8601
+            }
+        }
+
+        return new NullPromptTemplateEngine();
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    private Type? GetPromptTemplateEngineType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.Basic");
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals("BasicPromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            return null;
+        }
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
+///
+/// This is a temporary solution to avoid breaking existing clients.
+/// </summary>
+[Obsolete("This is used for backward compatibility. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
+{
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(templateText);
+    }
 }

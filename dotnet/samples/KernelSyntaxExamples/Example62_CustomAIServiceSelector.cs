@@ -28,7 +28,7 @@ public static class Example62_CustomAIServiceSelector
 
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -43,7 +43,7 @@ public static class Example62_CustomAIServiceSelector
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -70,12 +70,11 @@ public static class Example62_CustomAIServiceSelector
         Console.WriteLine($"======== {prompt} ========");
 
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
-        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
 
         var skfunction = kernel.RegisterSemanticFunction(
             "MyFunction",
-            promptTemplateConfig,
-            promptTemplate);
+            prompt,
+            promptTemplateConfig);
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());
