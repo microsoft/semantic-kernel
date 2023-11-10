@@ -69,7 +69,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     }
 
     /// <summary>
-    /// Returns a string containing the manual for all available in a JSON Schema format.
+    /// Returns a string containing the manual for all available functions in a JSON Schema format.
     /// </summary>
     /// <param name="functions">The function provider.</param>
     /// <param name="config">The planner config.</param>

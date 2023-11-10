@@ -141,7 +141,8 @@ internal static class RestApiOperationExtensions
             expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
-            description: operation.Payload?.Description ?? "REST API request body.");
+            description: operation.Payload?.Description ?? "REST API request body.",
+            schema: operation.Payload?.Schema);
     }
 
     /// <summary>

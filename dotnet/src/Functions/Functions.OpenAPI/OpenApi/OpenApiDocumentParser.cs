@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -18,6 +19,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -271,14 +273,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             throw new SKException($"Neither of the media types of {operationId} is supported.");
         }
 
-        // We're just picking the first supported media type?
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        var schemaBuilder = new StringBuilder();
-        mediaTypeMetadata.Schema?.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, JsonDocument.Parse(schemaBuilder.ToString()));
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.GetSchemaDocument());
     }
 
     /// <summary>
@@ -310,15 +309,13 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var propertySchema = propertyPair.Value;
 
-            var schemaBuilder = new StringBuilder();
-            propertySchema.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
             var property = new RestApiOperationPayloadProperty(
                 propertyName,
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
-                JsonDocument.Parse(schemaBuilder.ToString()));
+                propertySchema.GetSchemaDocument());
 
             result.Add(property);
         }

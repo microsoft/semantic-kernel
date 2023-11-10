@@ -2,8 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
+using Json.More;
 using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Planners.Model;
 
 #pragma warning disable IDE0130
@@ -36,6 +37,12 @@ internal static class FunctionViewExtensions
 {inputs}";
     }
 
+    /// <summary>
+    /// Creates a <see cref="JsonSchemaFunctionManual"/> for a function.
+    /// </summary>
+    /// <param name="function">The function.</param>
+    /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
+    /// <returns></returns>
     internal static JsonSchemaFunctionManual ToJsonSchemaManual(this FunctionView function, bool includeOutputSchema = true)
     {
         var functionManual = new JsonSchemaFunctionManual
@@ -59,6 +66,27 @@ internal static class FunctionViewExtensions
                     requiredProperties.Add(parameter.Name);
                 }
             }
+        }
+
+        if (includeOutputSchema)
+        {
+            var functionResponse = new JsonSchemaFunctionResponse();
+            functionResponse.Description = "Success";
+
+            if (function.ReturnParameter?.NativeType != null)
+            {
+                functionResponse.Content.JsonSchemaWrapper.Schema = new JsonSchemaBuilder()
+                .FromType(function.ReturnParameter.NativeType)
+                .Description(function.ReturnParameter.Description ?? string.Empty)
+                .Build()
+                .ToJsonDocument();
+            }
+            else if(function.ReturnParameter?.Schema != null)
+            {
+                functionResponse.Content.JsonSchemaWrapper.Schema = function.ReturnParameter.Schema;
+            }
+
+            functionManual.FunctionResponses.Add("200", functionResponse);
         }
 
         return functionManual;
