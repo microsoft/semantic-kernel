@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Functions;
@@ -15,9 +15,11 @@ namespace Microsoft.SemanticKernel.Functions;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        if (modelSettings is null || modelSettings.Count == 0)
+        var serviceProvider = context.ServiceProvider;
+        var modelSettings = skfunction.ModelSettings;
+        if (modelSettings is null || !modelSettings.Any())
         {
             var service = serviceProvider.GetService<T>(null);
             if (service is not null)
