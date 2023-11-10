@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -9,7 +8,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -42,94 +40,46 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        KernelBuilder kernelBuilder = new KernelBuilder()
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
+                modelId: azureModelId,
                 apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
-            .WithAIServiceSelector(new ByModelIdAIServiceSelector(openAIModelId))
+            // Use the custom AI service selector to select the GPT 3.x model
+            .WithAIServiceSelector(new Gpt3xAIServiceSelector())
             .Build();
 
-        var modelSettings = new List<AIRequestSettings>
-        {
-            new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", ModelId = "" },
-            new OpenAIRequestSettings() { ServiceId = "OpenAIChat", ModelId = openAIModelId }
-        };
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
-
-        await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
-    }
-
-    public static async Task RunWithGpt3xAsync(KernelBuilder kernelBuilder, string prompt)
-    {
-        Console.WriteLine($"======== Without GPT3x: {prompt} ========");
-
-        var kernel = kernelBuilder.WithAIServiceSelector(new Gpt3xAIServiceSelector()).Build();
-
-        var promptTemplateConfig = new PromptTemplateConfig();
-
-        var skfunction = kernel.RegisterSemanticFunction(
-            "MyFunction",
-            prompt,
-            promptTemplateConfig);
-
-        var result = await kernel.RunAsync(skfunction);
+        var prompt = "Hello AI, what can you do for me?";
+        var result = await kernel.InvokeSemanticFunctionAsync(prompt);
         Console.WriteLine(result.GetValue<string>());
     }
-}
 
-public class ByModelIdAIServiceSelector : IAIServiceSelector
-{
-    private readonly string _openAIModelId;
-
-    public ByModelIdAIServiceSelector(string openAIModelId)
+    /// <summary>
+    /// Custom AI service selector that selects the GPT 3.x model
+    /// </summary>
+    private class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        this._openAIModelId = openAIModelId;
-    }
-
-    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
-    {
-        foreach (var model in skfunction.ModelSettings)
+        public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
         {
-            if (model is OpenAIRequestSettings openAIModel)
+            var services = context.ServiceProvider.GetServices<T>();
+            foreach (var service in services)
             {
-                if (openAIModel.ModelId == this._openAIModelId)
+                var serviceModelId = service.GetModelId();
+                if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
                 {
-                    var service = context.ServiceProvider.GetService<T>(openAIModel.ServiceId);
-                    if (service is not null)
-                    {
-                        Console.WriteLine($"======== Selected service: {openAIModel.ServiceId} {openAIModel.ModelId} ========");
-                        return (service, model);
-                    }
+                    Console.WriteLine($"Selected model: {serviceModelId}");
+                    return (service, new OpenAIRequestSettings());
                 }
             }
+
+            throw new SKException("Unable to find AI service for GPT 3.x.");
         }
-
-        throw new SKException("Unable to find AI service to handled request.");
-    }
-}
-
-public class Gpt3xAIServiceSelector : IAIServiceSelector
-{
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
-    {
-        var services = serviceProvider.GetServices<T>();
-        foreach (var service in services)
-        {
-            var serviceModelId = service.GetModelId();
-            if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
-            {
-                Console.WriteLine($"Selected model: {serviceModelId}");
-                return (service, new OpenAIRequestSettings());
-            }
-        }
-
-        throw new SKException("Unable to find AI service for GPT 3.x.");
     }
 }

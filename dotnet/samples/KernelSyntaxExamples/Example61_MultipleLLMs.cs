@@ -50,8 +50,8 @@ public static class Example61_MultipleLLMs
                 apiKey: openAIApiKey)
             .Build();
 
-        //await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
-        //await RunByServiceIdAsync(kernel, "OpenAIChat");
+        await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
+        await RunByServiceIdAsync(kernel, "OpenAIChat");
         await RunByModelIdAsync(kernel, azureModelId);
         await RunByModelIdAsync(kernel, openAIModelId);
     }

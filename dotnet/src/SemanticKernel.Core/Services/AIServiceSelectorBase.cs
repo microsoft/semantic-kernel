@@ -2,9 +2,9 @@
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
-using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -16,12 +16,12 @@ namespace Microsoft.SemanticKernel;
 public abstract class AIServiceSelectorBase : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        var services = serviceProvider.GetServices<T>();
+        var services = context.ServiceProvider.GetServices<T>();
         foreach (var service in services)
         {
-            var result = this.SelectAIService<T>(renderedPrompt, service, modelSettings);
+            var result = this.SelectAIService<T>(context, skfunction, service);
             if (result is not null)
             {
                 return ((T?, AIRequestSettings?))result;
@@ -35,9 +35,9 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     /// Return the AI service and requesting settings if the specified provider is the valid choice.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="renderedPrompt"></param>
-    /// <param name="service"></param>
-    /// <param name="modelSettings"></param>
+    /// <param name="context"><see cref="SKContext"/></param>
+    /// <param name="skfunction"><see cref="ISKFunction"/></param>
+    /// <param name="service">Instance of <see cref="IAIService"/></param>
     /// <returns></returns>
-    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(string renderedPrompt, T service, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService;
+    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, ISKFunction skfunction, T service) where T : IAIService;
 }
