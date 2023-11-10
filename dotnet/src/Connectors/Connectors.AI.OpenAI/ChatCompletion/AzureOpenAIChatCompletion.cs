@@ -20,8 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
     /// </summary>
@@ -39,8 +37,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <summary>
@@ -60,8 +57,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <summary>
@@ -77,15 +73,11 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

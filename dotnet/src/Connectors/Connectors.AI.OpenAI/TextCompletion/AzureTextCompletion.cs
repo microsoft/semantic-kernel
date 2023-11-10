@@ -19,8 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
     /// </summary>
@@ -38,8 +36,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <summary>
@@ -59,8 +56,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <summary>
@@ -76,15 +72,11 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.ModelId = modelId;
-        this._attributes.Add(DeploymentNameAttribute, deploymentName);
+        this.StoreAttributes(deploymentName, modelId);
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(

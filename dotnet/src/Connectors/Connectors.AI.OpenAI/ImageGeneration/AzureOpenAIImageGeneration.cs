@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -20,8 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// Generation Image Operation path
     /// </summary>
@@ -71,7 +70,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this._attributes.Add(EndpointAttribute, endpoint);
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -100,15 +99,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this._attributes.Add(EndpointAttribute, endpoint);
-        this._attributes.Add(ApiVersionAttribute, apiVersion);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint);
+        this._attributes.Add(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

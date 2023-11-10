@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -16,8 +17,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// </summary>
 public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbeddingGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
@@ -34,14 +33,11 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.

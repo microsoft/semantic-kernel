@@ -18,9 +18,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public abstract class AzureOpenAIClientBase : ClientBase
 {
     /// <summary>
-    /// Attribute name used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string DeploymentNameAttribute = "DeploymentName";
+    public const string DeploymentNameKey = "DeploymentName";
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client

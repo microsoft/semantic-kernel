@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -17,8 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
     /// </summary>
@@ -35,19 +34,16 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.ModelId = modelId;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, modelId);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
-            this._attributes.Add(OrganizationAttribute, organization!);
+            this._attributes.Add(OrganizationKey, organization!);
         }
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(

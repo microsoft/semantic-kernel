@@ -54,6 +54,11 @@ public abstract class ClientBase
     private protected ILogger Logger { get; set; }
 
     /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
+
+    /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
     private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
@@ -299,6 +304,14 @@ public abstract class ClientBase
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
+        }
+    }
+
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
         }
     }
 

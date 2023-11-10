@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: {proposed}
-date: {2023-10-25}
+date: {2023-11-10}
 deciders: SergeyMenshykh, markwallace, rbarreto, dmytrostruk
 consulted: 
 informed: 
@@ -15,7 +15,6 @@ Some examples of why they need this information:
 
 1. As an SK developer I want to write a `IAIServiceSelector` which allows me to select the OpenAI service to used based on the configured model id so that I can select the optimum (could eb cheapest) model to use based on the prompt I am executing.
 2. As an SK developer I want to write a pre-invocation hook which will compute the token size of a prompt before the prompt is sent to the LLM, so that I can determine the optimum `IAIService` to use. The library I am using to compute the token size of the prompt requires the model id.
-
 
 Current implementation of `IAIService` is empty.
 
@@ -66,11 +65,27 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
     * `IReadOnlyDictionary<string, object> Attributes { get; }` which returns the attributes as a readonly dictionary. It will be the responsibility of each `IAIService` implementation to populate this with the appropriate metadata.
   * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
   * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
+* Option #2
+  * Extend `IAIService` to include the following method:
+    * `T? GetAttributes<T>() where T : AIServiceAttributes;` which returns an instance of `AIServiceAttributes`. It will be the responsibility of each `IAIService` implementation to define it's own service attributes class and populate this with the appropriate values.
+  * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
+  * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
+* Option #3
+* Option #2
+  * Extend `IAIService` to include the following properties:
+    * `public IReadOnlyDictionary<string, object> Attributes => this.InternalAttributes;` which returns a read only dictionary. It will be the responsibility of each `IAIService` implementation to define it's own service attributes class and populate this with the appropriate values.
+    * `ModelId`
+    * `Endpoint`
+    * `ApiVersion`
+  * Extend `INamedServiceProvider` to include this method `ICollection<T> GetServices<T>() where T : TService;`
+  * Extend `OpenAIKernelBuilderExtensions` so that `WithAzureXXX` methods will include a `modelId` property if a specific model can be targeted.
 
-These methods would be used as follows:
+These options would be used as follows:
 
 As an SK developer I want to write a custom `IAIServiceSelector` which will select an AI service based on the model id because I want to restrict which LLM is used.
 In the sample below the service selector implementation looks for the first service that is a GPT3 model.
+
+### Option 1
 
 ``` csharp
 public class Gpt3xAIServiceSelector : IAIServiceSelector
@@ -92,7 +107,51 @@ public class Gpt3xAIServiceSelector : IAIServiceSelector
 }
 ```
 
+## Option 2
+
+``` csharp
+public class Gpt3xAIServiceSelector : IAIServiceSelector
+{
+    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            var serviceModelId = service.GetAttributes<AIServiceAttributes>()?.ModelId;
+            if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Selected model: {serviceModelId}");
+                return (service, new OpenAIRequestSettings());
+            }
+        }
+
+        throw new SKException("Unable to find AI service for GPT 3.x.");
+    }
+}
+```
+
+## Option 3
+
+```csharp
+public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+{
+    var services = serviceProvider.GetServices<T>();
+    foreach (var service in services)
+    {
+        var serviceModelId = service.GetModelId();
+        var serviceOrganization = service.GetAttribute(OpenAIServiceAttributes.OrganizationKey);
+        var serviceDeploymentName = service.GetAttribute(AzureOpenAIServiceAttributes.DeploymentNameKey);
+        if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Selected model: {serviceModelId}");
+            return (service, new OpenAIRequestSettings());
+        }
+    }
+
+    throw new SKException("Unable to find AI service for GPT 3.x.");
+}
+```
+
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+Chosen option: Option 1, because it's a simple implementation and allows easy iteration over all possible attributes.

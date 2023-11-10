@@ -18,8 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// </summary>
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    private readonly Dictionary<string, object> _attributes = new();
-
     /// <summary>
     /// OpenAI REST API endpoint
     /// </summary>
@@ -60,10 +58,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     }
 
     /// <inheritdoc/>
-    public string? ModelId { get; private set; }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)

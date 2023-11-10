@@ -19,12 +19,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <summary>
     /// Attribute name used to store the orhanization in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string OrganizationAttribute = "Organization";
-
-    /// <summary>
-    /// Attribute name used to store the endpoint in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public const string EndpointAttribute = "Endpoint";
+    public const string OrganizationKey = "Organization";
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client
