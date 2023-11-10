@@ -14,54 +14,6 @@ public class RestApiOperationExtensionsTests
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
-    [InlineData("GET")]
-    public void ItShouldAddServerUrlParameterWithDefaultValueFromOperation(string method)
-    {
-        //Arrange
-        var payload = CreateTestJsonPayload();
-
-        var operation = CreateTestOperation(method, payload, new Uri("https://fake-random-test-host"));
-
-        //Act
-        var parameters = operation.GetParameters();
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrl = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrl);
-        Assert.Equal("string", serverUrl.Type);
-        Assert.False(serverUrl.IsRequired);
-        Assert.Equal("https://fake-random-test-host/", serverUrl.DefaultValue);
-    }
-
-    [Theory]
-    [InlineData("PUT")]
-    [InlineData("POST")]
-    [InlineData("GET")]
-    public void ItShouldAddServerUrlParameterWithDefaultValueFromOverrideParameter(string method)
-    {
-        //Arrange
-        var payload = CreateTestJsonPayload();
-
-        var operation = CreateTestOperation(method, payload);
-
-        //Act
-        var parameters = operation.GetParameters(serverUrlOverride: new Uri("https://fake-random-test-host"));
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrl = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrl);
-        Assert.Equal("string", serverUrl.Type);
-        Assert.False(serverUrl.IsRequired);
-        Assert.Equal("https://fake-random-test-host/", serverUrl.DefaultValue);
-    }
-
-    [Theory]
-    [InlineData("PUT")]
-    [InlineData("POST")]
     public void ItShouldAddPayloadAndContentTypeParametersByDefault(string method)
     {
         //Arrange
@@ -191,7 +143,7 @@ public class RestApiOperationExtensionsTests
         //Assert
         Assert.NotNull(parameters);
 
-        Assert.Equal(6, parameters.Count); //5(props from payload) + 1('server-url' property)
+        Assert.Equal(5, parameters.Count); //5 props from payload
 
         var name = parameters.FirstOrDefault(p => p.Name == "name");
         Assert.NotNull(name);
@@ -240,7 +192,7 @@ public class RestApiOperationExtensionsTests
         //Assert
         Assert.NotNull(parameters);
 
-        Assert.Equal(6, parameters.Count); //5(props from payload) + 1('server-url' property)
+        Assert.Equal(5, parameters.Count); //5 props from payload
 
         var name = parameters.FirstOrDefault(p => p.Name == "name");
         Assert.NotNull(name);
@@ -285,23 +237,6 @@ public class RestApiOperationExtensionsTests
         Assert.Throws<SKException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
     }
 
-    [Fact]
-    public void ItShouldSetAlternativeNameToParametersForGetOperation()
-    {
-        //Arrange
-        var operation = CreateTestOperation("GET");
-
-        //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrlProp = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrlProp);
-        Assert.Equal("server_url", serverUrlProp.AlternativeName);
-    }
-
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -320,10 +255,6 @@ public class RestApiOperationExtensionsTests
 
         //Assert
         Assert.NotNull(parameters);
-
-        var serverUrlProp = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrlProp);
-        Assert.Equal("server_url", serverUrlProp.AlternativeName);
 
         var placeProp = parameters.FirstOrDefault(p => p.Name == "place");
         Assert.NotNull(placeProp);
