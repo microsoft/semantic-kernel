@@ -124,7 +124,7 @@ public sealed record FunctionView(
 }
 ```
 
-The function parameters are described by the collection of `ParameterView` objects which contain a semantic description, and provide a place to add more type information. There is however no existing place to put the type information and semantic description of the function output. To fix this we will add a new property called `OutputView` to the `FunctionView`:
+The function parameters are described by the collection of `ParameterView` objects which contain a semantic description, and provide a place to add more type information. There is however no existing place to put the type information and semantic description of the function output. To fix this we will add a new property called `ReturnParameterView` to the `FunctionView`:
 
 ```csharp
 public sealed record FunctionView(
@@ -132,16 +132,29 @@ public sealed record FunctionView(
     string PluginName,
     string Description = "",
     IReadOnlyList<ParameterView>? Parameters = null,
-    OutputView? Output)
+    ReturnParameterView? ReturnParameter = null)
 {
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters { get; init; } = Parameters ?? Array.Empty<ParameterView>();
+
+    /// <summary>
+    /// Function output
+    /// </summary>
+    public ReturnParameterView ReturnParameter { get; init; } = ReturnParameter ?? new ReturnParameterView();
 }
+
+/// <summary>
+/// Class used to copy and export data about function output for planner and related scenarios.
+/// </summary>
+/// <param name="Description">Function output description</param>
+public sealed record ReturnParameterView(
+    string Description = "",
+    ParameterViewType Type);
 ```
 
-`ParameterView` objects currently contain a `ParameterViewType` property which contains some information about the type of the parameter but is limited to JSON types ([string, number, boolean, null, object, array]) and has no way of describing the structure of an object. To add the extra type information that is needed, we could consider adding a native `System.Type` property. This would work well for local functions as the parameter Types would always be accessible when importing the SKFunction. For remote plugins however, the native type for objects will not be known and may not even exist so the `System.Type` doesn't help. For this case we need to extract the type information from the OpenAPI specification and store it in a property that allows for previously unknown schemas. Options for this property type include `JsonSchema` from an OSS library such as JsonSchema.Net or NJsonSchema, `JsonDocument` from System.Text.Json, or a `string` containing the Json serialized schema.
+`ParameterView` objects currently contain a `ParameterViewType` property which contains some information about the type of the parameter but is limited to JSON types ([string, number, boolean, null, object, array]) and has no way of describing the structure of an object. To add the extra type information that is needed, we can add a native `System.Type` property. This would work well for local functions as the parameter Type would always be accessible when importing the SKFunction. It will also be required for hydrating native types from LLM responses. For remote plugins however, the native type for objects will not be known and may not even exist so the `System.Type` doesn't help. For this case we need to extract the type information from the OpenAPI specification and store it in a property that allows for previously unknown schemas. Options for this property type include `JsonSchema` from an OSS library such as JsonSchema.Net or NJsonSchema, `JsonDocument` from System.Text.Json, or a `string` containing the Json serialized schema.
 
 | Type                      | Pros                                                         | Cons                                                       |
 | ------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
@@ -149,3 +162,28 @@ public sealed record FunctionView(
 | NJsonShema.JsonSchema     | Very popular, frequent updates, long term project            | Built on top of Json.Net (Newtonsoft)                      |
 | JsonDocument              | Native C# type, fast and flexible                            | Not a Json Schema, but a Json DOM container for the schema |
 | String                    | Native C# type                                               | Not a Json Schema or Json DOM, very poor type hinting      |
+
+To avoid taking a dependency on 3rd party libraries in the core abstractions project, we will use a `JsonDocument` type to hold the Json Schemas that are created when loading remote plugins. The libraries needed to create or extract these schemas can be included in the packages that require them, namely Functions.OpenAPI, Planners.Core, and Connectors.AI.OpenAI. The `NativeType` property will be populated when loading native functions and will be used to generate a Json Schema when needed, as well as for hydrating native types from LLM responses in planners and sematic functions.
+
+```csharp
+/// <summary>
+/// Represents the type for the parameter view.
+/// </summary>
+public readonly record ParameterViewType(string Name, Type? nativeType, JsonDocument? schema)
+{
+    /// <summary>
+    /// Gets the name of the parameter view type.
+    /// </summary>
+    public string Name { get; init; } = !string.IsNullOrEmpty(Name) ? Name : throw new ArgumentNullException(nameof(Name));
+
+    /// <summary>
+    /// The native type. Null if this parameter did not come from a native function.
+    /// </summary>
+    public Type? NativeType { get; init; } = null;
+
+    /// <summary>
+    /// The JSON Schema of the type. May be null for native function parameters.
+    /// </summary>
+    public JsonDocument? Schema { get; init; } = null;
+}
+```

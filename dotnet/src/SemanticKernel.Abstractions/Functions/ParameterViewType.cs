@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json;
 
 #pragma warning disable CA1720 // Identifier contains type name
 
@@ -43,6 +44,16 @@ public readonly record struct ParameterViewType(string Name)
     /// Gets the name of the parameter view type.
     /// </summary>
     public string Name { get; init; } = !string.IsNullOrEmpty(Name) ? Name : throw new ArgumentNullException(nameof(Name));
+
+    /// <summary>
+    /// The native type. Null if this parameter did not come from a native function.
+    /// </summary>
+    public Type? NativeType { get; init; } = null;
+
+    /// <summary>
+    /// The JSON Schema of the type. May be null for native function parameters.
+    /// </summary>
+    public JsonDocument? Schema { get; init; } = null;
 
     /// <summary>
     /// Returns a string representation of the parameter view type.
