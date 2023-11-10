@@ -25,6 +25,7 @@ public static class SKFunction
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
@@ -33,8 +34,9 @@ public static class SKFunction
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
+        ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        Create(method.Method, method.Target, pluginName, functionName, description, parameters, loggerFactory);
+        Create(method.Method, method.Target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -46,6 +48,7 @@ public static class SKFunction
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
@@ -55,8 +58,9 @@ public static class SKFunction
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
+        ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        NativeFunction.Create(method, target, pluginName, functionName, description, parameters, loggerFactory);
+        NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
@@ -94,7 +98,7 @@ public static class SKFunction
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null) =>
-        Create(nativeFunction, pluginName, functionName, description, parameters, loggerFactory);
+        Create(nativeFunction, pluginName, functionName, description, parameters, null, loggerFactory);
 
     /// <summary>
     /// Default implementation to identify if a function was cancelled or skipped.

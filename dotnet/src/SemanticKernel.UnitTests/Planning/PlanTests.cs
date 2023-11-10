@@ -840,11 +840,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         [SKName("WritePoem")]
         static string Function2() => "Poem";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function2), pluginName: PluginName));
 
         [SKName("SendEmail")]
         static string Function3() => "Sent Email";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function3), pluginName: PluginName));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
@@ -1232,11 +1232,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         [SKName("WritePoem")]
         static string Function2() => "WritePoem";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function2), pluginName: PluginName));
 
         [SKName("SendEmail")]
         static string Function3() => "SendEmail";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function3), pluginName: PluginName));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         plan = new Plan(goal);

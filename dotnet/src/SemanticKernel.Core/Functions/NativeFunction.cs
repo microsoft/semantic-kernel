@@ -42,6 +42,7 @@ internal sealed class NativeFunction : ISKFunction
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
@@ -51,6 +52,7 @@ internal sealed class NativeFunction : ISKFunction
         string? functionName,
         string? description,
         IEnumerable<ParameterView>? parameters,
+        ReturnParameterView? returnParameter,
         ILoggerFactory? loggerFactory)
     {
         Verify.NotNull(method);
@@ -73,6 +75,7 @@ internal sealed class NativeFunction : ISKFunction
             functionName ?? methodDetails.Name,
             description ?? methodDetails.Description,
             parameters?.ToList() ?? methodDetails.Parameters,
+            returnParameter ?? methodDetails.ReturnParameter,
             logger);
 
         if (logger.IsEnabled(LogLevel.Trace))
@@ -93,7 +96,10 @@ internal sealed class NativeFunction : ISKFunction
     public string Description { get; }
 
     /// <inheritdoc/>
-    public FunctionView Describe() => this._view ??= new FunctionView(this.Name, this.PluginName, this.Description, this._parameters);
+    public IEnumerable<AIRequestSettings> ModelSettings => Enumerable.Empty<AIRequestSettings>();
+
+    /// <inheritdoc/>
+    public FunctionView Describe() => this._view ??= new FunctionView(this.Name, this.PluginName, this.Description, this._parameters, this._returnParameter);
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -201,9 +207,10 @@ internal sealed class NativeFunction : ISKFunction
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<ParameterView> _parameters;
+    private readonly ReturnParameterView _returnParameter;
     private readonly ILogger _logger;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters);
+    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
 
     private NativeFunction(
         ImplementationFunc implementationFunc,
@@ -211,6 +218,7 @@ internal sealed class NativeFunction : ISKFunction
         string functionName,
         string description,
         IReadOnlyList<ParameterView> parameters,
+        ReturnParameterView returnParameter,
         ILogger logger)
     {
         Verify.ValidPluginName(pluginName);
@@ -221,6 +229,7 @@ internal sealed class NativeFunction : ISKFunction
         this._function = implementationFunc;
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
+        this._returnParameter = returnParameter;
 
         this.Name = functionName;
         this.PluginName = pluginName;
@@ -229,6 +238,8 @@ internal sealed class NativeFunction : ISKFunction
 
     private static MethodDetails GetMethodDetails(MethodInfo method, object? target, string pluginName, ILogger logger)
     {
+        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
+
         // Get the name to use for the function.  If the function has an SKName attribute, we use that.
         // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
         // We don't apply any heuristics to the value supplied by SKName so that it can always be used
@@ -247,17 +258,56 @@ internal sealed class NativeFunction : ISKFunction
             }
         }
 
-        string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+        List<ParameterView> stringParameterViews = new();
+        var parameters = method.GetParameters();
 
-        var result = new MethodDetails
+        // Get marshaling funcs for parameters and build up the parameter views.
+        var parameterFuncs = new Func<SKContext, CancellationToken, object?>[parameters.Length];
+        bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
+        for (int i = 0; i < parameters.Length; i++)
         {
+            (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
+                method, parameters[i],
+                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+            if (parameterView is not null)
+            {
+                stringParameterViews.Add(parameterView);
+            }
+        }
+
+        // Check for param names conflict
+        Verify.ParametersUniqueness(stringParameterViews);
+
+        // Get marshaling func for the return value.
+        Func<string, string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
+
+        // Create the func
+        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
+        {
+            // Create the arguments.
+            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = parameterFuncs[i](context, cancellationToken);
+            }
+
+            // Invoke the method.
+            object? result = method.Invoke(target, args);
+
+            // Extract and return the result.
+            return returnFunc(functionName!, pluginName, result, context);
+        }
+
+        // And return the details.
+        return new MethodDetails
+        {
+            Function = Function,
+
             Name = functionName!,
-            Description = description ?? string.Empty,
+            Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+            Parameters = stringParameterViews,
+            ReturnParameter = new ReturnParameterView(method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? ""),
         };
-
-        (result.Function, result.Parameters) = GetDelegateInfo(functionName!, pluginName, target, method);
-
-        return result;
     }
 
     /// <summary>Gets whether a method has a known async return type.</summary>
@@ -280,59 +330,6 @@ internal sealed class NativeFunction : ISKFunction
         }
 
         return false;
-    }
-
-    // Inspect a method and returns the corresponding delegate and related info
-    private static (ImplementationFunc function, List<ParameterView>) GetDelegateInfo(
-        string functionName,
-        string pluginName,
-        object? instance,
-        MethodInfo method)
-    {
-        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
-
-        var stringParameterViews = new List<ParameterView>();
-        var parameters = method.GetParameters();
-
-        // Get marshaling funcs for parameters and build up the parameter views.
-        var parameterFuncs = new Func<SKContext, CancellationToken, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
-        for (int i = 0; i < parameters.Length; i++)
-        {
-            (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
-                method, parameters[i],
-                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
-            if (parameterView is not null)
-            {
-                stringParameterViews.Add(parameterView);
-            }
-        }
-
-        // Get marshaling func for the return value.
-        Func<string, string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
-
-        // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
-        {
-            // Create the arguments.
-            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
-            for (int i = 0; i < args.Length; i++)
-            {
-                args[i] = parameterFuncs[i](context, cancellationToken);
-            }
-
-            // Invoke the method.
-            object? result = method.Invoke(instance, args);
-
-            // Extract and return the result.
-            return returnFunc(functionName, pluginName, result, context);
-        }
-
-        // Check for param names conflict
-        Verify.ParametersUniqueness(stringParameterViews);
-
-        // Return the function and its parameter views.
-        return (Function, stringParameterViews);
     }
 
     /// <summary>
