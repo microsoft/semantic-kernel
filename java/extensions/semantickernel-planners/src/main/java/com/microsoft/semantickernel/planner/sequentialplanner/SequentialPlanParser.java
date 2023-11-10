@@ -58,8 +58,7 @@ public class SequentialPlanParser {
      * @return The plan
      * @throws PlanningException If the plan xml is invalid
      */
-    public static Plan 
-      (
+    public static Plan toPlanFromXml(
             String xmlString,
             String goal,
             ReadOnlySkillCollection skills,
