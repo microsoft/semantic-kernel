@@ -277,7 +277,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.GetSchemaDocument());
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
     }
 
     /// <summary>
@@ -315,7 +315,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
-                propertySchema.GetSchemaDocument());
+                propertySchema.ToJsonDocument());
 
             result.Add(property);
         }

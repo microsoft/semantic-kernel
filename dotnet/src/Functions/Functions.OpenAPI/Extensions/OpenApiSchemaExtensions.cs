@@ -14,7 +14,7 @@ internal static class OpenApiSchemaExtensions
     /// </summary>
     /// <param name="schema">The schema.</param>
     /// <returns></returns>
-    internal static JsonDocument GetSchemaDocument(this OpenApiSchema schema)
+    internal static JsonDocument ToJsonDocument(this OpenApiSchema schema)
     {
         var schemaBuilder = new StringBuilder();
         schema.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
