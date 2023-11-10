@@ -4,7 +4,7 @@ status: accepted
 date: 2023-10-27
 contact: SergeyMenshykh
 deciders: markwallace, mabolan
-consulted:
+consulted: 
 informed:
 ---
 # Mapping of prompt syntax to completion service model
