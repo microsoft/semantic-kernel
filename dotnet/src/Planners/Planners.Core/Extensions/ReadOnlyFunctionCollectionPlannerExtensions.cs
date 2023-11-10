@@ -7,8 +7,12 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Json.More;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Extensions;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
@@ -86,8 +90,19 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
+        Task<JsonDocument> schemaBuilderDelegate(Type type, string description)
+        {
+            var schema = new JsonSchemaBuilder()
+                .FromType(type)
+                .Description(description ?? string.Empty)
+                .Build()
+                .ToJsonDocument();
+
+            return Task.FromResult(schema);
+        }
+
         IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManual(includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManualAsync(schemaBuilderDelegate, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 

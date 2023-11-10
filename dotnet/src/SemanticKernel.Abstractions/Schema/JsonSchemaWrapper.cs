@@ -3,7 +3,10 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Planners.Model;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// A class to describe the content schma of a response/return type from an SKFunction, in a Json Schema friendly way.
