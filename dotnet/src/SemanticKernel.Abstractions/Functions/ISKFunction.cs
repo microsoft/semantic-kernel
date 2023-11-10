@@ -37,7 +37,7 @@ public interface ISKFunction
     /// <summary>
     /// Model request settings.
     /// </summary>
-    public IEnumerable<AIRequestSettings> ModelSettings { get; }
+    IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
