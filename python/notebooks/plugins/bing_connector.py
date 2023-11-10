@@ -21,9 +21,13 @@ class BingConnector(ConnectorBase):
         self._logger = logger if logger else NullLogger()
 
         if not self._api_key:
-            raise ValueError("Bing API key cannot be null. Please set environment variable BING_API_KEY.")
+            raise ValueError(
+                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
+            )
 
-    async def search_url_async(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search_url_async(
+        self, query: str, num_results: int = 1, offset: int = 0
+    ) -> List[str]:
         """
         Returns the search results URLs of the query provided by Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
@@ -43,7 +47,9 @@ class BingConnector(ConnectorBase):
         else:
             return []
 
-    async def search_snippet_async(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search_snippet_async(
+        self, query: str, num_results: int = 1, offset: int = 0
+    ) -> List[str]:
         """
         Returns the search results Text Preview (aka snippet) of the query provided by Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
@@ -63,7 +69,7 @@ class BingConnector(ConnectorBase):
         else:
             return []
 
-    async def __search(self, query: str, num_results: str, offset: str) -> Any:
+    async def __search(self, query: str, num_results: int, offset: int) -> Any:
         """
         Returns the search response of the query provided by pinging the Bing web search API.
         Returns the response content
@@ -105,7 +111,9 @@ class BingConnector(ConnectorBase):
         headers = {"Ocp-Apim-Subscription-Key": self._api_key}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(_request_url, headers=headers, raise_for_status=True) as response:
+            async with session.get(
+                _request_url, headers=headers, raise_for_status=True
+            ) as response:
                 if response.status == 200:
                     return await response.json()
                 else:
