@@ -66,7 +66,7 @@ public class FunctionViewTests
     public void ItSupportsValidFunctionName()
     {
         // Act
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -79,7 +79,7 @@ public class FunctionViewTests
     public void ItSupportsValidFunctionAsyncName()
     {
         // Act
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
         FunctionView fv = function.Describe();
 
@@ -96,7 +96,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -117,7 +117,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -136,7 +136,7 @@ public class FunctionViewTests
         static void TestFunctionName(int p1, int p2) { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -155,7 +155,7 @@ public class FunctionViewTests
         static void TestFunctionName() { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -169,7 +169,7 @@ public class FunctionViewTests
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionName));
+        var function = SKFunction.Create(Method(ValidFunctionName));
         var context = MockContext("");
         var result = await function.InvokeAsync(context);
     }
