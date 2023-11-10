@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Prompt;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -28,6 +29,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public abstract class ClientBase
 {
     private const int MaxResultsPerPrompt = 128;
+    private const string NameProperty = "Name";
+    private const string ArgumentsProperty = "Arguments";
 
     // Prevent external inheritors
     private protected ClientBase(ILoggerFactory? loggerFactory = null)
@@ -263,6 +266,16 @@ public abstract class ClientBase
         return new OpenAIChatHistory(instructions);
     }
 
+    /// <summary>
+    /// Create a new chat instance based on chat history.
+    /// </summary>
+    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
+    /// <returns>Chat object</returns>
+    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
+    {
+        return new OpenAIChatHistory(chatHistory);
+    }
+
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
         AIRequestSettings? requestSettings,
@@ -292,6 +305,12 @@ public abstract class ClientBase
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        {
+            return InternalCreateNewChat(chatHistory);
+        }
+
         var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         return chat;
@@ -390,25 +409,22 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var validRole = GetValidChatRole(message.Role);
-            options.Messages.Add(new ChatMessage(validRole, message.Content));
+            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
+
+            if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
+            {
+                azureMessage.Name = name;
+
+                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out string? arguments) is true)
+                {
+                    azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                }
+            }
+
+            options.Messages.Add(azureMessage);
         }
 
         return options;
-    }
-
-    private static ChatRole GetValidChatRole(AuthorRole role)
-    {
-        var validRole = new ChatRole(role.Label);
-
-        if (validRole != ChatRole.User &&
-            validRole != ChatRole.System &&
-            validRole != ChatRole.Assistant)
-        {
-            throw new ArgumentException($"Invalid chat message author role: {role}");
-        }
-
-        return validRole;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
