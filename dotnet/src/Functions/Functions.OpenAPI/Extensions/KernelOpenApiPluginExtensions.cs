@@ -268,10 +268,16 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
+        // TODO -- operation.GetResponseParameters() should return the default response parameter
+        var restOperationResponse = operation.Responses.First();
+
+        // TODO -- Include the response schema in the return parameter view
+        var returnParameter = new ReturnParameterView(restOperationResponse.ContentType);
+
         var function = SKFunction.Create(
             method: ExecuteAsync,
             parameters: parameters,
-            // output: new OutputView(operation.ResponseType),
+            returnParameter: returnParameter,
             description: operation.Description,
             pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
