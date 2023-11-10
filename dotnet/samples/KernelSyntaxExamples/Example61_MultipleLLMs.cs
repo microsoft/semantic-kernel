@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -51,9 +53,8 @@ public static class Example61_MultipleLLMs
             .Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
-        await RunByServiceIdAsync(kernel, "OpenAIChat");
-        await RunByModelIdAsync(kernel, azureModelId);
         await RunByModelIdAsync(kernel, openAIModelId);
+        await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", azureModelId, openAIModelId);
     }
 
     public static async Task RunByServiceIdAsync(IKernel kernel, string serviceId)
@@ -83,6 +84,28 @@ public static class Example61_MultipleLLMs
            {
                ModelId = modelId
            });
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    public static async Task RunByFirstModelIdAsync(IKernel kernel, params string[] modelIds)
+    {
+        Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+
+        var prompt = "Hello AI, what can you do for me?";
+
+        var modelSettings = new List<AIRequestSettings>();
+        foreach (var modelId in modelIds)
+        {
+            modelSettings.Add(new AIRequestSettings() { ModelId = modelId });
+        }
+        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+
+        var skfunction = kernel.RegisterSemanticFunction(
+            "HelloAI",
+            prompt,
+            promptTemplateConfig);
+
+        var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());
     }
 }

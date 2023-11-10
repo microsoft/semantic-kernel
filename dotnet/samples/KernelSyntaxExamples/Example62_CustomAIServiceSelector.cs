@@ -47,7 +47,8 @@ public static class Example62_CustomAIServiceSelector
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
-                apiKey: azureApiKey)
+                apiKey: azureApiKey,
+                setAsDefault: true)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
@@ -72,9 +73,10 @@ public static class Example62_CustomAIServiceSelector
             foreach (var service in services)
             {
                 var serviceModelId = service.GetModelId();
+                var endpoint = service.GetEndpoint();
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine($"Selected model: {serviceModelId}");
+                    Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
                     return (service, new OpenAIRequestSettings());
                 }
             }
