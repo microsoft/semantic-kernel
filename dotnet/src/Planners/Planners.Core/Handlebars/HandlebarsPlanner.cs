@@ -1,14 +1,13 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using System.Text.RegularExpressions;
-using HandlebarsDotNet;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Threading;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
@@ -21,7 +20,7 @@ public class HandlebarsPlanner : IHandlebarsPlanner
     /// <summary>
     /// The key for the available kernel functions.
     /// </summary>
-    public static readonly string AvailableKernelFunctionsKey = "AVAILABLE_KERNEL_FUNCTIONS";
+    public const string AvailableKernelFunctionsKey = "AVAILABLE_KERNEL_FUNCTIONS";
 
     /// <inheritdoc/>
     public Stopwatch Stopwatch { get; } = new();
@@ -29,6 +28,8 @@ public class HandlebarsPlanner : IHandlebarsPlanner
     private readonly IKernel _kernel;
 
     private readonly HandlebarsPlannerConfig _config;
+
+    private readonly HashSet<ParameterType> _parameterTypes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -40,8 +41,6 @@ public class HandlebarsPlanner : IHandlebarsPlanner
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
     }
-
-    private readonly HashSet<ParameterType> _parameterTypes = new();
 
     /// <inheritdoc/>
     public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
@@ -64,7 +63,7 @@ public class HandlebarsPlanner : IHandlebarsPlanner
         var resultContext = this._kernel.CreateNewContext();
         resultContext.Variables.Update(completionMessage.Content);
 
-        Match match = Regex.Match(resultContext.Result, @"````\\s*(handlebars)?\\s*(.*?)\\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(resultContext.Result, @"```\s*(handlebars)?\s+(.*)", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
@@ -137,7 +136,7 @@ public class HandlebarsPlanner : IHandlebarsPlanner
         return HandlebarsTemplateEngineExtensions.Render(kernel, kernel.CreateNewContext(), plannerTemplate, variables);
     }
 
-    private string GetFromattedFunctionSpecificTypeName(string functionName, string parameterName, Type parameterType)
+    private string GetFormattedFunctionSpecificTypeName(string functionName, string parameterName, Type parameterType)
     {
         return $"{functionName}-{parameterName}:{parameterType}";
     }

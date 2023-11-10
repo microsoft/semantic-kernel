@@ -96,15 +96,18 @@ Before we get to custom helpers, let's learn about complex objects. Some helpers
 {{/if}}
 
 ## Custom helpers
-Lastly, you also have the following Handlebars helpers that you can use to accomplish my goal.{{#each functions}}
+Lastly, you also have the following Handlebars helpers that you can use to accomplish my goal.
 
+{{#each functions}}
 ### `{{doubleOpen}}{{PluginName}}-{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
-{{#each Parameters}}
-  - {{Name}}: {{Type.Name}} - {{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
-{{/each}}
-Output: {{ReturnType.Name}} - {{ReturnDescription}}.{{/each}}{{/message}}
+  {{#each Parameters}}
+    - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
+  {{/each}}
+{{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} - {{ReturnDescription}}--}}
+Output: string - The result of the helper.
+{{/each}}{{/message}}
 {{#message role="system"}}
 ## Tips and tricks
 - Add a comment above each step to describe what the step does.

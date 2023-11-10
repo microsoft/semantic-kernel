@@ -1,15 +1,15 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-using HandlebarsDotNet;
-using System.Text.Json;
-using HandlebarsDotNet.Compiler;
-using System.Collections.Generic;
-using System.Threading;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using HandlebarsDotNet;
+using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
@@ -22,7 +22,7 @@ public static class HandlebarsTemplateEngineExtensions
     /// <summary>
     /// The key used to store the reserved output type in the dictionary of variables passed to the Handlebars template engine.
     /// </summary>
-    public static readonly string ReservedOutputTypeKey = "RESERVED_OUTPUT_TYPE";
+    public const string ReservedOutputTypeKey = "RESERVED_OUTPUT_TYPE";
 
     /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
@@ -33,14 +33,12 @@ public static class HandlebarsTemplateEngineExtensions
     /// <param name="variables">The dictionary of variables to pass to the Handlebars template engine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The rendered Handlebars template.</returns>
-    public static string Render
-    (
+    public static string Render(
         IKernel kernel,
         SKContext executionContext,
         string template,
         Dictionary<string, object?> variables,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
         IHandlebars handlebarsInstance = HandlebarsDotNet.Handlebars.Create(
             new HandlebarsConfiguration
@@ -95,20 +93,7 @@ public static class HandlebarsTemplateEngineExtensions
 
                         if (value != null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
                         {
-                            if (variables.ContainsKey(param.Name))
-                            {
-                                variables[param.Name] = value;
-                            }
-                            else
-                            {
-                                variables.Add(param.Name, value);
-                            }
-                        }
-                        else // TODO: HACK - Need this is a workaround for missing remote function parameters (issue with how we use reflection to port in function details with complex types)
-                            if (param.Name == "input" && (!handlebarArgs?.ContainsKey("input") == true || !handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
-                        {
-                            // Assign first argument value as input value
-                            variables[param.Name] = handlebarArgs?.First().Value;
+                            variables[param.Name] = value;
                         }
                         else if (param.IsRequired == true)
                         {
@@ -128,14 +113,7 @@ public static class HandlebarsTemplateEngineExtensions
                             var param = functionView.Parameters[argIndex];
                             if (IsExpectedParameterType(param.Type.ToString() ?? "", arg.GetType().Name, arg))
                             {
-                                if (variables.ContainsKey(param.Name))
-                                {
-                                    variables[param.Name] = arguments[argIndex];
-                                }
-                                else
-                                {
-                                    variables.Add(param.Name, arguments[argIndex]);
-                                }
+                                variables[param.Name] = arguments[argIndex];
                                 argIndex++;
                             }
                             else
@@ -164,9 +142,12 @@ public static class HandlebarsTemplateEngineExtensions
                 }
             }
 
-            ISKFunction function = kernel.Functions.GetFunction(functionView.PluginName, functionView.Name);
             // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
+            ISKFunction function = kernel.Functions.GetFunction(functionView.PluginName, functionView.Name);
+
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             // Write the result to the template
             return result.GetValue<object?>();
@@ -292,48 +273,40 @@ public static class HandlebarsTemplateEngineExtensions
 
         handlebarsInstance.RegisterHelper("set", (writer, context, arguments) =>
         {
+            var name = string.Empty;
+            object value = string.Empty;
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
                 var parameters = arguments[0] as IDictionary<string, object>;
-
-                if (variables.TryGetValue((string)parameters!["name"], out var value))
-                {
-                    variables[(string)parameters!["name"]] = value;
-                }
-                else
-                {
-                    variables.Add((string)parameters!["name"], value);
-                }
+                name = (string)parameters!["name"];
+                value = parameters!["value"];
             }
             else
             {
-                var name = arguments[0].ToString();
-                if (variables.TryGetValue(name, out var value))
-                {
-                    variables[name] = value;
-                }
-                else
-                {
-                    variables.Add(name, value);
-                }
+                name = arguments[0].ToString();
+                value = arguments[1];
+            }
+
+            if (variables.TryGetValue(name, out var argVal))
+            {
+                variables[name] = value;
+            }
+            else
+            {
+                variables.Add(name, value);
             }
         });
 
         handlebarsInstance.RegisterHelper("get", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var value = new object();
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 var parameters = arguments[0] as IDictionary<string, object>;
-                value = variables[(string)parameters!["name"]];
-            }
-            else
-            {
-                value = variables[arguments[0].ToString()];
+                return variables[(string)parameters!["name"]];
             }
 
-            return value;
+            return variables[arguments[0].ToString()];
         });
     }
 
