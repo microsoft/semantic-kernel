@@ -42,6 +42,9 @@ public class OpenAIThread : IThread
     /// <inheritdoc/>
     public bool IsSemantic => throw new NotImplementedException();
 
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => throw new NotImplementedException();
+
     private readonly Assistant _primaryAssistant;
 
     private readonly string _apiKey;
@@ -192,6 +195,48 @@ public class OpenAIThread : IThread
             return new FunctionResult(this.Name, this.PluginName, kernel.CreateNewContext(), messages);
         }
 
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<Orchestration.FunctionResult> InvokeAsync(Orchestration.SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<List<ModelMessage>> ListMessagesAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public FunctionView Describe()
+    {
         throw new NotImplementedException();
     }
 
@@ -347,47 +392,5 @@ public class OpenAIThread : IThread
             Description = this.Description,
             Parameters = openAIParams,
         };
-    }
-
-    /// <inheritdoc/>
-    public Task<Orchestration.FunctionResult> InvokeAsync(Orchestration.SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public Task<List<ModelMessage>> ListMessagesAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public FunctionView Describe()
-    {
-        throw new NotImplementedException();
     }
 }

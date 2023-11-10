@@ -152,19 +152,22 @@ public class Assistant : IPlugin
 
         // Create functions so other kernels can use this kernel as a plugin
         // TODO: make it possible for the ask function to have additional parameters based on the instruction template
-        this._functions = new List<ISKFunction>
+        /*this._functions = new List<ISKFunction>
         {
-            NativeFunction.FromNativeFunction(
+            NativeFunction.Create(
                 this.AskAsync,
+                null,
+                null,
                 this.Name,
                 "Ask",
                 this.Description,
                 new List<ParameterView>
                 {
                     new ParameterView("ask", "The question to ask the assistant"),
-                }
+                },
+                null
             )
-        };
+        };*/
     }
 
     public async Task<FunctionResult> RunAsync(
