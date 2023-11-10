@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -21,7 +20,6 @@ internal static class RestApiOperationExtensions
     /// Returns list of REST API operation parameters.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="serverUrlOverride">The server URL override.</param>
     /// <param name="addPayloadParamsFromMetadata">Determines whether to include the operation payload parameters from payload metadata.
     /// If false, the 'payload' and 'content-type' artificial parameters are added instead.
     /// </param>
@@ -31,37 +29,15 @@ internal static class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<RestApiOperationParameter> GetParameters(
         this RestApiOperation operation,
-        Uri? serverUrlOverride = null,
         bool addPayloadParamsFromMetadata = false,
-        bool enablePayloadNamespacing = false,
-        Uri? documentUri = null)
+        bool enablePayloadNamespacing = false)
     {
-        string? serverUrlString = null;
-        Uri? serverUrl = serverUrlOverride ?? operation.ServerUrl ?? documentUri;
+        var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
-        if (serverUrl is not null)
-        {
-            serverUrlString = $"{serverUrl.GetLeftPart(UriPartial.Authority)}/";
-        }
-
-        var parameters = new List<RestApiOperationParameter>(operation.Parameters)
-        {
-            // Register the "server-url" parameter if override is provided
-            new(
-                name: RestApiOperation.ServerUrlArgumentName,
-                type: "string",
-                isRequired: false,
-                expand: false,
-                RestApiOperationParameterLocation.Path,
-                RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlString)
-        };
-
-        //Add payload parameters
+        // Add payload parameters
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
