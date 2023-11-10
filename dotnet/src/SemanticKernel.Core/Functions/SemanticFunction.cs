@@ -38,7 +38,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string PluginName { get; }
 
     /// <inheritdoc/>
-    public string Description { get; }
+    public string Description => this._promptTemplateConfig.Description;
+
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
 
     /// <summary>
     /// List of function parameters
@@ -66,18 +69,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.NotNull(promptTemplateConfig);
         Verify.NotNull(promptTemplate);
 
-        var func = new SemanticFunction(
+        return new SemanticFunction(
             template: promptTemplate,
-            description: promptTemplateConfig.Description,
+            promptTemplateConfig: promptTemplateConfig,
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
-        )
-        {
-            _modelSettings = promptTemplateConfig.ModelSettings
-        };
-
-        return func;
+        );
     }
 
     /// <inheritdoc/>
@@ -118,9 +116,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal SemanticFunction(
         IPromptTemplate template,
+        PromptTemplateConfig promptTemplateConfig,
         string pluginName,
         string functionName,
-        string description,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -130,13 +128,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
+        this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.PluginName = pluginName;
-        this.Description = description;
 
-        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
+        this._view = new(() => new(functionName, pluginName, promptTemplateConfig.Description, this.Parameters));
     }
 
     #region private
@@ -145,7 +143,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IAIServiceSelector? _serviceSelector;
-    private List<AIRequestSettings>? _modelSettings;
+    private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly Lazy<FunctionView> _view;
     private readonly IPromptTemplate _promptTemplate;
 
@@ -182,7 +180,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
             var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
@@ -293,7 +291,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
+    public AIRequestSettings? RequestSettings => this._promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>();
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]

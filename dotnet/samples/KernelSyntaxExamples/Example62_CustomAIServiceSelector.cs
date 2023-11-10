@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
@@ -52,17 +52,16 @@ public static class Example62_CustomAIServiceSelector
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
-            .WithAIServiceSelector(new MyAIServiceSelector())
+            .WithAIServiceSelector(new ByModelIdAIServiceSelector(openAIModelId))
             .Build();
 
         var modelSettings = new List<AIRequestSettings>
         {
-            new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", MaxTokens = 400 },
-            new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 }
+            new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", ModelId = "" },
+            new OpenAIRequestSettings() { ServiceId = "OpenAIChat", ModelId = openAIModelId }
         };
 
         await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
-        await RunSemanticFunctionAsync(kernel, "Hello AI, provide an indepth description of what can you do for me as a bulleted list?", modelSettings);
     }
 
     public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, List<AIRequestSettings> modelSettings)
@@ -81,83 +80,33 @@ public static class Example62_CustomAIServiceSelector
     }
 }
 
-public class MyAIServiceSelector : IAIServiceSelector
+public class ByModelIdAIServiceSelector : IAIServiceSelector
 {
-    private readonly int _defaultMaxTokens = 300;
-    private readonly int _minResponseTokens = 150;
+    private readonly string _openAIModelId;
 
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public ByModelIdAIServiceSelector(string openAIModelId)
     {
-        if (modelSettings is null || modelSettings.Count == 0)
-        {
-            var service = serviceProvider.GetService<T>(null);
-            if (service is not null)
-            {
-                return (service, null);
-            }
-        }
-        else
-        {
-            var tokens = this.CountTokens(renderedPrompt);
+        this._openAIModelId = openAIModelId;
+    }
 
-            string? serviceId = null;
-            int fewestTokens = 0;
-            AIRequestSettings? requestSettings = null;
-            AIRequestSettings? defaultRequestSettings = null;
-            foreach (var model in modelSettings)
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+    {
+        foreach (var model in skfunction.ModelSettings)
+        {
+            if (model is OpenAIRequestSettings openAIModel)
             {
-                if (!string.IsNullOrEmpty(model.ServiceId))
+                if (openAIModel.ModelId == this._openAIModelId)
                 {
-                    if (model is OpenAIRequestSettings openAIModel)
+                    var service = context.ServiceProvider.GetService<T>(openAIModel.ServiceId);
+                    if (service is not null)
                     {
-                        var responseTokens = (openAIModel.MaxTokens ?? this._defaultMaxTokens) - tokens;
-                        if (serviceId is null || (responseTokens > this._minResponseTokens && responseTokens < fewestTokens))
-                        {
-                            fewestTokens = responseTokens;
-                            serviceId = model.ServiceId;
-                            requestSettings = model;
-                        }
+                        Console.WriteLine($"======== Selected service: {openAIModel.ServiceId} {openAIModel.ModelId} ========");
+                        return (service, model);
                     }
-                }
-                else
-                {
-                    // First request settings with empty or null service id is the default
-                    defaultRequestSettings ??= model;
-                }
-            }
-            Console.WriteLine($"Prompt tokens: {tokens}, Response tokens: {fewestTokens}");
-
-            if (serviceId is not null)
-            {
-                Console.WriteLine($"Selected service: {serviceId}");
-                var service = serviceProvider.GetService<T>(serviceId);
-                if (service is not null)
-                {
-                    return (service, requestSettings);
-                }
-            }
-
-            if (defaultRequestSettings is not null)
-            {
-                var service = serviceProvider.GetService<T>(null);
-                if (service is not null)
-                {
-                    return (service, defaultRequestSettings);
                 }
             }
         }
 
         throw new SKException("Unable to find AI service to handled request.");
-    }
-
-    /// <summary>
-    /// MicrosoftML token counter implementation.
-    /// </summary>
-    private int CountTokens(string input)
-    {
-        Tokenizer tokenizer = new(new Bpe());
-        var tokens = tokenizer.Encode(input).Tokens;
-
-        return tokens.Count;
     }
 }
