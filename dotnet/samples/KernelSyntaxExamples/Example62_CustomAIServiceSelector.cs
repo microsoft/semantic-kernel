@@ -65,7 +65,7 @@ public static class Example62_CustomAIServiceSelector
     /// <summary>
     /// Custom AI service selector that selects the GPT 3.x model
     /// </summary>
-    private class Gpt3xAIServiceSelector : IAIServiceSelector
+    private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
         public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
         {

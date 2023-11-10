@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Services;
 
