@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Json.Schema;
+using Microsoft.SemanticKernel.Planners.Model;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planners;
@@ -30,6 +34,34 @@ internal static class FunctionViewExtensions
   description: {function.Description}
   inputs:
 {inputs}";
+    }
+
+    internal static JsonSchemaFunctionManual ToJsonSchemaManual(this FunctionView function, bool includeOutputSchema = true)
+    {
+        var functionManual = new JsonSchemaFunctionManual
+        {
+            Name = function.Name,
+            Description = function.Description,
+        };
+
+        var requiredProperties = new List<string>();
+        foreach (var parameter in function.Parameters)
+        {
+            if (parameter.NativeType != null)
+            {
+
+            }
+            else if (parameter.Schema != null)
+            {
+                functionManual.Parameters.Properties.Add(parameter.Name, parameter.Schema);
+                if (parameter.IsRequired ?? false)
+                {
+                    requiredProperties.Add(parameter.Name);
+                }
+            }
+        }
+
+        return functionManual;
     }
 
     /// <summary>

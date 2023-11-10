@@ -170,7 +170,8 @@ internal static class RestApiOperationExtensions
                     expand: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
-                    description: property.Description));
+                    description: property.Description,
+                    schema: property.Schema));
             }
 
             parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));

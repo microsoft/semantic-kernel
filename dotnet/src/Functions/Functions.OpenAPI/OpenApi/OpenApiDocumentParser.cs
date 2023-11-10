@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Writers;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
@@ -220,6 +221,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 throw new SKException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
+            var schemaBuilder = new StringBuilder();
+            parameter.Schema.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
             var restParameter = new RestApiOperationParameter(
                 parameter.Name,
                 parameter.Schema.Type,
@@ -229,7 +232,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
-                parameter.Description
+                parameter.Description,
+                JsonDocument.Parse(schemaBuilder.ToString())
             );
 
             result.Add(restParameter);
@@ -267,11 +271,14 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             throw new SKException($"Neither of the media types of {operationId} is supported.");
         }
 
+        // We're just picking the first supported media type?
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
+        var schemaBuilder = new StringBuilder();
+        mediaTypeMetadata.Schema?.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, JsonDocument.Parse(schemaBuilder.ToString()));
     }
 
     /// <summary>
@@ -303,12 +310,15 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var propertySchema = propertyPair.Value;
 
+            var schemaBuilder = new StringBuilder();
+            propertySchema.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
             var property = new RestApiOperationPayloadProperty(
                 propertyName,
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description);
+                propertySchema.Description,
+                JsonDocument.Parse(schemaBuilder.ToString()));
 
             result.Add(property);
         }

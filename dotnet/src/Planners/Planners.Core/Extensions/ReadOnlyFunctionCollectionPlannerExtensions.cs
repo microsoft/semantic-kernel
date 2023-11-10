@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -65,6 +66,29 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
+    }
+
+    /// <summary>
+    /// Returns a string containing the manual for all available in a JSON Schema format.
+    /// </summary>
+    /// <param name="functions">The function provider.</param>
+    /// <param name="config">The planner config.</param>
+    /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
+    /// <param name="logger">The logger to use for logging.</param>
+    /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A string containing the manual for all available functions.</returns>
+    public static async Task<string> GetJsonSchemaFunctionsManualAsync(
+        this IReadOnlyFunctionCollection functions,
+        PlannerConfigBase config,
+        string? semanticQuery = null,
+        ILogger? logger = null,
+        bool includeOutputSchema = true,
+        CancellationToken cancellationToken = default)
+    {
+        IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManual(includeOutputSchema));
+        return JsonSerializer.Serialize(manuals);
     }
 
     /// <summary>
