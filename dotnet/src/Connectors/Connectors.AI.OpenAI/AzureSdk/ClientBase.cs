@@ -137,12 +137,72 @@ public abstract class ClientBase
         StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
             () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
+        var cachedChoices = new Dictionary<int, List<Choice>>();
+        var results = new List<TextStreamingResult>();
+
         await foreach (Completions completions in response)
         {
-            foreach(var choice in completions.Choices)
+            foreach (var choice in completions.Choices)
             {
-                // Will I get all the choices for each chuck of IAsyncEnumerable?
+                if (!cachedChoices.ContainsKey(choice.Index))
+                {
+                    cachedChoices.Add(choice.Index, new());
+
+                    var result = new TextStreamingResult(completions, cachedChoices[choice.Index]);
+                    results.Add(result);
+                    yield return result;
+                }
+                cachedChoices[choice.Index].Add(choice);
             }
+        }
+    }
+
+    /// <summary>
+    /// Generate a new chat message stream
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Streaming of generated chat message in string format</returns>
+    private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
+        IEnumerable<ChatMessageBase> chat,
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var options = this.CreateChatCompletionsOptions(chatRequestSettings, chat);
+
+        StreamingResponse<StreamingChatCompletionsUpdate>? response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+
+        if (response is null)
+        {
+            throw new SKException("Chat completions null response");
+        }
+
+        var cachedChoices = new Dictionary<int, List<StreamingChatCompletionsUpdate>>();
+        var results = new List<ChatStreamingResult>();
+        await foreach (StreamingChatCompletionsUpdate update in response)
+        {
+            // Stores the streaming updates by index in 
+            if (!cachedChoices.ContainsKey(update.ChoiceIndex ?? 0))
+            {
+                cachedChoices.Add(update.ChoiceIndex ?? 0, new());
+
+                var result = new ChatStreamingResult(cachedChoices[update.ChoiceIndex ?? 0]);
+                results.Add(result);
+                yield return result;
+            }
+            cachedChoices[update.ChoiceIndex ?? 0].Add(update);
+        }
+
+        foreach (var result in results)
+        {
+            result.EndOfStream();
         }
     }
 
@@ -218,55 +278,6 @@ public abstract class ClientBase
         this.CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
-    }
-
-    /// <summary>
-    /// Generate a new chat message stream
-    /// </summary>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns>Streaming of generated chat message in string format</returns>
-    private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<ChatMessageBase> chat,
-        AIRequestSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-
-        var options = this.CreateChatCompletionsOptions(chatRequestSettings, chat);
-
-        StreamingResponse<StreamingChatCompletionsUpdate>? response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
-            throw new SKException("Chat completions null response");
-        }
-
-        var cachedChoices = new Dictionary<int, List<StreamingChatCompletionsUpdate>>();
-        var results = new List<ChatStreamingResult>();
-        await foreach (StreamingChatCompletionsUpdate update in response)
-        {
-            // Stores the streaming updates by index in 
-            if (!cachedChoices.ContainsKey(update.ChoiceIndex ?? 0))
-            {
-                cachedChoices.Add(update.ChoiceIndex ?? 0, new());
-
-                var result = new ChatStreamingResult(cachedChoices[update.ChoiceIndex ?? 0]);
-                results.Add(result);
-                yield return result;
-            }
-            cachedChoices[update.ChoiceIndex ?? 0].Add(update);
-        }
-
-        foreach (var result in results)
-        {
-            result.EndOfStream();
-        }
     }
 
     /// <summary>

@@ -16,10 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
-    private readonly IReadOnlyList<StreamingChatCompletionsUpdate> _chatUpdates;
-
     public ModelResult ModelResult { get; private set; }
-    private bool _isStreamEnded = false;
 
     public ChatStreamingResult(IReadOnlyList<StreamingChatCompletionsUpdate> chatUpdates)
     {
@@ -34,7 +31,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
         var fullMessage = new StringBuilder();
         var role = string.Empty;
 
-        await foreach(var message in this.GetStreamingChatMessageAsync(cancellationToken))
+        await foreach (var message in this.GetStreamingChatMessageAsync(cancellationToken))
         {
             if (string.IsNullOrEmpty(role))
             {
@@ -63,6 +60,8 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         while (currentIndex < this._chatUpdates.Count)
         {
+            currentIndex++;
+
             var message = this._chatUpdates[currentIndex];
 
             if (message.Role.HasValue)
@@ -90,7 +89,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                 yield return new SKChatMessage(role, message.ContentUpdate);
             }
 
-            // Might need to retouch this part to expose the function name and arguments as new properties of a message.
+            // This part may change to expose the function name and arguments as new properties of a message.
             // FunctionName and FunctionArgumentsUpdate are considered as valid messages
             if (message.FunctionName.Length > 0)
             {
@@ -130,6 +129,9 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             }
         }
     }
+
+    private readonly IReadOnlyList<StreamingChatCompletionsUpdate> _chatUpdates;
+    private bool _isStreamEnded = false;
 
     internal void EndOfStream()
     {
