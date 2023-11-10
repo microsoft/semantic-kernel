@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
+from typing import Any, Callable, Dict, Optional
 import semantic_kernel, autogen
 
 
@@ -42,7 +42,9 @@ Reply TERMINATE when the task is done.
         self.kernel = kernel
         self.llm_config = llm_config
 
-    def create_assistant_agent(self, name: str, persona: str = ASSISTANT_PERSONA) -> autogen.AssistantAgent:
+    def create_assistant_agent(
+        self, name: str, persona: str = ASSISTANT_PERSONA
+    ) -> autogen.AssistantAgent:
         """
         Create a new AutoGen Assistant Agent.
         Args:
@@ -50,10 +52,15 @@ Reply TERMINATE when the task is done.
             persona (str): the LLM system message defining the agent persona,
                 in case you want to customize it.
         """
-        return autogen.AssistantAgent(name=name, system_message=persona, llm_config=self.__get_autogen_config())
+        return autogen.AssistantAgent(
+            name=name, system_message=persona, llm_config=self.__get_autogen_config()
+        )
 
     def create_user_agent(
-        self, name: str, max_auto_reply: Optional[int] = None, human_input: Optional[str] = "ALWAYS"
+        self,
+        name: str,
+        max_auto_reply: Optional[int] = None,
+        human_input: Optional[str] = "ALWAYS",
     ) -> autogen.UserProxyAgent:
         """
         Create a new AutoGen User Proxy Agent.
@@ -84,11 +91,19 @@ Reply TERMINATE when the task is done.
         """
         if self.llm_config:
             if self.llm_config["type"] == "openai":
-                if not self.llm_config["openai_api_key"] or self.llm_config["openai_api_key"] == "sk-...":
+                if (
+                    not self.llm_config["openai_api_key"]
+                    or self.llm_config["openai_api_key"] == "sk-..."
+                ):
                     raise Exception("OpenAI API key is not set")
                 return {
                     "functions": self.__get_function_definitions(),
-                    "config_list": [{"model": "gpt-3.5-turbo", "api_key": self.llm_config["openai_api_key"]}],
+                    "config_list": [
+                        {
+                            "model": "gpt-3.5-turbo",
+                            "api_key": self.llm_config["openai_api_key"],
+                        }
+                    ],
                 }
             if self.llm_config["type"] == "azure":
                 if (
@@ -127,12 +142,10 @@ Reply TERMINATE when the task is done.
                         "parameters": {
                             "type": "object",
                             "properties": {
-                                f.parameters[0].name: {
-                                    "description": f.parameters[0].description,
-                                    "type": f.parameters[0].type_,
-                                }
+                                p.name: {"description": p.description, "type": p.type_}
+                                for p in f.parameters
                             },
-                            "required": [f.parameters[0].name],
+                            "required": [p.name for p in f.parameters],
                         },
                     }
                 )
@@ -146,5 +159,24 @@ Reply TERMINATE when the task is done.
         sk_functions = self.kernel.skills.get_functions_view()
         for ns in {**sk_functions.native_functions, **sk_functions.semantic_functions}:
             for f in sk_functions.native_functions[ns]:
-                function_map[f.name] = self.kernel.skills.get_function(f.skill_name, f.name)
+                function_map[f.name] = SKFunctionWrapper(
+                    self.kernel.skills.get_function(f.skill_name, f.name)
+                )
         return function_map
+
+
+class SKFunctionWrapper:
+    """
+    Wrapper for SK functions to be used with AutoGen Function Calling.
+    """
+
+    _function: Callable[..., str]
+
+    def __init__(self, delegate_function: Callable):
+        self._function = delegate_function
+
+    def __call__(self, **kwargs: Dict[str, Any]) -> str:
+        variables = semantic_kernel.ContextVariables()
+        for k, v in kwargs.items():
+            variables[k] = v
+        return self._function(variables=variables)
