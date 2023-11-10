@@ -45,6 +45,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string Description { get; }
 
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => Enumerable.Empty<AIRequestSettings>();
+
     /// <summary>
     /// List of function parameters
     /// </summary>
