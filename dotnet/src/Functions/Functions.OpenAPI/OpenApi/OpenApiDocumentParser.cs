@@ -307,7 +307,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
         if (mediaType == null)
         {
-            throw new SKException($"Neither of the media types of {response.Key} response is supported.");
+            // TODO -- use text/plain or application/json as default?
+            return new RestApiOperationResponse(string.Empty, string.Empty);
         }
 
         var mediaTypeMetadata = response.Value.Content[mediaType];
@@ -315,6 +316,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         // Parse schema
         var schema = ParseSchema(mediaTypeMetadata.Schema);
 
+        // TODO - Kind of overloading `content` and `contentType` properties here.
         return new RestApiOperationResponse(mediaType, response.Value.Description ?? mediaTypeMetadata.Schema?.Description ?? string.Empty, schema);
     }
 
