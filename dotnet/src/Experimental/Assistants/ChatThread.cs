@@ -77,7 +77,7 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
-        var messages = await this._restContext.GetMessagesAsync(this.Id, cancellationToken).ConfigureAwait(false);;
+        var messages = await this._restContext.GetMessagesAsync(this.Id, cancellationToken).ConfigureAwait(false);
 
         return messages.Select(m => new ChatMessage(m.Content, m.Role));
     }

@@ -19,7 +19,7 @@ public class ThreadRunStepListModel
 #pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
-    /// LIst of steps.
+    /// List of steps.
     /// </summary>
     [JsonPropertyName("data")]
     public List<ThreadRunStepModel> Data { get; set; } = new List<ThreadRunStepModel>();
