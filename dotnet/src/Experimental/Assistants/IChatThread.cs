@@ -14,7 +14,7 @@ public interface IChatThread
     /// <summary>
     /// $$$
     /// </summary>
-    string Id { get; set; }
+    string Id { get; }
 
     /// <summary>
     /// $$$

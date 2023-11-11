@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public sealed class ChatThread : IChatThread
 {
     /// <inheritdoc/>
-    public string Id { get; set; }
+    public string Id { get; private set; }
 
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
