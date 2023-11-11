@@ -4,18 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// Represents an OpenAI assistant chat thread
+/// $$$
 /// </summary>
 public sealed class ChatThread : IChatThread
 {
@@ -55,7 +52,7 @@ public sealed class ChatThread : IChatThread
     {
         //ThreadRunModel threadRunModel = await this.CreatRunAsync(assistantId).ConfigureAwait(false);
 
-        throw new NotImplementedException();
+        throw new NotImplementedException("$$$");
     }
 
     /// <inheritdoc/>
@@ -202,7 +199,7 @@ public sealed class ChatThread : IChatThread
     //    return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
     //}
 
-    private async Task<ThreadRunModel> CreateThreadRunAsync(string assistantId)
+    private async Task<ThreadRunModel?> CreateThreadRunAsync(string assistantId)
     {
         var tools = new List<object>();
 
@@ -245,51 +242,7 @@ public sealed class ChatThread : IChatThread
         //    });
         //}
 
-        var requestData = new
-        {
-            assistant_id = assistantId,
-            //instructions = kernel.Instructions, $$$
-            tools = tools
-        };
-
-        string requestDataJson = JsonSerializer.Serialize(requestData);
-
-        string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs";
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
-    }
-
-    private async Task<ThreadRunModel> GetThreadRunAsync(string runId)
-    {
-        string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs/" + runId;
-        using var httpRequestMessage2 = HttpRequest.CreateGetRequest(url);
-
-        httpRequestMessage2.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage2.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        var response = await this._httpClient.SendAsync(httpRequestMessage2).ConfigureAwait(false);
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
-    }
-
-    private async Task<ThreadRunStepListModel> GetThreadRunStepsAsync(string runId)
-    {
-        string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs/" + runId + "/steps";
-        using var httpRequestMessage = HttpRequest.CreateGetRequest(url);
-
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<ThreadRunStepListModel>(responseBody)!;
+        return await this._httpClient.CreateRunAsync(this.Id, assistantId, this._apiKey).ConfigureAwait(false); // $$$ NULLABLE
     }
 
     //private OpenAIFunction ToOpenAIFunction(FunctionView functionView)

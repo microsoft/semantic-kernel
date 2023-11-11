@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -20,7 +19,12 @@ internal static partial class HttpClientExtensions
     /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadMessageModel?> CreateMessageAsync(this HttpClient httpClient, string threadId, ChatMessage message, string apiKey, CancellationToken cancellationToken = default)
+    public static Task<ThreadMessageModel?> CreateMessageAsync(
+        this HttpClient httpClient,
+        string threadId,
+        ChatMessage message,
+        string apiKey,
+        CancellationToken cancellationToken = default)
     {
         var payload =
             new
@@ -29,7 +33,12 @@ internal static partial class HttpClientExtensions
                 content = message.Content.ToString()
             };
 
-        return httpClient.ExecutePostAsync<ThreadMessageModel>(GetMessagesUrl(threadId), payload, apiKey, cancellationToken);
+        return
+            httpClient.ExecutePostAsync<ThreadMessageModel>(
+                GetMessagesUrl(threadId),
+                payload,
+                apiKey,
+                cancellationToken);
     }
 
     /// <summary>
@@ -41,9 +50,18 @@ internal static partial class HttpClientExtensions
     /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadMessageModel?> GetMessageAsync(this HttpClient httpClient, string threadId, string messageId, string apiKey, CancellationToken cancellationToken = default)
+    public static Task<ThreadMessageModel?> GetMessageAsync(
+        this HttpClient httpClient,
+        string threadId,
+        string messageId,
+        string apiKey,
+        CancellationToken cancellationToken = default)
     {
-        return httpClient.ExecuteGetAsync<ThreadMessageModel>(GetMessagesUrl(threadId, messageId), apiKey, cancellationToken);
+        return
+            httpClient.ExecuteGetAsync<ThreadMessageModel>(
+                GetMessagesUrl(threadId, messageId),
+                apiKey,
+                cancellationToken);
     }
 
     /// <summary>
@@ -54,9 +72,17 @@ internal static partial class HttpClientExtensions
     /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IList<ThreadMessageModel>?> GetMessagesAsync(this HttpClient httpClient, string threadId, string apiKey, CancellationToken cancellationToken = default)
+    public static Task<IList<ThreadMessageModel>?> GetMessagesAsync(
+        this HttpClient httpClient,
+        string threadId,
+        string apiKey,
+        CancellationToken cancellationToken = default)
     {
-        return httpClient.ExecuteGetAsync<IList<ThreadMessageModel>>(GetMessagesUrl(threadId), apiKey, cancellationToken);
+        return
+            httpClient.ExecuteGetAsync<IList<ThreadMessageModel>>(
+                GetMessagesUrl(threadId),
+                apiKey,
+                cancellationToken);
     }
 
     private static string GetMessagesUrl(string threadId)

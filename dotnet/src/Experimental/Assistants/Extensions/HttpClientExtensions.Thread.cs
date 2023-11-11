@@ -18,8 +18,33 @@ internal static partial class HttpClientExtensions
     /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadModel?> CreateThreadAsync(this HttpClient httpClient, string apiKey, CancellationToken cancellationToken = default)
+    public static Task<ThreadModel?> CreateThreadAsync(
+        this HttpClient httpClient,
+        string apiKey,
+        CancellationToken cancellationToken = default)
     {
-        return httpClient.ExecutePostAsync<ThreadModel>(BaseThreadUrl, apiKey, cancellationToken);
+        return
+            httpClient.ExecutePostAsync<ThreadModel>(
+                BaseThreadUrl,
+                apiKey,
+                cancellationToken);
+    }
+
+    public static Task<ThreadModel?> GetThreadAsync(
+        this HttpClient httpClient,
+        string threadId,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        return
+            httpClient.ExecuteGetAsync<ThreadModel>(
+                GetThreadUrl(threadId),
+                apiKey,
+                cancellationToken);
+    }
+
+    private static string GetThreadUrl(string threadId)
+    {
+        return $"{BaseThreadUrl}/{threadId}";
     }
 }
