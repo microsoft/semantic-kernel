@@ -21,7 +21,7 @@ public sealed class FunctionsJsonSchemaGeneratorTests
         Assert.Equal("object", schema.RootElement.GetProperty("type").GetString());
     }
 
-    private class SampleModel
+    private sealed class SampleModel
     {
         public string? Name { get; set; }
         public string? Description { get; set; }

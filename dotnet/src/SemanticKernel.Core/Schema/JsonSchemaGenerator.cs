@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-
 /// <summary>
 /// Class for generating JSON Schema from a type.
 /// </summary>
