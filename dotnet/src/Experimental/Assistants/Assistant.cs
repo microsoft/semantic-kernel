@@ -214,7 +214,7 @@ public class Assistant : IPlugin
         using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         ThreadModel threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody);
-        return new OpenAIThread(threadModel.Id, this._apiKey, this);
+        return new ChatThread(threadModel.Id, this._apiKey, this);
     }
 
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
@@ -281,7 +281,7 @@ public class Assistant : IPlugin
         using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody)!;
-        return new OpenAIThread(threadModel.Id, this._apiKey, this);
+        return new ChatThread(threadModel.Id, this._apiKey, this);
     }
 
     // This is the function that is provided as part of the IPlugin interface

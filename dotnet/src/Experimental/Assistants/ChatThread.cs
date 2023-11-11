@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Represents an OpenAI assistant chat thread
 /// </summary>
-public class OpenAIThread : IThread
+public sealed class ChatThread : IChatThread
 {
     private const string BaseUrl = "https://api.openai.com/v1/threads";
 
@@ -54,7 +54,7 @@ public class OpenAIThread : IThread
     /// <summary>
     /// Constructor
     /// </summary>
-    public OpenAIThread(string id, string apiKey, Assistant primaryAssistant)
+    public ChatThread(string id, string apiKey, Assistant primaryAssistant)
     {
         this.PluginName = primaryAssistant.Name;
         this.Id = id;
@@ -63,15 +63,17 @@ public class OpenAIThread : IThread
     }
 
     /// <inheritdoc/>
-    public async Task AddUserMessageAsync(string message)
+    public Task AddUserMessageAsync(string message)
     {
-        await this.AddMessageAsync(new ModelMessage(message)).ConfigureAwait(false);
+        return
+            this.AddMessageAsync(
+                new ModelMessage(message));
     }
 
     /// <inheritdoc/>
     public async Task AddMessageAsync(ModelMessage message)
     {
-        var requestData = new
+        var requestData = new // $$$ MODEL
         {
             role = message.Role,
             content = message.Content.ToString()
@@ -392,5 +394,30 @@ public class OpenAIThread : IThread
             Description = this.Description,
             Parameters = openAIParams,
         };
+    }
+
+    public Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task AddMessageAsync(ModelMessage message, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ModelMessage> RetrieveMessageAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<ModelMessage>> ListMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }
