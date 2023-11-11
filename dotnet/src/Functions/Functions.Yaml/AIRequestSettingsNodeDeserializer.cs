@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Functions.Yaml;
 internal class AIRequestSettingsNodeDeserializer : INodeDeserializer
 {
     /// <inheritdoc/>
-    public bool Deserialize(IParser parser, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
+    public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
     {
         if (expectedType != typeof(AIRequestSettings))
         {
@@ -22,7 +22,7 @@ internal class AIRequestSettingsNodeDeserializer : INodeDeserializer
             return false;
         }
 
-        var dictionary = nestedObjectDeserializer.Invoke(parser, typeof(Dictionary<string, object>));
+        var dictionary = nestedObjectDeserializer.Invoke(reader, typeof(Dictionary<string, object>));
         var modelSettings = new AIRequestSettings();
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
