@@ -10,6 +10,15 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 internal static partial class HttpClientExtensions
 {
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="httpClient"></param>
+    /// <param name="threadId"></param>
+    /// <param name="assistantId"></param>
+    /// <param name="apiKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static Task<ThreadRunModel?> CreateRunAsync(
         this HttpClient httpClient,
         string threadId,
@@ -33,6 +42,15 @@ internal static partial class HttpClientExtensions
                 cancellationToken);
     }
 
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="httpClient"></param>
+    /// <param name="threadId"></param>
+    /// <param name="runId"></param>
+    /// <param name="apiKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static Task<ThreadRunModel?> GetRunAsync(
         this HttpClient httpClient,
         string threadId,
@@ -47,6 +65,15 @@ internal static partial class HttpClientExtensions
                 cancellationToken);
     }
 
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="httpClient"></param>
+    /// <param name="threadId"></param>
+    /// <param name="runId"></param>
+    /// <param name="apiKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static Task<IList<ThreadRunStepModel>?> GetRunStepsAsync(
         this HttpClient httpClient,
         string threadId,

@@ -30,6 +30,14 @@ internal static partial class HttpClientExtensions
                 cancellationToken);
     }
 
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="httpClient"></param>
+    /// <param name="threadId"></param>
+    /// <param name="apiKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static Task<ThreadModel?> GetThreadAsync(
         this HttpClient httpClient,
         string threadId,
