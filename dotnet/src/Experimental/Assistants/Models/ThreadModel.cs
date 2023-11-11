@@ -20,7 +20,9 @@ public class ThreadModel
     /// Always "thread"
     /// </summary>
     [JsonPropertyName("object")]
-    public string Object { get; set; } = string.Empty;
+#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
+    public string Object { get; set; } = "thread";
+#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// The Unix timestamp (in seconds) for when the thread was created.
@@ -35,5 +37,5 @@ public class ThreadModel
     /// characters long and values can be a maxium of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; }
+    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 }
