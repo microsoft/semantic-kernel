@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -58,25 +59,19 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default)
     {
-        var message = await this._httpClient.GetMessageAsync(this.Id, messageId, this._apiKey, cancellationToken).ConfigureAwait(false);
+        var message =
+            await this._httpClient.GetMessageAsync(this.Id, messageId, this._apiKey, cancellationToken).ConfigureAwait(false) ??
+            throw new ArgumentException("Uknown messageId", nameof(messageId));
 
-        return null; // $$$
-
-        //List<object> content = new(); 
-        //foreach(var item in message.Content)
-        //{
-        //    content.Add(item.Text.Value);
-        //}
-
-        //return new ChatMessage(content, message.Role);
+        return new ChatMessage(message.Content, message.Role);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
-        var messages = await this._httpClient.GetMessagesAsync(this.Id, this._apiKey, cancellationToken).ConfigureAwait(false);
+        var messages = await this._httpClient.GetMessagesAsync(this.Id, this._apiKey, cancellationToken).ConfigureAwait(false);;
 
-        return Array.Empty<ChatMessage>(); // $$$
+        return messages.Select(m => new ChatMessage(m.Content, m.Role));
     }
 
     /// <summary>

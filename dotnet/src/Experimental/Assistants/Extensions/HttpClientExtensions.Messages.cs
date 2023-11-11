@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,9 +54,9 @@ internal static partial class HttpClientExtensions
     /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadMessageModel?> GetMessagesAsync(this HttpClient httpClient, string threadId, string apiKey, CancellationToken cancellationToken = default)
+    public static Task<IList<ThreadMessageModel>?> GetMessagesAsync(this HttpClient httpClient, string threadId, string apiKey, CancellationToken cancellationToken = default)
     {
-        return httpClient.ExecuteGetAsync<ThreadMessageModel>(GetMessagesUrl(threadId), apiKey, cancellationToken);
+        return httpClient.ExecuteGetAsync<IList<ThreadMessageModel>>(GetMessagesUrl(threadId), apiKey, cancellationToken);
     }
 
     private static string GetMessagesUrl(string threadId)
