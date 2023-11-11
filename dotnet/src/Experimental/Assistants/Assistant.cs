@@ -205,17 +205,6 @@ public class Assistant : IPlugin
         return functionViews;
     }
 
-    public async Task<IThread> CreateThreadAsync()
-    {
-        string url = "https://api.openai.com/v1/threads";
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url);
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        ThreadModel threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody);
-        return new ChatThread(threadModel.Id, this._apiKey, this);
-    }
 
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {

@@ -4,11 +4,14 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static class HttpClientExtensions
+internal static partial class HttpClientExtensions
 {
+    private const string BaseUrl = "https://api.openai.com/v1/";
+
     public static async Task<TResult?> ExecuteGetAsync<TResult>(
         this HttpClient httpClient,
         string url,
@@ -25,10 +28,19 @@ internal static class HttpClientExtensions
         return JsonSerializer.Deserialize<TResult>(responseBody);
     }
 
+    public static Task<TResult?> ExecutePostAsync<TResult>(
+        this HttpClient httpClient,
+        string url,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        return httpClient.ExecutePostAsync<object, TResult>(url, payload: null, apiKey, cancellationToken);
+    }
+
     public static async Task<TResult?> ExecutePostAsync<TBody, TResult>(
         this HttpClient httpClient,
         string url,
-        TBody payload,
+        TBody? payload,
         string apiKey,
         CancellationToken cancellationToken = default)
     {

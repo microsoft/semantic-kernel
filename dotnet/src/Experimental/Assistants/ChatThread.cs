@@ -19,8 +19,6 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// </summary>
 public sealed class ChatThread : IChatThread
 {
-    private const string BaseUrl = "https://api.openai.com/v1/threads";
-
     /// <inheritdoc/>
     public string Id { get; set; }
 
@@ -80,10 +78,8 @@ public sealed class ChatThread : IChatThread
         };
 
         var url = $"{BaseUrl}/{this.Id}/messages";
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
 
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
 
         using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
@@ -155,10 +151,10 @@ public sealed class ChatThread : IChatThread
                             foreach (var toolCall in threadRunStep.StepDetails.ToolCalls)
                             {
                                 // Run function
-                                var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
+                                //var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
 
-                                // Update the thread run
-                                threadRunModel = await this.SubmitToolOutputsToRunAsync(threadRunModel.Id, toolCall.Id, result).ConfigureAwait(false);
+                                //// Update the thread run
+                                //threadRunModel = await this.SubmitToolOutputsToRunAsync(threadRunModel.Id, toolCall.Id, result).ConfigureAwait(false);
                             }
                         }
                     }
@@ -207,78 +203,48 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
     public Task<List<ModelMessage>> ListMessagesAsync()
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public FunctionView Describe()
-    {
-        throw new NotImplementedException();
-    }
+    //private async Task<string> InvokeFunctionCallAsync(IKernel kernel, string name, string arguments)
+    //{
+    //    // split name
+    //    string[] nameParts = name.Split('-');
 
-    private async Task<string> InvokeFunctionCallAsync(IKernel kernel, string name, string arguments)
-    {
-        // split name
-        string[] nameParts = name.Split('-');
+    //    // get function from kernel
+    //    var function = kernel.Functions.GetFunction(nameParts[0], nameParts[1]);
+    //    // TODO: change back to Dictionary<string, object>
+    //    Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
 
-        // get function from kernel
-        var function = kernel.Functions.GetFunction(nameParts[0], nameParts[1]);
-        // TODO: change back to Dictionary<string, object>
-        Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
+    //    var results = await kernel.RunAsync(function /*, variables*/).ConfigureAwait(false);
 
-        var results = await kernel.RunAsync(function /*, variables*/).ConfigureAwait(false);
+    //    return results.GetValue<string>()!;
+    //}
 
-        return results.GetValue<string>()!;
-    }
+    //private async Task<ThreadRunModel> SubmitToolOutputsToRunAsync(string runId, string toolCallId, string output)
+    //{
+    //    var requestData = new
+    //    {
+    //        tool_outputs = new[] {
+    //            new {
+    //                tool_call_id = toolCallId,
+    //                output = output
+    //            }
+    //        }
+    //    };
 
-    private async Task<ThreadRunModel> SubmitToolOutputsToRunAsync(string runId, string toolCallId, string output)
-    {
-        var requestData = new
-        {
-            tool_outputs = new[] {
-                new {
-                    tool_call_id = toolCallId,
-                    output = output
-                }
-            }
-        };
+    //    string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs/" + runId + "/submit_tool_outputs";
+    //    using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
+    //    httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+    //    httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
 
-        string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs/" + runId + "/submit_tool_outputs";
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
+    //    var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
-        var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
-    }
+    //    string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+    //    return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
+    //}
 
     private async Task<ThreadRunModel> CreateThreadRunAsync(Assistant kernel)
     {
