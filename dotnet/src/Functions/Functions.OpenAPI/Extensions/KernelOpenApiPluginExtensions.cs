@@ -203,10 +203,8 @@ public static class KernelOpenApiPluginExtensions
         CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters(
-            executionParameters?.ServerUrlOverride,
             executionParameters?.EnableDynamicPayload ?? false,
-            executionParameters?.EnablePayloadNamespacing ?? false,
-            documentUri
+            executionParameters?.EnablePayloadNamespacing ?? false
         );
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
@@ -265,8 +263,8 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
-        var function = SKFunction.FromNativeFunction(
-            nativeFunction: ExecuteAsync,
+        var function = SKFunction.Create(
+            method: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
             pluginName: pluginName,
