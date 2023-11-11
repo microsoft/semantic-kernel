@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Schema;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Prompt;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Schema;
@@ -15,17 +16,10 @@ public sealed class IJsonSchemaGeneratorTests
     {
         // Arrange
         // Act
-        var schema = JsonSchemaGenerator.GenerateSchema(typeof(SampleModel), "description");
+        var schema = JsonSchemaGenerator.GenerateSchema(typeof(PromptNode), "description");
 
         // Assert
         Assert.NotNull(schema);
         Assert.Equal("object", schema.RootElement.GetProperty("type").GetString());
-    }
-
-    private class SampleModel
-    {
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public int? Age { get; set; }
     }
 }

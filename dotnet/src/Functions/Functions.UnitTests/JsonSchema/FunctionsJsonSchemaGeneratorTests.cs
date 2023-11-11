@@ -5,13 +5,13 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.JsonSchema;
 
-public sealed class JsonSchemaGeneratorTests
+public sealed class FunctionsJsonSchemaGeneratorTests
 {
     [Fact]
     public void ItShouldGenerateSchema()
     {
         // Arrange
-        var jsonSchemaGenerator = new JsonSchemaGenerator();
+        var jsonSchemaGenerator = new FunctionsJsonSchemaGenerator();
 
         // Act
         var schema = jsonSchemaGenerator.GenerateSchema(typeof(SampleModel), "description");

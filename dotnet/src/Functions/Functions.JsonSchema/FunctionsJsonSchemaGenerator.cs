@@ -4,14 +4,13 @@ using System.Text.Json;
 using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
-using Microsoft.SemanticKernel.Schema;
 
 namespace Microsoft.SemanticKernel.Functions.JsonSchema;
 
 /// <summary>
 /// Class for generating JSON Schema from a type.
 /// </summary>
-public class JsonSchemaGenerator : IJsonSchemaGenerator
+public class FunctionsJsonSchemaGenerator : IJsonSchemaGenerator
 {
     /// <inheritdoc/>
     public JsonDocument? GenerateSchema(Type type, string description)
