@@ -39,7 +39,7 @@ public sealed class Plan : ISKFunction
     public IReadOnlyList<Plan> Steps => this._steps.AsReadOnly();
 
     /// <summary>
-    /// Parameters for the plan, used to pass information to the next step
+    /// InputParameters for the plan, used to pass information to the next step
     /// </summary>
     [JsonPropertyName("parameters")]
     [JsonConverter(typeof(ContextVariablesConverter))]
@@ -575,7 +575,7 @@ public sealed class Plan : ISKFunction
     private ContextVariables GetNextStepVariables(ContextVariables variables, Plan step)
     {
         // Priority for Input
-        // - Parameters (expand from variables if needed)
+        // - InputParameters (expand from variables if needed)
         // - SKContext.Variables
         // - Plan.State
         // - Empty if sending to another plan
@@ -606,8 +606,8 @@ public sealed class Plan : ISKFunction
         var stepVariables = new ContextVariables(input);
 
         // Priority for remaining stepVariables is:
-        // - Function Parameters (pull from variables or state by a key value)
-        // - Step Parameters (pull from variables or state by a key value)
+        // - Function InputParameters (pull from variables or state by a key value)
+        // - Step InputParameters (pull from variables or state by a key value)
         // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)

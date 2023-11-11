@@ -57,7 +57,7 @@ public class FlowStep
     public string? TransitionMessage { get; set; } = "Did you want to try the previous step again?";
 
     /// <summary>
-    /// Parameters required for executing the step
+    /// InputParameters required for executing the step
     /// </summary>
     public virtual IEnumerable<string> Requires => this._requires;
 

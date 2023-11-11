@@ -1,23 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Markdown.Extensions;
-using Microsoft.SemanticKernel.Functions.Markdown.Models;
+using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Markdown.Extensions;
+namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 
-public class KernelSemanticFunctionMarkdownExtensionTests
+public class SKFunctionMarkdownTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionModelFromMarkdown()
+    public void ItShouldCreateSemanticFunctionConfigFromMarkdown()
     {
         // Arrange
         // Act
-        var model = SemanticFunctionModel.FromMarkdown(this._markdown);
+        var model = SKFunctionMarkdown.CreateSemanticFunctionConfigFromMarkdown(this._markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(model);
+        Assert.Equal("TellMeAbout", model.Name);
         Assert.Equal("Hello AI, tell me about {{$input}}", model.Template);
         Assert.Equal(2, model.ModelSettings.Count);
         Assert.Equal("gpt4", model.ModelSettings[0].ModelId);
@@ -31,7 +31,7 @@ public class KernelSemanticFunctionMarkdownExtensionTests
         var kernel = new KernelBuilder().Build();
 
         // Act
-        var skfunction = kernel.CreateSemanticFunctionFromMarkdown("TellMeAbout", this._markdown);
+        var skfunction = SKFunctionMarkdown.CreateFromMarkdown(this._markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(skfunction);

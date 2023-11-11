@@ -247,7 +247,7 @@ Generated Topics:
     "GPT-3",
     "GPT-2",
     "Bug",
-    "Parameters",
+    "InputParameters",
     "Summary",
     "CoPilot",
     "Tokens",

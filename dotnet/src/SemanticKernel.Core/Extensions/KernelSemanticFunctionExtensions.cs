@@ -326,10 +326,10 @@ public static class KernelSemanticFunctionExtensions
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    private static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(IKernel kernel)
+    internal static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(IKernel? kernel = null)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        if (kernel.PromptTemplateEngine is not null)
+        if (kernel is not null && kernel.PromptTemplateEngine is not null)
         {
             return new PromptTemplateFactory(kernel.PromptTemplateEngine);
         }
@@ -347,7 +347,7 @@ public static class KernelSemanticFunctionExtensions
             if (constructor is not null)
             {
 #pragma warning disable CS8601 // Null logger factory is OK
-                var factory = (IPromptTemplateFactory)constructor.Invoke(new object[] { kernel.LoggerFactory });
+                var factory = (IPromptTemplateFactory)constructor.Invoke(new object[] { kernel?.LoggerFactory });
                 if (factory is not null)
                 {
                     return factory;
