@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
@@ -53,4 +56,55 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
         throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
+
+    private static IPromptTemplateFactory? s_promptTemplateFactory;
+
+    /// <summary>
+    /// Create an instance of <see cref="IPromptTemplateFactory"/> using implementations from current domain.
+    /// </summary>
+    /// <param name="kernel">Kernel instance</param>
+    public static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(IKernel kernel)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (kernel.PromptTemplateEngine is not null)
+        {
+            return new PromptTemplateFactory(kernel.PromptTemplateEngine);
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        if (s_promptTemplateFactory is null)
+        {
+            var appDomain = AppDomain.CurrentDomain;
+            var assemblies = appDomain.GetAssemblies();
+            var type = typeof(IPromptTemplateFactory);
+            var types = assemblies.SelectMany(a => a.GetTypes())
+                .Where(t => type.IsAssignableFrom(t)
+                    && !t.IsInterface
+                    && !t.IsAbstract
+                    && t.GetConstructor(new Type[] { typeof(ILoggerFactory) }) != null);
+            var factories = types.Select(t => (IPromptTemplateFactory)Activator.CreateInstance(t, kernel.LoggerFactory)).ToArray();
+
+            s_promptTemplateFactory = new AggregatorPromptTemplateFactory(factories);
+        }
+
+        return s_promptTemplateFactory;
+    }
+
+    #region Obsolete
+    [Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
+    internal sealed class PromptTemplateFactory : IPromptTemplateFactory
+    {
+        private readonly IPromptTemplateEngine _promptTemplateEngine;
+
+        public PromptTemplateFactory(IPromptTemplateEngine promptTemplateEngine)
+        {
+            this._promptTemplateEngine = promptTemplateEngine;
+        }
+
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            return new PromptTemplate(templateString, promptTemplateConfig, this._promptTemplateEngine);
+        }
+    }
+    #endregion
 }
