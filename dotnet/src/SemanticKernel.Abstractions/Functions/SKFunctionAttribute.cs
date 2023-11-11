@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel;
 /// by an LLM or embedding.
 /// </para>
 /// <para>
-/// Functions may have any number of parameters. InputParameters of type <see cref="ILogger"/> and
+/// Functions may have any number of parameters. Parameters of type <see cref="ILogger"/> and
 /// <see cref="CancellationToken"/> are filled in from the corresponding members of the <see cref="SKContext"/>;
 /// <see cref="SKContext"/> itself may also be a parameter. A given native function may declare at
 /// most one parameter of each of these types.  All other parameters must be of a primitive .NET type or
@@ -39,7 +39,7 @@ namespace Microsoft.SemanticKernel;
 /// or a <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/> of such a type.
 /// </para>
 /// <para>
-/// InputParameters are populated based on a context variable of the same name, unless an <see cref="SKNameAttribute"/> is
+/// Parameters are populated based on a context variable of the same name, unless an <see cref="SKNameAttribute"/> is
 /// used to override which context variable is targeted. If no context variable of the given name is present, but
 /// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the siguatre,
 /// that default value is used instead. If no default value was specified and it's the first parameter, the "input"

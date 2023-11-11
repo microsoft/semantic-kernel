@@ -546,7 +546,7 @@ public sealed class PlanTests : IDisposable
         var plan = new Plan("Write a poem about a topic and send in an email.");
 
         var writePoem = new Plan(emailFunctions["WritePoem"]);
-        // fileStep.InputParameters["input"] = "$INPUT";
+        // fileStep.Parameters["input"] = "$INPUT";
         writePoem.Outputs.Add("POEM");
 
         var sendEmail = new Plan(emailFunctions["SendEmail"]);

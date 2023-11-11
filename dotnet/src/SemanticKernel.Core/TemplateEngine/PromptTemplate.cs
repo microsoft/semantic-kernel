@@ -61,7 +61,7 @@ public sealed class PromptTemplate : IPromptTemplate
 
     private List<ParameterView> InitParameters()
     {
-        // InputParameters from config.json
+        // Parameters from config.json
         Dictionary<string, ParameterView> result = new(this._promptConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptConfig.Input.Parameters)
         {
