@@ -8,63 +8,65 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Model of Assistant data returned from OpenAI
 /// </summary>
-public class AssistantModel
+public record AssistantModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; init; } = string.Empty;
 
     /// <summary>
     /// Always "assistant"
     /// </summary>
     [JsonPropertyName("object")]
-    public string Object { get; set; } = "assistant";
+#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
+    public string Object { get; init; } = "assistant";
+#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the assistant was created
     /// </summary>
     [JsonPropertyName("created_at")]
-    public long CreatedAt { get; set; }
+    public long CreatedAt { get; init; }
 
     /// <summary>
     /// Name of the assistant
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// The description of the assistant
     /// </summary>
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; init; } = string.Empty;
 
     /// <summary>
     /// ID of the model to use
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; set; } = string.Empty;
+    public string Model { get; init; } = string.Empty;
 
     /// <summary>
     /// The system instructions that the assistant uses
     /// </summary>
     [JsonPropertyName("instructions")]
-    public string Instructions { get; set; } = string.Empty;
+    public string Instructions { get; init; } = string.Empty;
 
     /// <summary>
     /// A list of tool enabled on the assistant
     /// There can be a maximum of 128 tools per assistant.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolModel> Tools { get; set; }
+    public List<ToolModel> Tools { get; init; } = new List<ToolModel>();
 
     /// <summary>
     /// A list of file IDs attached to this assistant.
     /// There can be a maximum of 20 files attached to the assistant.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; }
+    public List<string> FileIds { get; init; } = new List<string>();
 
     /// <summary>
     /// Set of 16 key-value pairs that can be attached to an object.
@@ -74,14 +76,17 @@ public class AssistantModel
     /// maxium of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; }
+    public Dictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
 
     /// <summary>
     /// Tool entry
     /// </summary>
-    public class ToolModel
+    public record ToolModel
     {
+        /// <summary>
+        /// Type of tool to have at assistant's disposition
+        /// </summary>
         [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
+        public string Type { get; init; } = string.Empty;
     }
 }

@@ -8,28 +8,28 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 public class ThreadRunStepModel
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("object")]
-    public string Object { get; set; }
+    public string Object { get; set; } = string.Empty;
 
     [JsonPropertyName("created_at")]
     public long CreatedAt { get; set; }
 
     [JsonPropertyName("run_id")]
-    public string RunId { get; set; }
+    public string RunId { get; set; } = string.Empty;
 
     [JsonPropertyName("assistant_id")]
-    public string AssistantId { get; set; }
+    public string AssistantId { get; set; } = string.Empty;
 
     [JsonPropertyName("thread_id")]
-    public string ThreadId { get; set; }
+    public string ThreadId { get; set; } = string.Empty;
 
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = string.Empty;
 
     [JsonPropertyName("cancelled_at")]
     public long? CancelledAt { get; set; }
@@ -44,7 +44,7 @@ public class ThreadRunStepModel
     public long? FailedAt { get; set; }
 
     [JsonPropertyName("last_error")]
-    public string LastError { get; set; }
+    public string LastError { get; set; } = string.Empty;
 
     [JsonPropertyName("step_details")]
     public StepDetailsModel StepDetails { get; set; }
@@ -52,7 +52,7 @@ public class ThreadRunStepModel
     public class StepDetailsModel
     {
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         [JsonPropertyName("message_creation")]
         public MessageCreationDetailsModel MessageCreation { get; set; }
@@ -64,16 +64,16 @@ public class ThreadRunStepModel
     public class MessageCreationDetailsModel
     {
         [JsonPropertyName("message_id")]
-        public string MessageId { get; set; }
+        public string MessageId { get; set; } = string.Empty;
     }
 
     public class ToolCallsDetailsModel
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         [JsonPropertyName("function")]
         public FunctionDetailsModel Function { get; set; }
@@ -82,9 +82,9 @@ public class ThreadRunStepModel
     public class FunctionDetailsModel
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("arguments")]
-        public string Arguments { get; set; }
+        public string Arguments { get; set; } = string.Empty;
     }
 }

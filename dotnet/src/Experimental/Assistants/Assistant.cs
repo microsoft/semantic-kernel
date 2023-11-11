@@ -1,18 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
@@ -20,138 +11,22 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Assistant - Customizable entity that can be configured to respond to users’ messages
 /// </summary>
-public class Assistant : IPlugin
+public sealed class Assistant : IPlugin
 {
-    private readonly Kernel _kernel;
-    private readonly List<IPlugin> _plugins;
-    private readonly List<IAIService> _aiServices;
-    private readonly HttpClient _client = new();
-    private readonly string _apiKey;
-    private readonly string _model;
-    private readonly List<ISKFunction> _functions;
+    private AssistantModel _assistantModel;
+    private readonly HttpClient _client;
 
     /// <summary>
-    /// Assistant ID
+    /// Properties of this Assistant
     /// </summary>
-    public string Id { get; private set; }
+    public AssistantModel Properties => this._assistantModel;
 
-    /// <summary>
-    /// Assistant name
-    /// </summary>
-    public string Name { get; private set; }
+    /// <inheritdoc/>
+    public string Name => this._assistantModel.Name;
 
-    /// <summary>
-    /// Assistant description
-    /// </summary>
-    public string Description { get; private set; }
-
-    /// <summary>
-    /// System instructions that the assistant uses
-    /// </summary>
-    public string Instructions { get; private set; }
-
-    IEnumerable<ISKFunction> IPlugin.Functions
+    /// <inheritdoc/>
+    public IEnumerable<ISKFunction> Functions
     {
-        get { return this._functions; }
-    }
-
-    // Allows the creation of an assistant from a YAML file
-    /*public static Assistant FromConfiguration(
-        string configurationFile,
-        List<IAIService>? aiServices = null,
-        List<IPlugin>? plugins = null,
-        List<IPromptTemplateEngine>? promptTemplateEngines = null
-    )
-    {
-        // Open the YAML configuration file
-        var yamlContent = File.ReadAllText(configurationFile);
-        var deserializer = new DeserializerBuilder()
-            .WithTypeConverter(new ExecutionSettingsModelConverter())
-            .Build();
-        AssistantKernelModel assistantKernelModel = deserializer.Deserialize<AssistantKernelModel>(yamlContent);
-
-        // Create the assistant kernel
-        return new Assistant(
-            assistantKernelModel.Name,
-            assistantKernelModel.Description,
-            assistantKernelModel.Template,
-            aiServices,
-            plugins,
-            promptTemplateEngines
-        );
-    }*/
-
-    public Assistant(
-        string name,
-        string description,
-        string instructions,
-        List<IAIService>? aiServices = null,
-        List<IPlugin>? plugins = null,
-        List<IPromptTemplateEngine>? promptTemplateEngines = null
-    )
-    {
-        this.Name = name;
-        this.Description = description;
-        this.Instructions = instructions;
-        this._aiServices = aiServices ?? new List<IAIService>();
-
-        // Grab the first AI service for the apiKey and model for the Assistants API
-        // This requires that the API key be made internal so it can be accessed here
-        this._apiKey = string.Empty;// ((OpenAIChatCompletion)this._aiServices[0]).ApiKey;
-        this._model = string.Empty;// ((OpenAIChatCompletion)this._aiServices[0]).ModelId;
-
-        // Create a function collection using the plugins
-        var functionCollection = new FunctionCollection();
-        this._plugins = plugins ?? new List<IPlugin>();
-        if (plugins != null)
-        {
-            foreach (IPlugin plugin in plugins)
-            {
-                foreach (ISKFunction function in plugin.Functions)
-                {
-                    functionCollection.AddFunction(function);
-                }
-            }
-        }
-
-        // Create an AI service provider using the AI services
-        var services = new AIServiceCollection();
-        Dictionary<Type, string> defaultIds = new() { };
-
-        /*if (aiServices != null)
-        {
-            foreach (IAIService aiService in aiServices)
-            {
-                if (aiService is AzureOpenAIChatCompletion azureOpenAIChatCompletion)
-                {
-                    services.SetService<IAIService>(azureOpenAIChatCompletion.ModelId, azureOpenAIChatCompletion, true);
-                }
-            }
-        }*/
-
-        // Initialize the prompt template engine
-        IPromptTemplateEngine? promptTemplateEngine = default;
-        if (promptTemplateEngines != null && promptTemplateEngines.Count > 0)
-        {
-            promptTemplateEngine = promptTemplateEngines[0];
-        }
-        /*else
-        {
-            promptTemplateEngine = new HandlebarsPromptTemplateEngine();
-        }*/
-
-        // Create underlying kernel
-        this._kernel = new SemanticKernel.Kernel(
-            functionCollection,
-            services.Build(),
-            promptTemplateEngine,
-            null!,
-            NullHttpHandlerFactory.Instance,
-            null
-        );
-
-        // Create functions so other kernels can use this kernel as a plugin
-        // TODO: make it possible for the ask function to have additional parameters based on the instruction template
         /*this._functions = new List<ISKFunction>
         {
             NativeFunction.Create(
@@ -168,183 +43,130 @@ public class Assistant : IPlugin
                 null
             )
         };*/
+        get { return null; }
     }
 
-    public async Task<FunctionResult> RunAsync(
-        IThread thread,
-        Dictionary<string, object?>? variables = default,
-        bool streaming = false,
-        CancellationToken cancellationToken = default
-    )
+    /// <summary>
+    /// Creates a new Assistant
+    /// </summary>
+    /// <param name="httpClient">HttpClient to use to make creation request to OpenAI</param>
+    /// <param name="properties">Properties of instance to create.</param>
+    /// <returns>Created Assistant instance, or null on failure</returns>
+    public static async Task<Assistant?> CreateAsync(HttpClient httpClient, AssistantModel properties)
     {
-        // Initialize the agent if it doesn't exist
-        await InitializeAgentAsync().ConfigureAwait(false);
+        var requestDataFromGivenProperties = new { };
+        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
 
-        // Invoke the thread
-        return await thread.InvokeAsync(this._kernel/*, variables, streaming,*/, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    public List<FunctionView> GetFunctionViews()
-    {
-        var functionViews = new List<FunctionView>();
-
-        foreach (var plugin in this._plugins)
-        {
-            foreach (var function in plugin.Functions)
-            {
-                FunctionView initialFunctionView = function.Describe();
-                functionViews.Add(new FunctionView(
-                    initialFunctionView.Name,
-                    plugin.Name,
-                    initialFunctionView.Description,
-                    initialFunctionView.Parameters
-                ));
-            }
-        }
-
-        return functionViews;
-    }
-
-    public async Task<IThread> CreateThreadAsync()
-    {
-        string url = "https://api.openai.com/v1/threads";
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url);
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        ThreadModel threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody);
-        return new OpenAIThread(threadModel.Id, this._apiKey, this);
-    }
-
-    public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
-    {
-        return this._kernel.RegisterCustomFunction(customFunction);
-    }
-
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? functions = null, ILoggerFactory? loggerFactory = null, CultureInfo? culture = null)
-    {
-        return this._kernel.CreateNewContext(variables, functions, loggerFactory, culture);
-    }
-
-    public T GetService<T>(string? name = null) where T : IAIService
-    {
-        return this._kernel.GetService<T>(name);
-    }
-
-    public IAIService GetDefaultService(string? name = null)
-    {
-        return this._aiServices[0];
-    }
-
-    public List<IAIService> GetAllServices()
-    {
-        return this._aiServices;
-    }
-
-    private async Task InitializeAgentAsync()
-    {
-        // Create new agent if it doesn't exist
-        if (this.Id == null)
+        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
+        if (assistantModel is null)
         {
-            var requestData = new
-            {
-                //model = ((AIService)this._aiServices[0]).ModelId
-            };
-
-            string url = "https://api.openai.com/v1/assistants";
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
-
-            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-            httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-            using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-            string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            AssistantModel assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody)!;
-            this.Id = assistantModel.Id;
+            return null;
         }
+
+        return new Assistant(httpClient, assistantModel);
     }
 
-    private async Task<IThread> GetThreadAsync(string threadId)
+    /// <summary>
+    /// Retrieve an existing Assistant from OpenAI
+    /// </summary>
+    /// <param name="httpClient">HttpClient to use to make the request to OpenAI</param>
+    /// <param name="id">Identifier of Assistant to retrieve</param>
+    /// <returns>Retrieved Assistant, or null if it isn't found</returns>
+    public static async Task<Assistant?> RetrieveAsync(HttpClient httpClient, string id)
     {
-        var requestData = new
+        var requestData = new { };
+        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestData).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
         {
-            thread_id = threadId
-        };
+            return null;
+        }
 
-        string url = "https://api.openai.com/v1/threads";
-        using var httpRequestMessage = HttpRequest.CreateGetRequest(url, requestData);
-
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody)!;
-        return new OpenAIThread(threadModel.Id, this._apiKey, this);
+        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
+        if (assistantModel is null)
+        {
+            return null;
+        }
+
+        return new Assistant(httpClient, assistantModel);
     }
 
-    // This is the function that is provided as part of the IPlugin interface
-    private async Task<string> AskAsync(string ask, string? threadId = default)
+    /// <summary>
+    /// List existing Assistant instances from OpenAI
+    /// </summary>
+    /// <param name="httpClient">HttpClient to use to make the request to OpenAI</param>
+    /// <returns>List of retrieved Assistants</returns>
+    public static async Task<List<AssistantModel>> ListAsync(
+        HttpClient httpClient,
+        int limit = 20,
+        bool ascending = false,
+        string? foo = null,
+        string? before = null)
     {
-        // Hack to show logging in terminal
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("ProjectManager");
-        Console.ResetColor();
-        Console.Write(" to ");
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write(this.Name);
-        Console.ResetColor();
-        Console.Write(" > ");
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine(ask);
-        Console.ResetColor();
+        var requestData = new { };
+        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestData).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
 
-        // Create a new thread if one is not provided
-        IThread thread;
-        if (threadId == null)
+        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        List<AssistantModel>? assistantModels = JsonSerializer.Deserialize<List<AssistantModel>>(responseBody);
+        if (assistantModels is null)
         {
-            // Create new thread
-            thread = await this.CreateThreadAsync().ConfigureAwait(false);
-        }
-        else
-        {
-            // Retrieve existing thread
-            thread = await this.GetThreadAsync(threadId).ConfigureAwait(false);
+            return new List<AssistantModel>();
         }
 
-        // Add the message from the other assistant
-        await thread.AddUserMessageAsync(ask).ConfigureAwait(false);
-
-        var results = await this.RunAsync(
-            thread,
-            variables: new Dictionary<string, object?>() { }
-        ).ConfigureAwait(false);
-
-        List<ModelMessage> modelMessages = results.GetValue<List<ModelMessage>>()!;
-
-        // Concatenate all the messages from the model
-        string resultsString = string.Join("\n", modelMessages.Select(modelMessage => modelMessage.ToString()));
-
-        // Hack to show logging in terminal
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write(this.Name);
-        Console.ResetColor();
-        Console.Write(" to ");
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("ProjectManager");
-        Console.ResetColor();
-        Console.Write(" > ");
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(resultsString);
-        Console.ResetColor();
-
-        return resultsString;
+        return assistantModels;
     }
 
-    public IPromptTemplateEngine PromptTemplateEngine => this._kernel.PromptTemplateEngine;
+    /// <summary>
+    /// Modify an existing Assistant
+    /// </summary>
+    /// <param name="properties">New properties for our instance</param>
+    public async Task ModifyAsync(AssistantModel properties)
+    {
+        var requestDataFromGivenProperties = new { };
+        using var response = await this._client.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
 
-    public IReadOnlyFunctionCollection Functions => this._kernel.Functions;
+        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
+        if (assistantModel is null)
+        {
+            throw new JsonException();
+        }
 
-    public IDelegatingHandlerFactory HttpHandlerFactory => this._kernel.HttpHandlerFactory;
+        this._assistantModel = assistantModel;
+    }
+
+    /// <summary>
+    /// Delete an existing Assistant
+    /// </summary>
+    /// <param name="id">Identifier of Assistant to retrieve</param>
+    public async Task DeleteAsync(string id)
+    {
+        var requestDataFromGivenProperties = new { };
+        using var response = await this._client.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        // Clear our properties so further operations are not possible on this instance
+        this._assistantModel = new AssistantModel();
+    }
+
+    /// <summary>
+    /// Private constructor
+    /// </summary>
+    private Assistant(HttpClient httpClient, AssistantModel properties)
+    {
+        this._assistantModel = properties;
+        this._client = httpClient;
+    }
+}
+
+internal static class TemporaryHack
+{
+    internal static async Task<HttpResponseMessage> MakePretendAssistantRestCallAsync(this HttpClient client, object blah)
+    {
+        return new HttpResponseMessage();
+    }
 }
