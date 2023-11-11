@@ -7,10 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -66,7 +65,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
+    [RetryTheory(maxRetries: 3)]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(false, "What is the weather in Seattle?", "Seattle")]
@@ -126,7 +125,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportOpenAIPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
 
@@ -148,11 +147,13 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
+        var builder = new KernelBuilder()
+            .WithLoggerFactory(this._loggerFactory)
+            .WithRetryBasic();
 
         if (useChatModel)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
@@ -167,11 +168,10 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
-                .WithMemoryStorage(new VolatileMemoryStore());
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();

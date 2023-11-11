@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,13 +20,12 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new PromptTemplateEngine();
     }
 
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
@@ -37,7 +35,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -46,7 +44,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
@@ -56,14 +54,13 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
     }
 
     private readonly RedirectOutput _logger;
-    private readonly PromptTemplateEngine _target;
 
     public void Dispose()
     {

@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -155,36 +158,36 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<IFunctionCollection>? functions = null)
     {
-        var kernel = new Mock<IKernel>();
-
         if (functions is null)
         {
             functions = new Mock<IFunctionCollection>();
             functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
+        var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+        var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(kernel.Object,
-            new ContextVariables(testPlanString),
-            functions.Object
-        );
+        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(testPlanString), functions.Object);
 
-        var context = new SKContext(
-            kernel.Object,
-            functions: functions.Object
-        );
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
+
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, object, CancellationToken>(
+        )).Callback<
+            SKContext,
+            object,
+            CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
-        // Mock Functions
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
@@ -220,9 +223,14 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+            mockFunction.Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+                .Returns<
+                    SKContext,
+                    AIRequestSettings,
+                    CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(name, pluginName, context));

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,9 +35,9 @@ public interface ISKFunction
     string Description { get; }
 
     /// <summary>
-    /// AI service settings
+    /// Model request settings.
     /// </summary>
-    AIRequestSettings? RequestSettings { get; }
+    IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -56,13 +57,13 @@ public interface ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
+    #region Obsolete
+
     /// <summary>
-    /// Set the default function collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
+    /// AI service settings
     /// </summary>
-    /// <param name="functions">Kernel's function collection</param>
-    /// <returns>Self instance</returns>
-    ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
+    [Obsolete("Use PromptTemplateConfig.ModelSettings instead. This will be removed in a future release.")]
+    AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
@@ -70,6 +71,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
@@ -77,9 +79,8 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
-
-    #region Obsolete
 
     /// <summary>
     /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}
@@ -94,9 +95,19 @@ public interface ISKFunction
     /// </summary>
     /// <param name="skills">Kernel's function collection</param>
     /// <returns>Self instance</returns>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
+
+    /// <summary>
+    /// Set the default function collection to use when the function is invoked
+    /// without a context or with a context that doesn't have a collection.
+    /// </summary>
+    /// <param name="functions">Kernel's function collection</param>
+    /// <returns>Self instance</returns>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
 
     /// <summary>
     /// Whether the function is defined using a prompt template.

@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
+using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -44,6 +45,9 @@ public static class Example15_TextMemoryPlugin
 
         // DuckDB Memory Store - a file-based store that persists data in a DuckDB database
         // store = await CreateSampleDuckDbMemoryStoreAsync();
+
+        // MongoDB Memory Store - a store that persists data in a MongoDB database
+        // store = CreateSampleMongoDBMemoryStore();
 
         // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
         // store = CreateSampleAzureCognitiveSearchMemoryStore();
@@ -81,6 +85,12 @@ public static class Example15_TextMemoryPlugin
     private static async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
         IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+        return store;
+    }
+
+    private static IMemoryStore CreateSampleMongoDBMemoryStore()
+    {
+        IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
         return store;
     }
 
@@ -141,7 +151,7 @@ public static class Example15_TextMemoryPlugin
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
@@ -152,7 +162,7 @@ public static class Example15_TextMemoryPlugin
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
-        using SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+        SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 1: Store and retrieve memories using the ISemanticTextMemory (textMemory) object.
@@ -208,7 +218,7 @@ public static class Example15_TextMemoryPlugin
             [TextMemoryPlugin.KeyParam] = "info5"
         }, cancellationToken);
 
-        Console.WriteLine("Memory with key 'info5':" + result?.ToString() ?? "ERROR: memory not found");
+        Console.WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,7 +254,7 @@ public static class Example15_TextMemoryPlugin
             ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
         Console.WriteLine();
 
         /*
@@ -282,7 +292,7 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
+        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(aboutMeOracle, new()
         {
@@ -292,7 +302,7 @@ Answer:
         }, cancellationToken);
 
         Console.WriteLine("Ask: Do I live in the same town where I grew up?");
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
 
         /*
         Approximate Output:

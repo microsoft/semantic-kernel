@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// Instrumented planner that creates a Stepwise plan using Mrkl systems.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public class InstrumentedStepwisePlanner : IStepwisePlanner
+internal class InstrumentedStepwisePlanner : IStepwisePlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedStepwisePlanner"/> class.

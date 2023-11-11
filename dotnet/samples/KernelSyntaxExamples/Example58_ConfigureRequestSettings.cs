@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -25,13 +25,13 @@ public static class Example58_ConfigureRequestSettings
 
         if (serviceId == null || apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -44,7 +44,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokeSemanticFunctionAsync(
             prompt,
-            requestSettings: new OpenAIRequestSettings()
+            new OpenAIRequestSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
@@ -68,7 +68,7 @@ public static class Example58_ConfigureRequestSettings
           }
         }";
         var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
+        var func = kernel.CreateSemanticFunction(prompt, templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
         Console.WriteLine(result.GetValue<string>());

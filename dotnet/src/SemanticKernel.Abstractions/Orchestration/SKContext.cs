@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -53,68 +56,64 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Kernel context reference
+    /// Executes functions using the current resources loaded in the context
     /// </summary>
-    public IKernel Kernel => this.GetKernelContext();
+    public IFunctionRunner Runner { get; }
 
     /// <summary>
-    /// Spawns the kernel for the context.
+    /// AI service provider
     /// </summary>
-    /// <remarks>
-    /// The kernel context is a lightweight instance of the main kernel with its services.
-    /// </remarks>
-    /// <returns>Kernel reference</returns>
-    private IKernel GetKernelContext()
-        => this._originalKernel; // TODO: Clone a lightweight kernel instead of returning the same instance
+    public IAIServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// AIService selector implementation
+    /// </summary>
+    internal IAIServiceSelector ServiceSelector { get; }
+
+    /// <summary>
+    /// Function invoking event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
+
+    /// <summary>
+    /// Function invoked event handler wrapper
+    /// </summary>
+    internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="kernel">Kernel reference</param>
+    /// <param name="functionRunner">Function runner reference</param>
+    /// <param name="serviceProvider">AI service provider</param>
+    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
-    public SKContext(
-        IKernel kernel,
+    /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
+    /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
+    /// <param name="loggerFactory">Logger factory to be used in context</param>
+    /// <param name="culture">Culture related to the context</param>
+    internal SKContext(
+        IFunctionRunner functionRunner,
+        IAIServiceProvider serviceProvider,
+        IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null)
+        IReadOnlyFunctionCollection? functions = null,
+        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(functionRunner, nameof(functionRunner));
 
-        this._originalKernel = kernel;
+        this.Runner = functionRunner;
+        this.ServiceProvider = serviceProvider;
+        this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
-        this.LoggerFactory = kernel.LoggerFactory;
-        this._culture = CultureInfo.CurrentCulture;
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="variables">Context variables to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Functions)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="functions">Functions to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        IReadOnlyFunctionCollection? functions = null) : this(kernel, null, functions)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Functions)
-    {
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._culture = culture ?? CultureInfo.CurrentCulture;
+        this.FunctionInvokingHandler = invokingWrapper;
+        this.FunctionInvokedHandler = invokedWrapper;
     }
 
     /// <summary>
@@ -130,26 +129,35 @@ public sealed class SKContext
     /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
-    /// <returns>A new context copied from the current one</returns>
+    /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
+        => this.Clone(null, null);
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// and optionally allows overriding the variables and functions.
+    /// </summary>
+    /// <param name="variables">Override the variables with the provided ones</param>
+    /// <param name="functions">Override the functions with the provided ones</param>
+    /// <returns>A new context cloned from the current one</returns>
+    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            kernel: this._originalKernel,
-            variables: this.Variables.Clone())
-        {
-            Culture = this.Culture,
-        };
+            this.Runner,
+            this.ServiceProvider,
+            this.ServiceSelector,
+            variables ?? this.Variables.Clone(),
+            functions ?? this.Functions,
+            this.FunctionInvokingHandler,
+            this.FunctionInvokedHandler,
+            this.LoggerFactory,
+            this.Culture);
     }
 
     /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
     private CultureInfo _culture;
-
-    /// <summary>
-    /// Kernel instance reference for this context.
-    /// </summary>
-    private readonly IKernel _originalKernel;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

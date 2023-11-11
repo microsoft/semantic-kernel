@@ -36,7 +36,7 @@ public static class Example20_HuggingFace
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 
     /// <summary>
@@ -72,6 +72,6 @@ public static class Example20_HuggingFace
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

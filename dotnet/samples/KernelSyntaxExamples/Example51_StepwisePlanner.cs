@@ -16,7 +16,6 @@ using RepoUtils;
 /**
  * This example shows how to use Stepwise Planner to create and run a stepwise plan for a given goal.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example51_StepwisePlanner
 {
@@ -203,7 +202,7 @@ public static class Example51_StepwisePlanner
         var maxTokens = 0;
         if (useChat)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,

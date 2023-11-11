@@ -30,7 +30,7 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
+        var chatCompletion = new AzureOpenAIChatCompletionWithData(GetCompletionWithDataConfig());
         var chatHistory = chatCompletion.CreateNewChat();
 
         // First question without previous context based on uploaded content.
@@ -91,7 +91,7 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         IKernel kernel = new KernelBuilder()
-            .WithAzureChatCompletionService(config: completionWithDataConfig)
+            .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
             .Build();
 
         var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
@@ -103,7 +103,7 @@ public static class Example54_AzureChatCompletionWithData
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
 
         // Second question based on uploaded content.
@@ -115,16 +115,16 @@ public static class Example54_AzureChatCompletionWithData
         // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureChatCompletionWithDataConfig"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureChatCompletionWithDataConfig GetCompletionWithDataConfig()
+    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
     {
-        return new AzureChatCompletionWithDataConfig
+        return new AzureOpenAIChatCompletionWithDataConfig
         {
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
