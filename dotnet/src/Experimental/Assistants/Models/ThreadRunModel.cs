@@ -127,7 +127,7 @@ public class ThreadRunModel
         /// Type of tool to have at assistant's disposition
         /// </summary>
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
     }
 
     /// <summary>
