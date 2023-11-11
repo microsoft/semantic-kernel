@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Microsoft.SemanticKernel.Models;
@@ -24,10 +25,11 @@ public static class KernelSemanticFunctionMarkdownExtensions
     public static ISKFunction CreateFromMarkdownResource(
         this IKernel kernel,
         string resourceName,
-        string functionName,
+        string? functionName = null,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
+        functionName ??= Path.GetFileNameWithoutExtension(resourceName);
         return SKFunctionMarkdown.CreateFromResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
