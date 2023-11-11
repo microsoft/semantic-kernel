@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -19,17 +18,27 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public string Id { get; private set; }
 
-    private readonly string _apiKey;
-    private readonly HttpClient _httpClient;
+    private readonly IOpenAIRestContext _restContext;
 
     /// <summary>
-    /// Constructor
+    /// $$$
     /// </summary>
-    internal ChatThread(string id, string apiKey, HttpClient httpClient)
+    internal static async Task<ChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    {
+        var threadModel =
+            await restContext.CreateThreadAsync(cancellationToken).ConfigureAwait(false) ??
+            throw new InvalidOperationException("$$$");
+
+        return new ChatThread(threadModel.Id, restContext);
+    }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    internal ChatThread(string id, IOpenAIRestContext restContext)
     {
         this.Id = id;
-        this._apiKey = apiKey;
-        this._httpClient = httpClient;
+        this._restContext = restContext;
     }
 
     /// <inheritdoc/>
@@ -44,7 +53,7 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task AddMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
     {
-        await this._httpClient.CreateMessageAsync(this.Id, message, this._apiKey, cancellationToken).ConfigureAwait(false);
+        await this._restContext.CreateMessageAsync(this.Id, message, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -59,7 +68,7 @@ public sealed class ChatThread : IChatThread
     public async Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default)
     {
         var message =
-            await this._httpClient.GetMessageAsync(this.Id, messageId, this._apiKey, cancellationToken).ConfigureAwait(false) ??
+            await this._restContext.GetMessageAsync(this.Id, messageId, cancellationToken).ConfigureAwait(false) ??
             throw new ArgumentException("Uknown messageId", nameof(messageId));
 
         return new ChatMessage(message.Content, message.Role);
@@ -68,7 +77,7 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
-        var messages = await this._httpClient.GetMessagesAsync(this.Id, this._apiKey, cancellationToken).ConfigureAwait(false);;
+        var messages = await this._restContext.GetMessagesAsync(this.Id, cancellationToken).ConfigureAwait(false);;
 
         return messages.Select(m => new ChatMessage(m.Content, m.Role));
     }
@@ -242,7 +251,7 @@ public sealed class ChatThread : IChatThread
         //    });
         //}
 
-        return await this._httpClient.CreateRunAsync(this.Id, assistantId, this._apiKey).ConfigureAwait(false); // $$$ NULLABLE
+        return await this._restContext.CreateRunAsync(this.Id, assistantId).ConfigureAwait(false); // $$$ NULLABLE
     }
 
     //private OpenAIFunction ToOpenAIFunction(FunctionView functionView)

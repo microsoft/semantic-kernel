@@ -1,29 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static partial class HttpClientExtensions
+internal static partial class OpenAIRestExtensions
 {
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
     /// <param name="message"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<ThreadMessageModel?> CreateMessageAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
         ChatMessage message,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         var payload =
@@ -34,54 +31,47 @@ internal static partial class HttpClientExtensions
             };
 
         return
-            httpClient.ExecutePostAsync<ThreadMessageModel>(
+            context.ExecutePostAsync<ThreadMessageModel>(
                 GetMessagesUrl(threadId),
                 payload,
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
     /// <param name="messageId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<ThreadMessageModel?> GetMessageAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
         string messageId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<ThreadMessageModel>(
+            context.ExecuteGetAsync<ThreadMessageModel>(
                 GetMessagesUrl(threadId, messageId),
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<IList<ThreadMessageModel>?> GetMessagesAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<IList<ThreadMessageModel>>(
+            context.ExecuteGetAsync<IList<ThreadMessageModel>>(
                 GetMessagesUrl(threadId),
-                apiKey,
                 cancellationToken);
     }
 

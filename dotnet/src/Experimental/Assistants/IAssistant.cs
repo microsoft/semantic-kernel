@@ -4,9 +4,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
+/// <summary>
+/// $$$
+/// </summary>
 public interface IAssistant
 {
-    IEnumerable<ISKFunction> Functions { get; }
-
-    string Name { get; }
+    /// <summary>
+    /// $$$
+    /// </summary>
+    string Id { get; }
 }

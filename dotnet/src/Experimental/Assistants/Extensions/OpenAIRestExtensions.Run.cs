@@ -1,29 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static partial class HttpClientExtensions
+internal static partial class OpenAIRestExtensions
 {
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
     /// <param name="assistantId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<ThreadRunModel?> CreateRunAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
         string assistantId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         var payload =
@@ -35,56 +32,49 @@ internal static partial class HttpClientExtensions
             };
 
         return
-            httpClient.ExecutePostAsync<ThreadRunModel>(
+            context.ExecutePostAsync<ThreadRunModel>(
                 GetRunUrl(threadId),
                 payload,
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
     /// <param name="runId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<ThreadRunModel?> GetRunAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
         string runId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<ThreadRunModel>(
+            context.ExecuteGetAsync<ThreadRunModel>(
                 GetRunUrl(threadId, runId),
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="threadId"></param>
     /// <param name="runId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<IList<ThreadRunStepModel>?> GetRunStepsAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string threadId,
         string runId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<IList<ThreadRunStepModel>>(
+            context.ExecuteGetAsync<IList<ThreadRunStepModel>>(
                 GetRunStepsUrl(threadId, runId),
-                apiKey,
                 cancellationToken);
     }
 

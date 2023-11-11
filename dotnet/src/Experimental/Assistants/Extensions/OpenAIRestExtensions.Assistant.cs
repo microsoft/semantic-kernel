@@ -1,76 +1,66 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static partial class HttpClientExtensions
+internal static partial class OpenAIRestExtensions
 {
     private const string BaseAssistantUrl = $"{BaseUrl}/assistants";
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="model"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<AssistantModel?> CreateAssistantAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         AssistantModel model,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecutePostAsync<AssistantModel>(
+            context.ExecutePostAsync<AssistantModel>(
                 BaseAssistantUrl,
                 model,
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
+    /// <param name="context"></param>
     /// <param name="assistantId"></param>
-    /// <param name="apiKey"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<AssistantModel?> GetAssistantAsync(
-        this HttpClient httpClient,
+        this IOpenAIRestContext context,
         string assistantId,
-        string apiKey,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<AssistantModel>(
+            context.ExecuteGetAsync<AssistantModel>(
                 GetAssistantUrl(assistantId),
-                apiKey,
                 cancellationToken);
     }
 
     /// <summary>
     /// $$$
     /// </summary>
-    /// <param name="httpClient"></param>
-    /// <param name="apiKey"></param>
+    /// <param name="context"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static Task<IList<AssistantModel>?> GetAssistantsAsync(
-        this HttpClient httpClient,
-        string apiKey,
+        this IOpenAIRestContext context,
         CancellationToken cancellationToken = default)
     {
         return
-            httpClient.ExecuteGetAsync<IList<AssistantModel>>(
+            context.ExecuteGetAsync<IList<AssistantModel>>(
                 BaseAssistantUrl,
-                apiKey,
                 cancellationToken);
     }
 
