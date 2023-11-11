@@ -97,13 +97,25 @@ public sealed class Assistant : IAssistant
     /// List existing Assistant instances from OpenAI
     /// </summary>
     /// <param name="httpClient">HttpClient to use to make the request to OpenAI</param>
+    /// <param name="limit">A limit on the number of objects to be returned.
+    /// Limit can range between 1 and 100, and the default is 20.</param>
+    /// <param name="ascending">Set to true to sort by ascending created_at timestamp
+    /// instead of descending.</param>
+    /// <param name="after">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include after=obj_foo in order to
+    /// fetch the next page of the list.</param>
+    /// <param name="before">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include before=obj_foo in order to
+    /// fetch the previous page of the list.</param>
     /// <returns>List of retrieved Assistants</returns>
     public static async Task<List<AssistantModel>> ListAsync(
-        HttpClient httpClient,
-        int limit = 20,
-        bool ascending = false,
-        string? foo = null,
-        string? before = null)
+    HttpClient httpClient,
+    int limit = 20,
+    bool ascending = false,
+    string? after = null,
+    string? before = null)
     {
         var requestData = new { };
         using var response = await httpClient.MakePretendAssistantRestCallAsync(requestData).ConfigureAwait(false);
@@ -130,12 +142,7 @@ public sealed class Assistant : IAssistant
         response.EnsureSuccessStatusCode();
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
-        if (assistantModel is null)
-        {
-            throw new JsonException();
-        }
-
+        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody) ?? throw new JsonException();
         this._assistantModel = assistantModel;
     }
 
