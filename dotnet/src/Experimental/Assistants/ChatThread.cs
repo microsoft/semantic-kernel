@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -61,20 +60,9 @@ public sealed class ChatThread : IChatThread
     {
         var message = await this._httpClient.GetMessageAsync(this.Id, messageId, this._apiKey, cancellationToken).ConfigureAwait(false);
 
-        return null;
-        //await this._httpClient.CreateMessageAsync(this.Id, message, this._apiKey, cancellationToken).ConfigureAwait(false);
+        return null; // $$$
 
-        //var url = $"{BaseUrl}/{this.Id}/messages/"+messageId;
-        //using var httpRequestMessage = HttpRequest.CreateGetRequest(url);
-
-        //httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        //httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        //using var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-        //string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        //ThreadMessageModel message = JsonSerializer.Deserialize<ThreadMessageModel>(responseBody);
-
-        //List<object> content = new();
+        //List<object> content = new(); 
         //foreach(var item in message.Content)
         //{
         //    content.Add(item.Text.Value);
@@ -83,6 +71,7 @@ public sealed class ChatThread : IChatThread
         //return new ChatMessage(content, message.Role);
     }
 
+    /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
         var messages = await this._httpClient.GetMessagesAsync(this.Id, this._apiKey, cancellationToken).ConfigureAwait(false);
@@ -175,18 +164,6 @@ public sealed class ChatThread : IChatThread
             return new FunctionResult(this.Id, "$$$", kernel.CreateNewContext(), messages);
         }
 
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public Task<Orchestration.FunctionResult> InvokeAsync(Orchestration.SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public Task<List<ChatMessage>> ListMessagesAsync()
-    {
         throw new NotImplementedException();
     }
 

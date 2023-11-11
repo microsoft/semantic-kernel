@@ -38,7 +38,7 @@ public interface IChatThread
     /// <param name="messageId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ChatMessage> GetMessageAsync(string messageId, CancellationToken cancellationToken = default);
+    Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// $$$

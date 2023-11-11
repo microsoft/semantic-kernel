@@ -10,6 +10,9 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 internal static partial class HttpClientExtensions
 {
     private const string BaseUrl = "https://api.openai.com/v1/";
+    private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
+    private const string HeaderNameAuthorization = "Authorization";
+    private const string HeaderOpenAIValueAssistant = "assistants=v1";
 
     public static async Task<TResult?> ExecuteGetAsync<TResult>(
         this HttpClient httpClient,
@@ -19,8 +22,8 @@ internal static partial class HttpClientExtensions
     {
         using var request = HttpRequest.CreateGetRequest(url);
 
-        request.Headers.Add("Authorization", $"Bearer {apiKey}");
-        request.Headers.Add("OpenAI-Beta", "assistants=v1");
+        request.Headers.Add(HeaderNameAuthorization, $"Bearer {apiKey}");
+        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -45,8 +48,8 @@ internal static partial class HttpClientExtensions
     {
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
-        request.Headers.Add("Authorization", $"Bearer {apiKey}");
-        request.Headers.Add("OpenAI-Beta", "assistants=v1");
+        request.Headers.Add(HeaderNameAuthorization, $"Bearer {apiKey}");
+        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
