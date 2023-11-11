@@ -45,6 +45,7 @@
     <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.Grpc\Functions.Grpc.csproj" />
+    <ProjectReference Include="..\Functions.JsonSchema\Functions.JsonSchema.csproj" />
     <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
   </ItemGroup>
 

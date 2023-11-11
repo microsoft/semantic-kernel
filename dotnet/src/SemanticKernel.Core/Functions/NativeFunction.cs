@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Schema;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -463,11 +464,14 @@ internal sealed class NativeFunction : ISKFunction
 
             sawFirstParameter = true;
 
+            var description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             var parameterView = new ParameterView(
                 name,
-                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
+                description,
                 defaultValue?.ToString() ?? string.Empty,
-                IsRequired: !parameter.IsOptional);
+                IsRequired: !parameter.IsOptional,
+                ParameterType: parameter.ParameterType,
+                Schema: JsonSchemaGenerator.GenerateSchema(parameter.ParameterType, description));
 
             return (parameterFunc, parameterView);
         }
