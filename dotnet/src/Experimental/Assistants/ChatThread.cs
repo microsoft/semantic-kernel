@@ -51,8 +51,10 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
+    public /*async*/ Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
     {
+        //ThreadRunModel threadRunModel = await this.CreatRunAsync(assistantId).ConfigureAwait(false);
+
         throw new NotImplementedException();
     }
 
@@ -77,90 +79,90 @@ public sealed class ChatThread : IChatThread
     /// <summary>
     /// The heart of the thread interface.
     /// </summary>
-    public async Task<FunctionResult> InvokeAsync(
-        IKernel kernel,
-        Dictionary<string, object?> variables,
-        bool streaming = false,
-        CancellationToken cancellationToken = default
-    )
-    {
-        // TODO: implement streaming so that we can pass messages back as they are created
-        if (streaming)
-        {
-            throw new NotImplementedException();
-        }
+    //public async Task<FunctionResult> InvokeAsync(
+    //    IKernel kernel,
+    //    Dictionary<string, object?> variables,
+    //    bool streaming = false,
+    //    CancellationToken cancellationToken = default
+    //)
+    //{
+    //    // TODO: implement streaming so that we can pass messages back as they are created
+    //    if (streaming)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        if (kernel is Assistant assistantKernel)
-        {
-            // Create a run on the thread
-            ThreadRunModel threadRunModel = await this.CreateThreadRunAsync(assistantKernel).ConfigureAwait(false);
-            ThreadRunStepListModel threadRunSteps;
+    //    if (kernel is Assistant assistantKernel)
+    //    {
+    //        // Create a run on the thread
+    //        ThreadRunModel threadRunModel = await this.CreateThreadRunAsync(assistantKernel).ConfigureAwait(false);
+    //        ThreadRunStepListModel threadRunSteps;
 
-            // Poll the run until it is complete
-            while (threadRunModel.Status == "queued" || threadRunModel.Status == "in_progress" || threadRunModel.Status == "requires_action")
-            {
-                // Add a delay
-                await Task.Delay(300, cancellationToken).ConfigureAwait(false);
+    //        // Poll the run until it is complete
+    //        while (threadRunModel.Status == "queued" || threadRunModel.Status == "in_progress" || threadRunModel.Status == "requires_action")
+    //        {
+    //            // Add a delay
+    //            await Task.Delay(300, cancellationToken).ConfigureAwait(false);
 
-                // If the run requires action, then we need to run the tool calls
-                if (threadRunModel.Status == "requires_action")
-                {
-                    // Get the steps
-                    threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
+    //            // If the run requires action, then we need to run the tool calls
+    //            if (threadRunModel.Status == "requires_action")
+    //            {
+    //                // Get the steps
+    //                threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
 
-                    // TODO: make this more efficient through parallelization
-                    foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
-                    {
-                        // Retrieve all of the steps that require action
-                        if (threadRunStep.Status == "in_progress" && threadRunStep.StepDetails.Type == "tool_calls")
-                        {
-                            foreach (var toolCall in threadRunStep.StepDetails.ToolCalls)
-                            {
-                                // Run function
-                                //var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
+    //                // TODO: make this more efficient through parallelization
+    //                foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
+    //                {
+    //                    // Retrieve all of the steps that require action
+    //                    if (threadRunStep.Status == "in_progress" && threadRunStep.StepDetails.Type == "tool_calls")
+    //                    {
+    //                        foreach (var toolCall in threadRunStep.StepDetails.ToolCalls)
+    //                        {
+    //                            // Run function
+    //                            //var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
 
-                                //// Update the thread run
-                                //threadRunModel = await this.SubmitToolOutputsToRunAsync(threadRunModel.Id, toolCall.Id, result).ConfigureAwait(false);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    threadRunModel = await this.GetThreadRunAsync(threadRunModel.Id).ConfigureAwait(false);
-                }
-            }
+    //                            //// Update the thread run
+    //                            //threadRunModel = await this.SubmitToolOutputsToRunAsync(threadRunModel.Id, toolCall.Id, result).ConfigureAwait(false);
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //            else
+    //            {
+    //                threadRunModel = await this.GetThreadRunAsync(threadRunModel.Id).ConfigureAwait(false);
+    //            }
+    //        }
 
-            // Check for errors
-            if (threadRunModel.Status == "failed")
-            {
-                return new FunctionResult(this.Id, "Ask", kernel.CreateNewContext(), new List<ChatMessage>()
-                {
-                    { new ChatMessage(threadRunModel.LastError.Message) }
-                });
-            }
+    //        // Check for errors
+    //        if (threadRunModel.Status == "failed")
+    //        {
+    //            return new FunctionResult(this.Id, "Ask", kernel.CreateNewContext(), new List<ChatMessage>()
+    //            {
+    //                { new ChatMessage(threadRunModel.LastError.Message) }
+    //            });
+    //        }
 
-            // Get the steps
-            threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
+    //        // Get the steps
+    //        threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
 
-            // Check step details
-            var messages = new List<ChatMessage>();
-            foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
-            {
-                if (threadRunStep.StepDetails.Type == "message_creation")
-                {
-                    // Get message Id
-                    var messageId = threadRunStep.StepDetails.MessageCreation.MessageId;
-                    ChatMessage message = await this.GetMessageAsync(messageId).ConfigureAwait(false);
-                    messages.Add(message);
-                }
-            }
+    //        // Check step details
+    //        var messages = new List<ChatMessage>();
+    //        foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
+    //        {
+    //            if (threadRunStep.StepDetails.Type == "message_creation")
+    //            {
+    //                // Get message Id
+    //                var messageId = threadRunStep.StepDetails.MessageCreation.MessageId;
+    //                ChatMessage message = await this.GetMessageAsync(messageId).ConfigureAwait(false);
+    //                messages.Add(message);
+    //            }
+    //        }
 
-            return new FunctionResult(this.Id, "$$$", kernel.CreateNewContext(), messages);
-        }
+    //        return new FunctionResult(this.Id, "$$$", kernel.CreateNewContext(), messages);
+    //    }
 
-        throw new NotImplementedException();
-    }
+    //    throw new NotImplementedException();
+    //}
 
     //private async Task<string> InvokeFunctionCallAsync(IKernel kernel, string name, string arguments)
     //{
@@ -200,55 +202,53 @@ public sealed class ChatThread : IChatThread
     //    return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
     //}
 
-    private async Task<ThreadRunModel> CreateThreadRunAsync(Assistant kernel)
+    private async Task<ThreadRunModel> CreateThreadRunAsync(string assistantId)
     {
         var tools = new List<object>();
 
-        // Much of this code was copied from the existing function calling code
-        // Ideally it can reuse the same code without having to duplicate it
-        foreach (FunctionView functionView in kernel.GetFunctionViews())
-        {
-            var OpenAIFunction = functionView.ToOpenAIFunction().ToFunctionDefinition();
-            var requiredParams = new List<string>();
-            var paramProperties = new Dictionary<string, object>();
+        //foreach (FunctionView functionView in kernel.GetFunctionViews())
+        //{
+        //    var OpenAIFunction = functionView.ToOpenAIFunction().ToFunctionDefinition();
+        //    var requiredParams = new List<string>();
+        //    var paramProperties = new Dictionary<string, object>();
 
-            foreach (var param in functionView.Parameters)
-            {
-                paramProperties.Add(
-                    param.Name,
-                    new
-                    {
-                        type = param.Type.Value.Name.ToLowerInvariant(),
-                        description = param.Description,
-                    });
+        //    foreach (var param in functionView.Parameters)
+        //    {
+        //        paramProperties.Add(
+        //            param.Name,
+        //            new
+        //            {
+        //                type = param.Type.Value.Name.ToLowerInvariant(),
+        //                description = param.Description,
+        //            });
 
-                if (param.IsRequired ?? false)
-                {
-                    requiredParams.Add(param.Name);
-                }
-            }
+        //        if (param.IsRequired ?? false)
+        //        {
+        //            requiredParams.Add(param.Name);
+        //        }
+        //    }
 
-            tools.Add(new
-            {
-                type = "function",
-                function = new
-                {
-                    name = OpenAIFunction.Name,
-                    description = OpenAIFunction.Description,
-                    parameters = new
-                    {
-                        type = "object",
-                        properties = paramProperties,
-                        required = requiredParams,
-                    }
-                }
-            });
-        }
+        //    tools.Add(new
+        //    {
+        //        type = "function",
+        //        function = new
+        //        {
+        //            name = OpenAIFunction.Name,
+        //            description = OpenAIFunction.Description,
+        //            parameters = new
+        //            {
+        //                type = "object",
+        //                properties = paramProperties,
+        //                required = requiredParams,
+        //            }
+        //        }
+        //    });
+        //}
 
         var requestData = new
         {
-            assistant_id = kernel.Id,
-            instructions = kernel.Instructions,
+            assistant_id = assistantId,
+            //instructions = kernel.Instructions, $$$
             tools = tools
         };
 
