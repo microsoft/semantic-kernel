@@ -30,7 +30,7 @@ public interface IChatThread
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task AddMessageAsync(ModelMessage message, CancellationToken cancellationToken = default);
+    Task AddMessageAsync(ChatMessage message, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// $$$
@@ -38,14 +38,14 @@ public interface IChatThread
     /// <param name="messageId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ModelMessage> RetrieveMessageAsync(string messageId, CancellationToken cancellationToken = default);
+    Task<ChatMessage> GetMessageAsync(string messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// $$$
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<ModelMessage>> ListMessagesAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// $$$

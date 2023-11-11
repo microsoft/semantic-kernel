@@ -170,20 +170,6 @@ public class Assistant : IPlugin
         };*/
     }
 
-    public async Task<FunctionResult> RunAsync(
-        IThread thread,
-        Dictionary<string, object?>? variables = default,
-        bool streaming = false,
-        CancellationToken cancellationToken = default
-    )
-    {
-        // Initialize the agent if it doesn't exist
-        await InitializeAgentAsync().ConfigureAwait(false);
-
-        // Invoke the thread
-        return await thread.InvokeAsync(this._kernel/*, variables, streaming,*/, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
     public List<FunctionView> GetFunctionViews()
     {
         var functionViews = new List<FunctionView>();
@@ -252,83 +238,6 @@ public class Assistant : IPlugin
             AssistantModel assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody)!;
             this.Id = assistantModel.Id;
         }
-    }
-
-    private async Task<IThread> GetThreadAsync(string threadId)
-    {
-        var requestData = new
-        {
-            thread_id = threadId
-        };
-
-        string url = "https://api.openai.com/v1/threads";
-        using var httpRequestMessage = HttpRequest.CreateGetRequest(url, requestData);
-
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
-
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var threadModel = JsonSerializer.Deserialize<ThreadModel>(responseBody)!;
-        return new ChatThread(threadModel.Id, this._apiKey, this);
-    }
-
-    // This is the function that is provided as part of the IPlugin interface
-    private async Task<string> AskAsync(string ask, string? threadId = default)
-    {
-        // Hack to show logging in terminal
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("ProjectManager");
-        Console.ResetColor();
-        Console.Write(" to ");
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write(this.Name);
-        Console.ResetColor();
-        Console.Write(" > ");
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine(ask);
-        Console.ResetColor();
-
-        // Create a new thread if one is not provided
-        IThread thread;
-        if (threadId == null)
-        {
-            // Create new thread
-            thread = await this.CreateThreadAsync().ConfigureAwait(false);
-        }
-        else
-        {
-            // Retrieve existing thread
-            thread = await this.GetThreadAsync(threadId).ConfigureAwait(false);
-        }
-
-        // Add the message from the other assistant
-        await thread.AddUserMessageAsync(ask).ConfigureAwait(false);
-
-        var results = await this.RunAsync(
-            thread,
-            variables: new Dictionary<string, object?>() { }
-        ).ConfigureAwait(false);
-
-        List<ModelMessage> modelMessages = results.GetValue<List<ModelMessage>>()!;
-
-        // Concatenate all the messages from the model
-        string resultsString = string.Join("\n", modelMessages.Select(modelMessage => modelMessage.ToString()));
-
-        // Hack to show logging in terminal
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write(this.Name);
-        Console.ResetColor();
-        Console.Write(" to ");
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("ProjectManager");
-        Console.ResetColor();
-        Console.Write(" > ");
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(resultsString);
-        Console.ResetColor();
-
-        return resultsString;
     }
 
     public IPromptTemplateEngine PromptTemplateEngine => this._kernel.PromptTemplateEngine;

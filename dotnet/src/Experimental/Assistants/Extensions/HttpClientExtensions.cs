@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
@@ -34,13 +33,13 @@ internal static partial class HttpClientExtensions
         string apiKey,
         CancellationToken cancellationToken = default)
     {
-        return httpClient.ExecutePostAsync<object, TResult>(url, payload: null, apiKey, cancellationToken);
+        return httpClient.ExecutePostAsync<TResult>(url, payload: null, apiKey, cancellationToken);
     }
 
-    public static async Task<TResult?> ExecutePostAsync<TBody, TResult>(
+    public static async Task<TResult?> ExecutePostAsync<TResult>(
         this HttpClient httpClient,
         string url,
-        TBody? payload,
+        object? payload,
         string apiKey,
         CancellationToken cancellationToken = default)
     {

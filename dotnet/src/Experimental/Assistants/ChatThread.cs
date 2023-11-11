@@ -7,8 +7,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -22,90 +22,72 @@ public sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public string Id { get; set; }
 
-    /// <inheritdoc/>
-    public string Name { get { return this.Id; } }
-
-    /// <inheritdoc/>
-    public string PluginName { get; }
-
-    /// <inheritdoc/>
-    public string Description => throw new NotImplementedException();
-
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => throw new NotImplementedException();
-
-    /// <inheritdoc/>
-    public string SkillName => throw new NotImplementedException();
-
-    /// <inheritdoc/>
-    public bool IsSemantic => throw new NotImplementedException();
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => throw new NotImplementedException();
-
-    private readonly Assistant _primaryAssistant;
-
     private readonly string _apiKey;
-
-    private readonly HttpClient _client = new();
+    private readonly HttpClient _httpClient;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    public ChatThread(string id, string apiKey, Assistant primaryAssistant)
+    internal ChatThread(string id, string apiKey, HttpClient httpClient)
     {
-        this.PluginName = primaryAssistant.Name;
         this.Id = id;
         this._apiKey = apiKey;
-        this._primaryAssistant = primaryAssistant;
+        this._httpClient = httpClient;
     }
 
     /// <inheritdoc/>
-    public Task AddUserMessageAsync(string message)
+    public Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         return
             this.AddMessageAsync(
-                new ModelMessage(message));
+                new ChatMessage(message),
+                cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task AddMessageAsync(ModelMessage message)
+    public async Task AddMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
     {
-        var requestData = new // $$$ MODEL
-        {
-            role = message.Role,
-            content = message.Content.ToString()
-        };
-
-        var url = $"{BaseUrl}/{this.Id}/messages";
-
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
-
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        await this._httpClient.CreateMessageAsync(this.Id, message, this._apiKey, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<ModelMessage> RetrieveMessageAsync(string messageId)
+    public Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/{this.Id}/messages/"+messageId;
-        using var httpRequestMessage = HttpRequest.CreateGetRequest(url);
+        throw new NotImplementedException();
+    }
 
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
+    /// <inheritdoc/>
+    public async Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        var message = await this._httpClient.GetMessageAsync(this.Id, messageId, this._apiKey, cancellationToken).ConfigureAwait(false);
 
-        using var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        ThreadMessageModel message = JsonSerializer.Deserialize<ThreadMessageModel>(responseBody);
+        return null;
+        //await this._httpClient.CreateMessageAsync(this.Id, message, this._apiKey, cancellationToken).ConfigureAwait(false);
 
-        List<object> content = new();
-        foreach(var item in message.Content)
-        {
-            content.Add(item.Text.Value);
-        }
+        //var url = $"{BaseUrl}/{this.Id}/messages/"+messageId;
+        //using var httpRequestMessage = HttpRequest.CreateGetRequest(url);
 
-        return new ModelMessage(content, message.Role);
+        //httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        //httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
+
+        //using var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        //string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        //ThreadMessageModel message = JsonSerializer.Deserialize<ThreadMessageModel>(responseBody);
+
+        //List<object> content = new();
+        //foreach(var item in message.Content)
+        //{
+        //    content.Add(item.Text.Value);
+        //}
+
+        //return new ChatMessage(content, message.Role);
+    }
+
+    public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        var messages = await this._httpClient.GetMessagesAsync(this.Id, this._apiKey, cancellationToken).ConfigureAwait(false);
+
+        return Array.Empty<ChatMessage>(); // $$$
     }
 
     /// <summary>
@@ -168,9 +150,9 @@ public sealed class ChatThread : IChatThread
             // Check for errors
             if (threadRunModel.Status == "failed")
             {
-                return new FunctionResult(this.Name, "Ask", kernel.CreateNewContext(), new List<ModelMessage>()
+                return new FunctionResult(this.Id, "Ask", kernel.CreateNewContext(), new List<ChatMessage>()
                 {
-                    { new ModelMessage(threadRunModel.LastError.Message) }
+                    { new ChatMessage(threadRunModel.LastError.Message) }
                 });
             }
 
@@ -178,19 +160,19 @@ public sealed class ChatThread : IChatThread
             threadRunSteps = await this.GetThreadRunStepsAsync(threadRunModel.Id).ConfigureAwait(false);
 
             // Check step details
-            var messages = new List<ModelMessage>();
+            var messages = new List<ChatMessage>();
             foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
             {
                 if (threadRunStep.StepDetails.Type == "message_creation")
                 {
                     // Get message Id
                     var messageId = threadRunStep.StepDetails.MessageCreation.MessageId;
-                    ModelMessage message = await this.RetrieveMessageAsync(messageId).ConfigureAwait(false);
+                    ChatMessage message = await this.GetMessageAsync(messageId).ConfigureAwait(false);
                     messages.Add(message);
                 }
             }
 
-            return new FunctionResult(this.Name, this.PluginName, kernel.CreateNewContext(), messages);
+            return new FunctionResult(this.Id, "$$$", kernel.CreateNewContext(), messages);
         }
 
         throw new NotImplementedException();
@@ -203,7 +185,7 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public Task<List<ModelMessage>> ListMessagesAsync()
+    public Task<List<ChatMessage>> ListMessagesAsync()
     {
         throw new NotImplementedException();
     }
@@ -305,7 +287,7 @@ public sealed class ChatThread : IChatThread
         httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
 
-        var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
@@ -319,7 +301,7 @@ public sealed class ChatThread : IChatThread
         httpRequestMessage2.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         httpRequestMessage2.Headers.Add("OpenAI-Beta", "assistants=v1");
 
-        var response = await this._client.SendAsync(httpRequestMessage2).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequestMessage2).ConfigureAwait(false);
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
@@ -333,57 +315,32 @@ public sealed class ChatThread : IChatThread
         httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
 
-        var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<ThreadRunStepListModel>(responseBody)!;
     }
 
-    private OpenAIFunction ToOpenAIFunction(FunctionView functionView)
-    {
-        var openAIParams = new List<OpenAIFunctionParameter>();
-        foreach (ParameterView param in functionView.Parameters)
-        {
-            openAIParams.Add(new OpenAIFunctionParameter
-            {
-                Name = param.Name,
-                Description = (param.Description ?? string.Empty)
-                    + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
-                Type = param.Type?.Name.ToLower() ?? "string",
-                IsRequired = param.IsRequired ?? false
-            });
-        }
+    //private OpenAIFunction ToOpenAIFunction(FunctionView functionView)
+    //{
+    //    var openAIParams = new List<OpenAIFunctionParameter>();
+    //    foreach (ParameterView param in functionView.Parameters)
+    //    {
+    //        openAIParams.Add(new OpenAIFunctionParameter
+    //        {
+    //            Name = param.Name,
+    //            Description = (param.Description ?? string.Empty)
+    //                + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
+    //            Type = param.Type?.Name.ToLower() ?? "string",
+    //            IsRequired = param.IsRequired ?? false
+    //        });
+    //    }
 
-        return new OpenAIFunction
-        {
-            FunctionName = this.Name,
-            PluginName = this.PluginName,
-            Description = this.Description,
-            Parameters = openAIParams,
-        };
-    }
-
-    public Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task AddMessageAsync(ModelMessage message, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ModelMessage> RetrieveMessageAsync(string messageId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<ModelMessage>> ListMessagesAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+    //    return new OpenAIFunction
+    //    {
+    //        FunctionName = this.Id,
+    //        PluginName = "$$$",
+    //        Description = this.Description,
+    //        Parameters = openAIParams,
+    //    };
+    //}
 }

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// $$$
 /// </summary>
-public class ModelMessage
+public class ChatMessage
 {
     /// <summary>
     /// $$$
@@ -31,7 +31,7 @@ public class ModelMessage
     /// <param name="content"></param>
     /// <param name="role"></param>
     /// <param name="properties"></param>
-    public ModelMessage(object content, string? role = null, Dictionary<string, object>? properties = null)
+    public ChatMessage(object content, string? role = null, Dictionary<string, object>? properties = null)
     {
         this.Role = role ?? AuthorRole.User.Label;
         this.Content = content;
