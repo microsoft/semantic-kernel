@@ -63,14 +63,14 @@ public sealed class BasicPromptTemplate : IPromptTemplate
 
     private List<ParameterView> InitParameters()
     {
-        // Input parameters from prompt template configuration
+        // Parameters from prompt template configuration
         Dictionary<string, ParameterView> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
             result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
         }
 
-        // Input parameters from the template
+        // Parameters from the template
         var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
         foreach (var variableName in variableNames)
         {
