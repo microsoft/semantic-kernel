@@ -159,13 +159,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Milvus", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Memory", "src\Plugins\Plugins.Memory\Plugins.Memory.csproj", "{E91365A1-8B01-4AB8-825F-67E3515EADCD}"
 EndProject
-<<<<<<< HEAD
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Yaml", "src\Functions\Functions.Yaml\Functions.Yaml.csproj", "{5CD47AB4-6594-4422-8F06-2C21DADFD738}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Markdown", "src\Functions\Functions.Markdown\Functions.Markdown.csproj", "{55B6B82B-1E8E-4BA9-B3B8-AD141231C6E2}"
-=======
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{CD24F70C-224D-4125-AED4-AFFE6F68C997}"
->>>>>>> upstream
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.Handlebars", "src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj", "{4CA6B046-DFE1-417C-A4A0-43BFD262C681}"
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "experimental", "experimental", "{A2357CF8-3BB9-45A1-93F1-B366C9B63658}"
 EndProject
