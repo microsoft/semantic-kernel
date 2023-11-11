@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
-public interface IPlugin
+public interface IAssistant
 {
     IEnumerable<ISKFunction> Functions { get; }
 

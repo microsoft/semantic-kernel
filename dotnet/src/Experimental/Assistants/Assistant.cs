@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Assistant - Customizable entity that can be configured to respond to users’ messages
 /// </summary>
-public sealed class Assistant : IPlugin
+public sealed class Assistant : IAssistant
 {
     private AssistantModel _assistantModel;
     private readonly HttpClient _client;
