@@ -81,6 +81,7 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
                 .Where(t => type.IsAssignableFrom(t)
                     && !t.IsInterface
                     && !t.IsAbstract
+                    && !t.IsNotPublic
                     && t.GetConstructor(new Type[] { typeof(ILoggerFactory) }) != null);
             var factories = types.Select(t => (IPromptTemplateFactory)Activator.CreateInstance(t, kernel.LoggerFactory)).ToArray();
 
