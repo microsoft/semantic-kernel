@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.events.sk_events_args import SKEventArgs
 
 
