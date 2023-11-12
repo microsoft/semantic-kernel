@@ -9,22 +9,22 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents a thread that contains messages.
 /// </summary>
-public sealed class ChatThread : IChatThread
+internal sealed class ChatThread : IChatThread
 {
     /// <inheritdoc/>
     public string Id { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ChatMessage> Messages => this._messages.AsReadOnly();
+    public IReadOnlyList<IChatMessage> Messages => this._messages.AsReadOnly();
 
     private readonly IOpenAIRestContext _restContext;
-    private readonly List<ChatMessage> _messages;
-    private readonly Dictionary<string, ChatMessage> _messageIndex;
+    private readonly List<IChatMessage> _messages;
+    private readonly Dictionary<string, IChatMessage> _messageIndex;
 
     /// <summary>
     /// Create a new thread.
@@ -32,10 +32,10 @@ public sealed class ChatThread : IChatThread
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<ChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    public static async Task<IChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
     {
         var threadModel =
-            await restContext.CreateThreadAsync(cancellationToken).ConfigureAwait(false) ??
+            await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating thread: no result.");
 
         return new ChatThread(threadModel, messageListModel: null, restContext);
@@ -48,10 +48,10 @@ public sealed class ChatThread : IChatThread
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<ChatThread> GetAsync(IOpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
+    public static async Task<IChatThread> GetAsync(IOpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
         var threadModel =
-            await restContext.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false) ??
+            await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving thread: no result. ({threadId})");
 
         var messageListModel =
@@ -62,7 +62,7 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public async Task<ChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
+    public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         var messageModel =
             await this._restContext.CreateUserTextMessageAsync(
@@ -74,7 +74,7 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken)
     {
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistantId, instructions, cancellationToken).ConfigureAwait(false);
 
@@ -91,11 +91,11 @@ public sealed class ChatThread : IChatThread
             }
         }
 
-        return Array.Empty<ChatMessage>();
+        return Array.Empty<IChatMessage>();
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatMessage"/> class.
+    /// Initializes a new instance of the <see cref="ChatThread"/> class.
     /// </summary>
     private ChatThread(
         ThreadModel threadModel,
@@ -103,7 +103,7 @@ public sealed class ChatThread : IChatThread
         IOpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;
-        this._messages = (messageListModel?.Data ?? new List<ThreadMessageModel>()).Select(m => new ChatMessage(m)).ToList();
+        this._messages = (messageListModel?.Data ?? new List<ThreadMessageModel>()).Select(m => (IChatMessage)new ChatMessage(m)).ToList();
         this._messageIndex = this._messages.ToDictionary(m => m.Id);
         this._restContext = restContext;
     }

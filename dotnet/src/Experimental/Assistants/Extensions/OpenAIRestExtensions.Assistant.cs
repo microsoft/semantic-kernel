@@ -21,7 +21,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="model">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assisant definition</returns>
-    public static Task<AssistantModel> CreateAssistantAsync(
+    public static Task<AssistantModel> CreateAssistantModelAsync(
         this IOpenAIRestContext context,
         AssistantModel model,
         CancellationToken cancellationToken = default)
@@ -52,7 +52,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assisant definition</returns>
-    public static Task<AssistantModel> GetAssistantAsync(
+    public static Task<AssistantModel> GetAssistantModelAsync(
         this IOpenAIRestContext context,
         string assistantId,
         CancellationToken cancellationToken = default)

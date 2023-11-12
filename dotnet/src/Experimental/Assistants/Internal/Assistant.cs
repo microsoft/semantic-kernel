@@ -6,12 +6,12 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
 /// </summary>
-public sealed class Assistant2 : IAssistant
+internal sealed class Assistant2 : IAssistant
 {
     /// <inheritdoc/>
     public string Id => this._model.Id;
@@ -48,13 +48,13 @@ public sealed class Assistant2 : IAssistant
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
-    public static async Task<Assistant2> CreateAsync(
+    public static async Task<IAssistant> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
-            await restContext.CreateAssistantAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
+            await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assisant: no result.");
 
         return new Assistant2(resultModel, restContext);
@@ -64,16 +64,16 @@ public sealed class Assistant2 : IAssistant
     /// Retrieve an existing assisant, by identifier.
     /// </summary>
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId"></param>
+    /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
-    public static async Task<Assistant2> GetAsync(
+    public static async Task<IAssistant> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
-            await restContext.GetAssistantAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
+            await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
 
         return new Assistant2(resultModel, restContext);

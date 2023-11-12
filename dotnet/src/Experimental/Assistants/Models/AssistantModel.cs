@@ -34,25 +34,25 @@ public record AssistantModel
     /// Name of the assistant
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; init; } = string.Empty;
+    public string? Name { get; set; }
 
     /// <summary>
     /// The description of the assistant
     /// </summary>
     [JsonPropertyName("description")]
-    public string Description { get; init; } = string.Empty;
+    public string? Description { get; set; }
 
     /// <summary>
     /// ID of the model to use
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; init; } = string.Empty;
+    public string Model { get; set; } = string.Empty;
 
     /// <summary>
     /// The system instructions that the assistant uses
     /// </summary>
     [JsonPropertyName("instructions")]
-    public string Instructions { get; init; } = string.Empty;
+    public string Instructions { get; set; } = string.Empty;
 
     /// <summary>
     /// A list of tool enabled on the assistant

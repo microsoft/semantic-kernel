@@ -19,7 +19,7 @@ public interface IChatThread
     /// <summary>
     /// The messages associated with the thread.
     /// </summary>
-    IReadOnlyList<ChatMessage> Messages { get; }
+    IReadOnlyList<IChatMessage> Messages { get; }
 
     /// <summary>
     /// Add a textual user message to the thread.
@@ -27,7 +27,7 @@ public interface IChatThread
     /// <param name="message">The user message</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns></returns>
-    Task<ChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
+    Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Advance the thread with the specified assistant.
@@ -36,5 +36,5 @@ public interface IChatThread
     /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assisant message(s)</returns>
-    Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken = default);
 }

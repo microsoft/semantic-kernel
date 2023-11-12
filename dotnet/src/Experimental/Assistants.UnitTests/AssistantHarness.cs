@@ -4,7 +4,6 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,36 +34,25 @@ public sealed class AssistantHarness
     /// Create a new assistant.
     /// </summary>
     [Fact(Skip = SkipReason)]
-    public async Task CreateAssistantAsync()
+    public async Task VerifyAssistantLifecycleAsync()
     {
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        var model =
-            new AssistantModel
-            {
-                Name = "Fred",
-                Description = "test assistant",
-                Instructions = "say something funny",
-                Model = "gpt-3.5-turbo-1106"
-            };
-
-        var assistant = await Assistant2.CreateAsync(context, model).ConfigureAwait(true);
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                instructions: "say something funny",
+                name: "Fred",
+                description: "test assistant").ConfigureAwait(true);
 
         this._output.WriteLine($"# {assistant.Id}");
-    }
 
-    /// <summary>
-    /// Retrieve an assistant.
-    /// </summary>
-    [Fact(Skip = SkipReason)]
-    public async Task GetAssistantAsync()
-    {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+        var copy = await context.GetAssistantAsync("asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
 
-        var assistant = await Assistant2.GetAsync(context, "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
-
-        this._output.WriteLine($"# {assistant.Instructions}");
+        this._output.WriteLine($"# {copy.Model}");
+        this._output.WriteLine($"# {copy.Instructions}");
+        this._output.WriteLine($"# {copy.Name}");
+        this._output.WriteLine($"# {copy.Description}");
     }
 }

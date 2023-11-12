@@ -5,36 +5,26 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents a message that is part of an assistant thread.
 /// </summary>
-public class ChatMessage
+internal sealed class ChatMessage : IChatMessage
 {
-    /// <summary>
-    /// The message identifier (which can be referenced in API endpoints).
-    /// </summary>
+    /// <inheritdoc/>
     public string Id { get; }
 
-    /// <summary>
-    /// The id of the assistant associated with the a message where role = "assistant", otherwise null.
-    /// </summary>
+    /// <inheritdoc/>
     public string? AssistantId { get; }
 
-    /// <summary>
-    /// The chat message content.
-    /// </summary>
+    /// <inheritdoc/>
     public string Content { get; }
 
-    /// <summary>
-    /// The role associated with the chat message.
-    /// </summary>
+    /// <inheritdoc/>
     public string Role { get; }
 
-    /// <summary>
-    /// Properties associated with the message.
-    /// </summary>
+    /// <inheritdoc/>
     public ReadOnlyDictionary<string, object> Properties { get; }
 
     /// <summary>

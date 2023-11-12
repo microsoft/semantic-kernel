@@ -34,12 +34,12 @@ public sealed class ThreadHarness
     /// Create a new thread.
     /// </summary>
     [Fact(Skip = SkipReason)]
-    public async Task ThreadLifecycleAsync()
+    public async Task VerifyThreadLifecycleAsync()
     {
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        var thread = await ChatThread.CreateAsync(context).ConfigureAwait(true);
+        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
 
         Assert.NotNull(thread.Id);
         Assert.NotNull(thread.Messages);
@@ -55,11 +55,11 @@ public sealed class ThreadHarness
         this._output.WriteLine($"# {message.Id}");
         this.DumpMessages(thread);
 
-        var copy = await ChatThread.GetAsync(context, thread.Id).ConfigureAwait(true);
+        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
         this.DumpMessages(copy);
     }
 
-    private void DumpMessages(ChatThread thread)
+    private void DumpMessages(IChatThread thread)
     {
         foreach (var message in thread.Messages)
         {
