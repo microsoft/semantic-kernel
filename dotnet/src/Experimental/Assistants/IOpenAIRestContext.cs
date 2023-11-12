@@ -4,9 +4,18 @@ using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
-internal interface IOpenAIRestContext
+/// <summary>
+/// $$$
+/// </summary>
+public interface IOpenAIRestContext
 {
+    /// <summary>
+    /// $$$
+    /// </summary>
     string ApiKey { get; }
 
+    /// <summary>
+    /// $$$
+    /// </summary>
     HttpClient HttpClient { get; }
 }

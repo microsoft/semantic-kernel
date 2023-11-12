@@ -44,7 +44,7 @@ public sealed class Assistant2 : IAssistant
     /// <summary>
     /// $$$
     /// </summary>
-    internal static async Task<Assistant2> CreateAsync(
+    public static async Task<Assistant2> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
         CancellationToken cancellationToken = default)
@@ -59,7 +59,7 @@ public sealed class Assistant2 : IAssistant
     /// <summary>
     /// $$$
     /// </summary>
-    internal static async Task<Assistant2> CreateAsync(
+    public static async Task<Assistant2> CreateAsync(
         IOpenAIRestContext restContext,
         string assistantId,
         CancellationToken cancellationToken = default)

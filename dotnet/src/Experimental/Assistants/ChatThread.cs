@@ -23,7 +23,7 @@ public sealed class ChatThread : IChatThread
     /// <summary>
     /// $$$
     /// </summary>
-    internal static async Task<ChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    public static async Task<ChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
     {
         var threadModel =
             await restContext.CreateThreadAsync(cancellationToken).ConfigureAwait(false) ??
@@ -35,7 +35,7 @@ public sealed class ChatThread : IChatThread
     /// <summary>
     /// $$$
     /// </summary>
-    internal ChatThread(string id, IOpenAIRestContext restContext)
+    public ChatThread(string id, IOpenAIRestContext restContext)
     {
         this.Id = id;
         this._restContext = restContext;
@@ -57,9 +57,11 @@ public sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public /*async*/ Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
+    public async Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default)
     {
         //ThreadRunModel threadRunModel = await this.CreatRunAsync(assistantId).ConfigureAwait(false);
+
+        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
         throw new NotImplementedException("$$$");
     }
