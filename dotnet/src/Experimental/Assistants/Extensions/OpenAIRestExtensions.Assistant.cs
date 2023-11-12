@@ -7,17 +7,20 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
+/// <summary>
+/// Supported OpenAI REST API actions for assistants.
+/// </summary>
 internal static partial class OpenAIRestExtensions
 {
     private const string BaseAssistantUrl = $"{BaseUrl}/assistants";
 
     /// <summary>
-    /// $$$
+    /// Create a new assistant.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="model"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="model">The assistant definition</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An assisant definition</returns>
     public static Task<AssistantModel> CreateAssistantAsync(
         this IOpenAIRestContext context,
         AssistantModel model,
@@ -43,12 +46,12 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve an assistant by identifier.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="assistantId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantId">The assistant identifier</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An assisant definition</returns>
     public static Task<AssistantModel> GetAssistantAsync(
         this IOpenAIRestContext context,
         string assistantId,
@@ -61,11 +64,11 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve all assistants.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An enumeration of assisant definitions</returns>
     public static Task<IList<AssistantModel>> GetAssistantsAsync(
         this IOpenAIRestContext context,
         CancellationToken cancellationToken = default)

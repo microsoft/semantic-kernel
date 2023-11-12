@@ -6,10 +6,15 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// $$$
+/// Represents a message that is part of an assistant thread.
 /// </summary>
 public class ChatMessage
 {
+    /// <summary>
+    /// The id of the assistant associated with the a message where role = "assistant", otherwise null.
+    /// </summary>
+    public string? AssistantId { get; set; }
+
     /// <summary>
     /// The role associated with the chat message.
     /// </summary>
@@ -18,7 +23,7 @@ public class ChatMessage
     /// <summary>
     /// The chat message content.
     /// </summary>
-    public object Content { get; set; }
+    public string Content { get; set; }
 
     /// <summary>
     /// Properties associated with the message.
@@ -26,30 +31,47 @@ public class ChatMessage
     public Dictionary<string, object>? Properties { get; set; }
 
     /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public static ChatMessage CreateUserMessage(string message)
+    {
+        return
+            new ChatMessage(
+                type: "text", // $$$ CONST
+                message);
+    }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="fileId"></param>
+    /// <returns></returns>
+    public static ChatMessage CreateUserFile(string fileId)
+    {
+        return
+            new ChatMessage(
+                type: "image_file", // $$$ CONST
+                fileId);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessage"/> class.
     /// </summary>
+    /// <param name="type"></param>
     /// <param name="content">$$$</param>
-    /// <param name="role"></param>
+    /// <param name="assistantId"></param>
     /// <param name="properties"></param>
-    public ChatMessage(object content, string? role = null, Dictionary<string, object>? properties = null)
+    internal ChatMessage(
+        string type,
+        string content,
+        string? assistantId = null,
+        Dictionary<string, object>? properties = null)
     {
-        this.Role = role ?? AuthorRole.User.Label;
+        this.AssistantId = string.IsNullOrWhiteSpace(assistantId) ? null : assistantId;
+        this.Role = string.IsNullOrWhiteSpace(assistantId) ? AuthorRole.User.Label : AuthorRole.Assistant.Label;
         this.Content = content;
         this.Properties = properties;
     }
-
-    //public override string ToString() $$$ ???
-    //{
-    //    if (this.Content is IEnumerable enumerable)
-    //    {
-    //        var sb = new StringBuilder();
-    //        foreach (var item in enumerable)
-    //        {
-    //            sb.Append(item);
-    //        }
-    //        return sb.ToString();
-    //    }
-
-    //    return this.Content.ToString() ?? string.Empty;
-    //}
 }

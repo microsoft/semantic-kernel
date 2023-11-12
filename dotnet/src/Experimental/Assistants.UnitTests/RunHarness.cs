@@ -2,7 +2,6 @@
 
 //#define DISABLEHOST // Comment line to enable
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
@@ -11,7 +10,7 @@ using Xunit.Abstractions;
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 /// <summary>
-/// $$$
+/// Dev harness for manipulating runs.
 /// </summary>
 public sealed class RunHarness
 {
@@ -23,6 +22,9 @@ public sealed class RunHarness
 
     private readonly ITestOutputHelper _output;
 
+    /// <summary>
+    /// Test contructor.
+    /// </summary>
     public RunHarness(ITestOutputHelper output)
     {
         this._output = output;

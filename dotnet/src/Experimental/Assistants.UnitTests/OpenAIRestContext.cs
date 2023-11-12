@@ -1,42 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Xunit.Sdk;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 /// <summary>
-/// $$$
+/// Placeholder context.
 /// </summary>
-internal class OpenAIRestContext : IOpenAIRestContext
+internal sealed class OpenAIRestContext : IOpenAIRestContext
 {
     /// <summary>
-    /// $$$
+    /// Create a context from test configuration.
     /// </summary>
-    /// <param name="httpClient"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <param name="httpClient">The http-client to utilize</param>
+    /// <returns>A new context instance.</returns>
     public static OpenAIRestContext CreateFromConfig(HttpClient httpClient)
     {
         var apiKey =
             TestConfig.Configuration.GetValue<string>("OpenAIApiKey") ??
-            throw new InvalidOperationException("$$$");
+            throw new TestClassException("Missing OpenAI APIKey.");
 
         var context = new OpenAIRestContext(apiKey, httpClient);
-        return context;
-    }
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="apiKey"></param>
-    /// <param name="httpClient"></param>
-    public OpenAIRestContext(string apiKey, HttpClient httpClient)
-    {
-        this.ApiKey = apiKey;
-        this.HttpClient = httpClient;
+        return context;
     }
 
     /// <inheritdoc/>
@@ -44,4 +33,10 @@ internal class OpenAIRestContext : IOpenAIRestContext
 
     /// <inheritdoc/>
     public HttpClient HttpClient { get; }
+
+    private OpenAIRestContext(string apiKey, HttpClient httpClient)
+    {
+        this.ApiKey = apiKey;
+        this.HttpClient = httpClient;
+    }
 }

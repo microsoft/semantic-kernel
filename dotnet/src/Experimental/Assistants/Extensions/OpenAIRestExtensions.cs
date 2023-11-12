@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
@@ -27,13 +27,13 @@ internal static partial class OpenAIRestExtensions
         using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException("$$$");
+            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new InvalidOperationException("$$$");
+            throw new SKException($"Null result processing result: {typeof(TResult).Name}");
     }
 
     private static Task<TResult> ExecutePostAsync<TResult>(
@@ -58,12 +58,12 @@ internal static partial class OpenAIRestExtensions
         using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException("$$$");
+            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new InvalidOperationException("$$$");
+            throw new SKException($"Null result processing result: {typeof(TResult).Name}");
     }
 }

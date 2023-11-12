@@ -6,16 +6,19 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
+/// <summary>
+/// Supported OpenAI REST API actions for threads.
+/// </summary>
 internal static partial class OpenAIRestExtensions
 {
     private const string BaseThreadUrl = $"{BaseUrl}/threads";
 
     /// <summary>
-    /// $$$
+    /// Create a new thread.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A thread definition</returns>
     public static Task<ThreadModel> CreateThreadAsync(
         this IOpenAIRestContext context,
         CancellationToken cancellationToken = default)
@@ -27,12 +30,12 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve an thread by identifier.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="threadId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A thread definition</returns>
     public static Task<ThreadModel> GetThreadAsync(
         this IOpenAIRestContext context,
         string threadId,

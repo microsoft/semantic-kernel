@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// $$$
+/// Represents an assistant that can call the model and use tools.
 /// </summary>
 public sealed class Assistant2 : IAssistant
 {
@@ -42,8 +42,12 @@ public sealed class Assistant2 : IAssistant
     private readonly AssistantModel _model;
 
     /// <summary>
-    /// $$$
+    /// Create a new assistant.
     /// </summary>
+    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="model">The assistant definition</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
     public static async Task<Assistant2> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
@@ -51,14 +55,18 @@ public sealed class Assistant2 : IAssistant
     {
         var resultModel =
             await restContext.CreateAssistantAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new InvalidOperationException("$$$");
+            throw new SKException("Unexpected failure creating assisant: no result.");
 
         return new Assistant2(resultModel, restContext);
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve an existing assisant, by identifier.
     /// </summary>
+    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantId"></param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
     public static async Task<Assistant2> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
@@ -66,11 +74,14 @@ public sealed class Assistant2 : IAssistant
     {
         var resultModel =
             await restContext.GetAssistantAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new InvalidOperationException("$$$");
+            throw new SKException("Unexpected failure retrieving assisant: no result.");
 
         return new Assistant2(resultModel, restContext);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Assistant2"/> class.
+    /// </summary>
     private Assistant2(AssistantModel model, IOpenAIRestContext restContext)
     {
         this._model = model;

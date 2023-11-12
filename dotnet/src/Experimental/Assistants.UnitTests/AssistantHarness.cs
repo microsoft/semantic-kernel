@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 /// <summary>
-/// $$$
+/// Dev harness for manipulating assistants.
 /// </summary>
 public sealed class AssistantHarness
 {
@@ -23,11 +23,17 @@ public sealed class AssistantHarness
 
     private readonly ITestOutputHelper _output;
 
+    /// <summary>
+    /// Test contructor.
+    /// </summary>
     public AssistantHarness(ITestOutputHelper output)
     {
         this._output = output;
     }
 
+    /// <summary>
+    /// Create a new assistant.
+    /// </summary>
     [Fact(Skip = SkipReason)]
     public async Task CreateAssistantAsync()
     {
@@ -48,6 +54,9 @@ public sealed class AssistantHarness
         this._output.WriteLine($"# {assistant.Id}");
     }
 
+    /// <summary>
+    /// Retrieve an assistant.
+    /// </summary>
     [Fact(Skip = SkipReason)]
     public async Task GetAssistantAsync()
     {

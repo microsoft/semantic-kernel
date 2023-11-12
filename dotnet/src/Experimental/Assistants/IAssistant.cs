@@ -3,12 +3,12 @@
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// $$$
+/// Represents an assistant that can call the model and use tools.
 /// </summary>
 public interface IAssistant
 {
     /// <summary>
-    /// Identifier, which can be referenced in API endpoints
+    /// The assistant identifier (which can be referenced in API endpoints).
     /// </summary>
     string Id { get; }
 

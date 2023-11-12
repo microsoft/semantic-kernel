@@ -7,51 +7,33 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// $$$
+/// Represents a thread that contains messages.
 /// </summary>
 public interface IChatThread
 {
     /// <summary>
-    /// $$$
+    /// The thread identifier (which can be referenced in API endpoints).
     /// </summary>
     string Id { get; }
 
     /// <summary>
-    /// $$$
+    /// The messages associated with the thread.
     /// </summary>
-    /// <param name="message"></param>
-    /// <param name="cancellationToken"></param>
+    IReadOnlyList<ChatMessage> Messages { get; }
+
+    /// <summary>
+    /// Add a textual user message to the thread.
+    /// </summary>
+    /// <param name="message">The user message</param>
+    /// <param name="cancellationToken">A cancellation token</param>
     /// <returns></returns>
     Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// $$$
+    /// Advance the thread with the specified assistant.
     /// </summary>
-    /// <param name="message"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task AddMessageAsync(ChatMessage message, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="messageId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="assistantId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task InvokeAsync(string assistantId, CancellationToken cancellationToken = default);
+    /// <param name="assistantId">The specified assisant id</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>The resulting assisant message(s)</returns>
+    Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, CancellationToken cancellationToken = default);
 }
