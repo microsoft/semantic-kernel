@@ -36,5 +36,5 @@ public interface IChatThread
     /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assisant message(s)</returns>
-    Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions = null, CancellationToken cancellationToken = default);
 }
