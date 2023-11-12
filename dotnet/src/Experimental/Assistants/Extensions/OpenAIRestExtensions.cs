@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,11 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException("$$$");
+        }
+
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<TResult>(responseBody);
     }
@@ -42,12 +48,23 @@ internal static partial class OpenAIRestExtensions
         object? payload,
         CancellationToken cancellationToken = default)
     {
+        //string? json = null; // $$$
+        //if (payload != null)
+        //{
+        //    json = JsonSerializer.Serialize(payload);
+        //}
+
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException("$$$");
+        }
+
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<TResult>(responseBody);
     }

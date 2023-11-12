@@ -23,10 +23,22 @@ internal static partial class OpenAIRestExtensions
         AssistantModel model,
         CancellationToken cancellationToken = default)
     {
+        var payload =
+            new
+            {
+                model = model.Model,
+                name = model.Name,
+                description = model.Description,
+                instructions = model.Instructions,
+                tools = model.Tools,
+                file_ids = model.FileIds,
+                metadata = model.Metadata,
+            };
+
         return
             context.ExecutePostAsync<AssistantModel>(
                 BaseAssistantUrl,
-                model,
+                payload,
                 cancellationToken);
     }
 

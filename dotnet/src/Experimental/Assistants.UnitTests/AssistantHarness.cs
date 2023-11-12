@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,6 +31,21 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task CreateAssistantAsync()
     {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.Create(httpClient);
+
+        var model =
+            new AssistantModel
+            {
+                Name = "Fred",
+                Description = "test assistant",
+                Instructions = "say something funny",
+                Model = "gpt-3.5-turbo-1106"
+            };
+
+        var assistant = await Assistant2.CreateAsync(context, model).ConfigureAwait(true);
+
+        this._output.WriteLine($"# {assistant.Id}");
     }
 
     [Fact(Skip = SkipReason)]

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
@@ -10,6 +12,22 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests;
 /// </summary>
 internal class OpenAIRestContext : IOpenAIRestContext
 {
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="httpClient"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static OpenAIRestContext Create(HttpClient httpClient)
+    {
+        var apiKey =
+            TestConfig.Configuration.GetValue<string>("OpenAIApiKey") ??
+            throw new InvalidOperationException("$$$");
+
+        var context = new OpenAIRestContext(apiKey, httpClient);
+        return context;
+    }
+
     /// <summary>
     /// $$$
     /// </summary>
