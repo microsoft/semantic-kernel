@@ -3,7 +3,6 @@
 //#define DISABLEHOST // Comment line to enable
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 

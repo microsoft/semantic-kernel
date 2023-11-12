@@ -83,7 +83,7 @@ internal sealed class ChatRun : IChatRun
             {
                 this._model = await this._restContext.GetRunAsync(this.Id, this.AssistantId, cancellationToken).ConfigureAwait(false);
             }
-            catch
+            catch (Exception exception) when (!exception.IsCriticalException())
             {
                 // $$$
             }
