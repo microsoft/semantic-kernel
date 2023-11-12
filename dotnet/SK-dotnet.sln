@@ -160,14 +160,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Memory", "src\Plugins\Plugins.Memory\Plugins.Memory.csproj", "{E91365A1-8B01-4AB8-825F-67E3515EADCD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{CD24F70C-224D-4125-AED4-AFFE6F68C997}"
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.Handlebars", "src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj", "{4CA6B046-DFE1-417C-A4A0-43BFD262C681}"
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "experimental", "experimental", "{A2357CF8-3BB9-45A1-93F1-B366C9B63658}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow", "src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj", "{C8BFFC74-3050-4F63-9E9D-C4F600427DE9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{CB6E74CD-3A25-459F-A578-DEF25A414335}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{C17DD7E1-E588-46AF-A87E-DF8829A021DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AI.Anthropic", "src\Connectors\Connectors.AI.Anthropic\Connectors.AI.Anthropic.csproj", "{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -425,6 +425,18 @@ Global
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -487,6 +499,8 @@ Global
 		{C8BFFC74-3050-4F63-9E9D-C4F600427DE9} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{CB6E74CD-3A25-459F-A578-DEF25A414335} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{C17DD7E1-E588-46AF-A87E-DF8829A021DC} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{82A2BE9A-D58A-4AF6-AC6C-483C556833D4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{65118AF8-5B56-4DF4-B18A-5DA39F6C3F7B} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
