@@ -15,7 +15,10 @@ public interface IOpenAIRestContext
     string ApiKey { get; }
 
     /// <summary>
-    /// The http-client to utilize.
+    /// Access an <see cref="HttpClient"/> to use for OpenAI REST API calls.
     /// </summary>
-    HttpClient HttpClient { get; }
+    /// <remarks>
+    /// Play nicely with IHttpClientFactory and respect IDisposable.
+    /// </remarks>
+    HttpClient GetHttpClient();
 }

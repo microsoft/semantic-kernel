@@ -45,7 +45,7 @@ public sealed class Assistant2 : IAssistant
     /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
-    /// <param name="model">The assistant definition</param>
+    /// <param name="assistantModel">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
     public static async Task<Assistant2> CreateAsync(
