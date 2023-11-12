@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Assistant - Customizable entity that can be configured to respond to users’ messages
 /// </summary>
-public sealed class Assistant //: IAssistant
+public sealed class Assistant
 {
     private AssistantModel _assistantModel;
     private readonly HttpClient _client;
@@ -21,10 +21,15 @@ public sealed class Assistant //: IAssistant
     /// </summary>
     public AssistantModel Properties => this._assistantModel;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Name for this Assistant
+    /// </summary>
     public string Name => this._assistantModel.Name;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// List of Semantic Kernel functions that can be invoked from this
+    /// Assistant if it is used as a plugin.
+    /// </summary>
     public IEnumerable<ISKFunction> Functions
     {
         /*this._functions = new List<ISKFunction>
@@ -43,7 +48,7 @@ public sealed class Assistant //: IAssistant
                 null
             )
         };*/
-        get { return null; }
+        get { return new List<ISKFunction>(); }
     }
 
     /// <summary>
