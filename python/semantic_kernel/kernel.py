@@ -304,7 +304,6 @@ class Kernel:
                     )
                     return context
 
-                pipeline_step += 1
                 try:
                     function_details = func.describe()
 
@@ -376,6 +375,8 @@ class Kernel:
                     )
                     context.fail(str(ex), ex)
                     return context
+
+            pipeline_step += 1
 
         return context
 
