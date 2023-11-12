@@ -112,11 +112,6 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal(RestApiOperationParameterLocation.Query, apiVersionParameter.Location);
         Assert.Equal("7.0", apiVersionParameter.DefaultValue);
 
-        var serverUrlParameter = parameters.Single(p => p.Name == "server-url"); //'server-url' artificial parameter.
-        Assert.False(serverUrlParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Path, serverUrlParameter.Location);
-        Assert.Equal("https://my-key-vault.vault.azure.net/", serverUrlParameter.DefaultValue);
-
         var payloadParameter = parameters.Single(p => p.Name == "payload"); //'payload' artificial parameter.
         Assert.True(payloadParameter.IsRequired);
         Assert.Equal(RestApiOperationParameterLocation.Body, payloadParameter.Location);

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -22,7 +23,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : IPlan
+public sealed class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -77,8 +78,8 @@ public sealed class Plan : IPlan
     public string Description { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonIgnore]
-    public AIRequestSettings? RequestSettings { get; private set; }
+    [JsonPropertyName("model_settings")]
+    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
 
     #endregion ISKFunction implementation
 
@@ -240,50 +241,7 @@ public sealed class Plan : IPlan
     {
         if (this.HasNextStep)
         {
-            var step = this.Steps[this.NextStepIndex];
-
-            // Merge the state with the current context variables for step execution
-            var functionVariables = this.GetNextStepVariables(context.Variables, step);
-
-            // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-
-            var resultValue = result.Context.Result.Trim();
-
-            #region Update State
-
-            // Update state with result
-            this.State.Update(resultValue);
-
-            // Update Plan Result in State with matching outputs (if any)
-            if (this.Outputs.Intersect(step.Outputs).Any())
-            {
-                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
-                {
-                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
-                }
-                else
-                {
-                    this.State.Set(DefaultResultKey, resultValue);
-                }
-            }
-
-            // Update state with outputs (if any)
-            foreach (var item in step.Outputs)
-            {
-                if (result.Context.Variables.TryGetValue(item, out string? val))
-                {
-                    this.State.Set(item, val);
-                }
-                else
-                {
-                    this.State.Set(item, resultValue);
-                }
-            }
-
-            #endregion Update State
-
-            this.NextStepIndex++;
+            await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -344,31 +302,44 @@ public sealed class Plan : IPlan
         }
         else
         {
+            this.CallFunctionInvoking(context);
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context);
+            }
+
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
                 AddVariablesToContext(this.State, context);
-                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+                var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+
+                // If a step was cancelled before invocation
+                // Return the last result state of the plan.
+                if (stepResult is null)
+                {
+                    if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
+                    {
+                        continue;
+                    }
+
+                    return result;
+                }
+
                 this.UpdateContextWithOutputs(context);
 
                 result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
                 this.UpdateFunctionResultWithOutputs(result);
             }
+
+            this.CallFunctionInvoked(result, context);
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
+            }
         }
 
         return result;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
 
     #endregion ISKFunction implementation
@@ -394,6 +365,104 @@ public sealed class Plan : IPlan
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Invoke the next step of the plan
+    /// </summary>
+    /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Next step result</returns>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    {
+        if (this.HasNextStep)
+        {
+            var step = this.Steps[this.NextStepIndex];
+
+            // Merge the state with the current context variables for step execution
+            var functionVariables = this.GetNextStepVariables(context.Variables, step);
+
+            // Execute the step
+            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+
+            if (result is null)
+            {
+                // Step was cancelled
+                return null;
+            }
+
+            var resultValue = result.Context.Result.Trim();
+
+            #region Update State
+
+            // Update state with result
+            this.State.Update(resultValue);
+
+            // Update Plan Result in State with matching outputs (if any)
+            if (this.Outputs.Intersect(step.Outputs).Any())
+            {
+                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
+                {
+                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    this.State.Set(DefaultResultKey, resultValue);
+                }
+            }
+
+            // Update state with outputs (if any)
+            foreach (var item in step.Outputs)
+            {
+                if (result.Context.Variables.TryGetValue(item, out string? val))
+                {
+                    this.State.Set(item, val);
+                }
+                else
+                {
+                    this.State.Set(item, resultValue);
+                }
+            }
+
+            #endregion Update State
+
+            this.NextStepIndex++;
+
+            return result;
+        }
+
+        throw new InvalidOperationException("There isn't a next step");
+    }
+
+    private void CallFunctionInvoking(SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
+
+    private void CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
+
+        // Not handlers registered, return the result as is
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventWrapper.EventArgs.Metadata;
     }
 
     /// <summary>
@@ -475,8 +544,13 @@ public sealed class Plan : IPlan
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
     {
+        if (functionResult is null)
+        {
+            return null;
+        }
+
         foreach (var output in this.Outputs)
         {
             if (this.State.TryGetValue(output, out var value))
@@ -597,9 +671,9 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.PluginName = function.PluginName;
         this.Description = function.Description;
-        this.RequestSettings = function.RequestSettings;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+        this.RequestSettings = function.RequestSettings;
         this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
@@ -636,6 +710,24 @@ public sealed class Plan : IPlan
     }
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; private set; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
+    }
 
     /// <inheritdoc/>
     [JsonIgnore]

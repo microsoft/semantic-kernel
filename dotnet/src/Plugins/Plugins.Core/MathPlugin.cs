@@ -21,6 +21,7 @@ public sealed class MathPlugin
     /// <param name="amount">The amount to add as a string.</param>
     /// <returns>The resulting sum as a string.</returns>
     [SKFunction, Description("Adds an amount to a value")]
+    [return: Description("The sum")]
     public int Add(
         [Description("The value to add")] int value,
         [Description("Amount to add")] int amount) =>
@@ -33,6 +34,7 @@ public sealed class MathPlugin
     /// <param name="amount">The amount to subtract as a string.</param>
     /// <returns>The resulting subtraction as a string.</returns>
     [SKFunction, Description("Subtracts an amount from a value")]
+    [return: Description("The difference")]
     public int Subtract(
         [Description("The value to subtract")] int value,
         [Description("Amount to subtract")] int amount) =>
