@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -37,55 +34,43 @@ public sealed class ThreadHarness
     /// Create a new thread.
     /// </summary>
     [Fact(Skip = SkipReason)]
-    public async Task CreateThreadAsync()
+    public async Task ThreadLifecycleAsync()
     {
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var thread = await ChatThread.CreateAsync(context).ConfigureAwait(true);
 
+        Assert.NotNull(thread.Id);
+        Assert.NotNull(thread.Messages);
+        Assert.Empty(thread.Messages);
+
         this._output.WriteLine($"# {thread.Id}");
+
+        var message = await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true);
+        Assert.NotNull(message);
+        Assert.NotNull(message.Id);
+        Assert.Single(thread.Messages);
+
+        this._output.WriteLine($"# {message.Id}");
+        this.DumpMessages(thread);
+
+        var copy = await ChatThread.GetAsync(context, thread.Id).ConfigureAwait(true);
+        this.DumpMessages(copy);
     }
 
-    /// <summary>
-    /// Retrieve an thread.
-    /// </summary>
-    [Fact(Skip = SkipReason)]
-    public async Task GetThreadAsync()
+    private void DumpMessages(ChatThread thread)
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
-        var thread = await ChatThread.GetAsync(context, "thread_AQf7ra5DJIsUnLegytkski90").ConfigureAwait(true);
-    }
-
-    /// <summary>
-    /// Add a message to existing thread.
-    /// </summary>
-    [Fact(Skip = SkipReason)]
-    public async Task AddThreadMessageAsync()
-    {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
-        var thread = await ChatThread.GetAsync(context, "thread_AQf7ra5DJIsUnLegytkski90").ConfigureAwait(true);
-        await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true);
-    }
-
-    /// <summary>
-    /// Retrieve messages from existing thread.
-    /// </summary>
-    [Fact(Skip = SkipReason)]
-    public async Task GetThreadMessagesAsync()
-    {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
-        var thread = await ChatThread.GetAsync(context, "thread_AQf7ra5DJIsUnLegytkski90").ConfigureAwait(true);
-        var messages = await thread.GetMessagesAsync().ConfigureAwait(true);
-        foreach (var message in messages)
+        foreach (var message in thread.Messages)
         {
-            this._output.WriteLine($"{message.Role}: {message.Content} [{message.AssistantId}]");
+            if (string.IsNullOrWhiteSpace(message.AssistantId))
+            {
+                this._output.WriteLine($"{message.Role}: {message.Content}");
+            }
+            else
+            {
+                this._output.WriteLine($"{message.Role}: {message.Content} [{message.AssistantId}]");
+            }
         }
     }
 }

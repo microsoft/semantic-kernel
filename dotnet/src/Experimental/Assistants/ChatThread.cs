@@ -20,9 +20,11 @@ public sealed class ChatThread : IChatThread
     public string Id { get; private set; }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ChatMessage> Messages => Array.Empty<ChatMessage>(); // $$$
+    public IReadOnlyList<ChatMessage> Messages => this._messages.AsReadOnly();
 
     private readonly IOpenAIRestContext _restContext;
+    private readonly List<ChatMessage> _messages;
+    private readonly Dictionary<string, ChatMessage> _messageIndex;
 
     /// <summary>
     /// Create a new thread.
@@ -36,7 +38,7 @@ public sealed class ChatThread : IChatThread
             await restContext.CreateThreadAsync(cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating thread: no result.");
 
-        return new ChatThread(threadModel.Id, restContext);
+        return new ChatThread(threadModel, messageListModel: null, restContext);
     }
 
     /// <summary>
@@ -50,58 +52,69 @@ public sealed class ChatThread : IChatThread
     {
         var threadModel =
             await restContext.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure retrieving thread: no result.");
+            throw new SKException($"Unexpected failure retrieving thread: no result. ({threadId})");
 
-        return new ChatThread(threadModel.Id, restContext);
+        var messageListModel =
+            await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false) ??
+            throw new SKException($"Unexpected failure retrieving thread: no result. ({threadId})");
+
+        return new ChatThread(threadModel, messageListModel, restContext);
     }
 
     /// <inheritdoc/>
-    public async Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
+    public async Task<ChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         var messageModel =
-            await this._restContext.CreateMessageAsync(
+            await this._restContext.CreateUserTextMessageAsync(
                 this.Id,
-                ChatMessage.CreateUserMessage(message),
+                message,
                 cancellationToken).ConfigureAwait(false);
+
+        return this.AddMessage(messageModel);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken)
     {
-        await this._restContext.CreateRunAsync(this.Id, assistantId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var runModel = await this._restContext.CreateRunAsync(this.Id, assistantId, instructions, cancellationToken).ConfigureAwait(false);
 
-        return Array.Empty<ChatMessage>(); // $$$
-    }
+        for (var index = this._messages.Count - 1; index >= 0; --index) // $$$ HAXX
+        {
+            var message = this._messages[index];
+            if (message.AssistantId == assistantId)
+            {
+                return
+                    new[]
+                    {
+                        message,
+                    };
+            }
+        }
 
-    public async Task<ChatMessage?> GetMessageAsync(string messageId, CancellationToken cancellationToken = default)
-    {
-        var message =
-            await this._restContext.GetMessageAsync(this.Id, messageId, cancellationToken).ConfigureAwait(false) ??
-            throw new ArgumentException("Uknown messageId", nameof(messageId));
-
-        return GetMessage(message);
-    }
-
-    public async Task<IEnumerable<ChatMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
-    {
-        var messages = await this._restContext.GetMessagesAsync(this.Id, cancellationToken).ConfigureAwait(false);
-
-        return messages.Data.Select(m => GetMessage(m));
+        return Array.Empty<ChatMessage>();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessage"/> class.
     /// </summary>
-    private ChatThread(string id, IOpenAIRestContext restContext)
+    private ChatThread(
+        ThreadModel threadModel,
+        ThreadRunStepListModel? messageListModel,
+        IOpenAIRestContext restContext)
     {
-        this.Id = id;
+        this.Id = threadModel.Id;
+        this._messages = (messageListModel?.Data ?? new List<ThreadMessageModel>()).Select(m => new ChatMessage(m)).ToList();
+        this._messageIndex = this._messages.ToDictionary(m => m.Id);
         this._restContext = restContext;
     }
 
-    private static ChatMessage GetMessage(ThreadMessageModel messageModel)
+    private ChatMessage AddMessage(ThreadMessageModel messageModel)
     {
-        var content = (IEnumerable<ThreadMessageModel.ContentModel>)messageModel.Content;
-        var text = content.First().Text?.Value ?? string.Empty; // $$$
-        return new ChatMessage("text", text, messageModel.AssistantId, messageModel.Metadata);
+        var message = new ChatMessage(messageModel);
+
+        this._messages.Add(message);
+        this._messageIndex.Add(message.Id, message);
+
+        return message;
     }
 }

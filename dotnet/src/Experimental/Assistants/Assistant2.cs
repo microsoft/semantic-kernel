@@ -74,7 +74,7 @@ public sealed class Assistant2 : IAssistant
     {
         var resultModel =
             await restContext.GetAssistantAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure retrieving assisant: no result.");
+            throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
 
         return new Assistant2(resultModel, restContext);
     }

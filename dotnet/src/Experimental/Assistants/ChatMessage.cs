@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
@@ -11,67 +14,42 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public class ChatMessage
 {
     /// <summary>
-    /// The id of the assistant associated with the a message where role = "assistant", otherwise null.
+    /// The message identifier (which can be referenced in API endpoints).
     /// </summary>
-    public string? AssistantId { get; set; }
+    public string Id { get; }
 
     /// <summary>
-    /// The role associated with the chat message.
+    /// The id of the assistant associated with the a message where role = "assistant", otherwise null.
     /// </summary>
-    public string Role { get; set; }
+    public string? AssistantId { get; }
 
     /// <summary>
     /// The chat message content.
     /// </summary>
-    public string Content { get; set; }
+    public string Content { get; }
+
+    /// <summary>
+    /// The role associated with the chat message.
+    /// </summary>
+    public string Role { get; }
 
     /// <summary>
     /// Properties associated with the message.
     /// </summary>
-    public Dictionary<string, object>? Properties { get; set; }
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    public static ChatMessage CreateUserMessage(string message)
-    {
-        return
-            new ChatMessage(
-                type: "text", // $$$ CONST
-                message);
-    }
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="fileId"></param>
-    /// <returns></returns>
-    public static ChatMessage CreateUserFile(string fileId)
-    {
-        return
-            new ChatMessage(
-                type: "image_file", // $$$ CONST
-                fileId);
-    }
+    public ReadOnlyDictionary<string, object> Properties { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessage"/> class.
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="content">$$$</param>
-    /// <param name="assistantId"></param>
-    /// <param name="properties"></param>
-    internal ChatMessage(
-        string type,
-        string content,
-        string? assistantId = null,
-        Dictionary<string, object>? properties = null)
+    internal ChatMessage(ThreadMessageModel model)
     {
-        this.AssistantId = string.IsNullOrWhiteSpace(assistantId) ? null : assistantId;
-        this.Role = string.IsNullOrWhiteSpace(assistantId) ? AuthorRole.User.Label : AuthorRole.Assistant.Label;
-        this.Content = content;
-        this.Properties = properties;
+        var content = (IEnumerable<ThreadMessageModel.ContentModel>)model.Content;
+        var text = content.First().Text?.Value ?? string.Empty;
+
+        this.Id = model.Id;
+        this.AssistantId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
+        this.Role = model.Role;
+        this.Content = text;
+        this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }
 }

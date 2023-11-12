@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -14,7 +13,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Represents an execution run on a thread.
 /// </summary>
-public sealed class ChatRun : IChatRun
+internal sealed class ChatRun : IChatRun
 {
     /// <inheritdoc/>
     public string Id => this._model.Id;
@@ -38,37 +37,37 @@ public sealed class ChatRun : IChatRun
     private readonly IOpenAIRestContext _restContext;
     private ThreadRunModel _model;
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    public static async Task<ChatRun> CreateAsync(
-        IOpenAIRestContext restContext,
-        string threadId,
-        string assistantId,
-        CancellationToken cancellationToken = default)
-    {
-        var resultModel =
-            await restContext.CreateRunAsync(threadId, assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating run: no result.");
+    ///// <summary>
+    ///// $$$
+    ///// </summary>
+    //public static async Task<ChatRun> CreateAsync(
+    //    IOpenAIRestContext restContext,
+    //    string threadId,
+    //    string assistantId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    var resultModel =
+    //        await restContext.CreateRunAsync(threadId, assistantId, cancellationToken).ConfigureAwait(false) ??
+    //        throw new SKException("Unexpected failure retrieving run: no result.");
 
-        return new ChatRun(resultModel, restContext);
-    }
+    //    return new ChatRun(resultModel, restContext);
+    //}
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    public static async Task<ChatRun> GetRunAsync(
-        IOpenAIRestContext restContext,
-        string threadId,
-        string runId,
-        CancellationToken cancellationToken = default)
-    {
-        var resultModel =
-            await restContext.GetRunAsync(threadId, runId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure retrieving run: no result.");
+    ///// <summary>
+    ///// $$$
+    ///// </summary>
+    //public static async Task<ChatRun> GetRunAsync(
+    //    IOpenAIRestContext restContext,
+    //    string threadId,
+    //    string runId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    var resultModel =
+    //        await restContext.GetRunAsync(threadId, runId, cancellationToken).ConfigureAwait(false) ??
+    //        throw new SKException("Unexpected failure retrieving run: no result.");
 
-        return new ChatRun(resultModel, restContext);
-    }
+    //    return new ChatRun(resultModel, restContext);
+    //}
 
     /// <summary>
     /// $$$
@@ -127,7 +126,7 @@ public sealed class ChatRun : IChatRun
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRun"/> class.
     /// </summary>
-    private ChatRun(ThreadRunModel model, IOpenAIRestContext restContext)
+    internal ChatRun(ThreadRunModel model, IOpenAIRestContext restContext)
     {
         this._model = model;
         this._restContext = restContext;

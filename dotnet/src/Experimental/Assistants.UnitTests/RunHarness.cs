@@ -31,17 +31,17 @@ public sealed class RunHarness
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task CreateRunAsync()
+    public async Task SimpleRunAsync()
     {
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        var run = await ChatRun.CreateAsync(context, "thread_AQf7ra5DJIsUnLegytkski90", "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
+        //var run = await ChatRun.CreateAsync(context, "thread_AQf7ra5DJIsUnLegytkski90", "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
 
-        this._output.WriteLine($"# {run.Id}");
+        //this._output.WriteLine($"# {run.Id}");
 
-        var result = await run.GetResultAsync().ConfigureAwait(true);
+        //var result = await run.GetResultAsync().ConfigureAwait(true);
 
-        this._output.WriteLine($"$ {result}");
+        //this._output.WriteLine($"$ {result}");
     }
 }
