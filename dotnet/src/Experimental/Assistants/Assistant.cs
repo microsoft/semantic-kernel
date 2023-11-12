@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
@@ -14,7 +13,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public sealed class Assistant
 {
     private AssistantModel _assistantModel;
-    private readonly HttpClient _client;
+    private readonly IOpenAIRestContext _openAiRestContext;
 
     /// <summary>
     /// Properties of this Assistant
@@ -54,54 +53,41 @@ public sealed class Assistant
     /// <summary>
     /// Creates a new Assistant
     /// </summary>
-    /// <param name="httpClient">HttpClient to use to make creation request to OpenAI</param>
+    /// <param name="openAiRestContext">Context to make calls to OpenAI</param>
     /// <param name="properties">Properties of instance to create.</param>
     /// <returns>Created Assistant instance, or null on failure</returns>
-    public static async Task<Assistant?> CreateAsync(HttpClient httpClient, AssistantModel properties)
+    public static async Task<Assistant?> CreateAsync(IOpenAIRestContext openAiRestContext, AssistantModel properties)
     {
-        var requestDataFromGivenProperties = new { };
-        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
-        if (assistantModel is null)
+        var response = await openAiRestContext.CreateAssistantAsync(properties).ConfigureAwait(false);
+        if (response is null)
         {
             return null;
         }
 
-        return new Assistant(httpClient, assistantModel);
+        return new Assistant(openAiRestContext, response);
     }
 
     /// <summary>
     /// Retrieve an existing Assistant from OpenAI
     /// </summary>
-    /// <param name="httpClient">HttpClient to use to make the request to OpenAI</param>
+    /// <param name="openAiRestContext">Context to make calls to OpenAI</param>
     /// <param name="id">Identifier of Assistant to retrieve</param>
     /// <returns>Retrieved Assistant, or null if it isn't found</returns>
-    public static async Task<Assistant?> RetrieveAsync(HttpClient httpClient, string id)
+    public static async Task<Assistant?> RetrieveAsync(IOpenAIRestContext openAiRestContext, string id)
     {
-        var requestData = new { };
-        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestData).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
+        var response = await openAiRestContext.GetAssistantAsync(id).ConfigureAwait(false);
+        if (response is null)
         {
             return null;
         }
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody);
-        if (assistantModel is null)
-        {
-            return null;
-        }
-
-        return new Assistant(httpClient, assistantModel);
+        return new Assistant(openAiRestContext, response);
     }
 
     /// <summary>
     /// List existing Assistant instances from OpenAI
     /// </summary>
-    /// <param name="httpClient">HttpClient to use to make the request to OpenAI</param>
+    /// <param name="openAiRestContext">Context to make calls to OpenAI</param>
     /// <param name="limit">A limit on the number of objects to be returned.
     /// Limit can range between 1 and 100, and the default is 20.</param>
     /// <param name="ascending">Set to true to sort by ascending created_at timestamp
@@ -115,25 +101,14 @@ public sealed class Assistant
     /// ending with obj_foo, your subsequent call can include before=obj_foo in order to
     /// fetch the previous page of the list.</param>
     /// <returns>List of retrieved Assistants</returns>
-    public static async Task<List<AssistantModel>> ListAsync(
-    HttpClient httpClient,
-    int limit = 20,
-    bool ascending = false,
-    string? after = null,
-    string? before = null)
+    public static Task<List<AssistantModel>> ListAsync(
+        IOpenAIRestContext openAiRestContext,
+        int limit = 20,
+        bool ascending = false,
+        string? after = null,
+        string? before = null)
     {
-        var requestData = new { };
-        using var response = await httpClient.MakePretendAssistantRestCallAsync(requestData).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        List<AssistantModel>? assistantModels = JsonSerializer.Deserialize<List<AssistantModel>>(responseBody);
-        if (assistantModels is null)
-        {
-            return new List<AssistantModel>();
-        }
-
-        return assistantModels;
+        return openAiRestContext.GetAssistantsAsync(limit, ascending, after, before);
     }
 
     /// <summary>
@@ -143,12 +118,12 @@ public sealed class Assistant
     public async Task ModifyAsync(AssistantModel properties)
     {
         var requestDataFromGivenProperties = new { };
-        using var response = await this._client.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
+        /*using var response = await this._openAiRestContext.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         AssistantModel? assistantModel = JsonSerializer.Deserialize<AssistantModel>(responseBody) ?? throw new JsonException();
-        this._assistantModel = assistantModel;
+        this._assistantModel = assistantModel;*/
     }
 
     /// <summary>
@@ -158,8 +133,8 @@ public sealed class Assistant
     public async Task DeleteAsync(string id)
     {
         var requestDataFromGivenProperties = new { };
-        using var response = await this._client.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        //using var response = await this._openAiRestContext.MakePretendAssistantRestCallAsync(requestDataFromGivenProperties).ConfigureAwait(false);
+        //response.EnsureSuccessStatusCode();
 
         // Clear our properties so further operations are not possible on this instance
         this._assistantModel = new AssistantModel();
@@ -168,17 +143,9 @@ public sealed class Assistant
     /// <summary>
     /// Private constructor
     /// </summary>
-    private Assistant(HttpClient httpClient, AssistantModel properties)
+    private Assistant(IOpenAIRestContext openAiRestContext, AssistantModel properties)
     {
         this._assistantModel = properties;
-        this._client = httpClient;
-    }
-}
-
-internal static class TemporaryHack
-{
-    internal static async Task<HttpResponseMessage> MakePretendAssistantRestCallAsync(this HttpClient client, object blah)
-    {
-        return new HttpResponseMessage();
+        this._openAiRestContext = openAiRestContext;
     }
 }
