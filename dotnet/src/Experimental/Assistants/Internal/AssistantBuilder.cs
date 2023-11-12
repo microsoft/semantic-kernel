@@ -37,7 +37,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
             throw new SKException("Instructions must be defined for assistant.");
         }
 
-        return await Assistant2.CreateAsync(this._context, this._model, cancellationToken).ConfigureAwait(false);
+        return await Assistant.CreateAsync(this._context, this._model, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

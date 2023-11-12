@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
 /// </summary>
-internal sealed class Assistant2 : IAssistant
+internal sealed class Assistant : IAssistant
 {
     /// <inheritdoc/>
     public string Id => this._model.Id;
@@ -47,7 +47,7 @@ internal sealed class Assistant2 : IAssistant
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
+    /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
@@ -57,7 +57,7 @@ internal sealed class Assistant2 : IAssistant
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assisant: no result.");
 
-        return new Assistant2(resultModel, restContext);
+        return new Assistant(resultModel, restContext);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ internal sealed class Assistant2 : IAssistant
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
+    /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
@@ -76,13 +76,13 @@ internal sealed class Assistant2 : IAssistant
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
 
-        return new Assistant2(resultModel, restContext);
+        return new Assistant(resultModel, restContext);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Assistant2"/> class.
+    /// Initializes a new instance of the <see cref="Assistant"/> class.
     /// </summary>
-    internal Assistant2(AssistantModel model, IOpenAIRestContext restContext)
+    internal Assistant(AssistantModel model, IOpenAIRestContext restContext)
     {
         this._model = model;
         this._restContext = restContext;

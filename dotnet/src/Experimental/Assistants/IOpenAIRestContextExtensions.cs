@@ -66,10 +66,10 @@ public static class IOpenAIRestContextExtensions
     /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="Assistant2"> instance.</see></returns>
+    /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, CancellationToken cancellationToken = default)
     {
-        return Assistant2.GetAsync(restContext, assistantId, cancellationToken);
+        return Assistant.GetAsync(restContext, assistantId, cancellationToken);
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public static class IOpenAIRestContextExtensions
     {
         var models = await restContext.GetAssistantsModelsAsync(limit, ascending, after, before).ConfigureAwait(false);
 
-        return models.Select(m => new Assistant2(m, restContext)).ToArray();
+        return models.Select(m => new Assistant(m, restContext)).ToArray();
     }
 
     /// <summary>
