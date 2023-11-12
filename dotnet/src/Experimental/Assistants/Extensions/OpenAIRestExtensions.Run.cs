@@ -17,7 +17,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="assistantId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadRunModel?> CreateRunAsync(
+    public static Task<ThreadRunModel> CreateRunAsync(
         this IOpenAIRestContext context,
         string threadId,
         string assistantId,
@@ -46,7 +46,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="runId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadRunModel?> GetRunAsync(
+    public static Task<ThreadRunModel> GetRunAsync(
         this IOpenAIRestContext context,
         string threadId,
         string runId,
@@ -66,7 +66,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="runId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IList<ThreadRunStepModel>?> GetRunStepsAsync(
+    public static Task<IList<ThreadRunStepModel>> GetRunStepsAsync(
         this IOpenAIRestContext context,
         string threadId,
         string runId,

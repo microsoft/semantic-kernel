@@ -22,7 +22,7 @@ public class ThreadRunStepListModel
     /// List of steps.
     /// </summary>
     [JsonPropertyName("data")]
-    public List<ThreadRunStepModel> Data { get; set; } = new List<ThreadRunStepModel>();
+    public List<ThreadMessageModel> Data { get; set; } = new List<ThreadMessageModel>(); // $$$
 
     [JsonPropertyName("first_id")]
     public string FirstId { get; set; } = string.Empty;

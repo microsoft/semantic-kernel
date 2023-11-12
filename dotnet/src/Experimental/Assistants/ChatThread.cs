@@ -81,7 +81,7 @@ public sealed class ChatThread : IChatThread
     {
         var messages = await this._restContext.GetMessagesAsync(this.Id, cancellationToken).ConfigureAwait(false);
 
-        return messages.Select(m => new ChatMessage(m.Content, m.Role));
+        return messages.Data.Select(m => new ChatMessage(m.Content, m.Role));
     }
 
     /// <summary>
@@ -103,16 +103,8 @@ public sealed class ChatThread : IChatThread
     //    if (kernel is Assistant assistantKernel)
     //    {
     //        // Create a run on the thread
-    //        ThreadRunModel threadRunModel = await this.CreateThreadRunAsync(assistantKernel).ConfigureAwait(false);
     //        ThreadRunStepListModel threadRunSteps;
 
-    //        // Poll the run until it is complete
-    //        while (threadRunModel.Status == "queued" || threadRunModel.Status == "in_progress" || threadRunModel.Status == "requires_action")
-    //        {
-    //            // Add a delay
-    //            await Task.Delay(300, cancellationToken).ConfigureAwait(false);
-
-    //            // If the run requires action, then we need to run the tool calls
     //            if (threadRunModel.Status == "requires_action")
     //            {
     //                // Get the steps
@@ -134,12 +126,7 @@ public sealed class ChatThread : IChatThread
     //                        }
     //                    }
     //                }
-    //            }
-    //            else
-    //            {
-    //                threadRunModel = await this.GetThreadRunAsync(threadRunModel.Id).ConfigureAwait(false);
-    //            }
-    //        }
+
 
     //        // Check for errors
     //        if (threadRunModel.Status == "failed")

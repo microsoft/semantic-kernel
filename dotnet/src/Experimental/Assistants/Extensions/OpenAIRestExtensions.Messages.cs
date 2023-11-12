@@ -17,7 +17,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadMessageModel?> CreateMessageAsync(
+    public static Task<ThreadMessageModel> CreateMessageAsync(
         this IOpenAIRestContext context,
         string threadId,
         ChatMessage message,
@@ -45,7 +45,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="messageId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadMessageModel?> GetMessageAsync(
+    public static Task<ThreadMessageModel> GetMessageAsync(
         this IOpenAIRestContext context,
         string threadId,
         string messageId,
@@ -64,13 +64,13 @@ internal static partial class OpenAIRestExtensions
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IList<ThreadMessageModel>?> GetMessagesAsync(
+    public static Task<ThreadRunStepListModel> GetMessagesAsync(
         this IOpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)
     {
         return
-            context.ExecuteGetAsync<IList<ThreadMessageModel>>(
+            context.ExecuteGetAsync<ThreadRunStepListModel>(
                 GetMessagesUrl(threadId),
                 cancellationToken);
     }

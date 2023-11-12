@@ -14,7 +14,7 @@ internal static partial class OpenAIRestExtensions
     private const string HeaderNameAuthorization = "Authorization";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
 
-    private static async Task<TResult?> ExecuteGetAsync<TResult>(
+    private static async Task<TResult> ExecuteGetAsync<TResult>(
         this IOpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
@@ -31,10 +31,12 @@ internal static partial class OpenAIRestExtensions
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<TResult>(responseBody);
+        return
+            JsonSerializer.Deserialize<TResult>(responseBody) ??
+            throw new InvalidOperationException("$$$");
     }
 
-    private static Task<TResult?> ExecutePostAsync<TResult>(
+    private static Task<TResult> ExecutePostAsync<TResult>(
         this IOpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
@@ -42,18 +44,12 @@ internal static partial class OpenAIRestExtensions
         return context.ExecutePostAsync<TResult>(url, payload: null, cancellationToken);
     }
 
-    private static async Task<TResult?> ExecutePostAsync<TResult>(
+    private static async Task<TResult> ExecutePostAsync<TResult>(
         this IOpenAIRestContext context,
         string url,
         object? payload,
         CancellationToken cancellationToken = default)
     {
-        //string? json = null; // $$$
-        //if (payload != null)
-        //{
-        //    json = JsonSerializer.Serialize(payload);
-        //}
-
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
@@ -66,6 +62,8 @@ internal static partial class OpenAIRestExtensions
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<TResult>(responseBody);
+        return
+            JsonSerializer.Deserialize<TResult>(responseBody) ??
+            throw new InvalidOperationException("$$$");
     }
 }

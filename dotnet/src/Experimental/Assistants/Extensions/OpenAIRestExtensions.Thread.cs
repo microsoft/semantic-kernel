@@ -16,7 +16,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadModel?> CreateThreadAsync(
+    public static Task<ThreadModel> CreateThreadAsync(
         this IOpenAIRestContext context,
         CancellationToken cancellationToken = default)
     {
@@ -33,7 +33,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<ThreadModel?> GetThreadAsync(
+    public static Task<ThreadModel> GetThreadAsync(
         this IOpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)

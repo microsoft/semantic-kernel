@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -56,6 +57,20 @@ public sealed class ThreadHarness
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var thread = new ChatThread("thread_AQf7ra5DJIsUnLegytkski90", context);
-        await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true); ;
+        await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task GetThreadMessagesAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var thread = new ChatThread("thread_AQf7ra5DJIsUnLegytkski90", context);
+        var messages = await thread.GetMessagesAsync().ConfigureAwait(true);
+        foreach (var message in messages)
+        {
+            this._output.WriteLine($"{message.Role}: {((IEnumerable<ThreadMessageModel.ContentModel>)message.Content).First().Text?.Value}");
+        }
     }
 }
