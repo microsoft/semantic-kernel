@@ -82,7 +82,7 @@ internal sealed class Assistant2 : IAssistant
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant2"/> class.
     /// </summary>
-    private Assistant2(AssistantModel model, IOpenAIRestContext restContext)
+    internal Assistant2(AssistantModel model, IOpenAIRestContext restContext)
     {
         this._model = model;
         this._restContext = restContext;

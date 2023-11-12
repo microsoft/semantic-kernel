@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
@@ -67,6 +70,35 @@ public static class IOpenAIRestContextExtensions
     public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, CancellationToken cancellationToken = default)
     {
         return Assistant2.GetAsync(restContext, assistantId, cancellationToken);
+    }
+
+    /// <summary>
+    /// List existing Assistant instances from OpenAI
+    /// </summary>
+    /// <param name="restContext">Context to make calls to OpenAI</param>
+    /// <param name="limit">A limit on the number of objects to be returned.
+    /// Limit can range between 1 and 100, and the default is 20.</param>
+    /// <param name="ascending">Set to true to sort by ascending created_at timestamp
+    /// instead of descending.</param>
+    /// <param name="after">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include after=obj_foo in order to
+    /// fetch the next page of the list.</param>
+    /// <param name="before">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include before=obj_foo in order to
+    /// fetch the previous page of the list.</param>
+    /// <returns>List of retrieved Assistants</returns>
+    public static async Task<IList<IAssistant>> GetAssistantsAsync(
+        IOpenAIRestContext restContext,
+        int limit = 20,
+        bool ascending = false,
+        string? after = null,
+        string? before = null)
+    {
+        var models = await restContext.GetAssistantsModelsAsync(limit, ascending, after, before).ConfigureAwait(false);
+
+        return models.Select(m => new Assistant2(m, restContext)).ToArray();
     }
 
     /// <summary>
