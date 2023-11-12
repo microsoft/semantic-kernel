@@ -18,20 +18,22 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">An context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">A thread identifier</param>
     /// <param name="assistantId">The assistant identifier</param>
+    /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
     public static Task<ThreadRunModel> CreateRunAsync(
         this IOpenAIRestContext context,
         string threadId,
         string assistantId,
+        string? instructions,
         CancellationToken cancellationToken = default)
     {
         var payload =
             new
             {
                 assistant_id = assistantId,
-                //instructions = kernel.Instructions, // $$$ TBD
-                //tools = tools // $$$ TBD
+                instructions,
+                //tools = tools // $$$ FUNCTIONS
             };
 
         return

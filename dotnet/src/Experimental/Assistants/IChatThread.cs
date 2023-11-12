@@ -27,13 +27,14 @@ public interface IChatThread
     /// <param name="message">The user message</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns></returns>
-    Task AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
+    Task<ChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Advance the thread with the specified assistant.
     /// </summary>
     /// <param name="assistantId">The specified assisant id</param>
+    /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assisant message(s)</returns>
-    Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken = default);
 }

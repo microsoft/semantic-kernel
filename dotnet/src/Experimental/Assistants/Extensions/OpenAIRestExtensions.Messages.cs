@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -16,20 +17,20 @@ internal static partial class OpenAIRestExtensions
     /// </summary>
     /// <param name="context">An context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="message">The message</param>
+    /// <param name="content">The message text</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message definition</returns>
-    public static Task<ThreadMessageModel> CreateMessageAsync(
+    public static Task<ThreadMessageModel> CreateUserTextMessageAsync(
         this IOpenAIRestContext context,
         string threadId,
-        ChatMessage message,
+        string content,
         CancellationToken cancellationToken = default)
     {
         var payload =
             new
             {
-                role = message.Role,
-                content = message.Content.ToString()
+                role = AuthorRole.User.Label,
+                content,
             };
 
         return

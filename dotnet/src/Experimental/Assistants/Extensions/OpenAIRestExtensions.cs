@@ -33,7 +33,7 @@ internal static partial class OpenAIRestExtensions
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing result: {typeof(TResult).Name}");
+            throw new SKException($"Null result processing: {typeof(TResult).Name}");
     }
 
     private static Task<TResult> ExecutePostAsync<TResult>(
@@ -64,6 +64,6 @@ internal static partial class OpenAIRestExtensions
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing result: {typeof(TResult).Name}");
+            throw new SKException($"Null result processing: {typeof(TResult).Name}");
     }
 }
