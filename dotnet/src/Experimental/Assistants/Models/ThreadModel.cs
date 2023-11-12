@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Model of Thread data returned from OpenAI
 /// </summary>
-public class ThreadModel
+internal class ThreadModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Represents an execution run on a thread.
 /// </summary>
-public class ThreadRunModel
+internal class ThreadRunModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.

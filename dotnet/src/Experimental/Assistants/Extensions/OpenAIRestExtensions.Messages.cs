@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -67,13 +68,13 @@ internal static partial class OpenAIRestExtensions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
-    public static Task<ThreadRunStepListModel> GetMessagesAsync(
+    public static Task<IList<ThreadMessageModel>> GetMessagesAsync(
         this IOpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)
     {
         return
-            context.ExecuteGetAsync<ThreadRunStepListModel>(
+            context.ExecuteGetAsync<IList<ThreadMessageModel>>(
                 GetMessagesUrl(threadId),
                 cancellationToken);
     }

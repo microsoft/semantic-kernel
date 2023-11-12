@@ -6,9 +6,17 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
+/// list of run steps belonging to a run.
+/// </summary>
+internal class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
+{
+    // No specialization
+}
+
+/// <summary>
 /// Step in a run on a thread.
 /// </summary>
-public class ThreadRunStepModel
+internal class ThreadRunStepModel
 {
     /// <summary>
     /// Identifier of the run step, which can be referenced in API endpoints.

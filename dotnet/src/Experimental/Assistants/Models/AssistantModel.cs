@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Model of Assistant data returned from OpenAI
 /// </summary>
-public record AssistantModel
+internal record AssistantModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints

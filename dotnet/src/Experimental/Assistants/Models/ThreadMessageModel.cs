@@ -6,9 +6,17 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
+/// list of run steps belonging to a run.
+/// </summary>
+internal class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
+{
+    // No specialization
+}
+
+/// <summary>
 /// Represents a message within a thread.
 /// </summary>
-public class ThreadMessageModel
+internal class ThreadMessageModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.

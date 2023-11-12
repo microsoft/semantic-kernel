@@ -38,38 +38,6 @@ internal sealed class ChatRun : IChatRun
     private readonly IOpenAIRestContext _restContext;
     private ThreadRunModel _model;
 
-    ///// <summary>
-    ///// $$$
-    ///// </summary>
-    //public static async Task<ChatRun> CreateAsync(
-    //    IOpenAIRestContext restContext,
-    //    string threadId,
-    //    string assistantId,
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    var resultModel =
-    //        await restContext.CreateRunAsync(threadId, assistantId, cancellationToken).ConfigureAwait(false) ??
-    //        throw new SKException("Unexpected failure retrieving run: no result.");
-
-    //    return new ChatRun(resultModel, restContext);
-    //}
-
-    ///// <summary>
-    ///// $$$
-    ///// </summary>
-    //public static async Task<ChatRun> GetRunAsync(
-    //    IOpenAIRestContext restContext,
-    //    string threadId,
-    //    string runId,
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    var resultModel =
-    //        await restContext.GetRunAsync(threadId, runId, cancellationToken).ConfigureAwait(false) ??
-    //        throw new SKException("Unexpected failure retrieving run: no result.");
-
-    //    return new ChatRun(resultModel, restContext);
-    //}
-
     /// <summary>
     /// $$$
     /// </summary>
@@ -123,7 +91,7 @@ internal sealed class ChatRun : IChatRun
         // $$$ ???
         var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
 
-        return steps.Data.Last()?.Content.Last()?.Text?.Value ?? "$$$"; // $$$
+        return steps.Data.Single().StepDetails.MessageCreation?.MessageId ?? "$$$"; // $$$
     }
 
     /// <summary>
