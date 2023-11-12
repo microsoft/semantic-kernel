@@ -31,7 +31,7 @@ public sealed class AssistantHarness
     }
 
     /// <summary>
-    /// Create a new assistant.
+    /// Verify creation and retrieval of assistant.
     /// </summary>
     [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantLifecycleAsync()

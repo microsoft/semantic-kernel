@@ -50,7 +50,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assisant definition</returns>
@@ -68,7 +68,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve all assistants.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="limit">A limit on the number of objects to be returned.
     /// Limit can range between 1 and 100, and the default is 20.</param>
     /// <param name="ascending">Set to true to sort by ascending created_at timestamp

@@ -29,7 +29,7 @@ internal sealed class ChatThread : IChatThread
     /// <summary>
     /// Create a new thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
     public static async Task<IChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
@@ -44,7 +44,7 @@ internal sealed class ChatThread : IChatThread
     /// <summary>
     /// Retrieve an existing thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
@@ -77,6 +77,9 @@ internal sealed class ChatThread : IChatThread
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken)
     {
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistantId, instructions, cancellationToken).ConfigureAwait(false);
+
+        var run = new ChatRun(runModel, this._restContext);
+        var result = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
         for (var index = this._messages.Count - 1; index >= 0; --index) // $$$ HAXX
         {

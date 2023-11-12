@@ -16,7 +16,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Create a new thread.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A thread definition</returns>
     public static Task<ThreadModel> CreateThreadModelAsync(
@@ -32,7 +32,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve an thread by identifier.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A thread definition</returns>

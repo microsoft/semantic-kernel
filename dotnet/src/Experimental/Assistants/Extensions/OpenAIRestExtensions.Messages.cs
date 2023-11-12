@@ -15,7 +15,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Create a new message.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="content">The message text</param>
     /// <param name="cancellationToken">A cancellation token</param>
@@ -43,7 +43,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve an message by identifier.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="messageId">The message identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
@@ -63,7 +63,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve all thread messages.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>

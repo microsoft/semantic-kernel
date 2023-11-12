@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -15,7 +14,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Create a new run.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">A thread identifier</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="instructions">Optional instruction override</param>
@@ -46,7 +45,7 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve an run by identifier.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">A thread identifier</param>
     /// <param name="runId">A run identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
@@ -66,19 +65,19 @@ internal static partial class OpenAIRestExtensions
     /// <summary>
     /// Retrieve run steps by identifier.
     /// </summary>
-    /// <param name="context">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">A thread identifier</param>
     /// <param name="runId">A run identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A set of run steps</returns>
-    public static Task<IList<ThreadRunStepModel>> GetRunStepsAsync(
+    public static Task<ThreadRunStepListModel> GetRunStepsAsync(
         this IOpenAIRestContext context,
         string threadId,
         string runId,
         CancellationToken cancellationToken = default)
     {
         return
-            context.ExecuteGetAsync<IList<ThreadRunStepModel>>(
+            context.ExecuteGetAsync<ThreadRunStepListModel>(
                 GetRunStepsUrl(threadId, runId),
                 cancellationToken);
     }

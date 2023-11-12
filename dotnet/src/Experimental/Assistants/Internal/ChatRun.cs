@@ -26,6 +26,7 @@ internal sealed class ChatRun : IChatRun
 
     private const string ActionState = "requires_action";
     private const string FailedState = "failed";
+    private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(200);
 
     private static readonly HashSet<string> s_pollingStates =
         new(StringComparer.OrdinalIgnoreCase)
@@ -79,13 +80,15 @@ internal sealed class ChatRun : IChatRun
         // Poll until actionable
         while (s_pollingStates.Contains(this._model.Status))
         {
+            await Task.Delay(s_pollingInterval, cancellationToken).ConfigureAwait(false);
+
             try
             {
-                this._model = await this._restContext.GetRunAsync(this.Id, this.AssistantId, cancellationToken).ConfigureAwait(false);
+                this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsCriticalException())
             {
-                // $$$
+                // Retry anyway..
             }
         }
 
@@ -120,7 +123,7 @@ internal sealed class ChatRun : IChatRun
         // $$$ ???
         var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
 
-        return steps.Last().Object; // $$$
+        return steps.Data.Last()?.Content.Last()?.Text?.Value ?? "$$$"; // $$$
     }
 
     /// <summary>

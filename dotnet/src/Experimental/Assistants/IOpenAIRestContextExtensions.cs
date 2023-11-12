@@ -17,7 +17,7 @@ public static class IOpenAIRestContextExtensions
     /// <summary>
     /// Create a new thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <returns>An <see cref="AssistantBuilder"> for definition.</see></returns>
     public static IAssistantBuilder CreateAssistant(this IOpenAIRestContext restContext)
     {
@@ -27,7 +27,7 @@ public static class IOpenAIRestContextExtensions
     /// <summary>
     /// Create a new thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="model">The assistant chat model (required)</param>
     /// <param name="instructions">The assistant instructions (required)</param>
     /// <param name="name">The assistant name (optional)</param>
@@ -52,7 +52,7 @@ public static class IOpenAIRestContextExtensions
     /// <summary>
     /// Create a new thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="IChatThread"> instance.</see></returns>
     public static Task<IChatThread> CreateThreadAsync(this IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
@@ -63,7 +63,7 @@ public static class IOpenAIRestContextExtensions
     /// <summary>
     /// Retrieve an existing assisant, by identifier.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
@@ -104,7 +104,7 @@ public static class IOpenAIRestContextExtensions
     /// <summary>
     /// Retrieve an existing thread.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>

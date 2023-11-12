@@ -44,7 +44,7 @@ internal sealed class Assistant : IAssistant
     /// <summary>
     /// Create a new assistant.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
@@ -63,7 +63,7 @@ internal sealed class Assistant : IAssistant
     /// <summary>
     /// Retrieve an existing assisant, by identifier.
     /// </summary>
-    /// <param name="restContext">An context for accessing OpenAI REST endpoint</param>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>

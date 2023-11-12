@@ -31,7 +31,7 @@ public sealed class ThreadHarness
     }
 
     /// <summary>
-    /// Create a new thread.
+    /// Verify creation and retrieval of thread.
     /// </summary>
     [Fact(Skip = SkipReason)]
     public async Task VerifyThreadLifecycleAsync()
