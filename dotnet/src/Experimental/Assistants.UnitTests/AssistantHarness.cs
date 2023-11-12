@@ -51,5 +51,11 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task GetAssistantAsync()
     {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.Create(httpClient);
+
+        var assistant = await Assistant2.GetAsync(context, "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
+
+        this._output.WriteLine($"# {assistant.Instructions}");
     }
 }

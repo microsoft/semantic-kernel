@@ -59,7 +59,7 @@ public sealed class Assistant2 : IAssistant
     /// <summary>
     /// $$$
     /// </summary>
-    public static async Task<Assistant2> CreateAsync(
+    public static async Task<Assistant2> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
         CancellationToken cancellationToken = default)
