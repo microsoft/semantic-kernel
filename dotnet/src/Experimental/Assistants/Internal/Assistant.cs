@@ -27,10 +27,10 @@ internal sealed class Assistant : IAssistant
     public long CreatedAt => this._model.CreatedAt;
 
     /// <inheritdoc/>
-    public string Name => this._model.Name;
+    public string? Name => this._model.Name;
 
     /// <inheritdoc/>
-    public string Description => this._model.Description;
+    public string? Description => this._model.Description;
 
     /// <inheritdoc/>
     public string Model => this._model.Model;

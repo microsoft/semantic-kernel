@@ -29,12 +29,12 @@ public interface IAssistant
     /// <summary>
     /// Name of the assistant
     /// </summary>
-    string Name { get; }
+    string? Name { get; }
 
     /// <summary>
     /// The description of the assistant
     /// </summary>
-    string Description { get; }
+    string? Description { get; }
 
     /// <summary>
     /// ID of the model to use
