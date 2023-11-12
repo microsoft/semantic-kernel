@@ -68,13 +68,13 @@ internal static partial class OpenAIRestExtensions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
-    public static Task<IList<ThreadMessageModel>> GetMessagesAsync(
+    public static Task<ThreadMessageListModel> GetMessagesAsync(
         this IOpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)
     {
         return
-            context.ExecuteGetAsync<IList<ThreadMessageModel>>(
+            context.ExecuteGetAsync<ThreadMessageListModel>(
                 GetMessagesUrl(threadId),
                 cancellationToken);
     }

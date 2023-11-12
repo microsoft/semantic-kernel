@@ -102,11 +102,11 @@ internal sealed class ChatThread : IChatThread
     /// </summary>
     private ChatThread(
         ThreadModel threadModel,
-        IList<ThreadMessageModel>? messageListModel,
+        ThreadMessageListModel? messageListModel,
         IOpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;
-        this._messages = (messageListModel ?? new List<ThreadMessageModel>()).Select(m => (IChatMessage)new ChatMessage(m)).ToList();
+        this._messages = ((IList<ThreadMessageModel>?)messageListModel?.Data ?? Array.Empty<ThreadMessageModel>()).Select(m => (IChatMessage)new ChatMessage(m)).ToList();
         this._messageIndex = this._messages.ToDictionary(m => m.Id);
         this._restContext = restContext;
     }
