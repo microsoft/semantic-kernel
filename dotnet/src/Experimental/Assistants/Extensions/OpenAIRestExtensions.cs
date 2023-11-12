@@ -24,7 +24,7 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
-        using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
@@ -55,7 +55,7 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
-        using var response = await context.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
