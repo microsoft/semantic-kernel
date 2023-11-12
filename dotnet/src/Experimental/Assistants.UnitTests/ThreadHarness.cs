@@ -33,7 +33,7 @@ public sealed class ThreadHarness
     public async Task CreateThreadAsync()
     {
         using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.Create(httpClient);
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var thread = await ChatThread.CreateAsync(context).ConfigureAwait(true);
 
@@ -44,7 +44,7 @@ public sealed class ThreadHarness
     public async Task GetThreadAsync()
     {
         using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.Create(httpClient);
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var thread = new ChatThread("thread_AQf7ra5DJIsUnLegytkski90", context);
     }
@@ -53,7 +53,7 @@ public sealed class ThreadHarness
     public async Task AddThreadMessageAsync()
     {
         using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.Create(httpClient);
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var thread = new ChatThread("thread_AQf7ra5DJIsUnLegytkski90", context);
         await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true); ;

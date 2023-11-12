@@ -32,7 +32,7 @@ public sealed class AssistantHarness
     public async Task CreateAssistantAsync()
     {
         using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.Create(httpClient);
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var model =
             new AssistantModel
@@ -52,7 +52,7 @@ public sealed class AssistantHarness
     public async Task GetAssistantAsync()
     {
         using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.Create(httpClient);
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var assistant = await Assistant2.GetAsync(context, "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
 

@@ -18,7 +18,7 @@ internal class OpenAIRestContext : IOpenAIRestContext
     /// <param name="httpClient"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static OpenAIRestContext Create(HttpClient httpClient)
+    public static OpenAIRestContext CreateFromConfig(HttpClient httpClient)
     {
         var apiKey =
             TestConfig.Configuration.GetValue<string>("OpenAIApiKey") ??
