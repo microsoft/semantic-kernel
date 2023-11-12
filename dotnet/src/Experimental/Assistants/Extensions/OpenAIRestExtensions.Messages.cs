@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -77,6 +78,32 @@ internal static partial class OpenAIRestExtensions
             context.ExecuteGetAsync<ThreadMessageListModel>(
                 GetMessagesUrl(threadId),
                 cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieve all thread messages.
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="messageIds">The set of message identifiers to retrieve</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A message list definition</returns>
+    public static async Task<IEnumerable<ThreadMessageModel>> GetMessagesAsync(
+        this IOpenAIRestContext context,
+        string threadId,
+        IList<string> messageIds,
+        CancellationToken cancellationToken = default)
+    {
+        var tasks =
+            messageIds.Select(
+                id =>
+                    context.ExecuteGetAsync<ThreadMessageModel>(
+                        GetMessagesUrl(threadId, id),
+                        cancellationToken)).ToArray();
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        return tasks.Select(t => t.Result).ToArray();
     }
 
     private static string GetMessagesUrl(string threadId)

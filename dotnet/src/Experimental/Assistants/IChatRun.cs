@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,5 +31,5 @@ internal interface IChatRun
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>$$$ TBD</returns>
-    Task<string> GetResultAsync(CancellationToken cancellationToken = default);
+    Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default);
 }

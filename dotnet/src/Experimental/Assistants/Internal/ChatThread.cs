@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -79,22 +80,23 @@ internal sealed class ChatThread : IChatThread
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistantId, instructions, cancellationToken).ConfigureAwait(false);
 
         var run = new ChatRun(runModel, this._restContext);
-        var result = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
+        var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
-        for (var index = this._messages.Count - 1; index >= 0; --index) // $$$ HAXX
+        var messages = await this.GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return messages;
+    }
+
+    private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
+        IList<string> messageIds,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
+        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken: cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
         {
-            var message = this._messages[index];
-            if (message.AssistantId == assistantId)
-            {
-                return
-                    new[]
-                    {
-                        message,
-                    };
-            }
+            yield return this.AddMessage(message);
         }
-
-        return Array.Empty<IChatMessage>();
     }
 
     /// <summary>

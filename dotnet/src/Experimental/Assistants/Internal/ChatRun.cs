@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -43,7 +44,7 @@ internal sealed class ChatRun : IChatRun
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<string> GetResultAsync(CancellationToken cancellationToken = default)
+    public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
     {
         // Poll until actionable
         while (s_pollingStates.Contains(this._model.Status))
@@ -85,13 +86,17 @@ internal sealed class ChatRun : IChatRun
         // Did fail?
         if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            return this._model.LastError?.Message ?? "Unexpected failure";
+            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
-        // $$$ ???
         var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+        var messageIds =
+            steps.Data
+                .Where(s => s.StepDetails.MessageCreation != null)
+                .Select(s => s.StepDetails.MessageCreation!.MessageId)
+                .ToArray();
 
-        return steps.Data.Single().StepDetails.MessageCreation?.MessageId ?? "$$$"; // $$$
+        return messageIds; // $$$
     }
 
     /// <summary>
