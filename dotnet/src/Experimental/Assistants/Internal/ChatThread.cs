@@ -87,18 +87,6 @@ internal sealed class ChatThread : IChatThread
         return messages;
     }
 
-    private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
-        IList<string> messageIds,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        await Task.Delay(0, cancellationToken).ConfigureAwait(false); // TODO: document why this is here, or remove        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken: cancellationToken).ConfigureAwait(false);
-        foreach (var message in messages)
-        {
-            yield return this.AddMessage(message);
-        }
-    }
-
     /// <summary>
     /// Delete an existing thread.
     /// </summary>
@@ -106,6 +94,17 @@ internal sealed class ChatThread : IChatThread
     public Task DeleteThreadAsync(CancellationToken cancellationToken)
     {
         return this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken: cancellationToken);
+    }
+
+    private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
+        IList<string> messageIds,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken: cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
+        {
+            yield return this.AddMessage(message);
+        }
     }
 
     /// <summary>
