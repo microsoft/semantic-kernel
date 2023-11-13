@@ -15,21 +15,15 @@ public class FunctionCallingStepwisePlannerResult
     /// <summary>
     /// Final result message of the plan.
     /// </summary>
-    public string Message { get; } = string.Empty;
+    public string FinalAnswer { get; internal set; } = string.Empty;
 
     /// <summary>
     /// Chat history containing the planning process.
     /// </summary>
-    public ChatHistory ChatHistory { get; }
+    public ChatHistory? ChatHistory { get; internal set; }
 
     /// <summary>
-    /// Create a <see cref="FunctionCallingStepwisePlannerResult"/>
+    /// Number of iterations performed by the planner.
     /// </summary>
-    /// <param name="message">The final result message.</param>
-    /// <param name="history">The chat history.</param>
-    public FunctionCallingStepwisePlannerResult(string message, ChatHistory history)
-    {
-        this.Message = message;
-        this.ChatHistory = history;
-    }
+    public int Iterations { get; internal set; } = 0;
 }

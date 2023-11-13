@@ -99,10 +99,12 @@ public class FunctionCallingStepwisePlanner
                 Match finalAnswerMatch = s_finalAnswerRegex.Match(messageContent);
                 if (finalAnswerMatch.Success)
                 {
-                    return new FunctionCallingStepwisePlannerResult(
-                        finalAnswerMatch.Groups[1].Value.Trim(),
-                        chatHistoryForSteps
-                        );
+                    return new FunctionCallingStepwisePlannerResult
+                    {
+                        FinalAnswer = finalAnswerMatch.Groups[1].Value.Trim(),
+                        ChatHistory = chatHistoryForSteps,
+                        Iterations = i + 1,
+                    };
                 }
 
                 // No final answer found yet, so continue looping through steps
@@ -135,10 +137,12 @@ public class FunctionCallingStepwisePlanner
         }
 
         // We've completed the max iterations, but the model hasn't returned a final answer.
-        return new FunctionCallingStepwisePlannerResult(
-            string.Empty,
-            chatHistoryForSteps
-            );
+        return new FunctionCallingStepwisePlannerResult
+        {
+            FinalAnswer = string.Empty,
+            ChatHistory = chatHistoryForSteps,
+            Iterations = this.Config.MaxIterations,
+        };
     }
 
     private async Task<IChatResult> GetCompletionWithFunctionsAsync(

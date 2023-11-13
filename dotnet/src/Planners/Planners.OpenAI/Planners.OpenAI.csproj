@@ -33,10 +33,4 @@
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
-  </ItemGroup>
-
 </Project>
