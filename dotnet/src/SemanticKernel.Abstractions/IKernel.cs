@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -43,18 +41,6 @@ public interface IKernel
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
     ISKFunction RegisterCustomFunction(ISKFunction customFunction);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        ContextVariables variables,
-        CancellationToken cancellationToken,
-        params ISKFunction[] pipeline);
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
