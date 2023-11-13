@@ -53,18 +53,17 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         string role = string.Empty;
-        int currentIndex = -1;
+        int i = 0;
         CompletionsFinishReason? finishReason = null;
         string? messageId = null;
         DateTimeOffset? created = null;
 
-        while (currentIndex < this._chatUpdates.Count)
+        while (i < this._chatUpdates.Count)
         {
-            currentIndex++;
+            var message = this._chatUpdates[i];
 
-            var message = this._chatUpdates[currentIndex];
-
-            if (message.Role.HasValue)
+            // The role will be passed to further messages as soon it is updated
+            if (string.IsNullOrEmpty(role) && message.Role.HasValue)
             {
                 role = message.Role.Value.ToString();
             }
@@ -86,23 +85,24 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
             if (message.ContentUpdate is { Length: > 0 })
             {
-                yield return new SKChatMessage(role, message.ContentUpdate);
+                yield return new SKChatMessage(role, message.ContentUpdate, new() { { nameof(message.ContentUpdate), message.ContentUpdate } });
             }
 
-            // This part may change to expose the function name and arguments as new properties of a message (not mix with the actual content)
-            // FunctionName and FunctionArgumentsUpdate are considered as valid messages
-            if (message.FunctionName.Length > 0)
+            // This part may change to expose the function name and arguments as new properties of a message
+            if (message.FunctionName?.Length > 0)
             {
-                yield return new SKChatMessage(role, message.FunctionName);
+                yield return new SKChatMessage(role, string.Empty, new() { { nameof(message.FunctionName), message.FunctionName } });
             }
 
             if (message.FunctionArgumentsUpdate is { Length: > 0 })
             {
-                yield return new SKChatMessage(role, message.FunctionArgumentsUpdate);
+                yield return new SKChatMessage(role, string.Empty, new() { { nameof(message.FunctionArgumentsUpdate), message.FunctionArgumentsUpdate } });
             }
 
+            i++;
+
             // Wait for next choice update...
-            while (!this._isStreamEnded && currentIndex >= this._chatUpdates.Count)
+            while (!this._isStreamEnded && i >= this._chatUpdates.Count)
             {
                 await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }

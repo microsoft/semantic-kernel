@@ -140,6 +140,8 @@ public abstract class ClientBase
         StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
             () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
+        // Keep running the request stream in the background populating the choices cache
+        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be interated over
         var cachedChoices = new Dictionary<int, List<Choice>>();
         var results = new List<TextStreamingResult>();
         bool streamingStarted = false;
@@ -155,6 +157,7 @@ public abstract class ClientBase
                     {
                         cachedChoices.Add(choice.Index, new());
                         cachedChoices[choice.Index].Add(choice);
+
                         var result = new TextStreamingResult(completions, cachedChoices[choice.Index]);
                         results.Add(result);
                     }
@@ -218,23 +221,49 @@ public abstract class ClientBase
 
         var cachedChoices = new Dictionary<int, List<StreamingChatCompletionsUpdate>>();
         var results = new List<ChatStreamingResult>();
-        await foreach (StreamingChatCompletionsUpdate update in response)
-        {
-            // Stores the streaming updates by index in 
-            if (!cachedChoices.ContainsKey(update.ChoiceIndex ?? 0))
-            {
-                cachedChoices.Add(update.ChoiceIndex ?? 0, new());
+        bool streamingStarted = false;
 
-                var result = new ChatStreamingResult(cachedChoices[update.ChoiceIndex ?? 0]);
-                results.Add(result);
-                yield return result;
+        // Keep running the request stream in the background populating the updated choices cache
+        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be interated over
+        _ = Task.Run(async () =>
+        {
+            await foreach (StreamingChatCompletionsUpdate update in response)
+            {
+                // Stores the streaming updates by index in 
+                if (!cachedChoices.ContainsKey(update.ChoiceIndex ?? 0))
+                {
+                    cachedChoices.Add(update.ChoiceIndex ?? 0, new());
+                    cachedChoices[update.ChoiceIndex ?? 0].Add(update);
+
+                    var result = new ChatStreamingResult(cachedChoices[update.ChoiceIndex ?? 0]);
+                    results.Add(result);
+                }
+                else
+                {
+                    cachedChoices[update.ChoiceIndex ?? 0].Add(update);
+                }
+
+                if (!streamingStarted)
+                {
+                    streamingStarted = true;
+                }
             }
-            cachedChoices[update.ChoiceIndex ?? 0].Add(update);
+
+            foreach (var result in results)
+            {
+                result.EndOfStream();
+            }
+        }, cancellationToken);
+
+        // Wait for streaming to start
+        while (!streamingStarted)
+        {
+            await Task.Delay(10, cancellationToken).ConfigureAwait(false);
         }
 
         foreach (var result in results)
         {
-            result.EndOfStream();
+            yield return result;
         }
     }
 

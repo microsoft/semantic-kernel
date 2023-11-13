@@ -34,14 +34,12 @@ internal sealed class TextStreamingResult : ITextStreamingResult, ITextResult
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        int i = -1;
+        int i = 0;
         while (i < this._choices.Count)
         {
+            yield return this._choices[i].Text;
+
             i++;
-            if (i < this._choices.Count)
-            {
-                yield return this._choices[i].Text;
-            }
 
             // Wait for next choice update...
             while (!this._isStreamEnded && i >= this._choices.Count)

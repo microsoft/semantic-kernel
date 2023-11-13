@@ -15,12 +15,12 @@ public class SKChatMessage : ChatMessageBase
     /// <summary>
     /// Key for the function call arguments in the additional properties dictionary
     /// </summary>
-    public const string FunctionCallArgumentsKey = "FunctionCall.Arguments";
+    public const string FunctionCallArgumentsKey = $"{nameof(ChatMessage.FunctionCall)}.{nameof(ChatMessage.FunctionCall.Arguments)}";
 
     /// <summary>
     /// Key for the function call name in the additional properties dictionary
     /// </summary>
-    public const string FunctionCallNameKey = "FunctionCall.Name";
+    public const string FunctionCallNameKey = $"{nameof(ChatMessage.FunctionCall)}.{nameof(ChatMessage.FunctionCall.Name)}";
 
     private readonly ChatMessage? _message;
 
@@ -47,6 +47,17 @@ public class SKChatMessage : ChatMessageBase
     /// <param name="content">Content of the message.</param>
     public SKChatMessage(string role, string content)
         : base(new AuthorRole(role), content)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SKChatMessage"/> class.
+    /// </summary>
+    /// <param name="role">Role of the author of the message.</param>
+    /// <param name="content">Content of the message.</param>
+    /// <param name="arguments">Arguments of the message.</param>
+    public SKChatMessage(string role, string content,  Dictionary<string, string> arguments) :
+        base(new AuthorRole(role), content, arguments)
     {
     }
 
