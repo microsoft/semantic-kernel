@@ -11,8 +11,8 @@ namespace Microsoft.SemanticKernel.Extensions;
 /// </summary>
 public static class FunctionViewExtensions
 {
-    private const string s_successfulResponseCode = "200";
-    private const string s_successfulResponseDescription = "Success";
+    private const string SuccessfulResponseCode = "200";
+    private const string SuccessfulResponseDescription = "Success";
 
     /// <summary>
     /// Creates a <see cref="JsonSchemaFunctionManual"/> for a function.
@@ -34,7 +34,7 @@ public static class FunctionViewExtensions
         {
             if (parameter.ParameterType != null)
             {
-                functionManual.Parameters.Properties.Add(parameter.Name, jsonSchemaDelegate(parameter.ParameterType, function.ReturnParameter.Description ?? ""));
+                functionManual.Parameters.Properties.Add(parameter.Name, jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? ""));
                 if (parameter.IsRequired ?? false)
                 {
                     requiredProperties.Add(parameter.Name);
@@ -53,7 +53,7 @@ public static class FunctionViewExtensions
         if (includeOutputSchema)
         {
             var functionResponse = new JsonSchemaFunctionResponse();
-            functionResponse.Description = s_successfulResponseDescription;
+            functionResponse.Description = SuccessfulResponseDescription;
 
             if (function.ReturnParameter?.ParameterType != null)
             {
@@ -64,9 +64,10 @@ public static class FunctionViewExtensions
                 functionResponse.Content.JsonResponse.Schema = function.ReturnParameter.Schema;
             }
 
-            functionManual.FunctionResponses.Add(s_successfulResponseCode, functionResponse);
+            functionManual.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);
         }
 
+        functionManual.Parameters.Required = requiredProperties;
         return functionManual;
     }
 }

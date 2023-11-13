@@ -23,18 +23,20 @@ internal static class OpenAIFunctionExtensions
                 Name: openAIparameter.Name,
                 Description: openAIparameter.Description,
                 IsRequired: openAIparameter.IsRequired,
-                Schema: openAIparameter.Schema));
+                Schema: openAIparameter.Schema,
+                ParameterType: openAIparameter.ParameterType));
         }
 
         var returnParameter = new ReturnParameterView(
             Description: function.ReturnParameter.Description,
-            Schema: function.ReturnParameter.Schema);
+            Schema: function.ReturnParameter.Schema,
+            ParameterType: function.ReturnParameter.ParameterType);
 
         return new FunctionView(
             Name: function.FunctionName,
             PluginName: function.PluginName,
             Description: function.Description,
-            parameterViews,
+            Parameters: parameterViews,
             ReturnParameter: returnParameter);
     }
 }

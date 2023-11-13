@@ -41,6 +41,11 @@ public class OpenAIFunctionParameter
     /// The Json Schema of the parameter.
     /// </summary>
     public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The parameter Type.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
 }
 
 /// <summary>
@@ -57,6 +62,11 @@ public class OpenAIReturnParameter
     /// The Json Schema of the parameter.
     /// </summary>
     public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The <see cref="Type"/> of the return parameter.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
 }
 
 /// <summary>
