@@ -131,7 +131,7 @@ class RestApiOperation:
         processed_headers["User-Agent"] = " ".join(
             (HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))
         ).rstrip()
-     
+
         req = PreparedRestApiRequest(
             method=self.method,
             url=url,

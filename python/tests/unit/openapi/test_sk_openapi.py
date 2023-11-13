@@ -93,8 +93,8 @@ def test_prepare_request_with_path_params():
         url="http://example.com/todos/1",
         params={"completed": False},
         headers={
-            "Authorization": "Bearer abc123", 
-            "Content-Type": "application/json", 
+            "Authorization": "Bearer abc123",
+            "Content-Type": "application/json",
             "User-Agent": "Semantic-Kernel",
         },
         request_body={"title": "Buy milk", "completed": False},
@@ -132,9 +132,9 @@ def test_prepare_request_with_default_query_param():
         url="http://example.com/todos/1",
         params={},
         headers={
-            "Authorization": "Bearer abc123", 
-            "Content-Type": "application/json", 
-            "User-Agent": "Semantic-Kernel"
+            "Authorization": "Bearer abc123",
+            "Content-Type": "application/json",
+            "User-Agent": "Semantic-Kernel",
         },
         request_body={"title": "Buy milk", "completed": False},
     )
