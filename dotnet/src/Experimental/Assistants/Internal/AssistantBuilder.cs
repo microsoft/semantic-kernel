@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -57,6 +60,25 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
+    public IAssistantBuilder WithMetadata(string key, object value)
+    {
+        this._model.Metadata[key] = value;
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithMetadata(IDictionary<string, object> metadata)
+    {
+        foreach (var kvp in metadata)
+        {
+            this._model.Metadata[kvp.Key] = kvp.Value;
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc/>
     public IAssistantBuilder WithModel(string model)
     {
         this._model.Model = model;
@@ -68,6 +90,71 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     public IAssistantBuilder WithName(string? name)
     {
         this._model.Name = name;
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithTool(FunctionView tool)
+    {
+        var functionName = tool.PluginName.IsNullOrWhitespace() ? tool.Name : $"{tool.PluginName}-{tool.Name}"; // TODO: @chris - consume & verify
+
+        var required = new List<string>(tool.Parameters.Count);
+        var parameters =
+            tool.Parameters.ToDictionary(
+                p => p.Name,
+                p =>
+                {
+                    if (p.IsRequired ?? false)
+                    {
+                        required.Add(p.Name);
+                    }
+
+                    return
+                        new OpenAIParameter
+                        {
+                            Type = p.Type?.Name ?? nameof(System.String),
+                            Description = p.Description,
+                        };
+                });
+
+        var payload =
+            new AssistantModel.ToolModel
+            {
+                Type = "function",
+                Function =
+                    new()
+                    {
+                        Name = functionName,
+                        Description = tool.Description,
+                        Parameters =
+                        {
+                            Properties = parameters,
+                            Required = required,
+                        }
+                    },
+            };
+
+        this._model.Tools.Add(payload);
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithTools(IEnumerable<FunctionView> tools)
+    {
+        foreach (var tool in tools)
+        {
+            this.WithTool(tool);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithTools(IKernel kernel)
+    {
+        this.WithTools(kernel.Functions.GetFunctionViews());
 
         return this;
     }

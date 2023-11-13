@@ -58,7 +58,7 @@ internal static partial class OpenAIRestExtensions
         string id,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken: cancellationToken);
+        return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
     }
 
     private static string GetThreadUrl(string threadId)

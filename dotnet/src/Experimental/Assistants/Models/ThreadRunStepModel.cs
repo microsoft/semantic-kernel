@@ -166,7 +166,7 @@ internal class ThreadRunStepModel
         /// The definition of the function that was called.
         /// </summary>
         [JsonPropertyName("function")]
-        public FunctionDetailsModel Function { get; set; }
+        public FunctionDetailsModel? Function { get; set; }
     }
 
     /// <summary>

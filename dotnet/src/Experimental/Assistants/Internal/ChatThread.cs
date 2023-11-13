@@ -93,14 +93,14 @@ internal sealed class ChatThread : IChatThread
     /// <param name="cancellationToken">A cancellation token</param>
     public Task DeleteThreadAsync(CancellationToken cancellationToken)
     {
-        return this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken: cancellationToken);
+        return this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken);
     }
 
     private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
         IList<string> messageIds,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
         foreach (var message in messages)
         {
             yield return this.AddMessage(message);

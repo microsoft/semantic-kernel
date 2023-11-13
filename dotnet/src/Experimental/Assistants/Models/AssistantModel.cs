@@ -34,12 +34,14 @@ internal record AssistantModel
     /// Name of the assistant
     /// </summary>
     [JsonPropertyName("name")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; set; }
 
     /// <summary>
     /// The description of the assistant
     /// </summary>
     [JsonPropertyName("description")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
 
     /// <summary>
@@ -88,5 +90,37 @@ internal record AssistantModel
         /// </summary>
         [JsonPropertyName("type")]
         public string Type { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The function definition for Type = 'function'.
+        /// </summary>
+        [JsonPropertyName("function")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public FunctionModel? Function { get; init; }
+    }
+
+    /// <summary>
+    /// Defines the function when ToolModel.Type == 'function'.
+    /// </summary>
+    public record FunctionModel
+    {
+        /// <summary>
+        /// The function name.
+        /// </summary>
+        [JsonPropertyName("name")]
+        public string Name { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The function description.
+        /// </summary>
+        [JsonPropertyName("description")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Description { get; init; }
+
+        /// <summary>
+        /// The function description.
+        /// </summary>
+        [JsonPropertyName("parameters")]
+        public OpenAIParameters Parameters { get; init; } = OpenAIParameters.Empty;
     }
 }

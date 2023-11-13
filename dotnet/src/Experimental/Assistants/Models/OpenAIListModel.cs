@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// list of run steps belonging to a run.
 /// </summary>
-public abstract class OpenAIListModel<TModel>
+internal abstract class OpenAIListModel<TModel>
 {
     /// <summary>
     /// Always "list"

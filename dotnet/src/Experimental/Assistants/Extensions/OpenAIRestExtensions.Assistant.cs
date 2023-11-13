@@ -151,7 +151,7 @@ internal static partial class OpenAIRestExtensions
         string id,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken: cancellationToken);
+        return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
     }
 
     private static string GetAssistantUrl(string assistantId)

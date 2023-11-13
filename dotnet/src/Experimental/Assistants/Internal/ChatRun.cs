@@ -60,8 +60,7 @@ internal sealed class ChatRun : IChatRun
         // Is tool action required?
         if (ActionState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            // $$$
-            //// TODO: make this more efficient through parallelization
+            // TODO: @chris make this more efficient through parallelization
             //foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
             //{
             //    // Retrieve all of the steps that require action
@@ -92,7 +91,7 @@ internal sealed class ChatRun : IChatRun
                 .Select(s => s.StepDetails.MessageCreation!.MessageId)
                 .ToArray();
 
-        return messageIds; // $$$ HAXX
+        return messageIds; // TODO: @chris HAXX
     }
 
     /// <summary>
@@ -104,45 +103,6 @@ internal sealed class ChatRun : IChatRun
         this._restContext = restContext;
     }
 
-    //foreach (FunctionView functionView in kernel.GetFunctionViews())
-    //{
-    //    var OpenAIFunction = functionView.ToOpenAIFunction().ToFunctionDefinition();
-    //    var requiredParams = new List<string>();
-    //    var paramProperties = new Dictionary<string, object>();
-
-    //    foreach (var param in functionView.Parameters)
-    //    {
-    //        paramProperties.Add(
-    //            param.Name,
-    //            new
-    //            {
-    //                type = param.Type.Value.Name.ToLowerInvariant(),
-    //                description = param.Description,
-    //            });
-
-    //        if (param.IsRequired ?? false)
-    //        {
-    //            requiredParams.Add(param.Name);
-    //        }
-    //    }
-
-    //    tools.Add(new
-    //    {
-    //        type = "function",
-    //        function = new
-    //        {
-    //            name = OpenAIFunction.Name,
-    //            description = OpenAIFunction.Description,
-    //            parameters = new
-    //            {
-    //                type = "object",
-    //                properties = paramProperties,
-    //                required = requiredParams,
-    //            }
-    //        }
-    //    });
-    //}
-
     //private async Task<string> InvokeFunctionCallAsync(IKernel kernel, string name, string arguments)
     //{
     //    // split name
@@ -150,7 +110,7 @@ internal sealed class ChatRun : IChatRun
 
     //    // get function from kernel
     //    var function = kernel.Functions.GetFunction(nameParts[0], nameParts[1]);
-    //    // TODO: change back to Dictionary<string, object>
+    //    // TODO: @chris: change back to Dictionary<string, object>
     //    Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
 
     //    var results = await kernel.RunAsync(function /*, variables*/).ConfigureAwait(false);
@@ -179,29 +139,5 @@ internal sealed class ChatRun : IChatRun
 
     //    string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     //    return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
-    //}
-
-    //private OpenAIFunction ToOpenAIFunction(FunctionView functionView)
-    //{
-    //    var openAIParams = new List<OpenAIFunctionParameter>();
-    //    foreach (ParameterView param in functionView.Parameters)
-    //    {
-    //        openAIParams.Add(new OpenAIFunctionParameter
-    //        {
-    //            Name = param.Name,
-    //            Description = (param.Description ?? string.Empty)
-    //                + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
-    //            Type = param.Type?.Name.ToLower() ?? "string",
-    //            IsRequired = param.IsRequired ?? false
-    //        });
-    //    }
-
-    //    return new OpenAIFunction
-    //    {
-    //        FunctionName = this.Id,
-    //        PluginName = functionView.PlugInName,
-    //        Description = this.Description,
-    //        Parameters = openAIParams,
-    //    };
     //}
 }
