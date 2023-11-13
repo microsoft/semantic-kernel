@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -114,9 +114,11 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
 
 @pytest.mark.asyncio
 async def test_azure_text_completion_call_with_parameters() -> None:
-    mock_openai = AsyncMock()
+    mock_openai = Mock()
+    mock_completions = AsyncMock()
+    mock_openai.return_value.completions = mock_completions
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.AsyncAzureOpenAI",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -137,13 +139,8 @@ async def test_azure_text_completion_call_with_parameters() -> None:
 
         await azure_text_completion.complete_async(prompt, complete_request_settings)
 
-        mock_openai.Completion.acreate.assert_called_once_with(
-            engine=deployment_name,
-            api_key=api_key,
-            api_type=api_type,
-            api_base=endpoint,
-            api_version=api_version,
-            organization=None,
+        mock_completions.create.assert_called_once_with(
+            model=deployment_name,
             prompt=prompt,
             temperature=complete_request_settings.temperature,
             max_tokens=complete_request_settings.max_tokens,
@@ -159,9 +156,11 @@ async def test_azure_text_completion_call_with_parameters() -> None:
 
 @pytest.mark.asyncio
 async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() -> None:
-    mock_openai = AsyncMock()
+    mock_openai = Mock()
+    mock_completions = AsyncMock()
+    mock_openai.return_value.completions = mock_completions
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.AsyncAzureOpenAI",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -186,13 +185,8 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
 
         await azure_text_completion.complete_async(prompt, complete_request_settings)
 
-        mock_openai.Completion.acreate.assert_called_once_with(
-            engine=deployment_name,
-            api_key=api_key,
-            api_type=api_type,
-            api_base=endpoint,
-            api_version=api_version,
-            organization=None,
+        mock_completions.create.assert_called_once_with(
+            model=deployment_name,
             prompt=prompt,
             temperature=complete_request_settings.temperature,
             max_tokens=complete_request_settings.max_tokens,
