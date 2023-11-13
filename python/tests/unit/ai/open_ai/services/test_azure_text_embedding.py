@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
 
@@ -111,9 +111,11 @@ def test_azure_text_embedding_init_with_invalid_endpoint() -> None:
 
 @pytest.mark.asyncio
 async def test_azure_text_embedding_calls_with_parameters() -> None:
-    mock_openai = AsyncMock()
+    mock_openai = Mock()
+    mock_openai_embeddings = AsyncMock()
+    mock_openai.return_value.embeddings = mock_openai_embeddings
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding.AsyncAzureOpenAI",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -134,22 +136,19 @@ async def test_azure_text_embedding_calls_with_parameters() -> None:
 
         await azure_text_embedding.generate_embeddings_async(texts)
 
-        mock_openai.Embedding.acreate.assert_called_once_with(
-            engine=deployment_name,
-            api_key=api_key,
-            api_type=api_type,
-            api_base=endpoint,
-            api_version=api_version,
-            organization=None,
+        mock_openai_embeddings.create.assert_called_once_with(
+            model=deployment_name,
             input=texts,
         )
 
 
 @pytest.mark.asyncio
 async def test_azure_text_embedding_calls_with_batches() -> None:
-    mock_openai = AsyncMock()
+    mock_openai = Mock()
+    mock_openai_embeddings = AsyncMock()
+    mock_openai.return_value.embeddings = mock_openai_embeddings
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding.AsyncAzureOpenAI",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -170,28 +169,18 @@ async def test_azure_text_embedding_calls_with_batches() -> None:
 
         await azure_text_embedding.generate_embeddings_async(texts, batch_size=3)
 
-        mock_openai.assert_has_calls(
+        mock_openai_embeddings.assert_has_calls(
             [
-                call.Embedding.acreate(
-                    engine=deployment_name,
-                    api_key=api_key,
-                    api_type=api_type,
-                    api_base=endpoint,
-                    api_version=api_version,
-                    organization=None,
+                call.create(
+                    model=deployment_name,
                     input=texts[0:3],
                 ),
-                call.Embedding.acreate().__getitem__("data"),
-                call.Embedding.acreate().__getitem__().__iter__(),
-                call.Embedding.acreate(
-                    engine=deployment_name,
-                    api_key=api_key,
-                    api_type=api_type,
-                    api_base=endpoint,
-                    api_version=api_version,
-                    organization=None,
+                call.create().data.__iter__(),
+                call.create(
+                    model=deployment_name,
                     input=texts[3:5],
                 ),
+                call.create().data.__iter__()
             ],
             any_order=False,
         )
