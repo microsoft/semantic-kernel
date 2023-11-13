@@ -233,8 +233,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 throw new SKException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
-            var schemaBuilder = new StringBuilder();
-            parameter.Schema.SerializeAsV3WithoutReference(new OpenApiJsonWriter(new StringWriter(schemaBuilder)));
             var restParameter = new RestApiOperationParameter(
                 parameter.Name,
                 parameter.Schema.Type,
@@ -245,7 +243,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description,
-                JsonDocument.Parse(schemaBuilder.ToString())
+                parameter.Schema.ToJsonDocument()
             );
 
             result.Add(restParameter);
