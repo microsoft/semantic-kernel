@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
