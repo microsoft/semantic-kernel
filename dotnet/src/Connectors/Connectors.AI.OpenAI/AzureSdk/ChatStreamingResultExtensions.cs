@@ -29,9 +29,11 @@ public static class ChatStreamingResultExtensions
         FunctionCall? functionCall = null;
         await foreach (SKChatMessage message in chatStreamingResult.GetStreamingChatMessageAsync())
         {
-            functionCall ??= message.FunctionCall;
-
-            arguments.Append(message.FunctionCall.Arguments);
+            if (message.FunctionCall is not null)
+            {
+                functionCall = message.FunctionCall;
+                arguments.Append(message.FunctionCall.Arguments);
+            }
         }
 
         if (functionCall is null)

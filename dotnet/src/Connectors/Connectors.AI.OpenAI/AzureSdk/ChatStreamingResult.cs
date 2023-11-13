@@ -91,12 +91,12 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             // This part may change to expose the function name and arguments as new properties of a message
             if (message.FunctionName?.Length > 0)
             {
-                yield return new SKChatMessage(role, string.Empty, new() { { nameof(message.FunctionName), message.FunctionName } });
-            }
-
-            if (message.FunctionArgumentsUpdate is { Length: > 0 })
-            {
-                yield return new SKChatMessage(role, string.Empty, new() { { nameof(message.FunctionArgumentsUpdate), message.FunctionArgumentsUpdate } });
+                var functionCall = new FunctionCall(message.FunctionName, message.FunctionArgumentsUpdate);
+                yield return new SKChatMessage(role, string.Empty, functionCall, new()
+                {
+                    { nameof(message.FunctionName), message.FunctionName! },
+                    { nameof(message.FunctionArgumentsUpdate), message.FunctionArgumentsUpdate },
+                });
             }
 
             i++;

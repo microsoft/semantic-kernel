@@ -34,6 +34,6 @@ public abstract class ChatMessageBase
     {
         this.Role = role;
         this.Content = content;
-        this.AdditionalProperties = additionalProperties;
+        this.AdditionalProperties = additionalProperties ?? new Dictionary<string, string>();
     }
 }

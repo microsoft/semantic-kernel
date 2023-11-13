@@ -55,10 +55,9 @@ public class OpenAIFunctionResponse
             response.FunctionName = functionCall.Name;
         }
 
-        var parameters = JsonSerializer.Deserialize<Dictionary<string, object>>(functionCall.Arguments);
-        if (parameters is not null)
+        if (!string.IsNullOrEmpty(functionCall.Arguments))
         {
-            response.Parameters = parameters;
+            response.Parameters = JsonSerializer.Deserialize<Dictionary<string, object>>(functionCall.Arguments)!;
         }
 
         return response;

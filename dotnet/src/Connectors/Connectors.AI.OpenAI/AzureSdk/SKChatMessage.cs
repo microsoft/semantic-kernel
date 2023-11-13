@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -29,15 +28,25 @@ public class SKChatMessage : ChatMessageBase
     /// </summary>
     /// <param name="message">OpenAI SDK chat message representation</param>
     public SKChatMessage(Azure.AI.OpenAI.ChatMessage message)
-        : base(new AuthorRole(message.Role.ToString()), message.Content,
-            new Dictionary<string, string>() {
-                { nameof(message.Name), message.Name },
-                { FunctionCallArgumentsKey, message.FunctionCall.Arguments },
-                { FunctionCallNameKey, message.FunctionCall.Name }
-            }
-        )
+        : base(new AuthorRole(message.Role.ToString()), message.Content)
     {
+        if (message.Name is not null)
+        {
+            this.AdditionalProperties![nameof(message.Name)] = message.Name;
+        }
+
+        if (message.FunctionCall?.Name is not null)
+        {
+            this.AdditionalProperties![FunctionCallNameKey] = message.FunctionCall.Name;
+        }
+
+        if (message.FunctionCall?.Arguments is not null)
+        {
+            this.AdditionalProperties![FunctionCallArgumentsKey] = message.FunctionCall.Arguments;
+        }
+
         this._message = message;
+        this.FunctionCall = message.FunctionCall;
     }
 
     /// <summary>
@@ -56,14 +65,26 @@ public class SKChatMessage : ChatMessageBase
     /// <param name="role">Role of the author of the message.</param>
     /// <param name="content">Content of the message.</param>
     /// <param name="arguments">Arguments of the message.</param>
-    public SKChatMessage(string role, string content,  Dictionary<string, string> arguments) :
-        base(new AuthorRole(role), content, arguments)
+    public SKChatMessage(string role, string content, Dictionary<string, string> arguments)
+        : base(new AuthorRole(role), content, arguments)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SKChatMessage"/> class.
+    /// </summary>
+    /// <param name="role">Role of the author of the message.</param>
+    /// <param name="content">Content of the message.</param>
+    /// <param name="functionCall">Function call definition.</param>
+    /// <param name="arguments">Arguments of the message.</param>
+    public SKChatMessage(string role, string content, FunctionCall? functionCall, Dictionary<string, string> arguments)
+        : base(new AuthorRole(role), content, arguments)
+    {
+        this.FunctionCall = functionCall;
     }
 
     /// <summary>
     /// Exposes the underlying OpenAI SDK function call chat message representation
     /// </summary>
-    public FunctionCall FunctionCall
-        => this._message?.FunctionCall ?? throw new NotSupportedException("Function call is not supported");
+    public FunctionCall? FunctionCall { get; set; }
 }
