@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Any, List, Optional, Union
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -26,6 +26,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
     _prompt_tokens: int
     _completion_tokens: int
     _total_tokens: int
+    _client: AsyncOpenAI
 
     def __init__(
         self,
@@ -56,6 +57,19 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+
+        if api_type in ["azure", "azure_ad"]:
+            self._client = AsyncAzureOpenAI(
+                api_key=api_key,
+                api_version=api_version,
+                azure_endpoint=endpoint,
+            )
+        else:
+            self._client = AsyncOpenAI(
+                api_key=api_key,
+                base_url=endpoint,
+                organization=org_id,
+            )
 
     async def complete_async(
         self,
@@ -123,21 +137,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"but logprobs={request_settings.logprobs} was requested",
             )
 
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
-
         try:
-            client = AsyncOpenAI(
-                api_key=self._api_key,
-                base_url=self._endpoint,
-                organization=self._org_id,
-                version=self._api_version
-            )
-            response: Any = await client.completions.create(
-                **model_args,
+            response: Any = await self._client.completions.create(
+                model=self._model_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
