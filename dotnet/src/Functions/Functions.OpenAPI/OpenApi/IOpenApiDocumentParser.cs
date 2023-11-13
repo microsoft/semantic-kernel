@@ -20,7 +20,12 @@ internal interface IOpenApiDocumentParser
     /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
     /// If set to true, the parser will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate parsing results.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of rest operations.</returns>
-    Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default);
+    Task<IList<RestApiOperation>> ParseAsync(
+        Stream stream,
+        bool ignoreNonCompliantErrors = false,
+        IList<string>? operationsToExclude = null,
+        CancellationToken cancellationToken = default);
 }
