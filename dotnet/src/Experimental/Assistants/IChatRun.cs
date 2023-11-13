@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// <summary>
 /// Represents an execution run on a thread.
 /// </summary>
-internal interface IChatRun
+internal interface IChatRun // TODO: @chris - NEEDED???
 {
     /// <summary>
     /// The run identifier (which can be referenced in API endpoints).

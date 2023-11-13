@@ -75,11 +75,11 @@ internal sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, string? instructions, CancellationToken cancellationToken)
     {
-        var runModel = await this._restContext.CreateRunAsync(this.Id, assistantId, instructions, cancellationToken).ConfigureAwait(false);
+        var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, instructions, cancellationToken).ConfigureAwait(false);
 
-        var run = new ChatRun(runModel, this._restContext);
+        var run = new ChatRun(runModel, assistant, this._restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
         var messages = await this.GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);

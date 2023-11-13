@@ -39,6 +39,7 @@ internal sealed class ChatRun : IChatRun
 
     private readonly IOpenAIRestContext _restContext;
     private ThreadRunModel _model;
+    private readonly IAssistant _assistant;
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -90,9 +91,13 @@ internal sealed class ChatRun : IChatRun
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRun"/> class.
     /// </summary>
-    internal ChatRun(ThreadRunModel model, IOpenAIRestContext restContext)
+    internal ChatRun(
+        ThreadRunModel model,
+        IAssistant assistant,
+        IOpenAIRestContext restContext)
     {
         this._model = model;
+        this._assistant = assistant;
         this._restContext = restContext;
     }
 

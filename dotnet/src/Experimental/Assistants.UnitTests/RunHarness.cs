@@ -53,7 +53,7 @@ public sealed class RunHarness
 
         await this.ChatAsync(
             thread,
-            assistant.Id,
+            assistant,
             "I was on my way to the store this morning and...",
             "That was great!  Tell me another.").ConfigureAwait(true);
 
@@ -90,7 +90,7 @@ public sealed class RunHarness
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);
         await this.ChatAsync(
             thread,
-            assistant.Id,
+            assistant,
             "What is the question for the guessing game?",
             "Is it 'RED'?",
             "What is the answer?").ConfigureAwait(true);
@@ -101,14 +101,14 @@ public sealed class RunHarness
         Assert.Equal(6, copy.Messages.Count);
     }
 
-    private async Task ChatAsync(IChatThread thread, string assistantId, params string[] messages)
+    private async Task ChatAsync(IChatThread thread, IAssistant assistant, params string[] messages)
     {
         foreach (var message in messages)
         {
             var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
             this.LogMessage(messageUser);
 
-            var assistantMessages = await thread.InvokeAsync(assistantId).ConfigureAwait(true);
+            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
             this.LogMessages(assistantMessages);
         }
     }
