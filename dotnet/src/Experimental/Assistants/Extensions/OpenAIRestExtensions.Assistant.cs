@@ -22,7 +22,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="model">The assistant definition</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An assisant definition</returns>
+    /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> CreateAssistantModelAsync(
         this IOpenAIRestContext context,
         AssistantModel model,
@@ -48,12 +48,42 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
+    /// Modify an existing Aasistant
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="model">New properties for our instance</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    public static Task<AssistantModel> ModifyAssistantModelAsync(
+        this IOpenAIRestContext context,
+        AssistantModel model,
+        CancellationToken cancellationToken = default)
+    {
+        var payload =
+        new
+        {
+            model = model.Model,
+            name = model.Name,
+            description = model.Description,
+            instructions = model.Instructions,
+            tools = model.Tools,
+            file_ids = model.FileIds,
+            metadata = model.Metadata,
+        };
+        return
+            context.ExecutePostAsync<AssistantModel>(
+                GetAssistantUrl(model.Id),
+                payload,
+                cancellationToken);
+    }
+
+
+    /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An assisant definition</returns>
+    /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> GetAssistantModelAsync(
         this IOpenAIRestContext context,
         string assistantId,
@@ -83,7 +113,7 @@ internal static partial class OpenAIRestExtensions
     /// fetch the previous page of the list.</param>
     /// <returns>List of retrieved Assistants</returns>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An enumeration of assisant definitions</returns>
+    /// <returns>An enumeration of assistant definitions</returns>
     public static Task<IList<AssistantModel>> GetAssistantsModelsAsync(
         this IOpenAIRestContext context,
         int limit = 20,
@@ -109,6 +139,20 @@ internal static partial class OpenAIRestExtensions
         return context.ExecuteGetAsync<IList<AssistantModel>>(
                 requestUrl,
                 cancellationToken);
+    }
+
+    /// <summary>
+    /// Delete an existing assistant
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="id">Identifier of assistant to delete</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    public static Task DeleteAssistantsModelAsync(
+        this IOpenAIRestContext context,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken: cancellationToken);
     }
 
     private static string GetAssistantUrl(string assistantId)

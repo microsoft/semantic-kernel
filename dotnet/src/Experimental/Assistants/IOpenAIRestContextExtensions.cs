@@ -61,7 +61,7 @@ public static class IOpenAIRestContextExtensions
     }
 
     /// <summary>
-    /// Retrieve an existing assisant, by identifier.
+    /// Retrieve an existing assistant, by identifier.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>

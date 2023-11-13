@@ -66,4 +66,21 @@ internal static partial class OpenAIRestExtensions
             JsonSerializer.Deserialize<TResult>(responseBody) ??
             throw new SKException($"Null result processing: {typeof(TResult).Name}");
     }
+
+    private static async Task ExecuteDeleteAsync(
+        this IOpenAIRestContext context,
+        string url,
+        CancellationToken cancellationToken = default)
+    {
+        using var request = HttpRequest.CreateDeleteRequest(url);
+
+        request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
+        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
+
+        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+        }
+    }
 }

@@ -32,9 +32,9 @@ public interface IChatThread
     /// <summary>
     /// Advance the thread with the specified assistant.
     /// </summary>
-    /// <param name="assistantId">The specified assisant id</param>
+    /// <param name="assistantId">The specified assistant id</param>
     /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>The resulting assisant message(s)</returns>
+    /// <returns>The resulting assistant message(s)</returns>
     Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions = null, CancellationToken cancellationToken = default);
 }
