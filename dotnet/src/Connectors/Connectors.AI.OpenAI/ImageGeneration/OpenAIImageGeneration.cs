@@ -92,7 +92,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

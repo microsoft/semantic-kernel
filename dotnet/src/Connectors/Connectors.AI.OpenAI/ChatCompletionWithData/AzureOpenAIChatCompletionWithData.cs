@@ -228,7 +228,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private T DeserializeResponse<T>(string body)
     {
-        var response = Json.Deserialize<T>(body);
+        var response = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(body);
 
         if (response is null)
         {

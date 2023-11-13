@@ -90,7 +90,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        Task<JsonDocument> schemaBuilderDelegate(Type type, string description)
+        JsonDocument schemaBuilderDelegate(Type type, string description)
         {
             var schema = new JsonSchemaBuilder()
                 .FromType(type)
@@ -98,11 +98,11 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
                 .Build()
                 .ToJsonDocument();
 
-            return Task.FromResult(schema);
+            return schema;
         }
 
         IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManualAsync(schemaBuilderDelegate, includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManual(schemaBuilderDelegate, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 

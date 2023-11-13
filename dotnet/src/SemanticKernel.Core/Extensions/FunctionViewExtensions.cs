@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Extensions;
 
@@ -21,8 +20,8 @@ public static class FunctionViewExtensions
     /// <param name="function">The function.</param>
     /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
-    /// <returns></returns>
-    public static async Task<JsonSchemaFunctionManual> ToJsonSchemaManualAsync(this FunctionView function, Func<Type, string, Task<JsonDocument>> jsonSchemaDelegate, bool includeOutputSchema = true)
+    /// <returns>An instance of <see cref="JsonSchemaFunctionManual"/></returns>
+    public static JsonSchemaFunctionManual ToJsonSchemaManual(this FunctionView function, Func<Type, string, JsonDocument> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionManual = new JsonSchemaFunctionManual
         {
@@ -35,7 +34,7 @@ public static class FunctionViewExtensions
         {
             if (parameter.ParameterType != null)
             {
-                functionManual.Parameters.Properties.Add(parameter.Name, await jsonSchemaDelegate(parameter.ParameterType, function.ReturnParameter.Description ?? "").ConfigureAwait(false));
+                functionManual.Parameters.Properties.Add(parameter.Name, jsonSchemaDelegate(parameter.ParameterType, function.ReturnParameter.Description ?? ""));
                 if (parameter.IsRequired ?? false)
                 {
                     requiredProperties.Add(parameter.Name);
@@ -58,7 +57,7 @@ public static class FunctionViewExtensions
 
             if (function.ReturnParameter?.ParameterType != null)
             {
-                functionResponse.Content.JsonResponse.Schema = await jsonSchemaDelegate(function.ReturnParameter.ParameterType, function.ReturnParameter.Description ?? "").ConfigureAwait(false);
+                functionResponse.Content.JsonResponse.Schema = jsonSchemaDelegate(function.ReturnParameter.ParameterType, function.ReturnParameter.Description ?? "");
             }
             else if (function.ReturnParameter?.Schema != null)
             {
