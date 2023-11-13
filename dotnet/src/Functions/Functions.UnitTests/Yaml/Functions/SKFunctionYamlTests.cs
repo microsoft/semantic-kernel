@@ -8,11 +8,11 @@ namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
 public class SKFunctionYamlTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYamlWithNoModelSettings()
+    public void ItShouldCreateFunctionFromPromptYamlWithNoModelSettings()
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.CreateFromYaml(this._yamlNoModelSettings);
+        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yamlNoModelSettings);
 
         // Assert
         Assert.NotNull(skfunction);
@@ -23,11 +23,11 @@ public class SKFunctionYamlTests
     }
 
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYaml()
+    public void ItShouldCreateFunctionFromPromptYaml()
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.CreateFromYaml(this._yaml);
+        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yaml);
 
         // Assert
         Assert.NotNull(skfunction);
@@ -36,11 +36,11 @@ public class SKFunctionYamlTests
     }
 
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
+    public void ItShouldCreateFunctionFromPromptYamlWithCustomModelSettings()
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.CreateFromYaml(this._yamlWithCustomSettings);
+        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yamlWithCustomSettings);
 
         // Assert
         Assert.NotNull(skfunction);

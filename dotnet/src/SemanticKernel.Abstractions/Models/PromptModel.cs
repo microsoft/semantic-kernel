@@ -7,9 +7,9 @@ using Microsoft.SemanticKernel.AI;
 namespace Microsoft.SemanticKernel.Models;
 
 /// <summary>
-/// Semantic Function configuration.
+/// Prompt model files.
 /// </summary>
-public sealed class SemanticFunctionConfig
+public sealed class PromptModel
 {
     /// <summary>
     /// Name of the semantic function.

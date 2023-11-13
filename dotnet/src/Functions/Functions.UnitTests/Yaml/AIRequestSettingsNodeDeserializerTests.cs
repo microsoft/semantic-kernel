@@ -23,7 +23,7 @@ public sealed class AIRequestSettingsNodeDeserializerTests
             .Build();
 
         // Act
-        var semanticFunctionConfig = deserializer.Deserialize<SemanticFunctionConfig>(this._yaml);
+        var semanticFunctionConfig = deserializer.Deserialize<PromptModel>(this._yaml);
 
         // Assert
         Assert.NotNull(semanticFunctionConfig);

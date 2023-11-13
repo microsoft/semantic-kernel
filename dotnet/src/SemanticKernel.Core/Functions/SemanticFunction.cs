@@ -147,7 +147,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="semanticFunctionConfig"/>.</returns>
     public static ISKFunction Create(
-        SemanticFunctionConfig semanticFunctionConfig,
+        PromptModel semanticFunctionConfig,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory ? loggerFactory = null)

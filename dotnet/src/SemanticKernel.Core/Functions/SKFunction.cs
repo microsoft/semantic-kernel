@@ -65,15 +65,15 @@ public static class SKFunction
         NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified <see cref="SemanticFunctionConfig"/>.
+    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified <see cref="PromptModel"/>.
     /// </summary>
-    /// <param name="semanticFunctionConfig">Instance of <see cref="SemanticFunctionConfig"/> to use to create the semantic function</param>
+    /// <param name="semanticFunctionConfig">Instance of <see cref="PromptModel"/> to use to create the semantic function</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="semanticFunctionConfig"/>.</returns>
     public static ISKFunction Create(
-        SemanticFunctionConfig semanticFunctionConfig,
+        PromptModel semanticFunctionConfig,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
