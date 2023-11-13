@@ -41,7 +41,7 @@ public abstract class ClientBase
     /// <summary>
     /// Model Id or Deployment Name
     /// </summary>
-    private protected string ModelId { get; set; } = string.Empty;
+    private protected string DeploymentOrModelName { get; set; } = string.Empty;
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client
@@ -52,6 +52,11 @@ public abstract class ClientBase
     /// Logger instance
     /// </summary>
     private protected ILogger Logger { get; set; }
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -100,7 +105,7 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -138,7 +143,7 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         using StreamingCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
@@ -163,7 +168,7 @@ public abstract class ClientBase
             var options = new EmbeddingsOptions(text);
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+                () => this.Client.GetEmbeddingsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
             if (response is null)
             {
@@ -202,7 +207,7 @@ public abstract class ClientBase
         var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsAsync(this.DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -242,7 +247,7 @@ public abstract class ClientBase
         var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -299,6 +304,14 @@ public abstract class ClientBase
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
+        }
+    }
+
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
         }
     }
 
