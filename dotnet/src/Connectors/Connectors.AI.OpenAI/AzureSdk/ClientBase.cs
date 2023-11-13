@@ -41,7 +41,7 @@ public abstract class ClientBase
     /// <summary>
     /// Model Id or Deployment Name
     /// </summary>
-    private protected string ModelId { get; set; } = string.Empty;
+    private protected string DeploymentOrModelName { get; set; } = string.Empty;
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client
@@ -52,6 +52,11 @@ public abstract class ClientBase
     /// Logger instance
     /// </summary>
     private protected ILogger Logger { get; set; }
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -280,7 +285,7 @@ public abstract class ClientBase
         var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
-            var options = new EmbeddingsOptions(this.ModelId, new[] { text });
+            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
@@ -387,6 +392,14 @@ public abstract class ClientBase
         }
     }
 
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
+        }
+    }
+
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
@@ -410,7 +423,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            DeploymentName = this.ModelId,
+            DeploymentName = this.DeploymentOrModelName,
             Prompts = { text.NormalizeLineEndings() },
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
@@ -449,7 +462,7 @@ public abstract class ClientBase
 
         var options = new ChatCompletionsOptions
         {
-            DeploymentName = this.ModelId,
+            DeploymentName = this.DeploymentOrModelName,
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
