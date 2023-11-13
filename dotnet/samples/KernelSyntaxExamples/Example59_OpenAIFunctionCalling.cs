@@ -39,12 +39,12 @@ public static class Example59_OpenAIFunctionCalling
         //await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Uncomment the samples and run them one at a time
-        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        //await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
         //await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
-        //await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
     private static async Task<IKernel> InitializeKernelAsync()
@@ -149,7 +149,7 @@ public static class Example59_OpenAIFunctionCalling
             StringBuilder chatContent = new();
             await foreach (var message in chatResult.GetStreamingChatMessageAsync())
             {
-                if (message.Content is not null)
+                if (message.Content is { Length: > 0 })
                 {
                     Console.Write(message.Content);
                     chatContent.Append(message.Content);

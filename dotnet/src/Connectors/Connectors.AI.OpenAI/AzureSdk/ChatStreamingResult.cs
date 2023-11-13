@@ -89,7 +89,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             }
 
             // This part may change to expose the function name and arguments as new properties of a message
-            if (message.FunctionName?.Length > 0)
+            if (message.FunctionName?.Length > 0 || message.FunctionArgumentsUpdate is { Length: > 0 })
             {
                 var functionCall = new FunctionCall(message.FunctionName, message.FunctionArgumentsUpdate);
                 yield return new SKChatMessage(role, string.Empty, functionCall, new()

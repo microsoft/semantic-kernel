@@ -26,22 +26,27 @@ public static class ChatStreamingResultExtensions
         }
 
         StringBuilder arguments = new();
-        FunctionCall? functionCall = null;
+        string? functionName = null;
+
+        // When streaming functionCall come in bits and we need to aggregate them
         await foreach (SKChatMessage message in chatStreamingResult.GetStreamingChatMessageAsync())
         {
             if (message.FunctionCall is not null)
             {
-                functionCall = message.FunctionCall;
+                functionName ??= message.FunctionCall.Name;
                 arguments.Append(message.FunctionCall.Arguments);
             }
         }
 
-        if (functionCall is null)
+        // No function call was returned by the model
+        if (functionName is null)
         {
             return null;
         }
 
-        functionCall.Arguments = arguments.ToString();
+        // Fully built function call
+        var functionCall = new FunctionCall(functionName, arguments.ToString());
+
         return OpenAIFunctionResponse.FromFunctionCall(functionCall);
     }
 }
