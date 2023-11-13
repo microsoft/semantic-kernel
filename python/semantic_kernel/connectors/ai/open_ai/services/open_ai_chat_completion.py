@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 
 if TYPE_CHECKING:
-    from openai.openai_object import OpenAIObject
+    from openai.types.chat import ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -35,6 +36,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _prompt_tokens: int = 0
     _completion_tokens: int = 0
     _total_tokens: int = 0
+    _client: AsyncOpenAI
 
     def __init__(
         self,
@@ -66,6 +68,19 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._log = log if log is not None else NullLogger()
         self._messages = []
+
+        if api_type in ["azure", "azure_ad"]:
+            self._client = AsyncAzureOpenAI(
+                api_key=api_key,
+                api_version=api_version,
+                azure_endpoint=endpoint,
+            )
+        else:
+           self._client = AsyncOpenAI(
+                api_key=api_key,
+                base_url=endpoint,
+                organization=org_id,
+            )
 
     async def complete_chat_async(
         self,
@@ -225,9 +240,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             )
 
         model_args = {
-            "engine"
-            if self._api_type in ["azure", "azure_ad"]
-            else "model": self._model_id,
+            "model": self._model_id,
             "messages": messages,
             "temperature": request_settings.temperature,
             "top_p": request_settings.top_p,
@@ -262,13 +275,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 model_args["functions"] = functions
 
         try:
-            client = AsyncOpenAI(
-                api_key=self._api_key,
-                base_url=self._endpoint,
-                organization=self._org_id,
-                version=self._api_version
-            )
-            response: Any = await client.chat.completions.create(**model_args)
+            response: Any = await self._client.chat.completions.create(**model_args)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -312,13 +319,13 @@ def _parse_choices(chunk):
 
 
 def _parse_message(
-    message: "OpenAIObject", logger: Optional[Logger] = None
+    message: ChatCompletionMessage, logger: Optional[Logger] = None
 ) -> Tuple[Optional[str], Optional[FunctionCall]]:
     """
     Parses the message.
 
     Arguments:
-        message {OpenAIObject} -- The message to parse.
+        message {ChatCompletionMessage} -- The message to parse.
 
     Returns:
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
