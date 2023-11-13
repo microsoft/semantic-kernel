@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -68,6 +70,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -96,7 +99,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
