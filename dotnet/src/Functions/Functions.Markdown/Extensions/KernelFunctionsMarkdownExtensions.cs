@@ -1,50 +1,56 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Functions.Yaml.Functions;
+using System.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.TemplateEngine;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
-namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 
 /// <summary>
-/// Class for extensions methods to define semantic functions using YAML format.
+/// Class for extensions methods to define functions using prompt markdown format.
 /// </summary>
-public static class KernelCreateFunctionPromptYamlExtensions
+public static class KernelFunctionsMarkdownExtensions
 {
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML resource.
+    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="functionName">The function name</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptYamlResource(
+    public static ISKFunction CreateFromMarkdownResource(
         this IKernel kernel,
         string resourceName,
+        string? functionName = null,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.CreateFromPromptYamlResource(resourceName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        functionName ??= Path.GetFileNameWithoutExtension(resourceName);
+        return KernelFunctionMarkdown.CreateFromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML.
+    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="text">YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="functionName">The function name</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
+    /// <param name="loggerFactory"></param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptYaml(
+    public static ISKFunction CreateFromMarkdown(
         this IKernel kernel,
         string text,
+        string functionName,
         string? pluginName = null,
-        IPromptTemplateFactory? promptTemplateFactory = null)
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
     {
-        return KernelFunctionYaml.CreateFromPromptYaml(text, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.CreateFromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }
