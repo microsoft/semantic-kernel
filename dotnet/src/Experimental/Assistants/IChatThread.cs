@@ -37,4 +37,10 @@ public interface IChatThread
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
     Task<IEnumerable<IChatMessage>> InvokeAsync(string assistantId, string? instructions = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete existing thread.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task DeleteThreadAsync(CancellationToken cancellationToken = default);
 }

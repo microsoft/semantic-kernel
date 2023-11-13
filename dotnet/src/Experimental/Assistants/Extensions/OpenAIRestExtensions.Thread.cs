@@ -47,6 +47,20 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+    /// <summary>
+    /// Delete an existing thread.
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="id">Identifier of thread to delete</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    public static Task DeleteThreadModelAsync(
+        this IOpenAIRestContext context,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken: cancellationToken);
+    }
+
     private static string GetThreadUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}";

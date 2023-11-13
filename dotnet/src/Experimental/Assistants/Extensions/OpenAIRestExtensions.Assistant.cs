@@ -76,7 +76,6 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
-
     /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
@@ -147,7 +146,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="id">Identifier of assistant to delete</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    public static Task DeleteAssistantsModelAsync(
+    public static Task DeleteAssistantModelAsync(
         this IOpenAIRestContext context,
         string id,
         CancellationToken cancellationToken = default)

@@ -147,7 +147,7 @@ internal sealed class Assistant : IAssistant
         string id,
         CancellationToken cancellationToken = default)
     {
-        await openAiRestContext.DeleteAssistantsModelAsync(id, cancellationToken).ConfigureAwait(false);
+        await openAiRestContext.DeleteAssistantModelAsync(id, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
