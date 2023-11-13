@@ -2,14 +2,14 @@
 
 #pragma warning disable IDE0130
 
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel;
 
