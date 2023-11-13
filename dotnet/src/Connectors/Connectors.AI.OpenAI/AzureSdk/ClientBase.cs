@@ -150,6 +150,7 @@ public abstract class ClientBase
         var cachedChoices = new Dictionary<int, List<Choice>>();
         var results = new List<TextStreamingResult>();
         bool streamingStarted = false;
+        bool streamingEnded = false;
 
         _ = Task.Run(async () =>
         {
@@ -179,6 +180,7 @@ public abstract class ClientBase
             }
 
             // Updates all results to flag end of stream
+            streamingEnded = true;
             foreach (var result in results)
             {
                 result.EndOfStream();
@@ -191,9 +193,19 @@ public abstract class ClientBase
             await Task.Delay(10, cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var result in results)
+        // Interate over all the created choices and return
+        var i = 0;
+        while (i < results.Count)
         {
-            yield return result;
+            yield return results[i];
+
+            i++;
+
+            // Wait until any new choices were created before the end of the stream
+            while (!streamingEnded && i >= results.Count)
+            {
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -227,7 +239,7 @@ public abstract class ClientBase
         var cachedChoices = new Dictionary<int, List<StreamingChatCompletionsUpdate>>();
         var results = new List<ChatStreamingResult>();
         bool streamingStarted = false;
-
+        bool streamingEnded = false;
         // Keep running the request stream in the background populating the updated choices cache
         // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be iterated over
         _ = Task.Run(async () =>
@@ -254,6 +266,8 @@ public abstract class ClientBase
                 }
             }
 
+            // Updates all results to flag end of stream
+            streamingEnded = true;
             foreach (var result in results)
             {
                 result.EndOfStream();
@@ -266,9 +280,19 @@ public abstract class ClientBase
             await Task.Delay(10, cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var result in results)
+        // Interate over all the created choices and return
+        var i = 0;
+        while (i < results.Count)
         {
-            yield return result;
+            yield return results[i];
+
+            i++;
+
+            // Wait until any new choices were created before the end of the stream
+            while (!streamingEnded && i >= results.Count)
+            {
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
