@@ -31,7 +31,11 @@ public class AnthropicRequestSettings : AIRequestSettings
         get => this._maxTokensToSample;
         set
         {
-            if (value < 1) throw new ArgumentOutOfRangeException(nameof(value), value, "MaxTokensToSample must be greater than zero.");
+            if (value < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "MaxTokensToSample must be greater than zero.");
+            }
+
             this._maxTokensToSample = value;
         }
     }
@@ -68,7 +72,11 @@ public class AnthropicRequestSettings : AIRequestSettings
         get => this._temperature;
         set
         {
-            if (value is < 0.0 or > 1.0) throw new ArgumentOutOfRangeException(nameof(value), value, "Temperature must be between 0.0 and 1.0.");
+            if (value is < 0.0 or > 1.0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Temperature must be between 0.0 and 1.0.");
+            }
+
             this._temperature = value;
 
             if (this._temperature == null)
@@ -122,15 +130,12 @@ public class AnthropicRequestSettings : AIRequestSettings
         get => this._topK;
         set
         {
-            if (value is < 1) throw new ArgumentOutOfRangeException(nameof(value), value, "TopK must be greater than zero.");
+            if (value is < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "TopK must be greater than zero.");
+            }
+
             this._topK = value;
         }
     }
-
-    /// <summary>
-    /// An object describing metadata about the request.
-    /// </summary>
-    [JsonPropertyName("metadata")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public AnthropicRequestMetadata? Metadata { get; set; }
 }

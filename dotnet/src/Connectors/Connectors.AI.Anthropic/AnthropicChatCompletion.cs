@@ -123,7 +123,7 @@ public class AnthropicChatCompletion : IChatCompletion, ITextCompletion, IDispos
                 nameof(requestSettings));
         }
 
-        var request = new AnthropicRequest(settings, this._model, prompt, stream);
+        var request = new AnthropicRequest(settings, prompt, stream);
         return await this.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 

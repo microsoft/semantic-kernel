@@ -22,6 +22,7 @@ public sealed class TestConfiguration
 
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
+    public static AnthropicConfig Anthropic => LoadSection<AnthropicConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
     public static ACSConfig ACS => LoadSection<ACSConfig>();
     public static QdrantConfig Qdrant => LoadSection<QdrantConfig>();
@@ -70,6 +71,13 @@ public sealed class TestConfiguration
         public string DeploymentName { get; set; }
         public string ChatDeploymentName { get; set; }
         public string Endpoint { get; set; }
+        public string ApiKey { get; set; }
+    }
+
+    public class AnthropicConfig
+    {
+        public string ModelId { get; set; }
+        public string ServiceId { get; set; }
         public string ApiKey { get; set; }
     }
 
