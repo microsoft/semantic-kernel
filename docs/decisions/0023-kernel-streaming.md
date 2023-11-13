@@ -11,129 +11,131 @@ informed:
 
 ## Context and Problem Statement
 
-Its very common in co-pilot implementations to have a streamlined output of messages from the LLM and currently that's not possible while using ISKFunctions.InvokeAsync or Kernel.RunAsync methods, which enforces users to work around the Kernel and Functions to use `ITextCompletion` and `IChatCompletion` services directly which currently support this feature.
+Its very common in co-pilot implementations to have a streamlined output of messages from the LLM and currently that's not possible while using ISKFunctions.InvokeAsync or Kernel.RunAsync methods, which enforces users to work around the Kernel and Functions to use `ITextCompletion` and `IChatCompletion` services directly as the only interfaces that currently support streaming.
 
-But notably streaming in its current state is not supported by all providers and this should be added as part or our design to ensure it as a capability the service with a proper abstraction to support also streaming of other types of data like images, audio, video, etc.
+Currently streaming is a capability that not all providers do support and this as part of our design we try to ensure the services will have the proper abstractions to support streaming not only of text but be open to other types of data like images, audio, video, etc.
 
-Needs to be clear for Kernel when a connector that supports a specific input/output mimetype is available to be used in the function to function pipeline.
-
-Needs to be clear for the Kernel when a connector returns a stream how to build the final result from the bits of data returned by the connector in streaming mode, so this information can be appended and passed down to the next function in the pipeline and the streaming can continue.
+Needs to be clear for the sk developer when he is attempting to get a streaming data.
 
 ## Decision Drivers
 
-- Connectors should be able to flag they have Streaming capability and the Kernel should be able to use it.
-- Users should be able to use Kernel to get streaming results.
-- Users should be able to use Functions to get streaming results.
-- Streaming results can be represented as non streaming results, so getting streaming first approach eventually will be able to support non streaming results.
-- Having streaming dedicated methods in Kernel or Functions allow the caller to know what result to expect and implement accordingly.
+1. The sk developer should be able to get streaming data from the Kernel and Functions using Kernel.RunAsync or ISKFunctions.InvokeAsync methods
 
-## User experience goal
+2. The sk developer should be able to get the data in a generic way, so the Kernel and Functions can be able to stream data of any type, not limited to text.
 
-abstract StreamingResultBit
-string mimeType;
-object Value;
+3. The sk developer when using streaming from a model that don't support streaming should still be able to use it with only one streaming update representing the whole data.
 
-StreamingFunctionResult
-StreamingResultBuilder<object> Builder;
-string mimeType;
-Dictionary<string, object> Metadata;
-IAsyncEnumerable<StreamingResultBit> StreamingValue;
+## User Experience Goal
 
-// Abstractions to make clear how to build a streaming result from streaming bits enumerations
-StreamingResultBuilder<TComplete,TBit>
-string mimeType;
-TComplete Build();
-void Append(TBit streamingBit);
+```csharp
+//(providing the type at as generic parameter)
 
-// Abstraction of a streaming bit
-StreamingResultBit<TBit>
-Type streamingBuilder
-string mimeType;
-TBit streamingBit;
+// Getting a Raw Streaming data from Kernel
+await foreach(string update in kernel.StreamingRunAsync<byte[]>(variables, function))
 
-// Abstract connector modality interface
-IConnectorModalityService
-string string[] inputMimeTypes;
-string string outputMimeType;
-AsyncEnumerable<StreamingResultBit> GetStreamingResult(object input);
-StreamingResultBuilder<TComplete> GetStreamingResultBuilder(string inputMimeType, string outputMimeType);
+// Getting a String as Streaming data from Kernel
+await foreach(string update in kernel.StreamingRunAsync<string>(variables, function))
 
-// Generic version of connector modality interface
-IConnectorModalityService<TBit, TComplete> : IConnectorModalityService
-string string[] inputMimeTypes;
-string string outputMimeType;
-AsyncEnumerable<TBit> GetStreamingResult(T input);
-StreamingResultBuilder<TComplete> GetStreamingResultBuilder();
-
-//
-IServiceSelector
-IConnectorModalityService GetServiceByModality(config.inputMimeType ?? "text/plain", config.outputMimeType ?? "text/plain");
-
-// Function
-
-StreamingFunctionResult StreamingInvokeAsync()
+// Getting a StreamingResultUpdate as Streaming data from Kernel
+await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync<StreamingResultUpdate>(variables, function))
+// OR
+await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync(variables, function)) // defaults to Generic above)
 {
-
-    (IConnectorModalityService service, var defaultRequestSettings) = serviceSelector.GetServiceByModality(renderedPrompt, context.ServiceProvider, this._modelSettings);
-
-    var resultBuilder = service.GetStreamingResultBuilder(defaultRequestSettings);
-    FunctionResult result = new StreamingFunctionResult(this.Name, this.PluginName, context, service.GetStreamingResult) {
-        Metadata = new() {
-            { "Usage", defaultRequestSettings.InputMimeType },
-            { "outputMimeType", defaultRequestSettings.OutputMimeType },
-        }
-    };
-    }
-
-}
-
-```
-var kernel = new KernelBuilder()
-    .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-    .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
-    .Build();
-
-var summarizeFunctions = kernel.ImportSemanticFunctionsFromDirectory(RepoFiles.SamplePluginsPath(), "SummarizePlugin");
-
-await foreach (var resultBit = await kernel.StreamingRunAsync(ask, searchFunctions["Search"]))
-{
-    Console.Write(resultBit);
+    Console.WriteLine(update);
 }
 ```
 
 ## Considered Options
 
-### Streaming Setting + New Streaming Interfaces
+### Option 1 - Dedicated Streaming Interfaces
 
-This option is to add a new setting `Streaming` to the `AIRequestSettings` definition to flag the caller would like to stream the output from the kernel and functions if possible.
+Using dedicated streaming interfaces that allow the sk developer to get the streaming data in a generic way, including string, byte array directly from the connector as well as allowing the Kernel and Functions implementations to be able to stream data of any type, not limited to text.
 
-Seggregate old Text/Chat Completion interfaces the into new `ITextStreamingCompletion` and `IChatStreamingCompletion` dedicated for streaming (interface segregation). **This becomes crucial to the Kernel knows if streaming is supported by the service.**
+This approach also exposes dedicated interfaces in the kernel and functions to use streaming making it clear to the sk developer what is the type of data being returned in IAsyncEnumerable format.
 
-#### Backward compatibility aspects:
+`ITextCompletion` and `IChatCompletion` will have new APIs to get `byte[]` and `string` streaming data directly as well as the specialized `StreamingResultUpdate` return.
 
-- SKContext was built on top of a non streaming functionality, so to keep the compatibility for streaming scenarios, SKContext needs to be updated into a Lazy loading strategy, where when used will enforce the buffering of the whole stream to be able to return to final result.
+The sk developer will be able to specify a generic type to the `Kernel.StreamingRunAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultUpdate.
 
-- Streaming by default will be `false`
-  1. It wont force streaming results over legacy implementations.
-  2. Providers like OpenAI/Azure OpenAI don't provide additional data like (Usage, Completion Tokens, Prompt Tokens, Total Tokens, ...) in streaming results.
+If the type isn't the specified or if the string representation can't be casted an exception will be thrown.
 
-Enable streaming behavior set `Streaming = true` in a `AIRequestSettings` specialized class like `OpenAIRequestSettings`, once this is set for text/chat based models like OpenAi's GPT you can get streaming data using `GetValue<IAsyncEnumerable<string>>()` in the result of `Kernel.RunAsync` or `Function.InvokeAsync`.
+If the type specified is `StreamingResultUpdate`, `string` or `byte[]` no error will be thrown as the connectors will have interface methods that garantee the data to be given in at least those types.
 
-Example:
+```csharp
 
-```
-myFunction = kernel.CreateSemanticFunction($"your prompt",
-        requestSettings: new OpenAIRequestSettings
-        {
-            Streaming = true,
-        });
-
-var result = await kernel.RunAsync(myFunction);
-await foreach (string token in result.GetValue<IAsyncEnumerable<string>>())
+// Depending on the underlying function model and connector used the streaming
+// data will be of a specialization of StreamingResultUpdate exposing useful
+// properties including Type, the raw data in byte[] and string representation.
+abstract class StreamingResultUpdate
 {
-    Console.Write(token);
+    public abstract string Type { get; }
+    [JsonIgnore]
+    public abstract string Value { get; }
+    [JsonIgnore]
+    public abstract byte[] RawValue { get; }
+
+    // In a scenario of multiple results, this represents zero-based index of the result in the streaming sequence
+    public abstract int ResultIndex { get; }
+}
+
+// Specialization example of a ChatMessageUpdate
+public class ChatMessageUpdate : StreamingResultUpdate
+{
+    public override string Type => "ChatMessage";
+    public override string Value => JsonSerialize(this);
+    public override byte[] RawValue => Encoding.UTF8.GetBytes(Value);
+
+    public string Message { get; }
+    public string Role { get; }
+
+    public ChatMessageUpdate(string message, string role, int resultIndex = 0)
+    {
+        Message = message;
+        Role = role;
+        ResultIndex = resultIndex;
+    }
+}
+
+interface IChatCompletion
+{
+    IAsyncEnumerable<ChatMessageUpdate> GetStreamingResultAsync();
+    IAsyncEnumerable<string> GetStringStreamingResultAsync();
+    IAsyncEnumerable<byte[]> GetByteStreamingResultAsync();
+}
+
+interface ITextCompletion
+{
+    IAsyncEnumerable<TextMessageUpdate> GetStreamingResultAsync();
+    IAsyncEnumerable<string> GetStringStreamingResultAsync();
+    IAsyncEnumerable<byte[]> GetByteStreamingResultAsync();
+}
+
+interface IKernel
+{
+    // When the develper provides a T, the Kernel will try to get the streaming data as T
+    IAsyncEnumerable<T> StreamingRunAsync<T>(ContextVariables variables, ISKFunction function);
+}
+
+interface ISKFunction
+{
+    // When the develper provides a T, the Kernel will try to get the streaming data as T
+    IAsyncEnumerable<T> StreamingInvokeAsync<T>(SKContext context);
 }
 ```
+
+## Pros
+
+1. All the User Experience Goal section options will be possible.
+2. Kernel and Functions implementations will be able to stream data of any type, not limited to text
+3. The sk developer will be able to provide the type it expects from the `GetStreamingResultAsync<T>` method.
+4. The above will allow the sk developer to get the streaming data in a generic way, including `string`, `byte array`, or the `StreamingResultUpdate` abstraction directly from the connector.
+
+5. IChatCompletion, IKernel and ISKFunction
+
+## Cons
+
+1. If the sk developer want to use the specialized type of `StreamingResultUpdate` he will need to know what is the connector being used to use the correct **StreamingResultUpdate extension method** or to provide directly type in `<T>`.
+2. Connectors will have greater responsibility to provide the correct type of `StreamingResultUpdate` for the connector being used and implementations for both byte[] and string streaming data.
 
 ## Decision Outcome
 
