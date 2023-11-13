@@ -2,7 +2,6 @@
 
 //#define DISABLEHOST // Comment line to enable
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -63,6 +62,8 @@ public sealed class RunHarness
 
         var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
         this.DumpMessages(copy);
+
+        Assert.Equal(4, copy.Messages.Count);
     }
 
     private void DumpMessages(IChatThread thread)

@@ -30,6 +30,6 @@ internal interface IChatRun
     /// Retrieve and process the result of the run, includes polling and tool processing.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>$$$ TBD</returns>
+    /// <returns>TODO: @chris - in motion</returns>
     Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default);
 }

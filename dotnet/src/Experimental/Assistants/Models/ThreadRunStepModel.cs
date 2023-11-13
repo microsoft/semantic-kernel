@@ -144,8 +144,10 @@ internal class ThreadRunStepModel
 
     /// <summary>
     /// Tool call details.
-    /// TODO: This model and all those below it are not quite correct - Fix that
     /// </summary>
+    /// <remarks>
+    /// TODO: @chris This model and all those below it are not quite correct - Fix that
+    /// </remarks>
     public class ToolCallsDetailsModel
     {
         /// <summary>
@@ -170,6 +172,9 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Function call details.
     /// </summary>
+    /// <remarks>
+    /// TODO: @chris This model and all those below it are not quite correct - Fix that
+    /// </remarks>
     public class FunctionDetailsModel
     {
         /// <summary>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
-/// $$$
+/// TODO: @chris
 /// </summary>
 public static class Example70_Assistant
 {
@@ -33,6 +33,6 @@ public static class Example70_Assistant
         //        apiKey: apiKey)
         //    .Build();
 
-        await Task.Delay(0); // $$$ TBD
+        await Task.Delay(0);
     }
 }

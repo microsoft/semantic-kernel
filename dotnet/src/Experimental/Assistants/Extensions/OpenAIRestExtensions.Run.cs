@@ -32,7 +32,7 @@ internal static partial class OpenAIRestExtensions
             {
                 assistant_id = assistantId,
                 instructions,
-                //tools = tools // $$$ FUNCTIONS
+                //tools = tools // TODO: @chris FUNCTIONS
             };
 
         return
