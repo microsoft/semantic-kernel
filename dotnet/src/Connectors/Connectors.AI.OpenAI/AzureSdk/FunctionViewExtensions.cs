@@ -55,7 +55,7 @@ public static class FunctionViewExtensions
     /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
     /// </summary>
     /// <param name="type">The object Type.</param>
-    /// <param name="description">The object descripiton.</param>
+    /// <param name="description">The object description.</param>
     /// <returns></returns>
     private static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
     {
