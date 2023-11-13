@@ -127,8 +127,11 @@ public class FunctionViewTests
         // Assert
         Assert.Equal("function description", fv.Description);
         Assert.Equal("first parameter description", fv.Parameters[0].Description);
+        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
         Assert.Equal("second parameter description", fv.Parameters[1].Description);
+        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
         Assert.Equal("return parameter description", fv.ReturnParameter.Description);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -146,8 +149,11 @@ public class FunctionViewTests
         // Assert
         Assert.Equal(string.Empty, fv.Description);
         Assert.Equal(string.Empty, fv.Parameters[0].Description);
+        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
         Assert.Equal(string.Empty, fv.Parameters[1].Description);
+        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
         Assert.Equal(string.Empty, fv.ReturnParameter.Description);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -166,6 +172,7 @@ public class FunctionViewTests
         var emptyList = new List<ParameterView>();
 
         Assert.Equal(emptyList, fv.Parameters);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     private static void ValidFunctionName() { }
