@@ -146,7 +146,7 @@ public abstract class ClientBase
             () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         // Keep running the request stream in the background populating the choices cache
-        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be interated over
+        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be iterated over
         var cachedChoices = new Dictionary<int, List<Choice>>();
         var results = new List<TextStreamingResult>();
         bool streamingStarted = false;
@@ -229,7 +229,7 @@ public abstract class ClientBase
         bool streamingStarted = false;
 
         // Keep running the request stream in the background populating the updated choices cache
-        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be interated over
+        // This will keep the behavior similar to previous versions of the Azure SDK allowing return of Choices to be iterated over
         _ = Task.Run(async () =>
         {
             await foreach (StreamingChatCompletionsUpdate update in response)
