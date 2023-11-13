@@ -12,7 +12,7 @@ informed:
 ## Context and Problem Statement
 
 Azure Sdk changes their interface for streaming API in beta 9. This change is not backward compatible and requires changes in our code.
-The changes include making some of the streaming interaces simpler as it assumes the majority of the callers are not handling multiple choices for chat or text completion models.
+The changes include making some of the streaming interfaces simpler as it assumes the majority of the callers are not handling multiple choices for chat or text completion models.
 
 This also adds new models on how the changes will be passed down in stream of both chat and text completion.
 
@@ -52,7 +52,7 @@ Task ProcessStreamAsyncEnumerableAsync(IChatStreamingResult result)
 
 In this approach we'll keep the same behavior as it was expected by the users. The changes will be limited to internal changes in components which will allow multiple streaming choices to be handled per choice basis by the users.
 
-With the new flatterned streaming API we'll need to keep track of the choices and their indexes as they arrive in the streaming data. This will allow us to provide the correct choice to the user when they request it. To be able to provide the choice abstraction back, the changes demanded a background working approach where the stream is managed internally changing the choices details by reference as the data arrives.
+With the new flattened streaming API we'll need to keep track of the choices and their indexes as they arrive in the streaming data. This will allow us to provide the correct choice to the user when they request it. To be able to provide the choice abstraction back, the changes demanded a background working approach where the stream is managed internally changing the choices details by reference as the data arrives.
 
 Internals logic change from ClientBase.cs (Similar to streaming text completions)
 
@@ -189,7 +189,7 @@ while (i < this._chatUpdates.Count)
 ### Cons
 
 - Handling choices internally will require a background task to read the streaming data and update the choices and choice bits on the fly.
-- The user will need to interate over the results even when there's only one choice.
+- The user will need to iterate over the results even when there's only one choice.
 
 ## Option 2 - Break interfaces, leaving to the caller to handle different streaming pieces.
 
@@ -235,7 +235,7 @@ await foreach(var chatUpdate in chatCompletion.GetStreamingChatCompletionsAsync(
 ### Pros
 
 1. Less internal changes to handle the streaming data.
-1. Removal of the resposibility on the interfaces to handle different choices/results per request.
+1. Removal of the responsibility on the interfaces to handle different choices/results per request.
 
 ### Cons
 
