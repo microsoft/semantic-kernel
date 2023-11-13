@@ -48,7 +48,7 @@ public sealed class AssistantHarness
 
         this._output.WriteLine($"# {assistant.Id}");
 
-        var copy = await context.GetAssistantAsync("asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
+        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
 
         this._output.WriteLine($"# {copy.Model}");
         this._output.WriteLine($"# {copy.Instructions}");
