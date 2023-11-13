@@ -193,7 +193,7 @@ public abstract class ClientBase
             await Task.Delay(10, cancellationToken).ConfigureAwait(false);
         }
 
-        // Interate over all the created choices and return
+        // Iterate over all the created choices and return
         var i = 0;
         while (i < results.Count)
         {
@@ -280,7 +280,7 @@ public abstract class ClientBase
             await Task.Delay(10, cancellationToken).ConfigureAwait(false);
         }
 
-        // Interate over all the created choices and return
+        // Iterate over all the created choices and return
         var i = 0;
         while (i < results.Count)
         {
