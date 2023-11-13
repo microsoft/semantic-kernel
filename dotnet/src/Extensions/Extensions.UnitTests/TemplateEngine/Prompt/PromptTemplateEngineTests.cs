@@ -21,6 +21,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
+[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromptTemplateEngineTests
 {
     private const string DateFormat = "M/d/yyyy";
@@ -158,7 +160,7 @@ public sealed class PromptTemplateEngineTests
 
         List<ISKFunction> functions = new()
         {
-            SKFunction.FromNativeMethod(Method(MyFunctionAsync), this),
+            SKFunction.Create(Method(MyFunctionAsync), this),
         };
 
         Assert.NotNull(functions[0]);
@@ -187,7 +189,7 @@ public sealed class PromptTemplateEngineTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        var func = SKFunction.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -219,7 +221,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        var func = SKFunction.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -252,7 +254,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -280,7 +282,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -330,9 +332,9 @@ public sealed class PromptTemplateEngineTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.FromNativeMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunction.FromNativeMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunction.FromNativeMethod(Method(MyFunction3Async), this, "func3")
+            SKFunction.Create(Method(MyFunction1Async), this, "func1"),
+            SKFunction.Create(Method(MyFunction2Async), this, "func2"),
+            SKFunction.Create(Method(MyFunction3Async), this, "func3")
         };
 
         this.MockFunctionRunner(functions);
@@ -355,7 +357,7 @@ public sealed class PromptTemplateEngineTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -378,22 +380,22 @@ public sealed class PromptTemplateEngineTests
     private void MockFunctionRunner(ISKFunction function)
     {
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
+            .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
             {
                 var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                return function.InvokeAsync(context, null, cancellationToken);
+                return (FunctionResult?)await function.InvokeAsync(context, null, cancellationToken);
             });
     }
 
     private void MockFunctionRunner(List<ISKFunction> functions)
     {
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
+            .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
             {
                 var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 var function = functions.First(f => f.PluginName == functionName);
 
-                return function.InvokeAsync(context, null, cancellationToken);
+                return (FunctionResult?)await function.InvokeAsync(context, null, cancellationToken);
             });
     }
 
