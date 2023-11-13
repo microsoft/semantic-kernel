@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 /// <summary>
 /// Class for extensions methods to define semantic functions using markdown.
 /// </summary>
-public static class KernelSemanticFunctionMarkdownExtensions
+public static class KernelCreateFunctionMarkdownExtensions
 {
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
@@ -30,7 +30,7 @@ public static class KernelSemanticFunctionMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
-        return SKFunctionMarkdown.CreateFromResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.CreateFromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -51,6 +51,6 @@ public static class KernelSemanticFunctionMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return SKFunctionMarkdown.CreateFromMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.CreateFromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

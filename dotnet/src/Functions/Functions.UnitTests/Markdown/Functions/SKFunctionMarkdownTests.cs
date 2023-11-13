@@ -13,7 +13,7 @@ public class SKFunctionMarkdownTests
     {
         // Arrange
         // Act
-        var model = SKFunctionMarkdown.CreateSemanticFunctionConfigFromMarkdown(this._markdown, "TellMeAbout");
+        var model = KernelFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(model);
@@ -31,7 +31,7 @@ public class SKFunctionMarkdownTests
         var kernel = new KernelBuilder().Build();
 
         // Act
-        var skfunction = SKFunctionMarkdown.CreateFromMarkdown(this._markdown, "TellMeAbout");
+        var skfunction = KernelFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(skfunction);

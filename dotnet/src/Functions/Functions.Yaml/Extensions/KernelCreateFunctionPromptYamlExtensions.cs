@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods to define semantic functions using YAML format.
 /// </summary>
-public static class KernelSemanticFunctionYamlExtensions
+public static class KernelCreateFunctionPromptYamlExtensions
 {
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML resource.

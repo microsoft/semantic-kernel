@@ -14,10 +14,10 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 /// <summary>
 /// Factory methods for creating <seealso cref="ISKFunction"/> instances.
 /// </summary>
-public static class SKFunctionMarkdown
+public static class KernelFunctionMarkdown
 {
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
+    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown resource.
     /// </summary>
     /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
     /// <param name="functionName">The name of the function.</param>
@@ -25,7 +25,7 @@ public static class SKFunctionMarkdown
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromResource(
+    public static ISKFunction CreateFromPromptMarkdownResource(
         string resourceName,
         string functionName,
         string? pluginName = null,
@@ -39,7 +39,7 @@ public static class SKFunctionMarkdown
         using StreamReader reader = new(stream);
         var text = reader.ReadToEnd();
 
-        return CreateFromMarkdown(
+        return CreateFromPromptMarkdown(
             text,
             functionName,
             pluginName,
@@ -56,7 +56,7 @@ public static class SKFunctionMarkdown
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromMarkdown(
+    public static ISKFunction CreateFromPromptMarkdown(
         string text,
         string functionName,
         string? pluginName = null,
@@ -64,14 +64,14 @@ public static class SKFunctionMarkdown
         ILoggerFactory? loggerFactory = null)
     {
         return SKFunction.Create(
-            CreateSemanticFunctionConfigFromMarkdown(text, functionName),
+            CreateFromPromptMarkdown(text, functionName),
             pluginName,
             promptTemplateFactory,
             loggerFactory);
     }
 
     #region Private methods
-    internal static PromptModel CreateSemanticFunctionConfigFromMarkdown(string text, string functionName)
+    internal static PromptModel CreateFromPromptMarkdown(string text, string functionName)
     {
         var config = new PromptModel()
         {
