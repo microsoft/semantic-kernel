@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Any, List, Optional
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncAzureOpenAI
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -21,6 +21,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
     _endpoint: Optional[str] = None
     _org_id: Optional[str] = None
     _log: Logger
+    _client: AsyncOpenAI
 
     def __init__(
         self,
@@ -52,28 +53,30 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
+        if api_type in ["azure", "azure_ad"]:
+            self._client = AsyncAzureOpenAI(
+                api_key=api_key,
+                api_version=api_version,
+                azure_deployment=model_id,
+                azure_endpoint=endpoint,
+            )
+        else:
+            self._client = AsyncOpenAI(
+                api_key=api_key,
+                base_url=endpoint,
+                organization=org_id,
+            )
+
     async def generate_embeddings_async(
         self, texts: List[str], batch_size: Optional[int] = None
     ) -> ndarray:
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
-
         try:
             raw_embeddings = []
             batch_size = batch_size or len(texts)
             for i in range(0, len(texts), batch_size):
                 batch = texts[i : i + batch_size]
-                client = AsyncOpenAI(
-                    api_key=self._api_key,
-                    base_url=self._endpoint,
-                    organization=self._org_id,
-                    version=self._api_version
-                )
-                response: Any = await client.embeddings.create(
-                    **model_args,
+                response: Any = await self._client.embeddings.create(
+                    model=self._model_id,
                     input=batch,
                 )
                 # make numpy arrays from the response
