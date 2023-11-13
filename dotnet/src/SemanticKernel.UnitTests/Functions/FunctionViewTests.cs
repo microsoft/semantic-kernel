@@ -51,7 +51,7 @@ public class FunctionViewTests
     public void ItReturnsFunctionReturnParameter()
     {
         // Arrange
-        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA");
+        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA", ParameterType: typeof(string), Schema: System.Text.Json.JsonDocument.Parse("schema"));
 
         // Act
         var funcViewA = new FunctionView("funcA", "s1", "", null, ReturnParameterViewA);
@@ -60,6 +60,8 @@ public class FunctionViewTests
         Assert.NotNull(funcViewA);
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
+        Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
+        Assert.Equal(System.Text.Json.JsonDocument.Parse("schema"), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]

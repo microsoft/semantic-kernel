@@ -16,5 +16,5 @@ public sealed class JsonSchemaFunctionContent
     /// The Json Schema for applivation/json responses.
     /// </summary>
     [JsonPropertyName("application/json")]
-    public JsonSchemaWrapper JsonSchemaWrapper { get; } = new JsonSchemaWrapper();
+    public JsonSchemaResponse JsonResponse { get; } = new JsonSchemaResponse();
 }

@@ -12,14 +12,17 @@ namespace Microsoft.SemanticKernel.Extensions;
 /// </summary>
 public static class FunctionViewExtensions
 {
+    private static readonly string s_successfulResponseCode = "200";
+    private static readonly string s_successfulResponseDescription = "Success";
+
     /// <summary>
     /// Creates a <see cref="JsonSchemaFunctionManual"/> for a function.
     /// </summary>
     /// <param name="function">The function.</param>
-    /// <param name="jsonSchemDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
+    /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns></returns>
-    public static async Task<JsonSchemaFunctionManual> ToJsonSchemaManualAsync(this FunctionView function, Func<Type, string, Task<JsonDocument>> jsonSchemDelegate, bool includeOutputSchema = true)
+    public static async Task<JsonSchemaFunctionManual> ToJsonSchemaManualAsync(this FunctionView function, Func<Type, string, Task<JsonDocument>> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionManual = new JsonSchemaFunctionManual
         {
@@ -30,9 +33,9 @@ public static class FunctionViewExtensions
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            if (parameter.NativeType != null)
+            if (parameter.ParameterType != null)
             {
-                functionManual.Parameters.Properties.Add(parameter.Name, await jsonSchemDelegate(parameter.NativeType, function.ReturnParameter.Description ?? "").ConfigureAwait(false));
+                functionManual.Parameters.Properties.Add(parameter.Name, await jsonSchemaDelegate(parameter.ParameterType, function.ReturnParameter.Description ?? "").ConfigureAwait(false));
                 if (parameter.IsRequired ?? false)
                 {
                     requiredProperties.Add(parameter.Name);
@@ -51,18 +54,18 @@ public static class FunctionViewExtensions
         if (includeOutputSchema)
         {
             var functionResponse = new JsonSchemaFunctionResponse();
-            functionResponse.Description = "Success";
+            functionResponse.Description = s_successfulResponseDescription;
 
-            if (function.ReturnParameter?.NativeType != null)
+            if (function.ReturnParameter?.ParameterType != null)
             {
-                functionResponse.Content.JsonSchemaWrapper.Schema = await jsonSchemDelegate(function.ReturnParameter.NativeType, function.ReturnParameter.Description ?? "").ConfigureAwait(false);
+                functionResponse.Content.JsonResponse.Schema = await jsonSchemaDelegate(function.ReturnParameter.ParameterType, function.ReturnParameter.Description ?? "").ConfigureAwait(false);
             }
             else if (function.ReturnParameter?.Schema != null)
             {
-                functionResponse.Content.JsonSchemaWrapper.Schema = function.ReturnParameter.Schema;
+                functionResponse.Content.JsonResponse.Schema = function.ReturnParameter.Schema;
             }
 
-            functionManual.FunctionResponses.Add("200", functionResponse);
+            functionManual.FunctionResponses.Add(s_successfulResponseCode, functionResponse);
         }
 
         return functionManual;

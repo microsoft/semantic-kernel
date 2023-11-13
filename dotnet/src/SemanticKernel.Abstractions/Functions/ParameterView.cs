@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 /// <param name="DefaultValue">Default parameter value, if not provided</param>
 /// <param name="Type">Parameter type.</param>
 /// <param name="IsRequired">Whether the parameter is required.</param>
-/// <param name="NativeType">The native type. Null if this parameter did not come from a native function.</param>
+/// <param name="ParameterType">The native type. Null if this parameter did not come from a native function.</param>
 /// <param name="Schema">The JSON Schema of the type. May be null for native function parameters.</param>
 public sealed record ParameterView(
     string Name,
@@ -24,5 +24,5 @@ public sealed record ParameterView(
     string? DefaultValue = null,
     ParameterViewType? Type = null,
     bool? IsRequired = null,
-    Type? NativeType = null,
+    Type? ParameterType = null,
     JsonDocument? Schema = null);
