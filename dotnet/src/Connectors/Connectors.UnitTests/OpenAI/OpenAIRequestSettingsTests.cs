@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;

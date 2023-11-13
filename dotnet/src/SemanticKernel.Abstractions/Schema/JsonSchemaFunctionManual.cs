@@ -22,10 +22,8 @@ public sealed class JsonSchemaFunctionManual
     /// <summary>
     /// The function description.
     /// </summary>
-
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
-
 
     /// <summary>
     /// The function parameters.
@@ -36,7 +34,6 @@ public sealed class JsonSchemaFunctionManual
     /// <summary>
     /// The function response.
     /// </summary>
-
     [JsonPropertyName("responses")]
     public Dictionary<string, JsonSchemaFunctionResponse> FunctionResponses { get; set; } = new Dictionary<string, JsonSchemaFunctionResponse>();
 }

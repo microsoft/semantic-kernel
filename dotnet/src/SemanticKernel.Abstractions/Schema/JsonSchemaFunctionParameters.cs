@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -29,7 +29,6 @@ public sealed class JsonSchemaFunctionParameters
     /// <summary>
     /// A dictionary of properties name => Json Schema.
     /// </summary>
-
     [JsonPropertyName("properties")]
     public Dictionary<string, JsonDocument> Properties { get; set; } = new Dictionary<string, JsonDocument>();
 }

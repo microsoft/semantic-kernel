@@ -11,8 +11,8 @@ namespace Microsoft.SemanticKernel.Extensions;
 /// </summary>
 public static class FunctionViewExtensions
 {
-    private static readonly string s_successfulResponseCode = "200";
-    private static readonly string s_successfulResponseDescription = "Success";
+    private const string s_successfulResponseCode = "200";
+    private const string s_successfulResponseDescription = "Success";
 
     /// <summary>
     /// Creates a <see cref="JsonSchemaFunctionManual"/> for a function.

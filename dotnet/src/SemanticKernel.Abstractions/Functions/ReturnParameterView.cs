@@ -2,8 +2,8 @@
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
-using System.Text.Json;
 using System;
+using System.Text.Json;
 
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
