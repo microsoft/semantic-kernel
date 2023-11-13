@@ -863,11 +863,11 @@ class Kernel:
 
             config = PromptTemplateConfig()
             config_path = os.path.join(directory, CONFIG_FILE)
-            with open(config_path, "r") as config_file:
+            with open(config_path, "r", encoding='utf-8') as config_file:
                 config = config.from_json(config_file.read())
 
             # Load Prompt Template
-            with open(prompt_path, "r") as prompt_file:
+            with open(prompt_path, "r", encoding='utf-8') as prompt_file:
                 template = PromptTemplate(
                     prompt_file.read(), self.prompt_template_engine, config
                 )
