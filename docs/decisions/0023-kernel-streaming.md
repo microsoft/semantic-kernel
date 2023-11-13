@@ -11,11 +11,11 @@ informed:
 
 ## Context and Problem Statement
 
-Its very common in co-pilot implementations to have a streamlined output of messages from the LLM and currently that's not possible while using ISKFunctions.InvokeAsync or Kernel.RunAsync methods, which enforces users to work around the Kernel and Functions to use `ITextCompletion` and `IChatCompletion` services directly as the only interfaces that currently support streaming.
+It is quite common in co-pilot implementations to have a streamlined output of messages from the LLM (large language models)M and currently that is not possible while using ISKFunctions.InvokeAsync or Kernel.RunAsync methods, which enforces users to work around the Kernel and Functions to use `ITextCompletion` and `IChatCompletion` services directly as the only interfaces that currently support streaming.
 
 Currently streaming is a capability that not all providers do support and this as part of our design we try to ensure the services will have the proper abstractions to support streaming not only of text but be open to other types of data like images, audio, video, etc.
 
-Needs to be clear for the sk developer when he is attempting to get a streaming data.
+Needs to be clear for the sk developer when he is attempting to get streaming data.
 
 ## Decision Drivers
 
@@ -23,7 +23,7 @@ Needs to be clear for the sk developer when he is attempting to get a streaming 
 
 2. The sk developer should be able to get the data in a generic way, so the Kernel and Functions can be able to stream data of any type, not limited to text.
 
-3. The sk developer when using streaming from a model that don't support streaming should still be able to use it with only one streaming update representing the whole data.
+3. The sk developer when using streaming from a model that doesn't support streaming should still be able to use it with only one streaming update representing the whole data.
 
 ## User Experience Goal
 
@@ -57,9 +57,9 @@ This approach also exposes dedicated interfaces in the kernel and functions to u
 
 The sk developer will be able to specify a generic type to the `Kernel.StreamingRunAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultUpdate.
 
-If the type isn't the specified or if the string representation can't be casted an exception will be thrown.
+If the type isn't specified or if the string representation can't be cast, an exception will be thrown.
 
-If the type specified is `StreamingResultUpdate`, `string` or `byte[]` no error will be thrown as the connectors will have interface methods that garantee the data to be given in at least those types.
+If the type specified is `StreamingResultUpdate`, `string` or `byte[]` no error will be thrown as the connectors will have interface methods that guarantee the data to be given in at least those types.
 
 ```csharp
 
@@ -112,13 +112,13 @@ interface ITextCompletion
 
 interface IKernel
 {
-    // When the develper provides a T, the Kernel will try to get the streaming data as T
+    // When the developer provides a T, the Kernel will try to get the streaming data as T
     IAsyncEnumerable<T> StreamingRunAsync<T>(ContextVariables variables, ISKFunction function);
 }
 
 interface ISKFunction
 {
-    // When the develper provides a T, the Kernel will try to get the streaming data as T
+    // When the developer provides a T, the Kernel will try to get the streaming data as T
     IAsyncEnumerable<T> StreamingInvokeAsync<T>(SKContext context);
 }
 ```
@@ -134,7 +134,7 @@ interface ISKFunction
 
 ## Cons
 
-1. If the sk developer want to use the specialized type of `StreamingResultUpdate` he will need to know what is the connector being used to use the correct **StreamingResultUpdate extension method** or to provide directly type in `<T>`.
+1. If the sk developer wants to use the specialized type of `StreamingResultUpdate` he will need to know what the connector is being used to use the correct **StreamingResultUpdate extension method** or to provide directly type in `<T>`.
 2. Connectors will have greater responsibility to provide the correct type of `StreamingResultUpdate` for the connector being used and implementations for both byte[] and string streaming data.
 
 ## Decision Outcome
