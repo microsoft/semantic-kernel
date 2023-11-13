@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -56,6 +57,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        openai.app_info = APP_INFO
 
     async def complete_async(
         self,
