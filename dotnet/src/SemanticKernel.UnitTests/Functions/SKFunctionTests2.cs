@@ -20,7 +20,6 @@ public sealed class SKFunctionTests2
 {
     private readonly Mock<ILoggerFactory> _logger;
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
-    private readonly Mock<IKernel> _kernel;
 
     private static string s_expected = string.Empty;
     private static string s_actual = string.Empty;
@@ -29,7 +28,6 @@ public sealed class SKFunctionTests2
     {
         this._logger = new Mock<ILoggerFactory>();
         this._functions = new Mock<IReadOnlyFunctionCollection>();
-        this._kernel = new Mock<IKernel>();
 
         s_expected = Guid.NewGuid().ToString("D");
     }

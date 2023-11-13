@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// Semantic Kernel context.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class SKContext
+public class SKContext
 {
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.

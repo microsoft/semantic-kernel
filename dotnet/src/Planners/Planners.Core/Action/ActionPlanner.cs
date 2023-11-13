@@ -45,7 +45,7 @@ public sealed class ActionPlanner : IActionPlanner
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly ILogger _logger;
 
     // TODO: allow to inject plugin store
@@ -55,7 +55,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
     public ActionPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ActionPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);

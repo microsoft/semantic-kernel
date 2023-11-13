@@ -25,7 +25,7 @@ internal static class Example31_CustomPlanner
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
@@ -74,7 +74,7 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-    private static SKContext CreateContextQueryContext(IKernel kernel)
+    private static SKContext CreateContextQueryContext(Kernel kernel)
     {
         var context = kernel.CreateNewContext();
         context.Variables.Set("firstname", "Jamal");
@@ -88,7 +88,7 @@ internal static class Example31_CustomPlanner
         return context;
     }
 
-    private static async Task RememberFactsAsync(IKernel kernel, ISemanticTextMemory memory)
+    private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
         kernel.ImportFunctions(new TextMemoryPlugin(memory));
 
@@ -115,7 +115,7 @@ internal static class Example31_CustomPlanner
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
+    private static IDictionary<string, ISKFunction> LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportFunctions(new TimePlugin(), "time");
@@ -127,7 +127,7 @@ internal static class Example31_CustomPlanner
         return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)

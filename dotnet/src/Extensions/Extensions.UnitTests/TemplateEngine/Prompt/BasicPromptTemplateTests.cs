@@ -29,7 +29,6 @@ public sealed class BasicPromptTemplateTests
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
-    private readonly Mock<IKernel> _kernel;
     private readonly Mock<IFunctionRunner> _functionRunner;
     private readonly Mock<IAIServiceProvider> _serviceProvider;
     private readonly Mock<IAIServiceSelector> _serviceSelector;
@@ -40,7 +39,6 @@ public sealed class BasicPromptTemplateTests
         this._factory = new BasicPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
-        this._kernel = new Mock<IKernel>();
         this._functionRunner = new Mock<IFunctionRunner>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
         this._serviceSelector = new Mock<IAIServiceSelector>();

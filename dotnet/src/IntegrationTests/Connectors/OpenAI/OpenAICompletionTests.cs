@@ -52,7 +52,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernel target = this._kernelBuilder
+        Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._logger)
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
@@ -79,7 +79,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this.ConfigureChatOpenAI(builder);
 
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
@@ -97,7 +97,7 @@ public sealed class OpenAICompletionTests : IDisposable
         KernelBuilder builder = this._kernelBuilder.WithLoggerFactory(this._logger);
         this.ConfigureChatOpenAI(builder);
 
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
@@ -127,7 +127,7 @@ public sealed class OpenAICompletionTests : IDisposable
             this.ConfigureAzureOpenAI(builder);
         }
 
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
@@ -151,7 +151,7 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernel target = this._kernelBuilder
+        Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
             .WithRetryBasic(retryConfig)
             .WithOpenAITextCompletionService(
@@ -192,7 +192,7 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
@@ -211,7 +211,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        IKernel target = this._kernelBuilder
+        Kernel target = this._kernelBuilder
             .WithOpenAITextCompletionService(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
@@ -233,7 +233,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        IKernel target = this._kernelBuilder
+        Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -257,7 +257,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Arrange
-        IKernel target = this._kernelBuilder
+        Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -288,7 +288,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
-        IKernel target = this._kernelBuilder.WithLoggerFactory(this._logger).Build();
+        Kernel target = this._kernelBuilder.WithLoggerFactory(this._logger).Build();
 
         this._serviceConfiguration[service](target);
 
@@ -307,7 +307,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
@@ -324,7 +324,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         IDictionary<string, ISKFunction> plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
@@ -344,7 +344,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
         var defaultConfig = new PromptTemplateConfig();
@@ -380,7 +380,7 @@ public sealed class OpenAICompletionTests : IDisposable
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
 
-    private readonly Dictionary<AIServiceType, Action<IKernel>> _serviceConfiguration = new();
+    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = new();
 
     public void Dispose()
     {

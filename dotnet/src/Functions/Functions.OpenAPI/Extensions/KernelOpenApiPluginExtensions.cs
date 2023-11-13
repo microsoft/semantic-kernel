@@ -33,7 +33,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         string filePath,
         OpenApiFunctionExecutionParameters? executionParameters = null,
@@ -70,7 +70,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenApiFunctionExecutionParameters? executionParameters = null,
@@ -111,7 +111,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenApiFunctionExecutionParameters? executionParameters = null,
@@ -138,7 +138,7 @@ public static class KernelOpenApiPluginExtensions
     #region private
 
     private static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiPluginAsync(
-        IKernel kernel,
+        Kernel kernel,
         string pluginName,
         OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
@@ -194,7 +194,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,

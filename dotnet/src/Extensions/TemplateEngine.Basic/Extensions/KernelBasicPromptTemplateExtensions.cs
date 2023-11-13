@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
+// ReSharper disable once CheckNamespace - Using the namespace of Kernel
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
@@ -22,7 +22,7 @@ public static class KernelBasicPromptTemplateExtensions
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
-        this IKernel kernel,
+        this Kernel kernel,
         string functionName,
         string templateString,
         PromptTemplateConfig promptTemplateConfig)
@@ -42,7 +42,7 @@ public static class KernelBasicPromptTemplateExtensions
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         string functionName,
         string templateString,

@@ -39,7 +39,7 @@ public static class Example40_DIContainer
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
 
         //Registering Kernel
-        collection.AddTransient<IKernel>((serviceProvider) =>
+        collection.AddTransient<Kernel>((serviceProvider) =>
         {
             return new KernelBuilder()
             .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
@@ -83,7 +83,7 @@ public static class Example40_DIContainer
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
         //Registering Kernel
-        collection.AddTransient<IKernel, Kernel>();
+        collection.AddTransient<Kernel>();
 
         //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
@@ -106,10 +106,10 @@ public static class Example40_DIContainer
     private sealed class KernelClient
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        private readonly IKernel _kernel;
+        private readonly Kernel _kernel;
         private readonly ILogger _logger;
 
-        public KernelClient(IKernel kernel, ILoggerFactory loggerFactory)
+        public KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
         {
             this._kernel = kernel;
             this._logger = loggerFactory.CreateLogger(nameof(KernelClient));

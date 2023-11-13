@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -252,41 +250,19 @@ public sealed class PlanSerializationTests
     public async Task CanStepAndSerializePlanWithStepsAsync()
     {
         // Arrange
-        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
-        var plan = new Plan(goal);
+        var plan = new Plan("Write a poem or joke and send it in an e-mail to Kai.");
 
         // Arrange
-        var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
-        var functionRunner = new Mock<IFunctionRunner>();
-        kernel.SetupGet(x => x.Functions).Returns(functions.Object);
-
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, functions, loggerFactory, culture) =>
-        {
-            return new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, contextVariables, functions);
-        });
-
-        var returnContext = new SKContext(functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput)
-        );
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, functions.Object);
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
-
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
-        {
-            var c = new SKContext(new Mock<IFunctionRunner>().Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-            returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input);
-            var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-            return Task.FromResult<FunctionResult?>(functionResult);
-        });
-
+        mockFunction
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+             {
+                 return Task.FromResult(new FunctionResult("functionName", "pluginName", context));
+             });
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
@@ -298,7 +274,7 @@ public sealed class PlanSerializationTests
         Assert.NotEmpty(serializedPlan1);
         Assert.Contains("\"next_step_index\":0", serializedPlan1, StringComparison.OrdinalIgnoreCase);
 
-        var result = await kernel.Object.StepAsync(planInput, plan);
+        var result = await kernel.StepAsync("Some input", plan);
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -309,7 +285,7 @@ public sealed class PlanSerializationTests
         Assert.NotEqual(serializedPlan1, serializedPlan2);
         Assert.Contains("\"next_step_index\":1", serializedPlan2, StringComparison.OrdinalIgnoreCase);
 
-        result = await kernel.Object.StepAsync(result);
+        result = await kernel.StepAsync(result);
         var serializedPlan3 = plan.ToJson();
 
         // Assert
@@ -330,16 +306,8 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
-
-        kernel.SetupGet(x => x.Functions).Returns(functions.Object);
-
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, functions, loggerFactory, culture) =>
-        {
-            return new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, contextVariables);
-        });
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, functions.Object);
 
         var returnContext = new SKContext(
             this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
@@ -355,20 +323,6 @@ public sealed class PlanSerializationTests
             })
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName"));
-
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
-                {
-                    var c = new SKContext(new Mock<IFunctionRunner>().Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                    c.Variables.TryGetValue("variables", out string? v);
-
-                    returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-                    var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-
-                    return Task.FromResult<FunctionResult?>(functionResult);
-                });
-
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
         {
             Parameters = new ParameterView[]
@@ -381,7 +335,7 @@ public sealed class PlanSerializationTests
 
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -394,12 +348,11 @@ public sealed class PlanSerializationTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -421,21 +374,13 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
-
-        kernel.SetupGet(x => x.Functions).Returns(functions.Object);
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, functions.Object);
 
         var returnContext = new SKContext(
             this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
-
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, functions, loggerFactory, culture) =>
-        {
-            return new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, contextVariables);
-        });
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -460,22 +405,11 @@ public sealed class PlanSerializationTests
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
-                {
-                    var c = new SKContext(new Mock<IFunctionRunner>().Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                    c.Variables.TryGetValue("variables", out string? v);
-
-                    returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-                    var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-                    return Task.FromResult<FunctionResult?>(functionResult);
-                });
-
         var serializedPlan = plan.ToJson();
 
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -495,12 +429,11 @@ public sealed class PlanSerializationTests
             new ContextVariables()
         );
         plan = Plan.FromJson(serializedPlan1, functions.Object);
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -577,7 +510,6 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(

@@ -34,7 +34,7 @@ Do not expose the regex unless asked.
 
     private readonly AIRequestSettings _chatRequestSettings;
 
-    public CollectEmailPlugin(IKernel kernel)
+    public CollectEmailPlugin(Kernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
         this._chatRequestSettings = new OpenAIRequestSettings

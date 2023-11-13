@@ -22,7 +22,7 @@ public static class Example43_GetModelResult
     {
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)

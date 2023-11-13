@@ -49,7 +49,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Get Usage Data ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: s_openAIModelId!,
@@ -97,7 +97,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Get Rendered Prompt ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: s_openAIModelId!,
@@ -150,7 +150,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
                modelId: s_openAIModelId!,
@@ -186,7 +186,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
                modelId: s_openAIModelId!,
@@ -223,7 +223,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
                modelId: s_openAIModelId!,
@@ -258,7 +258,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Skipping a Function in the Pipeline ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
                modelId: s_openAIModelId!,
@@ -301,7 +301,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Repeating a Function in the Pipeline ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
                modelId: s_openAIModelId!,

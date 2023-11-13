@@ -42,7 +42,7 @@ public static class SKFunctionExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
-        IKernel kernel,
+        Kernel kernel,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
@@ -68,7 +68,7 @@ public static class SKFunctionExtensions
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
         string input,
-        IKernel kernel,
+        Kernel kernel,
         IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,

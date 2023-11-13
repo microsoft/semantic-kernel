@@ -31,7 +31,7 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
@@ -72,7 +72,7 @@ public static class Example07_BingAndGooglePlugins
         }
     }
 
-    private static async Task Example1Async(IKernel kernel, string searchPluginName)
+    private static async Task Example1Async(Kernel kernel, string searchPluginName)
     {
         Console.WriteLine("======== Bing and Google Search Plugins ========");
 
@@ -98,7 +98,7 @@ public static class Example07_BingAndGooglePlugins
        */
     }
 
-    private static async Task Example2Async(IKernel kernel)
+    private static async Task Example2Async(Kernel kernel)
     {
         Console.WriteLine("======== Use Search Plugin to answer user questions ========");
 

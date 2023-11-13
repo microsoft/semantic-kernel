@@ -35,7 +35,7 @@ public static class Example61_MultipleLLMs
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
@@ -52,7 +52,7 @@ public static class Example61_MultipleLLMs
         await RunSemanticFunctionAsync(kernel, "OpenAIChat");
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string serviceId)
+    public static async Task RunSemanticFunctionAsync(Kernel kernel, string serviceId)
     {
         Console.WriteLine($"======== {serviceId} ========");
 

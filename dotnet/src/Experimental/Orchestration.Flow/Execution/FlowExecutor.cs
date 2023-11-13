@@ -58,7 +58,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// System kernel for flow execution
     /// </summary>
-    private readonly IKernel _systemKernel;
+    private readonly Kernel _systemKernel;
 
     /// <summary>
     /// Re-Act engine for flow execution
@@ -202,7 +202,7 @@ internal class FlowExecutor : IFlowExecutor
                     "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
                     stepState.ExecutionCount, step.Goal, input);
 
-                IKernel stepKernel = this._kernelBuilder.Build();
+                Kernel stepKernel = this._kernelBuilder.Build();
                 var stepContext = stepKernel.CreateNewContext();
                 foreach (var key in step.Requires)
                 {
@@ -508,7 +508,7 @@ internal class FlowExecutor : IFlowExecutor
         return string.Join("\n", scratchPadLines).Trim();
     }
 
-    private async Task<ContextVariables> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, IKernel kernel, SKContext context)
+    private async Task<ContextVariables> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, Kernel kernel, SKContext context)
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
@@ -682,7 +682,7 @@ internal class FlowExecutor : IFlowExecutor
         throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);

@@ -32,7 +32,7 @@ public static class Example64_MultiplePromptTemplates
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
@@ -52,7 +52,7 @@ public static class Example64_MultiplePromptTemplates
         await RunSemanticFunctionAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    public static async Task RunSemanticFunctionAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 

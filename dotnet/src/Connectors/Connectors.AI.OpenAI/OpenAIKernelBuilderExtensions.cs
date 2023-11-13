@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure OpenAI and AzureOpenAI connectors.
 /// </summary>
-public static class OpenAIKernelBuilderExtensions
+public static class OpenAKernelBuilderExtensions
 {
     #region Text Completion
 

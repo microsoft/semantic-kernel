@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of IKernel
+// ReSharper disable once CheckNamespace - Using NS of Kernel
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
@@ -21,7 +21,7 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="plan">Plan to import</param>
     /// <returns>Function definition for the plan</returns>
-    public static ISKFunction ImportPlan(this IKernel kernel, Plan plan)
+    public static ISKFunction ImportPlan(this Kernel kernel, Plan plan)
     {
         return kernel.RegisterCustomFunction(plan);
     }
@@ -32,7 +32,7 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="json">Json representation of the plan</param>
     /// <returns>Function definition for the plan</returns>
-    public static ISKFunction ImportPlanFromJson(this IKernel kernel, string json)
+    public static ISKFunction ImportPlanFromJson(this Kernel kernel, string json)
     {
         return kernel.RegisterCustomFunction(Plan.FromJson(json, kernel.Functions));
     }
@@ -44,7 +44,7 @@ public static class KernelPlanExtensions
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<Plan> StepAsync(this IKernel kernel, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this Kernel kernel, Plan plan, CancellationToken cancellationToken = default)
     {
         return kernel.StepAsync(plan.State, plan, cancellationToken);
     }
@@ -56,7 +56,7 @@ public static class KernelPlanExtensions
     /// <param name="input">Input to use</param>
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static Task<Plan> StepAsync(this IKernel kernel, string input, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this Kernel kernel, string input, Plan plan, CancellationToken cancellationToken = default)
     {
         return kernel.StepAsync(new ContextVariables(input), plan, cancellationToken);
     }
@@ -69,7 +69,7 @@ public static class KernelPlanExtensions
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<Plan> StepAsync(this IKernel kernel, ContextVariables variables, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this Kernel kernel, ContextVariables variables, Plan plan, CancellationToken cancellationToken = default)
     {
         return plan.RunNextStepAsync(kernel, variables, cancellationToken);
     }

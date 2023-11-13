@@ -195,7 +195,6 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
         var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
         var valBlock = new ValBlock("'arrivederci'");
 

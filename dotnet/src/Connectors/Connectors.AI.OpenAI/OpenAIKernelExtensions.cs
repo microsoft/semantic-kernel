@@ -5,14 +5,14 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
+// ReSharper disable once CheckNamespace - Using the namespace of Kernel
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Class for extension methods for <see cref="IKernel"/> using OpenAI request settings.
+/// Class for extension methods for <see cref="Kernel"/> using OpenAI request settings.
 /// </summary>
-public static class OpenAIKernelExtensions
+public static class OpenAKernelExtensions
 {
     /// <summary>
     /// Define a string-to-string semantic function, with no direct support for input context.
@@ -27,7 +27,7 @@ public static class OpenAIKernelExtensions
     /// <param name="description">Optional description, useful for the planner</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
-        this IKernel kernel,
+        this Kernel kernel,
         string promptTemplate,
         OpenAIRequestSettings requestSettings,
         string? functionName = null,
@@ -53,7 +53,7 @@ public static class OpenAIKernelExtensions
     /// <param name="description">Optional description, useful for the planner</param>
     /// <returns>A function ready to use</returns>
     public static Task<KernelResult> InvokeSemanticFunctionAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string promptTemplate,
         OpenAIRequestSettings requestSettings,
         string? functionName = null,

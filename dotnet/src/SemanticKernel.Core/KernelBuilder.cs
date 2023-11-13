@@ -31,7 +31,7 @@ public sealed class KernelBuilder
     /// Create a new kernel instance
     /// </summary>
     /// <returns>New kernel instance</returns>
-    public static IKernel Create()
+    public static Kernel Create()
     {
         var builder = new KernelBuilder();
         return builder.Build();
@@ -41,7 +41,7 @@ public sealed class KernelBuilder
     /// Build a new kernel instance using the settings passed so far.
     /// </summary>
     /// <returns>Kernel instance</returns>
-    public IKernel Build()
+    public Kernel Build()
     {
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS0618 // Type or member is obsolete

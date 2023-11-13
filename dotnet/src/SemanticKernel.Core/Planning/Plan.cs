@@ -223,7 +223,7 @@ public sealed class Plan : ISKFunction
     /// The context variables contain the necessary information for executing the plan, such as the functions and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
-    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<Plan> RunNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = kernel.CreateNewContext(variables);
 

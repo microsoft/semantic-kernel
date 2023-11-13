@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Extension methods for interacting with <see cref="IKernel"/>.</summary>
+/// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelExtensions
 {
     /// <summary>
@@ -23,7 +23,7 @@ public static class KernelExtensions
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     public static IDictionary<string, ISKFunction> ImportFunctions(
-        this IKernel kernel,
+        this Kernel kernel,
         object functionsInstance,
         string? pluginName = null)
     {
@@ -79,7 +79,7 @@ public static class KernelExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
@@ -95,7 +95,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
@@ -110,7 +110,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string input,
         params ISKFunction[] pipeline)
     {
@@ -126,7 +126,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         ContextVariables variables,
         params ISKFunction[] pipeline)
     {
@@ -142,7 +142,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline)
     {
@@ -159,7 +159,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     public static Task<KernelResult> RunAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string input,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline)

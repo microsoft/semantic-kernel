@@ -17,7 +17,7 @@ public static class Example02_Pipeline
     {
         Console.WriteLine("======== Pipeline ========");
 
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
 
         // Load native plugin
         var textFunctions = kernel.ImportFunctions(new TextPlugin());

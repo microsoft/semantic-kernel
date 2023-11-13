@@ -11,13 +11,13 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 internal class FunctionRunner : IFunctionRunner
 {
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionRunner"/> class.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
-    public FunctionRunner(IKernel kernel)
+    public FunctionRunner(Kernel kernel)
     {
         this._kernel = kernel;
     }

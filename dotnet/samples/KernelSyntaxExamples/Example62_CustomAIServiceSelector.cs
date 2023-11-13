@@ -41,7 +41,7 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
@@ -64,7 +64,7 @@ public static class Example62_CustomAIServiceSelector
         await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, List<AIRequestSettings> modelSettings)
+    public static async Task RunSemanticFunctionAsync(Kernel kernel, string prompt, List<AIRequestSettings> modelSettings)
     {
         Console.WriteLine($"======== {prompt} ========");
 

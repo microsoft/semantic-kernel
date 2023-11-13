@@ -28,7 +28,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         string filePath,
         OpenAIFunctionExecutionParameters? executionParameters = null,
@@ -60,7 +60,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenAIFunctionExecutionParameters? executionParameters = null,
@@ -99,7 +99,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+        this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenAIFunctionExecutionParameters? executionParameters = null,
@@ -121,7 +121,7 @@ public static class KernelOpenAIPluginExtensions
     #region private
 
     private static async Task<IDictionary<string, ISKFunction>> ImportAsync(
-        IKernel kernel,
+        Kernel kernel,
         string openAIManifest,
         string pluginName,
         OpenAIFunctionExecutionParameters? executionParameters = null,

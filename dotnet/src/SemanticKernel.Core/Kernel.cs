@@ -33,12 +33,16 @@ namespace Microsoft.SemanticKernel;
 /// * RPC functions and secure environments, e.g. sandboxing and credentials management
 /// * auto-generate pipelines given a higher level goal
 /// </summary>
-public sealed class Kernel : IKernel, IDisposable
+public sealed class Kernel
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The ILoggerFactory used to create a logger for logging.
+    /// </summary>
     public ILoggerFactory LoggerFactory { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Reference to the read-only function collection containing all the imported functions
+    /// </summary>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
 
     /// <summary>
@@ -47,13 +51,21 @@ public sealed class Kernel : IKernel, IDisposable
     [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
     public static KernelBuilder Builder => new();
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Reference to Http handler factory
+    /// </summary>
     public IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Used for registering a function invoking event handler.
+    /// Triggers before each function invocation.
+    /// </summary>
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Used for registering a function invoked event handler.
+    /// Triggers after each function invocation.
+    /// </summary>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
@@ -89,6 +101,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="serviceSelector">AI Service selector</param>
+    [Obsolete("This constructor is obsolete and will be removed in one of the next version of SK. Please use one of the available overload.")]
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
@@ -109,7 +122,36 @@ public sealed class Kernel : IKernel, IDisposable
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
+    /// </summary>
+    /// <param name="aiServiceProvider">AI Service Provider</param>
+    /// <param name="functionCollection">function collection</param>
+    /// <param name="serviceSelector">AI Service selector</param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public Kernel(
+        IAIServiceProvider aiServiceProvider,
+        IFunctionCollection? functionCollection = null,
+        IAIServiceSelector? serviceSelector = null,
+        IDelegatingHandlerFactory? httpHandlerFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
+        this._aiServiceProvider = aiServiceProvider;
+        this._functionCollection = functionCollection ?? new FunctionCollection();
+        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
+
+        this._logger = this.LoggerFactory.CreateLogger(typeof(Kernel));
+        this._memory = NullMemory.Instance;
+    }
+
+    /// <summary>
+    /// Registers a custom function in the internal function collection.
+    /// </summary>
+    /// <param name="customFunction">The custom function to register.</param>
+    /// <returns>A C# function wrapping the function execution logic.</returns>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
         Verify.NotNull(customFunction);
@@ -119,6 +161,13 @@ public sealed class Kernel : IKernel, IDisposable
         return customFunction;
     }
 
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
@@ -170,7 +219,14 @@ repeat:
         return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="variables">Initializes the context with the provided variables</param>
+    /// <param name="functions">Provide specific scoped functions. Defaults to all existing in the kernel</param>
+    /// <param name="loggerFactory">Logged factory used within the context</param>
+    /// <param name="culture">Optional culture info related to the context</param>
+    /// <returns>SK context</returns>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
@@ -189,7 +245,12 @@ repeat:
             culture);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Get one of the configured services. Currently limited to AI services.
+    /// </summary>
+    /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
+    /// <typeparam name="T">Service type</typeparam>
+    /// <returns>Instance of T</returns>
     public T GetService<T>(string? name = null) where T : IAIService
     {
         var service = this._aiServiceProvider.GetService<T>(name);
@@ -199,18 +260,6 @@ repeat:
         }
 
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
-    }
-
-    /// <summary>
-    /// Dispose of resources.
-    /// </summary>
-    public void Dispose()
-    {
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._memory is IDisposable mem) { mem.Dispose(); }
-
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
     #region private ================================================================================

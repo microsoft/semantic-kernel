@@ -23,9 +23,9 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// IKernel instance.
+    /// Kernel instance.
     /// </summary>
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// Creates an instance of a <see cref="KernelOpenAIPluginExtensionsTests"/> class.

@@ -19,7 +19,7 @@ public class SimpleCalculatorPlugin
     /// Initializes a new instance of the <see cref="SimpleCalculatorPlugin"/> class.
     /// </summary>
     /// <param name="kernel">The kernel used to create the semantic function.</param>
-    public SimpleCalculatorPlugin(IKernel kernel)
+    public SimpleCalculatorPlugin(Kernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             "Task: Give the final solution for the problem. Be as concise as possible.\nProblem:4+4\nSolution:8\nProblem:{{$input}}\nSolution:\n",

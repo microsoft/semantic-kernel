@@ -33,7 +33,7 @@ public class ConversationSummaryPlugin
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    public ConversationSummaryPlugin(IKernel kernel)
+    public ConversationSummaryPlugin(Kernel kernel)
     {
         this._summarizeConversationFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.SummarizeConversationDefinition,

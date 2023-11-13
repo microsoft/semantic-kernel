@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Interface for the semantic kernel.
 /// </summary>
+[Obsolete("This interface is obsolete and will be removed in one of the next version of SK. Please use `Kernel` class instead.")]
 public interface IKernel
 {
     /// <summary>

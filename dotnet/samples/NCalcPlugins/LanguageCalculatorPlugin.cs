@@ -65,7 +65,7 @@ Question: {{ $input }}
     /// Initializes a new instance of the <see cref="LanguageCalculatorPlugin"/> class.
     /// </summary>
     /// <param name="kernel">The kernel to be used for creating the semantic function.</param>
-    public LanguageCalculatorPlugin(IKernel kernel)
+    public LanguageCalculatorPlugin(Kernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
