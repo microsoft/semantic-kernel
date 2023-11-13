@@ -63,9 +63,9 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokeSemanticFunctionAsync(
+        var result = await kernel.InvokePromptAsync(
            prompt,
-           requestSettings: new AIRequestSettings()
+           new AIRequestSettings()
            {
                ServiceId = serviceId
            });
@@ -78,7 +78,7 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokeSemanticFunctionAsync(
+        var result = await kernel.InvokePromptAsync(
            prompt,
            requestSettings: new AIRequestSettings()
            {
@@ -100,10 +100,10 @@ public static class Example61_MultipleLLMs
         }
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
 
-        var skfunction = kernel.RegisterSemanticFunction(
-            "HelloAI",
+        var skfunction = kernel.CreateFunctionFromPrompt(
             prompt,
-            promptTemplateConfig);
+            promptTemplateConfig,
+            "HelloAI");
 
         var result = await kernel.RunAsync(skfunction);
         Console.WriteLine(result.GetValue<string>());

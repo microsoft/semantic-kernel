@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planners;
@@ -21,9 +22,9 @@ public static class Example28_ActionPlanner
             .Build();
 
         string samplesDirectory = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "SummarizePlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "WriterPlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "FunPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "WriterPlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "FunPlugin"));
 
         // Create an optional config for the ActionPlanner. Use this to exclude plugins and functions if needed
         var config = new ActionPlannerConfig();

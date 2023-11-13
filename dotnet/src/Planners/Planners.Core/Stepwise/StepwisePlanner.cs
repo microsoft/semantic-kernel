@@ -64,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Import native functions
-        this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
+        this._nativeFunctions = this._kernel.ImportPluginFromObject(this, RestrictedPluginName);
 
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
@@ -348,7 +348,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string> GetUserManualAsync(string question, SKContext context, CancellationToken cancellationToken)
     {
-        var descriptions = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
+        var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
         var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
         return await promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
@@ -518,7 +518,7 @@ public class StepwisePlanner : IStepwisePlanner
             return $"Could not parse functionName from actionName: {actionName}. Please try again using one of the [AVAILABLE FUNCTIONS].";
         }
 
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
         var targetFunction = getFunctionCallback(pluginName, functionName);
 
         if (targetFunction == null)
@@ -548,7 +548,7 @@ public class StepwisePlanner : IStepwisePlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.PluginName, targetFunction.Name, e.Message);
+            this._logger?.LogError(e, "Something went wrong in system step: {Function}. Error: {Error}", targetFunction.Name, e.Message);
             throw;
         }
     }
@@ -629,7 +629,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private readonly IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
+    private readonly ISKPlugin _nativeFunctions;
 
     /// <summary>
     /// The prompt template to use for the system step

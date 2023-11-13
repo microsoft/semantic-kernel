@@ -51,8 +51,8 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
@@ -77,8 +77,8 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
@@ -102,12 +102,12 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TextPlugin(), "text");
-        kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "ConversationSummary");
-        kernel.ImportFunctions(new MathPlugin(), "Math");
-        kernel.ImportFunctions(new FileIOPlugin(), "FileIO");
-        kernel.ImportFunctions(new HttpPlugin(), "Http");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TextPlugin>("text");
+        kernel.ImportPluginFromObject<ConversationSummaryPlugin>("ConversationSummary");
+        kernel.ImportPluginFromObject<MathPlugin>("Math");
+        kernel.ImportPluginFromObject<FileIOPlugin>("FileIO");
+        kernel.ImportPluginFromObject<HttpPlugin>("Http");
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
@@ -125,7 +125,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportOpenAIPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
 

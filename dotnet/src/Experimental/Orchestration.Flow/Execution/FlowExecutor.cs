@@ -227,7 +227,7 @@ internal class FlowExecutor : IFlowExecutor
                     var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(plugin, plugin.GetType().Name);
+                        stepKernel.ImportPluginFromObject(plugin, plugin.GetType().Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
@@ -687,7 +687,15 @@ internal class FlowExecutor : IFlowExecutor
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
+        if (!kernel.Plugins.TryGetPlugin(RestrictedPluginName, out ISKPlugin? plugin))
+        {
+            plugin = new SKPlugin(RestrictedPluginName);
+        }
+
+        SKPlugin p = plugin as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
+        ISKFunction func = kernel.CreateFunctionFromPrompt(template, config, functionName);
+        p.AddFunction(func);
+        return func;
     }
 
     private class RepeatOrStartStepResult

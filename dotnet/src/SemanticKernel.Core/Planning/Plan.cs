@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -161,17 +160,17 @@ public sealed class Plan : ISKFunction
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="functions">The collection of available functions..</param>
+    /// <param name="plugins">The collection of available functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlySKPluginCollection? plugins = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        if (functions != null)
+        if (plugins != null)
         {
-            plan = SetAvailableFunctions(plan, functions, requireFunctions);
+            plan = SetAvailablePlugins(plan, plugins, requireFunctions);
         }
 
         return plan;
@@ -282,7 +281,7 @@ public sealed class Plan : ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(this.Name, this.PluginName, context);
+        var result = new FunctionResult(this.Name, context);
 
         if (this.Function is not null)
         {
@@ -291,7 +290,7 @@ public sealed class Plan : ISKFunction
             // This is done to prevent the function from having access to variables that it shouldn't.
             AddVariablesToContext(this.State, context);
             var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables, context.Functions);
+            var functionContext = context.Clone(functionVariables, context.Plugins);
 
             // Execute the step
             result = await this.Function
@@ -303,9 +302,9 @@ public sealed class Plan : ISKFunction
         else
         {
             this.CallFunctionInvoking(context);
-            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context);
+                return new FunctionResult(this.Name, context);
             }
 
             // loop through steps and execute until completion
@@ -328,14 +327,14 @@ public sealed class Plan : ISKFunction
 
                 this.UpdateContextWithOutputs(context);
 
-                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                result = new FunctionResult(this.Name, context, context.Result);
                 this.UpdateFunctionResultWithOutputs(result);
             }
 
             this.CallFunctionInvoked(result, context);
-            if (SKFunction.IsInvokedCancelRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
+                return new FunctionResult(this.Name, context, result.Value);
             }
         }
 
@@ -469,16 +468,16 @@ public sealed class Plan : ISKFunction
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="functions">The collection of available functions.</param>
+    /// <param name="plugins">The collection of available plugins.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, IReadOnlyFunctionCollection functions, bool requireFunctions = true)
+    private static Plan SetAvailablePlugins(Plan plan, IReadOnlySKPluginCollection plugins, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            Verify.NotNull(functions);
+            Verify.NotNull(plugins);
 
-            if (functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
+            if (plugins.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
                 plan.SetFunction(planFunction);
             }
@@ -491,7 +490,7 @@ public sealed class Plan : ISKFunction
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, functions, requireFunctions);
+                SetAvailablePlugins(step, plugins, requireFunctions);
             }
         }
 
@@ -669,12 +668,10 @@ public sealed class Plan : ISKFunction
     {
         this.Function = function;
         this.Name = function.Name;
-        this.PluginName = function.PluginName;
         this.Description = function.Description;
 
 #pragma warning disable CS0618 // Type or member is obsolete
         this.RequestSettings = function.RequestSettings;
-        this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 
@@ -728,28 +725,6 @@ public sealed class Plan : ISKFunction
     {
         return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

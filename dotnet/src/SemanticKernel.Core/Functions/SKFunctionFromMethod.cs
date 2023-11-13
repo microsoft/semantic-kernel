@@ -22,38 +22,54 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
+
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
-/// <see cref="ISKFunction"/> implementation backed by a delegate.
+/// Provides factory methods for creating <see cref="ISKFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class NativeFunction : ISKFunction
+public sealed class KernelFunctionFromMethod : ISKFunction
 {
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a .NET method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static ISKFunction Create(
+        Delegate method,
+        string? functionName = null,
+        string? description = null,
+        IEnumerable<ParameterView>? parameters = null,
+        ReturnParameterView? returnParameter = null,
+        ILoggerFactory? loggerFactory = null) =>
+        Create(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+
+    /// <summary>
+    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="returnParameter">Optional return parameter description.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
         MethodInfo method,
-        object? target,
-        string? pluginName,
-        string? functionName,
-        string? description,
-        IEnumerable<ParameterView>? parameters,
-        ReturnParameterView? returnParameter,
-        ILoggerFactory? loggerFactory)
+        object? target = null,
+        string? functionName = null,
+        string? description = null,
+        IEnumerable<ParameterView>? parameters = null,
+        ReturnParameterView? returnParameter = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
@@ -61,18 +77,12 @@ internal sealed class NativeFunction : ISKFunction
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        if (string.IsNullOrWhiteSpace(pluginName))
-        {
-            pluginName = FunctionCollection.GlobalFunctionsPluginName;
-        }
+        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance;
 
-        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
-
-        MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger);
-        var result = new NativeFunction(
+        MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
+        var result = new KernelFunctionFromMethod(
             methodDetails.Function,
-            pluginName!,
-            functionName ?? methodDetails.Name,
+            methodDetails.Name,
             description ?? methodDetails.Description,
             parameters?.ToList() ?? methodDetails.Parameters,
             returnParameter ?? methodDetails.ReturnParameter,
@@ -80,7 +90,7 @@ internal sealed class NativeFunction : ISKFunction
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Created ISKFunction '{Plugin}.{Name}' for '{MethodName}'", result.PluginName, result.Name, method.Name);
+            logger.LogTrace("Created ISKFunction '{Name}' for '{MethodName}'", result.Name, method.Name);
         }
 
         return result;
@@ -90,40 +100,37 @@ internal sealed class NativeFunction : ISKFunction
     public string Name { get; }
 
     /// <inheritdoc/>
-    public string PluginName { get; }
-
-    /// <inheritdoc/>
     public string Description { get; }
 
     /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => Enumerable.Empty<AIRequestSettings>();
+    IEnumerable<AIRequestSettings> ISKFunction.ModelSettings => Enumerable.Empty<AIRequestSettings>();
 
     /// <inheritdoc/>
-    public FunctionView Describe() => this._view ??= new FunctionView(this.Name, this.PluginName, this.Description, this._parameters, this._returnParameter);
+    public FunctionView Describe() => this._view ??= new FunctionView(this.Name, PluginName: null, this.Description, this._parameters, this._returnParameter);
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    async Task<FunctionResult> ISKFunction.InvokeAsync(
         SKContext context,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings,
+        CancellationToken cancellationToken)
     {
         try
         {
             // Invoke pre hook, and stop if skipping requested.
             this.CallFunctionInvoking(context);
-            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 if (this._logger.IsEnabled(LogLevel.Trace))
                 {
-                    this._logger.LogTrace("Function {Plugin}.{Name} canceled or skipped prior to invocation.", this.PluginName, this.Name);
+                    this._logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
                 }
 
-                return new FunctionResult(this.Name, this.PluginName, context);
+                return new FunctionResult(this.Name, context);
             }
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Function {Plugin}.{Name} invoking.", this.PluginName, this.Name);
+                this._logger.LogTrace("Function {Name} invoking.", this.Name);
             }
 
             // Invoke the function.
@@ -134,9 +141,9 @@ internal sealed class NativeFunction : ISKFunction
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Function {Plugin}.{Name} invocation {Completion}: {Result}",
-                    this.PluginName, this.Name,
-                    SKFunction.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
+                    this.Name,
+                    KernelFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
                     result.Value);
             }
 
@@ -146,7 +153,7 @@ internal sealed class NativeFunction : ISKFunction
         {
             if (this._logger.IsEnabled(LogLevel.Error))
             {
-                this._logger.LogError(e, "Function {Plugin}.{Name} execution failed: {Error}", this.PluginName, this.Name, e.Message);
+                this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
             }
             throw;
         }
@@ -171,7 +178,7 @@ internal sealed class NativeFunction : ISKFunction
             handler.Invoke(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
@@ -212,16 +219,14 @@ internal sealed class NativeFunction : ISKFunction
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
 
-    private NativeFunction(
+    private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
-        string pluginName,
         string functionName,
         string description,
         IReadOnlyList<ParameterView> parameters,
         ReturnParameterView returnParameter,
         ILogger logger)
     {
-        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
         this._logger = logger;
@@ -232,31 +237,34 @@ internal sealed class NativeFunction : ISKFunction
         this._returnParameter = returnParameter;
 
         this.Name = functionName;
-        this.PluginName = pluginName;
         this.Description = description;
     }
 
-    private static MethodDetails GetMethodDetails(MethodInfo method, object? target, string pluginName, ILogger logger)
+    private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
-        // Get the name to use for the function.  If the function has an SKName attribute, we use that.
-        // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
-        // We don't apply any heuristics to the value supplied by SKName so that it can always be used
-        // as a definitive override.
-        string? functionName = method.GetCustomAttribute<SKNameAttribute>(inherit: true)?.Name?.Trim();
-        if (string.IsNullOrEmpty(functionName))
+        if (functionName is null)
         {
-            functionName = SanitizeMetadataName(method.Name!);
-            Verify.ValidFunctionName(functionName);
-
-            if (IsAsyncMethod(method) &&
-                functionName.EndsWith("Async", StringComparison.Ordinal) &&
-                functionName.Length > "Async".Length)
+            // Get the name to use for the function.  If the function has an SKName attribute, we use that.
+            // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
+            // We don't apply any heuristics to the value supplied by SKName so that it can always be used
+            // as a definitive override.
+            functionName = method.GetCustomAttribute<SKNameAttribute>(inherit: true)?.Name?.Trim();
+            if (string.IsNullOrEmpty(functionName))
             {
-                functionName = functionName.Substring(0, functionName.Length - "Async".Length);
+                functionName = SanitizeMetadataName(method.Name!);
+
+                if (IsAsyncMethod(method) &&
+                    functionName.EndsWith("Async", StringComparison.Ordinal) &&
+                    functionName.Length > "Async".Length)
+                {
+                    functionName = functionName.Substring(0, functionName.Length - "Async".Length);
+                }
             }
         }
+
+        Verify.ValidFunctionName(functionName);
 
         List<ParameterView> stringParameterViews = new();
         var parameters = method.GetParameters();
@@ -279,7 +287,7 @@ internal sealed class NativeFunction : ISKFunction
         Verify.ParametersUniqueness(stringParameterViews);
 
         // Get marshaling func for the return value.
-        Func<string, string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        Func<string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
         ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
@@ -295,7 +303,7 @@ internal sealed class NativeFunction : ISKFunction
             object? result = method.Invoke(target, args);
 
             // Extract and return the result.
-            return returnFunc(functionName!, pluginName, result, context);
+            return returnFunc(functionName!, result, context);
         }
 
         // And return the details.
@@ -355,7 +363,7 @@ internal sealed class NativeFunction : ISKFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) :
+                ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
                 ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
         }
 
@@ -479,7 +487,7 @@ internal sealed class NativeFunction : ISKFunction
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
     /// </summary>
-    private static Func<string, string, object?, SKContext, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static Func<string, object?, SKContext, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -488,25 +496,25 @@ internal sealed class NativeFunction : ISKFunction
 
         if (returnType == typeof(void))
         {
-            return static (functionName, pluginName, result, context) =>
-                new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context));
+            return static (functionName, result, context) =>
+                new ValueTask<FunctionResult>(new FunctionResult(functionName, context));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (functionName, pluginName, result, context) =>
+            return async static (functionName, result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, pluginName, context);
+                return new FunctionResult(functionName, context);
             };
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (functionName, pluginName, result, context) =>
+            return async static (functionName, result, context) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, pluginName, context);
+                return new FunctionResult(functionName, context);
             };
         }
 
@@ -514,28 +522,28 @@ internal sealed class NativeFunction : ISKFunction
 
         if (returnType == typeof(SKContext))
         {
-            return static (functionName, pluginName, result, _) =>
+            return static (functionName, result, _) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context, context.Result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Result));
             };
         }
 
         if (returnType == typeof(Task<SKContext>))
         {
-            return static async (functionName, pluginName, result, _) =>
+            return static async (functionName, result, _) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, pluginName, context, context.Result);
+                return new FunctionResult(functionName, context, context.Result);
             };
         }
 
         if (returnType == typeof(ValueTask<SKContext>))
         {
-            return static async (functionName, pluginName, result, _) =>
+            return static async (functionName, result, _) =>
             {
                 var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, pluginName, context, context);
+                return new FunctionResult(functionName, context, context);
             };
         }
 
@@ -543,31 +551,31 @@ internal sealed class NativeFunction : ISKFunction
 
         if (returnType == typeof(string))
         {
-            return static (functionName, pluginName, result, context) =>
+            return static (functionName, result, context) =>
             {
                 var resultString = (string?)result;
                 context.Variables.Update(resultString);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context, resultString));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, resultString));
             };
         }
 
         if (returnType == typeof(Task<string>))
         {
-            return async static (functionName, pluginName, result, context) =>
+            return async static (functionName, result, context) =>
             {
                 var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
-                return new FunctionResult(functionName, pluginName, context, resultString);
+                return new FunctionResult(functionName, context, resultString);
             };
         }
 
         if (returnType == typeof(ValueTask<string>))
         {
-            return async static (functionName, pluginName, result, context) =>
+            return async static (functionName, result, context) =>
             {
                 var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
-                return new FunctionResult(functionName, pluginName, context, resultString);
+                return new FunctionResult(functionName, context, resultString);
             };
         }
 
@@ -580,10 +588,10 @@ internal sealed class NativeFunction : ISKFunction
                 throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
             }
 
-            return (functionName, pluginName, result, context) =>
+            return (functionName, result, context) =>
             {
                 context.Variables.Update(formatter(result, context.Culture));
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context, result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, result));
             };
         }
 
@@ -595,14 +603,14 @@ internal sealed class NativeFunction : ISKFunction
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter &&
             GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo, string> taskResultFormatter)
         {
-            return async (functionName, pluginName, result, context) =>
+            return async (functionName, result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
                 var taskResult = taskResultGetter.Invoke(result!, Array.Empty<object>());
 
                 context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
-                return new FunctionResult(functionName, pluginName, context, taskResult);
+                return new FunctionResult(functionName, context, taskResult);
             };
         }
 
@@ -613,7 +621,7 @@ internal sealed class NativeFunction : ISKFunction
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter &&
             GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo, string> asTaskResultFormatter)
         {
-            return async (functionName, pluginName, result, context) =>
+            return async (functionName, result, context) =>
             {
                 Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
                 await task.ConfigureAwait(false);
@@ -621,7 +629,7 @@ internal sealed class NativeFunction : ISKFunction
                 var taskResult = asTaskResultGetter.Invoke(task!, Array.Empty<object>());
 
                 context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
-                return new FunctionResult(functionName, pluginName, context, taskResult);
+                return new FunctionResult(functionName, context, taskResult);
             };
         }
 
@@ -636,16 +644,16 @@ internal sealed class NativeFunction : ISKFunction
 
             if (getAsyncEnumeratorMethod is not null)
             {
-                return (functionName, pluginName, result, context) =>
+                return (functionName, result, context) =>
                 {
                     var asyncEnumerator = getAsyncEnumeratorMethod.Invoke(result, new object[] { default(CancellationToken) });
 
                     if (asyncEnumerator is not null)
                     {
-                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context, asyncEnumerator));
+                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, asyncEnumerator));
                     }
 
-                    return new ValueTask<FunctionResult>(new FunctionResult(functionName, pluginName, context));
+                    return new ValueTask<FunctionResult>(new FunctionResult(functionName, context));
                 };
             }
         }
@@ -885,26 +893,6 @@ internal sealed class NativeFunction : ISKFunction
         this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
     }
-
-    /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
-
-    /// <inheritdoc/>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => true;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

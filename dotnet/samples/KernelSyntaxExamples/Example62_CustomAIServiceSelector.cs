@@ -58,7 +58,7 @@ public static class Example62_CustomAIServiceSelector
             .Build();
 
         var prompt = "Hello AI, what can you do for me?";
-        var result = await kernel.InvokeSemanticFunctionAsync(prompt);
+        var result = await kernel.InvokePromptAsync(prompt);
         Console.WriteLine(result.GetValue<string>());
     }
 

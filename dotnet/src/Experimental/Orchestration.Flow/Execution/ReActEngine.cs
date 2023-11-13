@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
@@ -190,7 +191,7 @@ internal sealed class ReActEngine
             throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
         }
 
-        var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
+        var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.Describe();
 
         var actionContext = this.CreateActionContext(variables, kernel, context);
@@ -238,7 +239,15 @@ internal sealed class ReActEngine
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
+        if (!kernel.Plugins.TryGetPlugin(RestrictedPluginName, out ISKPlugin? plugin))
+        {
+            plugin = new SKPlugin(RestrictedPluginName);
+        }
+
+        SKPlugin p = plugin as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
+        ISKFunction function = kernel.CreateFunctionFromPrompt(template, config, functionName);
+        p.AddFunction(function);
+        return function;
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
@@ -372,14 +381,14 @@ internal sealed class ReActEngine
 
     private IEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
-        var functionViews = context.Functions!.GetFunctionViews();
+        var functionViews = context.Plugins.GetFunctionViews();
 
         var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
 
         var availableFunctions =
             functionViews
-                .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                .Where(s => !excludedPlugins.Contains(s.PluginName!) && !excludedFunctions.Contains(s.Name))
                 .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
 

@@ -31,7 +31,7 @@ public static class Example43_GetModelResult
         // Function defined using few-shot design pattern
         const string FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
 
-        var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
         var functionResult = await myFunction.InvokeAsync("Sci-fi",
@@ -66,7 +66,7 @@ public static class Example43_GetModelResult
         kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
-        var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        var errorFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
 #pragma warning disable CA1031 // Do not catch general exception types
         try

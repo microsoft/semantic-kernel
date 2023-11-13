@@ -27,7 +27,7 @@ public sealed class BasicPromptTemplateTests
     private const string DateFormat = "M/d/yyyy";
     private readonly BasicPromptTemplateFactory _factory;
     private readonly ContextVariables _variables;
-    private readonly Mock<IReadOnlyFunctionCollection> _functions;
+    private readonly Mock<IReadOnlySKPluginCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
     private readonly Mock<IFunctionRunner> _functionRunner;
@@ -39,7 +39,7 @@ public sealed class BasicPromptTemplateTests
         this._logger = testOutputHelper;
         this._factory = new BasicPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
-        this._functions = new Mock<IReadOnlyFunctionCollection>();
+        this._functions = new Mock<IReadOnlySKPluginCollection>();
         this._kernel = new Mock<IKernel>();
         this._functionRunner = new Mock<IFunctionRunner>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
@@ -158,18 +158,15 @@ public sealed class BasicPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        List<ISKFunction> functions = new()
-        {
-            SKFunction.Create(Method(MyFunctionAsync), this),
-        };
+        var func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
 
-        Assert.NotNull(functions[0]);
+        Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
         var target = (BasicPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        this.MockFunctionRunner(functions[0]);
+        this.MockFunctionRunner(func);
 
         var context = this.MockContext();
 
@@ -190,7 +187,7 @@ public sealed class BasicPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.Create(Method(MyFunctionAsync), this);
+        var func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -223,7 +220,7 @@ public sealed class BasicPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunction.Create(Method(MyFunctionAsync), this);
+        var func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -257,7 +254,7 @@ public sealed class BasicPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
+        ISKFunction func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -286,7 +283,7 @@ public sealed class BasicPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
+        ISKFunction func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
 
         Assert.NotNull(func);
 
@@ -338,9 +335,9 @@ public sealed class BasicPromptTemplateTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.Create(Method(MyFunction1Async), this, "func1"),
-            SKFunction.Create(Method(MyFunction2Async), this, "func2"),
-            SKFunction.Create(Method(MyFunction3Async), this, "func3")
+            KernelFunctionFromMethod.Create(Method(MyFunction1Async), this, "func1"),
+            KernelFunctionFromMethod.Create(Method(MyFunction2Async), this, "func2"),
+            KernelFunctionFromMethod.Create(Method(MyFunction3Async), this, "func3")
         };
 
         this.MockFunctionRunner(functions);
@@ -363,7 +360,7 @@ public sealed class BasicPromptTemplateTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.Create(Method(MyFunctionAsync), this);
+        ISKFunction func = KernelFunctionFromMethod.Create(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -400,7 +397,7 @@ public sealed class BasicPromptTemplateTests
             .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
             {
                 var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                var function = functions.First(f => f.PluginName == functionName);
+                var function = functions.First(f => f.Name == functionName);
 
                 return await function.InvokeAsync(context, null, cancellationToken);
             });

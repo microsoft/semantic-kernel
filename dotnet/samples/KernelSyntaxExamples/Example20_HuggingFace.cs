@@ -32,7 +32,7 @@ public static class Example20_HuggingFace
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction("Question: {{$input}}; Answer:");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 
@@ -68,7 +68,7 @@ public static class Example20_HuggingFace
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction("Question: {{$input}}; Answer:");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 

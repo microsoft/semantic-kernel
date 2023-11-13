@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -110,11 +111,9 @@ public static class Example08_RetryHandler
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
-        var qaPlugin = kernel.ImportSemanticFunctionsFromDirectory(
-            folder,
-            "QAPlugin");
+        var qaPlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
 
         var question = "How popular is Polly library?";
 
