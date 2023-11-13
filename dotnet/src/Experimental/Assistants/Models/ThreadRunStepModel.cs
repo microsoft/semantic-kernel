@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -127,7 +127,7 @@ internal class ThreadRunStepModel
         /// Details of tool calls.
         /// </summary>
         [JsonPropertyName("tool_calls")]
-        public List<ToolCallsDetailsModel>? ToolCalls { get; set; }
+        public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ internal class ThreadRunStepModel
         /// The definition of the function that was called.
         /// </summary>
         [JsonPropertyName("function")]
-        public FunctionDetailsModel? Function { get; set; }
+        public FunctionDetailsModel Function { get; set; }
     }
 
     /// <summary>

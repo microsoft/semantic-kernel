@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,25 +58,18 @@ internal sealed class ChatRun : IChatRun
             }
         }
 
+        // Retrieve steps
+        var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+
         // Is tool action required?
         if (ActionState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            // TODO: @chris make this more efficient through parallelization
-            //foreach (ThreadRunStepModel threadRunStep in threadRunSteps.Data)
-            //{
-            //    // Retrieve all of the steps that require action
-            //    if (threadRunStep.Status == "in_progress" && threadRunStep.StepDetails.Type == "tool_calls")
-            //    {
-            //        foreach (var toolCall in threadRunStep.StepDetails.ToolCalls)
-            //        {
-            //            // Run function
-            //            //var result = await this.InvokeFunctionCallAsync(kernel, toolCall.Function.Name, toolCall.Function.Arguments).ConfigureAwait(false);
+            var tasks = steps.Data.SelectMany(step => this.ExecuteStep(step, cancellationToken)).ToArray();
 
-            //            //// Update the thread run
-            //            //threadRunModel = await this.SubmitToolOutputsToRunAsync(threadRunModel.Id, toolCall.Id, result).ConfigureAwait(false);
-            //        }
-            //    }
-            //}
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            // Refresh steps $$$ ???
+            steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
         }
 
         // Did fail?
@@ -84,7 +78,6 @@ internal sealed class ChatRun : IChatRun
             throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
-        var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
         var messageIds =
             steps.Data
                 .Where(s => s.StepDetails.MessageCreation != null)
@@ -103,41 +96,42 @@ internal sealed class ChatRun : IChatRun
         this._restContext = restContext;
     }
 
-    //private async Task<string> InvokeFunctionCallAsync(IKernel kernel, string name, string arguments)
-    //{
-    //    // split name
-    //    string[] nameParts = name.Split('-');
+    private IEnumerable<Task> ExecuteStep(ThreadRunStepModel step, CancellationToken cancellationToken)
+    {
+        // Process all of the steps that require action
+        if (step.Status == "in_progress" && step.StepDetails.Type == "tool_calls")
+        {
+            foreach (var toolCall in step.StepDetails.ToolCalls)
+            {
+                // Run function
+                yield return this.ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken); // $$$ NULLABILITY
+            }
+        }
+    }
 
-    //    // get function from kernel
-    //    var function = kernel.Functions.GetFunction(nameParts[0], nameParts[1]);
-    //    // TODO: @chris: change back to Dictionary<string, object>
-    //    Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
+    private async Task ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
+    {
+        var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
 
-    //    var results = await kernel.RunAsync(function /*, variables*/).ConfigureAwait(false);
+        await this._restContext.AddToolOutputAsync(this.ThreadId, this.Id, callId, result, cancellationToken).ConfigureAwait(false);
 
-    //    return results.GetValue<string>()!;
-    //}
+        async Task<string> InvokeFunctionCallAsync()
+        {
+            // split name $$$
+            //string[] nameParts = name.Split('-');
+            // get function from kernel
+            //var function = (ISKFunction)null!;
+            //var kernel = (IKernel)null!;
 
-    //private async Task<ThreadRunModel> SubmitToolOutputsToRunAsync(string runId, string toolCallId, string output)
-    //{
-    //    var requestData = new
-    //    {
-    //        tool_outputs = new[] {
-    //            new {
-    //                tool_call_id = toolCallId,
-    //                output = output
-    //            }
-    //        }
-    //    };
+            //// TODO: @chris: change back to Dictionary<string, object> $$$
+            ////Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
+            //var variables = new ContextVariables(); // $$$
+            //var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false); // $$$ TRY/CATCH
 
-    //    string url = "https://api.openai.com/v1/threads/" + this.Id + "/runs/" + runId + "/submit_tool_outputs";
-    //    using var httpRequestMessage = HttpRequest.CreatePostRequest(url, requestData);
-    //    httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-    //    httpRequestMessage.Headers.Add("OpenAI-Beta", "assistants=v1");
+            await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
-    //    var response = await this._client.SendAsync(httpRequestMessage).ConfigureAwait(false);
-
-    //    string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-    //    return JsonSerializer.Deserialize<ThreadRunModel>(responseBody)!;
-    //}
+            //return results.GetValue<string>()!;
+            return DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+        }
+    }
 }

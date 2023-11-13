@@ -82,6 +82,45 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+    /// <summary>
+    /// Add a function result for a run.
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="threadId">A thread identifier</param>
+    /// <param name="runId">The run identifier</param>
+    /// <param name="callId">The tool-call identifier</param>
+    /// <param name="result">The function/tool result.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A run definition</returns>
+    public static Task<ThreadRunModel> AddToolOutputAsync(
+        this IOpenAIRestContext context,
+        string threadId,
+        string runId,
+        string callId, // $$$ ARRAY
+        object result, // $$$ ARRAY
+        CancellationToken cancellationToken = default)
+    {
+        var payload =
+           new
+           {
+               tool_outputs =
+                   new[]
+                   {
+                        new
+                        {
+                            tool_call_id = callId,
+                            output = result
+                        }
+                   }
+           };
+
+        return
+            context.ExecutePostAsync<ThreadRunModel>(
+                GetRunToolOutput(threadId, runId),
+                payload,
+                cancellationToken);
+    }
+
     private static string GetRunUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs";
@@ -95,5 +134,10 @@ internal static partial class OpenAIRestExtensions
     private static string GetRunStepsUrl(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}/steps";
+    }
+
+    private static string GetRunToolOutput(string threadId, string runId)
+    {
+        return $"{BaseThreadUrl}/{threadId}/runs/{runId}/submit_tool_outputs";
     }
 }
