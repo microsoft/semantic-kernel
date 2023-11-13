@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from __future__ import annotations
+
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from openai import AsyncOpenAI, AsyncAzureOpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 
@@ -76,7 +77,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 azure_endpoint=endpoint,
             )
         else:
-           self._client = AsyncOpenAI(
+            self._client = AsyncOpenAI(
                 api_key=api_key,
                 base_url=endpoint,
                 organization=org_id,

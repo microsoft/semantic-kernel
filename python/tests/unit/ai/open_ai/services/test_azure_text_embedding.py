@@ -180,7 +180,7 @@ async def test_azure_text_embedding_calls_with_batches() -> None:
                     model=deployment_name,
                     input=texts[3:5],
                 ),
-                call.create().data.__iter__()
+                call.create().data.__iter__(),
             ],
             any_order=False,
         )
