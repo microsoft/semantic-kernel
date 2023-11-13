@@ -124,7 +124,6 @@ async def test_azure_text_completion_call_with_parameters() -> None:
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"
         api_key = "test_api_key"
-        api_type = "azure"
         api_version = "2023-03-15-preview"
         logger = Logger("test_logger")
         prompt = "hello world"
@@ -166,7 +165,6 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"
         api_key = "test_api_key"
-        api_type = "azure"
         api_version = "2023-03-15-preview"
         logger = Logger("test_logger")
         prompt = "hello world"
