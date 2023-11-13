@@ -16,13 +16,11 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Example70_Assistant ========");
 
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string apiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -49,17 +50,49 @@ public sealed class RunHarness
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);
         var messageUser = await thread.AddUserMessageAsync("I was on my way to the store this morning and...").ConfigureAwait(true);
+        this.LogMessage(messageUser);
 
-        var messages = await thread.InvokeAsync(assistant.Id).ConfigureAwait(true);
-        var message = messages.First(); // $$$ HAXX
+        var assistantMessages = await thread.InvokeAsync(assistant.Id).ConfigureAwait(true);
+        this.LogMessages(assistantMessages);
+
+        messageUser = await thread.AddUserMessageAsync("That was great!  Tell me another.").ConfigureAwait(true);
+        this.LogMessage(messageUser);
+
+        assistantMessages = await thread.InvokeAsync(assistant.Id).ConfigureAwait(true);
+        this.LogMessages(assistantMessages);
+
+        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
+        this.DumpMessages(copy);
+    }
+
+    private void DumpMessages(IChatThread thread)
+    {
+        foreach (var message in thread.Messages)
+        {
+            if (string.IsNullOrWhiteSpace(message.AssistantId))
+            {
+                this._output.WriteLine($"{message.Role}: {message.Content}");
+            }
+            else
+            {
+                this._output.WriteLine($"{message.Role}: {message.Content} [{message.AssistantId}]");
+            }
+        }
+    }
+
+    private void LogMessages(IEnumerable<IChatMessage> messages)
+    {
+        foreach (var message in messages)
+        {
+            this.LogMessage(message);
+        }
+    }
+
+    private void LogMessage(IChatMessage message)
+    {
         this._output.WriteLine($"# {message.Id}");
         this._output.WriteLine($"# {message.Content}");
         this._output.WriteLine($"# {message.Role}");
         this._output.WriteLine($"# {message.AssistantId}");
-
-        //var run = await ChatRun.CreateAsync(context, "thread_AQf7ra5DJIsUnLegytkski90", "asst_agi0P2OKJEBVrHN5Rcu0r2fy").ConfigureAwait(true);
-        //this._output.WriteLine($"# {run.Id}");
-        //var result = await run.GetResultAsync().ConfigureAwait(true);
-        //this._output.WriteLine($"$ {result}");
     }
 }

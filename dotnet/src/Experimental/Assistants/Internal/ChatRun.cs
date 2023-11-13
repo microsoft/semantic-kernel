@@ -39,11 +39,7 @@ internal sealed class ChatRun : IChatRun
     private readonly IOpenAIRestContext _restContext;
     private ThreadRunModel _model;
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
     {
         // Poll until actionable
@@ -96,7 +92,7 @@ internal sealed class ChatRun : IChatRun
                 .Select(s => s.StepDetails.MessageCreation!.MessageId)
                 .ToArray();
 
-        return messageIds; // $$$
+        return messageIds; // $$$ HAXX
     }
 
     /// <summary>
@@ -203,7 +199,7 @@ internal sealed class ChatRun : IChatRun
     //    return new OpenAIFunction
     //    {
     //        FunctionName = this.Id,
-    //        PluginName = "$$$",
+    //        PluginName = functionView.PlugInName,
     //        Description = this.Description,
     //        Parameters = openAIParams,
     //    };
