@@ -19,7 +19,6 @@ using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
@@ -46,7 +45,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
+        using var memoryStream = new MemoryStream(Text.Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
@@ -327,33 +326,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        var apiResponseSchema = new RestApiOperationResponseSchema
+        return new RestApiOperationResponseSchema
         {
             Title = schema.Title,
-            Type = schema.Type
-            // Add other properties as needed
+            Type = schema.Type,
+            Schema = schema.ToJsonDocument(),
         };
-
-        if (schema.Type == "object" && schema.Properties != null)
-        {
-            foreach (var property in schema.Properties)
-            {
-                // Recursively parse nested schemas
-                var parsedSchema = ParseSchema(property.Value);
-                if (parsedSchema != null)
-                {
-                    apiResponseSchema.Properties.Add(property.Key, parsedSchema);
-                }
-            }
-        }
-        else if (schema.Type == "array")
-        {
-            apiResponseSchema.Items = ParseSchema(schema.Items);
-        }
-
-        // TODO Handle other schema types (arrays, primitives, etc.) as needed
-
-        return apiResponseSchema;
     }
 
     /// <summary>

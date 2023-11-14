@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using Json.Schema;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -28,20 +26,9 @@ public sealed class RestApiOperationResponseSchema
     public string? Type { get; set; }
 
     /// <summary>
-    /// Properties of the schema, applicable if the schema is an object.
+    /// The schema of the response.
     /// </summary>
-    [JsonPropertyName("properties")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IDictionary<string, RestApiOperationResponseSchema> Properties { get; set; }
-
-    /// <summary>
-    /// Items schema, applicable if the schema is an array.
-    /// </summary>
-    [JsonPropertyName("items")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public RestApiOperationResponseSchema? Items { get; set; }
-
-    // You can add additional fields as necessary, such as Format, Enum, etc.
+    public JsonDocument? Schema { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponseSchema"/> class.
@@ -49,13 +36,11 @@ public sealed class RestApiOperationResponseSchema
     public RestApiOperationResponseSchema(
         string? title = null,
         string? type = null,
-        IDictionary<string, RestApiOperationResponseSchema>? properties = null,
-        RestApiOperationResponseSchema? items = null)
+        JsonDocument? schema = null)
     {
         this.Title = title;
         this.Type = type;
-        this.Properties = properties ?? new Dictionary<string, RestApiOperationResponseSchema>();
-        this.Items = items;
+        this.Schema = schema;
     }
 
     /// <summary>
@@ -70,16 +55,9 @@ public sealed class RestApiOperationResponseSchema
             return true;
         }
 
-        if (this.Type == "object")
-        {
-            JObject contentObj = JObject.Parse(content);
-            JSchema schema = JSchema.Parse(JsonSerializer.Serialize(this));
-
-            return contentObj.IsValid(schema, out IList<string> _);
-        }
-
-        // TODO More type support.
-
-        return false;
+        var jsonSchema = Json.Schema.JsonSchema.FromText(JsonSerializer.Serialize(this.Schema));
+        var contentDoc = JsonDocument.Parse(content);
+        var result = jsonSchema.Evaluate(contentDoc);
+        return result.IsValid;
     }
 }

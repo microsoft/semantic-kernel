@@ -25,7 +25,7 @@
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.OpenApi.Readers" />
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="Newtonsoft.Json.Schema" />
+    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
