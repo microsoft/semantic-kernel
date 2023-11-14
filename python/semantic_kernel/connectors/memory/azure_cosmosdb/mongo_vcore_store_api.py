@@ -32,8 +32,8 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.similarity = similarity
         self.vector_dimensions = vector_dimensions
 
-    async def create_collection_async(self, collection_name: str) -> None:
-        if not await self.does_collection_exist_async(collection_name):
+    async def create_collection(self, collection_name: str) -> None:
+        if not await self.does_collection_exist(collection_name):
             if not self.index_name in self.database[collection_name].list_indexes():
                 self.database.command(
                     {
@@ -54,23 +54,23 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 )
         self.collection = self.database[collection_name]
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         return self.database.list_collection_names()
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         return self.collection.drop()
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         return (
             collection_name
             in self.database.list_collection_names()
         )
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
-        result = await self.upsert_batch_async(collection_name, [record])
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
+        result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
-    async def upsert_batch_async(
+    async def upsert_batch(
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
         doc_ids: List[str] = []
@@ -91,7 +91,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.collection.insert_many(cosmosRecords)
         return doc_ids
 
-    async def get_async(
+    async def get(
         self, collection_name: str, key: str, with_embedding: bool
     ) -> MemoryRecord:
         if not with_embedding:
@@ -107,7 +107,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             timestamp=result["timestamp"],
         )
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool
     ) -> List[MemoryRecord]:
         if not with_embeddings:
@@ -129,13 +129,13 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             for result in results
         ]
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         self.collection.delete_one({"_id": key})
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         self.collection.delete_many({"_id": {"$in": keys}})
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: np.ndarray,
@@ -180,14 +180,14 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 nearest_results.append((result, aggResult["similarityScore"]))
         return nearest_results
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: np.ndarray,
         min_relevance_score: float,
         with_embedding: bool,
     ) -> Tuple[MemoryRecord, float]:
-        nearest_results = await self.get_nearest_matches_async(
+        nearest_results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             min_relevance_score=min_relevance_score,

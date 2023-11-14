@@ -12,53 +12,53 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 # Abstract class similar to the original data store that allows API level abstraction
 class AzureCosmosDBStoreApi(ABC):
     @abstractmethod
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_batch_async(
+    async def upsert_batch(
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_async(
+    async def get(
         self, collection_name: str, key: str, with_embedding: bool
     ) -> MemoryRecord:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool
     ) -> List[MemoryRecord]:
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -69,7 +69,7 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,

@@ -93,7 +93,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        return await self.cosmosStore.create_collection_async(collection_name)
+        return await self.cosmosStore.create_collection(collection_name)
 
     async def get_collections_async(self) -> List[str]:
         """Gets the list of collections.
@@ -112,7 +112,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        return await self.cosmosStore.delete_collection_async(str())
+        return await self.cosmosStore.delete_collection(str())
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -123,7 +123,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        return await self.cosmosStore.does_collection_exist_async(str())
+        return await self.cosmosStore.does_collection_exist(str())
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert a record.
@@ -135,7 +135,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique record id of the record.
         """
-        return await self.cosmosStore.upsert_async(str(), record)
+        return await self.cosmosStore.upsert(str(), record)
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -149,7 +149,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database keys of the records.
         """
-        return await self.cosmosStore.upsert_batch_async(str(), records)
+        return await self.cosmosStore.upsert_batch(str(), records)
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
@@ -164,7 +164,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
-        return await self.cosmosStore.get_async(str(), key, with_embedding)
+        return await self.cosmosStore.get(str(), key, with_embedding)
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
@@ -179,7 +179,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        return await self.cosmosStore.get_batch_async(str(), keys, with_embeddings)
+        return await self.cosmosStore.get_batch(str(), keys, with_embeddings)
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -191,7 +191,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        return await self.cosmosStore.remove_async(str(), key)
+        return await self.cosmosStore.remove(str(), key)
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
@@ -203,7 +203,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        return await self.cosmosStore.remove_batch_async(str(), keys)
+        return await self.cosmosStore.remove_batch(str(), keys)
 
     async def get_nearest_matches_async(
         self,
@@ -225,7 +225,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        return await self.cosmosStore.get_nearest_matches_async(
+        return await self.cosmosStore.get_nearest_matches(
             str(), embedding, limit, min_relevance_score, with_embeddings
         )
 
@@ -247,6 +247,6 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return await self.cosmosStore.get_nearest_match_async(
+        return await self.cosmosStore.get_nearest_match(
             str(), embedding, min_relevance_score, with_embedding
         )
