@@ -17,6 +17,9 @@ internal sealed class Assistant : IAssistant
     public string Id => this._model.Id;
 
     /// <inheritdoc/>
+    public IKernel? Kernel { get; }
+
+    /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning disable CA1716 // Identifiers should not match keywords
     public string Object => this._model.Object;
@@ -46,18 +49,20 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
+    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
+        IKernel? kernel,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assisant: no result.");
 
-        return new Assistant(resultModel, restContext);
+        return new Assistant(resultModel, restContext, kernel);
     }
 
     /// <summary>
@@ -65,18 +70,20 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="openAiRestContext">Context to make calls to OpenAI</param>
     /// <param name="assistantModel">New properties for our instance</param>
+    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The modified <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> ModifyAsync(
         IOpenAIRestContext openAiRestContext,
         AssistantModel assistantModel,
+        IKernel? kernel,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await openAiRestContext.ModifyAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure modifying assistant: no result.");
 
-        return new Assistant(resultModel, openAiRestContext);
+        return new Assistant(resultModel, openAiRestContext, kernel);
     }
 
     /// <summary>
@@ -84,26 +91,29 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
+    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
+        IKernel? kernel,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
 
-        return new Assistant(resultModel, restContext);
+        return new Assistant(resultModel, restContext, kernel);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
     /// </summary>
-    internal Assistant(AssistantModel model, IOpenAIRestContext restContext)
+    internal Assistant(AssistantModel model, IOpenAIRestContext restContext, IKernel? kernel)
     {
         this._model = model;
         this._restContext = restContext;
+        this.Kernel = kernel;
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -109,7 +110,7 @@ internal sealed class ChatRun : IChatRun
             foreach (var toolCall in step.StepDetails.ToolCalls)
             {
                 // Run function
-                yield return this.ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken); // $$$ NULLABILITY
+                yield return this.ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken);
             }
         }
     }
@@ -118,25 +119,21 @@ internal sealed class ChatRun : IChatRun
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
 
-        await this._restContext.AddToolOutputAsync(this.ThreadId, this.Id, callId, result, cancellationToken).ConfigureAwait(false);
+        await this._restContext.AddToolOutputsAsync(this.ThreadId, this.Id, callId, result, cancellationToken).ConfigureAwait(false); // $$$ ROLL-UP
 
         async Task<string> InvokeFunctionCallAsync()
         {
-            // split name $$$
-            //string[] nameParts = name.Split('-');
-            // get function from kernel
-            //var function = (ISKFunction)null!;
-            //var kernel = (IKernel)null!;
+            var kernel = this._assistant.Kernel!;
+
+            var function = kernel.GetAssistantTool(functionDetails.Name);
 
             //// TODO: @chris: change back to Dictionary<string, object> $$$
             ////Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
-            //var variables = new ContextVariables(); // $$$
-            //var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false); // $$$ TRY/CATCH
 
-            await Task.Delay(0, cancellationToken).ConfigureAwait(false);
+            var variables = new ContextVariables(); // $$$
+            var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false); // $$$ TRY/CATCH
 
-            //return results.GetValue<string>()!;
-            return DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            return results.GetValue<string>() ?? string.Empty;
         }
     }
 }

@@ -12,9 +12,15 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public interface IAssistantBuilder
 {
     /// <summary>
-    /// Define the assistant model (required).
+    /// Assigns a semantic-kernel to the assistant (for function calling).
     /// </summary>
-    /// <param name="model"></param>
+    /// <param name="kernel">The semantic-kernel associated with the assistant.</param>
+    /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
+    IAssistantBuilder WithKernel(IKernel kernel);
+
+    /// <summary>
+    /// Define the chat model assocaited with the assistant (required).
+    /// </summary>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
     IAssistantBuilder WithModel(string model);
 
@@ -38,25 +44,24 @@ public interface IAssistantBuilder
     IAssistantBuilder WithInstructions(string instructions);
 
     /// <summary>
-    /// Define the assistant tool (required).
+    /// Adds an assistant tool.
     /// </summary>
     /// <param name="tool">A SK function view</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
     IAssistantBuilder WithTool(FunctionView tool);
 
     /// <summary>
-    /// Define the assistant tools (required).
+    /// Adds assistant tools.
     /// </summary>
     /// <param name="tools">A list of SK function views</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
     IAssistantBuilder WithTools(IEnumerable<FunctionView> tools);
 
     /// <summary>
-    /// Define the assistant tool (required).
+    /// Adds all the functions in the associated kernel as the assistant tools.
     /// </summary>
-    /// <param name="kernel">An initialized kernel</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTools(IKernel kernel);
+    IAssistantBuilder WithTools();
 
     /// <summary>
     /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;
@@ -72,19 +73,17 @@ public sealed class RunHarness
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        var kernel = new KernelBuilder()
-            //.WithLoggerFactory(ConsoleLogger.LoggerFactory) TODO: @chris - ???
-            //.WithOpenAIChatCompletionService("gpt-3.5-turbo-1106", context.ApiKey, serviceId: "chat")
-            .Build();
+        var kernel = new KernelBuilder().Build();
 
         kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
 
         var assistant =
             await context.CreateAssistant()
+                .WithKernel(kernel)
                 .WithModel("gpt-3.5-turbo-1106")
-                .WithInstructions("Run a guessing game where the user tries to guess the answer to a question.")
+                .WithInstructions("Run a guessing game where the user tries to guess the answer to a question.  If they give up by asking for the answer, the loose (and tell them the answer).")
                 .WithName("Fred")
-                .WithTools(kernel)
+                .WithTools()
                 .BuildAsync().ConfigureAwait(true);
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);
@@ -155,7 +154,7 @@ public sealed class RunHarness
         /// <summary>
         /// Get the answer
         /// </summary>
-        [SKFunction, Description("Get the guessing game answer")]
+        [SKFunction, Description("Get the answer to the guessing game question.")]
         public string GetAnswer() => "Blue";
     }
 }

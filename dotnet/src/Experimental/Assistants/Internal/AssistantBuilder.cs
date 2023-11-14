@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -17,6 +18,9 @@ internal sealed class AssistantBuilder : IAssistantBuilder
 {
     private readonly IOpenAIRestContext _context;
     private readonly AssistantModel _model;
+    private readonly Dictionary<string, FunctionView> _functions;
+
+    private IKernel? _kernel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
@@ -25,6 +29,21 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     {
         this._context = restContext;
         this._model = new AssistantModel();
+        this._functions = new(12);
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithKernel(IKernel kernel)
+    {
+        // Once tools are defined, the kernel is pinned.
+        if (this._kernel != null && this._model.Tools.Count > 0)
+        {
+            throw new SKException("IKernel already associated with tool definitions.");
+        }
+
+        this._kernel = kernel;
+
+        return this;
     }
 
     /// <inheritdoc/>
@@ -40,7 +59,23 @@ internal sealed class AssistantBuilder : IAssistantBuilder
             throw new SKException("Instructions must be defined for assistant.");
         }
 
-        return await Assistant.CreateAsync(this._context, this._model, cancellationToken).ConfigureAwait(false);
+        if (this._kernel == null && this._functions.Count > 0)
+        {
+            throw new SKException("Tool definition requires an IKernel instance.");
+        }
+
+        // Add tool definitions to the assistant model.
+        foreach (var kvp in this._functions)
+        {
+            this.DefineTool(kvp.Key, kvp.Value);
+        }
+
+        return
+            await Assistant.CreateAsync(
+                this._context,
+                this._model,
+                this._kernel,
+                cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -97,8 +132,32 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     /// <inheritdoc/>
     public IAssistantBuilder WithTool(FunctionView tool)
     {
-        var functionName = tool.PluginName.IsNullOrWhitespace() ? tool.Name : $"{tool.PluginName}-{tool.Name}"; // TODO: @chris - consume & verify
+        this._functions[tool.GetQualifiedName()] = tool;
 
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithTools(IEnumerable<FunctionView> tools)
+    {
+        foreach (var tool in tools)
+        {
+            this.WithTool(tool);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAssistantBuilder WithTools()
+    {
+        this.WithTools(this._kernel?.Functions.GetFunctionViews() ?? Array.Empty<FunctionView>());
+
+        return this;
+    }
+
+    private void DefineTool(string toolKey, FunctionView tool)
+    {
         var required = new List<string>(tool.Parameters.Count);
         var parameters =
             tool.Parameters.ToDictionary(
@@ -125,7 +184,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
                 Function =
                     new()
                     {
-                        Name = functionName,
+                        Name = toolKey,
                         Description = tool.Description,
                         Parameters =
                         {
@@ -136,26 +195,5 @@ internal sealed class AssistantBuilder : IAssistantBuilder
             };
 
         this._model.Tools.Add(payload);
-
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public IAssistantBuilder WithTools(IEnumerable<FunctionView> tools)
-    {
-        foreach (var tool in tools)
-        {
-            this.WithTool(tool);
-        }
-
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public IAssistantBuilder WithTools(IKernel kernel)
-    {
-        this.WithTools(kernel.Functions.GetFunctionViews());
-
-        return this;
     }
 }

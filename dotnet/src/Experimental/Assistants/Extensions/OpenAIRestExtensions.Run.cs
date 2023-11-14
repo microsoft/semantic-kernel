@@ -92,7 +92,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="result">The function/tool result.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
-    public static Task<ThreadRunModel> AddToolOutputAsync(
+    public static Task<ThreadRunModel> AddToolOutputsAsync(
         this IOpenAIRestContext context,
         string threadId,
         string runId,

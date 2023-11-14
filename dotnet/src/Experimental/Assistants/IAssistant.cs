@@ -13,6 +13,14 @@ public interface IAssistant
     string Id { get; }
 
     /// <summary>
+    /// A semantic-kernel <see cref="IKernel"/> instance associated with the assistant.
+    /// </summary>
+    /// <remarks>
+    /// The kernel is only used for tool/function execution.
+    /// </remarks>
+    IKernel? Kernel { get; }
+
+    /// <summary>
     /// Always "assistant"
     /// </summary>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
