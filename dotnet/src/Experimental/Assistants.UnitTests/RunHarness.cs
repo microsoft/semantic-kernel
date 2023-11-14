@@ -26,7 +26,7 @@ public sealed class RunHarness
     private readonly ITestOutputHelper _output;
 
     /// <summary>
-    /// Test contructor.
+    /// Test constructor.
     /// </summary>
     public RunHarness(ITestOutputHelper output)
     {

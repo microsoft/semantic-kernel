@@ -19,7 +19,7 @@ public interface IAssistantBuilder
     IAssistantBuilder WithKernel(IKernel kernel);
 
     /// <summary>
-    /// Define the chat model assocaited with the assistant (required).
+    /// Define the chat model associated with the assistant (required).
     /// </summary>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
     IAssistantBuilder WithModel(string model);
@@ -64,7 +64,7 @@ public interface IAssistantBuilder
     IAssistantBuilder WithTools();
 
     /// <summary>
-    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
     /// </summary>
     /// <param name="key">The metadata key</param>
     /// <param name="value">The metadata value</param>
@@ -72,7 +72,7 @@ public interface IAssistantBuilder
     IAssistantBuilder WithMetadata(string key, object value);
 
     /// <summary>
-    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
     /// </summary>
     /// <param name="metadata">A set of metadata</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>

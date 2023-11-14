@@ -23,7 +23,7 @@ public sealed class AssistantHarness
     private readonly ITestOutputHelper _output;
 
     /// <summary>
-    /// Test contructor.
+    /// Test constructor.
     /// </summary>
     public AssistantHarness(ITestOutputHelper output)
     {

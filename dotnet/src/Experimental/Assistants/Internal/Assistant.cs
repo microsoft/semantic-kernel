@@ -60,7 +60,7 @@ internal sealed class Assistant : IAssistant
     {
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating assisant: no result.");
+            throw new SKException("Unexpected failure creating assistant: no result.");
 
         return new Assistant(resultModel, restContext, kernel);
     }
@@ -102,7 +102,7 @@ internal sealed class Assistant : IAssistant
     {
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
+            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
 
         return new Assistant(resultModel, restContext, kernel);
     }
