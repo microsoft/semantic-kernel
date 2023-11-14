@@ -41,7 +41,8 @@ internal static partial class OpenAIRestExtensions
                 metadata = model.Metadata,
             };
 
-        return context.ExecutePostAsync<AssistantModel>(
+        return
+            context.ExecutePostAsync<AssistantModel>(
                 BaseAssistantUrl,
                 payload,
                 cancellationToken);
@@ -103,7 +104,8 @@ internal static partial class OpenAIRestExtensions
         string assistantId,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteGetAsync<AssistantModel>(
+        return
+            context.ExecuteGetAsync<AssistantModel>(
                 GetAssistantUrl(assistantId),
                 cancellationToken);
     }

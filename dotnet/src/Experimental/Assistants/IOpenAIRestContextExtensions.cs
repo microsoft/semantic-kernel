@@ -66,7 +66,7 @@ public static class IOpenAIRestContextExtensions
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="model">The assistant chat model (required)</param>
-    /// <param name="instructions">The assistant instructions (required)</param> // TODO: Why is this required???
+    /// <param name="instructions">The assistant instructions (required)</param>
     /// <param name="name">The assistant name (optional)</param>
     /// <param name="description">The assistant description(optional)</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
@@ -100,7 +100,7 @@ public static class IOpenAIRestContextExtensions
     }
 
     /// <summary>
-    /// Modify an existing assistant
+    /// Modify an existing assistant TODO: @chris / @gil (out of scope)
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantToModify">Instance ID of assistant to modify</param>

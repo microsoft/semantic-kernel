@@ -100,7 +100,7 @@ internal sealed class Assistant : IAssistant
             await restContext.ModifyAssistantModelAsync(assistantId, model, instructions, name, description, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure modifying assistant: no result.");
 
-        return new Assistant(resultModel, restContext, new FunctionCollection()); // TODO: find way to preserve FunctionCollection
+        return new Assistant(resultModel, restContext, new FunctionCollection()); // TODO: @gil find way to preserve FunctionCollection (maybe why out of scope)
     }
 
     /// <summary>
@@ -145,7 +145,7 @@ internal sealed class Assistant : IAssistant
     }
 
     /// <summary>
-    /// Retrieve all assistants.
+    /// Retrieve all assistants. // TODO: @chris / @gil - Assistant "Reference" (are these functional)?
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="limit">A limit on the number of objects to be returned.
