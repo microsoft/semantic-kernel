@@ -73,24 +73,6 @@ public sealed class AssistantHarness
         {
             this.DumpAssistant(assistant);
         }
-
-        //if (assistants.Any(a => a.Id == assistant.Id))
-        //{
-        //    this._output.WriteLine("Found Fred");
-
-        //    await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
-
-        //    this._output.WriteLine("Now he's gone");
-        //}
-
-        //if (assistants.Any(a => a.Id == modifiedCopy.Id))
-        //{
-        //    this._output.WriteLine("Found Barney");
-
-        //    await context.DeleteAssistantAsync(modifiedCopy.Id).ConfigureAwait(true);
-
-        //    this._output.WriteLine("Now he's gone");
-        //}
     }
 
     /// <summary>
