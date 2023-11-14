@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
@@ -11,14 +15,6 @@ public interface IAssistant
     /// The assistant identifier (which can be referenced in API endpoints).
     /// </summary>
     string Id { get; }
-
-    /// <summary>
-    /// A semantic-kernel <see cref="IKernel"/> instance associated with the assistant.
-    /// </summary>
-    /// <remarks>
-    /// The kernel is only used for tool/function execution.
-    /// </remarks>
-    IKernel Kernel { get; }
 
     /// <summary>
     /// Always "assistant"
@@ -53,4 +49,20 @@ public interface IAssistant
     /// The system instructions that the assistant uses
     /// </summary>
     string Instructions { get; }
+
+    /// <summary>
+    /// A semantic-kernel <see cref="IKernel"/> instance associated with the assistant.
+    /// </summary>
+    internal IKernel Kernel { get; }
+
+    /// <summary>
+    /// Tools defined for run execution.
+    /// </summary>
+    internal IList<ISKFunction> Functions { get; }
+
+    /// <summary>
+    /// Creates a new assistant chat thread.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default);
 }

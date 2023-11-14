@@ -3,7 +3,6 @@
 //#define DISABLEHOST // Comment line to enable
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -39,25 +38,21 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyRunLifecycleAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
         var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
+            await AssistantBuilder.NewAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                model: TestConfig.SupportedGpt35TurboModel,
                 instructions: "say something funny",
                 name: "Fred",
                 description: "funny assistant").ConfigureAwait(true);
 
-        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+        var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
         await this.ChatAsync(
             thread,
             assistant,
             "I was on my way to the store this morning and...",
             "That was great!  Tell me another.").ConfigureAwait(true);
-
-        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
     }
 
     /// <summary>
@@ -66,23 +61,19 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyRunFromDefinitionAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
         var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
-                configurationPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+            await AssistantBuilder.FromTemplateAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                model: TestConfig.SupportedGpt35TurboModel,
+                definitionPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
 
-        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+        var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
         await this.ChatAsync(
             thread,
             assistant,
             "Eggs are yummy and beautiful geometric gems.",
             "It rains a lot in Seattle.").ConfigureAwait(true);
-
-        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
     }
 
     /// <summary>
@@ -91,28 +82,25 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
         var kernel = new KernelBuilder().Build();
 
         var gamePlugin = kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
 
         var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
-                configurationPath: "Templates/GameAssistant.yaml",
+            await AssistantBuilder.FromTemplateAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                model: TestConfig.SupportedGpt35TurboModel,
+                definitionPath: "Templates/GameAssistant.yaml",
                 functions: gamePlugin.Values).ConfigureAwait(true);
 
-        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+        var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
+
         await this.ChatAsync(
             thread,
             assistant,
             "What is the question for the guessing game?",
             "Is it 'RED'?",
             "What is the answer?").ConfigureAwait(true);
-
-        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
     }
 
     private async Task ChatAsync(IChatThread thread, IAssistant assistant, params string[] messages)

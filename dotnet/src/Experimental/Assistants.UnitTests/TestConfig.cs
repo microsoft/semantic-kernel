@@ -2,12 +2,19 @@
 
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Xunit.Sdk;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 internal static class TestConfig
 {
+    public const string SupportedGpt35TurboModel = "gpt-3.5-turbo-1106";
+
     public static IConfiguration Configuration { get; } = CreateConfiguration();
+
+    public static string OpenAIApiKey =>
+        TestConfig.Configuration.GetValue<string>("OpenAIApiKey") ??
+        throw new TestClassException("Missing OpenAI APIKey.");
 
     private static IConfiguration CreateConfiguration()
     {

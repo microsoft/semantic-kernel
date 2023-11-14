@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
@@ -15,7 +16,7 @@ internal static partial class OpenAIRestExtensions
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
 
     private static async Task<TResult> ExecuteGetAsync<TResult>(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
     {
@@ -37,7 +38,7 @@ internal static partial class OpenAIRestExtensions
     }
 
     private static Task<TResult> ExecutePostAsync<TResult>(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
     {
@@ -45,7 +46,7 @@ internal static partial class OpenAIRestExtensions
     }
 
     private static async Task<TResult> ExecutePostAsync<TResult>(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string url,
         object? payload,
         CancellationToken cancellationToken = default)
@@ -68,7 +69,7 @@ internal static partial class OpenAIRestExtensions
     }
 
     private static async Task ExecuteDeleteAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
     {

@@ -3,11 +3,13 @@
 //#define DISABLEHOST // Comment line to enable
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
@@ -38,25 +40,22 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantLifecycleAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
         var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
+            await AssistantBuilder.NewAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                model: TestConfig.SupportedGpt35TurboModel,
                 instructions: "say something funny",
                 name: "Fred",
                 description: "test assistant").ConfigureAwait(true);
 
         this.DumpAssistant(assistant);
 
-        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
+        var copy =
+            await AssistantBuilder.GetAssistantAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                assistantId: assistant.Id).ConfigureAwait(true);
 
         this.DumpAssistant(copy);
-
-        var modifiedCopy = await context.ModifyAssistantAsync(copy.Id, name: "Barney").ConfigureAwait(true);
-
-        this.DumpAssistant(modifiedCopy);
     }
 
     /// <summary>
@@ -65,17 +64,18 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantDefinitionAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
         var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
-                configurationPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+            await AssistantBuilder.FromTemplateAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                model: TestConfig.SupportedGpt35TurboModel,
+                definitionPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
 
         this.DumpAssistant(assistant);
 
-        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
+        var copy =
+            await AssistantBuilder.GetAssistantAsync(
+                apiKey: TestConfig.OpenAIApiKey,
+                assistantId: assistant.Id).ConfigureAwait(true);
 
         this.DumpAssistant(copy);
     }
@@ -86,10 +86,8 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantListAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
-        var assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
+        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var assistants = await context.ListAssistantsModelsAsync().ConfigureAwait(true);
         foreach (var assistant in assistants)
         {
             this.DumpAssistant(assistant);
@@ -107,21 +105,30 @@ public sealed class AssistantHarness
             {
                 "Fred",
                 "Barney",
+                "DeleteMe",
                 "Poet",
                 "Math Tutor",
             };
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        var assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
+        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var assistants = await context.ListAssistantsModelsAsync().ConfigureAwait(true);
         foreach (var assistant in assistants)
         {
             if (!string.IsNullOrWhiteSpace(assistant.Name) && names.Contains(assistant.Name))
             {
                 this._output.WriteLine($"Removing: {assistant.Name} - {assistant.Id}");
-                await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
+                await context.DeleteAssistantModelAsync(assistant.Id).ConfigureAwait(true);
             }
         }
+    }
+
+    private void DumpAssistant(AssistantModel assistant)
+    {
+        this._output.WriteLine($"# {assistant.Id}");
+        this._output.WriteLine($"# {assistant.Model}");
+        this._output.WriteLine($"# {assistant.Instructions}");
+        this._output.WriteLine($"# {assistant.Name}");
+        this._output.WriteLine($"# {assistant.Description}{Environment.NewLine}");
     }
 
     private void DumpAssistant(IAssistant assistant)

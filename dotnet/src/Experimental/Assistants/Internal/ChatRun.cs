@@ -38,9 +38,9 @@ internal sealed class ChatRun
             "in_progress",
         };
 
-    private readonly IOpenAIRestContext _restContext;
+    private readonly OpenAIRestContext _restContext;
     private ThreadRunModel _model;
-    private readonly IAssistant _assistant;
+    private readonly IKernel _kernel;
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -106,11 +106,11 @@ internal sealed class ChatRun
     /// </summary>
     internal ChatRun(
         ThreadRunModel model,
-        IAssistant assistant,
-        IOpenAIRestContext restContext)
+        IKernel kernel,
+        OpenAIRestContext restContext)
     {
         this._model = model;
-        this._assistant = assistant;
+        this._kernel = kernel;
         this._restContext = restContext;
     }
 
@@ -140,9 +140,7 @@ internal sealed class ChatRun
 
         async Task<string> InvokeFunctionCallAsync()
         {
-            var kernel = this._assistant.Kernel!;
-
-            var function = kernel.GetAssistantTool(functionDetails.Name);
+            var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
             var variables = new ContextVariables();
             if (string.IsNullOrWhiteSpace(functionDetails.Arguments))
@@ -154,7 +152,7 @@ internal sealed class ChatRun
                 }
             }
 
-            var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

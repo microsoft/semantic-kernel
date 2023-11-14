@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -25,7 +26,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> CreateAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         AssistantModel model,
         CancellationToken cancellationToken = default)
     {
@@ -49,50 +50,6 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
-    /// Modify an existing Aasistant
-    /// </summary>
-    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="model">New LLM model, if not null</param>
-    /// <param name="instructions">New instructions, if not null</param>
-    /// <param name="name">New name, if not null</param>
-    /// <param name="description">New description, if not null</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    public static Task<AssistantModel> ModifyAssistantModelAsync(
-        this IOpenAIRestContext context,
-        string assistantId,
-        string? model = null,
-        string? instructions = null,
-        string? name = null,
-        string? description = null,
-        CancellationToken cancellationToken = default)
-    {
-        var payload = new StringBuilder("{");
-        if (model is not null)
-        {
-            payload.Append($"\"{nameof(model)}\":\"{model}\"");
-        }
-        if (instructions is not null)
-        {
-            payload.Append($"\"{nameof(instructions)}\":\"{instructions}\"");
-        }
-        if (name is not null)
-        {
-            payload.Append($"\"{nameof(name)}\":\"{name}\"");
-        }
-        if (description is not null)
-        {
-            payload.Append($"\"{nameof(description)}\":\"{description}\"");
-        }
-        payload.Append('}');
-
-        return context.ExecutePostAsync<AssistantModel>(
-                GetAssistantUrl(assistantId),
-                payload.ToString(),
-                cancellationToken);
-    }
-
-    /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
@@ -100,7 +57,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> GetAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string assistantId,
         CancellationToken cancellationToken = default)
     {
@@ -130,7 +87,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An enumeration of assistant definitions</returns>
     public static async Task<IList<AssistantModel>> ListAssistantsModelsAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         int limit = 20,
         bool ascending = false,
         string? after = null,
@@ -166,7 +123,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="id">Identifier of assistant to delete</param>
     /// <param name="cancellationToken">A cancellation token</param>
     public static Task DeleteAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string id,
         CancellationToken cancellationToken = default)
     {

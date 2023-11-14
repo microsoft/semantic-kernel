@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
+using System;
 using System.Net.Http;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,10 +40,14 @@ public sealed class ThreadHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyThreadLifecycleAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+        var assistant =
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletionService(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithName("DeleteMe")
+                .BuildAsync()
+                .ConfigureAwait(true);
 
-        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+        var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
         Assert.NotNull(thread.Id);
 
@@ -49,7 +57,5 @@ public sealed class ThreadHarness
         Assert.NotNull(message);
 
         this._output.WriteLine($"# {message.Id}");
-
-        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
     }
 }
