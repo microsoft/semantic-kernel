@@ -42,107 +42,67 @@ Today, use of custom types within Semantic Kernel requires developers to impleme
     }
 ```
 
+The above approach will now only be needed when a custom type cannot be serialized using `System.Text.Json`.
+
 ## Considered Options
 
 **1. Use TypeConverter for primitive types and native serialization methods for custom types**
-For this option, an attribute will not be required on the custom type by default as `JsonSerializer.Deserialize<object>()` will be used to convert from a string, and `JsonSerializer.Serialize()` used to convert to a string.
 
-Preserving the use of the native `TypeConverter`s for primitive types is necessary to prevent any lossy conversions.
+- Primitive types will be handled using the native `TypeConverter`s, which will be wrapped as a `JsonConverter` to allow for serialization/deserialization to/from a string.
+  - We preserve the use of the native `TypeConverter`s for primitive types to prevent any lossy conversions.
+- Complex types will be handled by the registered `JsonConverter`, if registered.
+- If no `JsonConverter` is registered for a complex type, JSON serialization/deserialization using `System.Text.Json` will be used.
 
-This could change the `GetTypeConverter()` method to look like the following, where before the `JsonConverterWrapper` wasn't needed and the function returned a `TypeConverter` instead of a `JsonConverter`:
+This will change the `GetTypeConverter()` method in `NativeFunction.cs` to look like the following, where before the return type was `null` if no `TypeConverter` was found for the type:
 
 ```csharp
-    private static JsonConverter? GetTypeConverter(Type targetType)
+private static TypeConverter GetTypeConverter(Type targetType)
     {
-        if (targetType == typeof(byte)) { return new JsonConverterWrapper(new ByteConverter()); }
-        if (targetType == typeof(sbyte)) { return new JsonConverterWrapper(new SByteConverter()); }
-        if (targetType == typeof(bool)) { return new JsonConverterWrapper(new BooleanConverter()); }
-        if (targetType == typeof(ushort)) { return new JsonConverterWrapper(new UInt16Converter()); }
-        if (targetType == typeof(short)) { return new JsonConverterWrapper(new Int16Converter()); }
-        if (targetType == typeof(char)) { return new JsonConverterWrapper(new CharConverter()); }
-        if (targetType == typeof(uint)) { return new JsonConverterWrapper(new UInt32Converter()); }
-        if (targetType == typeof(int)) { return new JsonConverterWrapper(new Int32Converter()); }
-        if (targetType == typeof(ulong)) { return new JsonConverterWrapper(new UInt64Converter()); }
-        if (targetType == typeof(long)) { return new JsonConverterWrapper(new Int64Converter()); }
-        if (targetType == typeof(float)) { return new JsonConverterWrapper(new SingleConverter()); }
-        if (targetType == typeof(double)) { return new JsonConverterWrapper(new DoubleConverter()); }
-        if (targetType == typeof(decimal)) { return new JsonConverterWrapper(new DecimalConverter()); }
-        if (targetType == typeof(TimeSpan)) { return new JsonConverterWrapper(new TimeSpanConverter()); }
-        if (targetType == typeof(DateTime)) { return new JsonConverterWrapper(new DateTimeConverter()); }
-        if (targetType == typeof(DateTimeOffset)) { return new JsonConverterWrapper(new DateTimeOffsetConverter()); }
-        if (targetType == typeof(Uri)) { return new JsonConverterWrapper(new UriTypeConverter()); }
-        if (targetType == typeof(Guid)) { return new JsonConverterWrapper(new GuidConverter()); }
+        if (targetType == typeof(byte)) { return new ByteConverter(); }
+        if (targetType == typeof(sbyte)) { return new SByteConverter(); }
+        if (targetType == typeof(bool)) { return new BooleanConverter(); }
+        if (targetType == typeof(ushort)) { return new UInt16Converter(); }
+        if (targetType == typeof(short)) { return new Int16Converter(); }
+        if (targetType == typeof(char)) { return new CharConverter(); }
+        if (targetType == typeof(uint)) { return new UInt32Converter(); }
+        if (targetType == typeof(int)) { return new Int32Converter(); }
+        if (targetType == typeof(ulong)) { return new UInt64Converter(); }
+        if (targetType == typeof(long)) { return new Int64Converter(); }
+        if (targetType == typeof(float)) { return new SingleConverter(); }
+        if (targetType == typeof(double)) { return new DoubleConverter(); }
+        if (targetType == typeof(decimal)) { return new DecimalConverter(); }
+        if (targetType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
+        if (targetType == typeof(DateTime)) { return new DateTimeConverter(); }
+        if (targetType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
+        if (targetType == typeof(Uri)) { return new UriTypeConverter(); }
+        if (targetType == typeof(Guid)) { return new GuidConverter(); }
 
-        if (targetType.GetCustomAttribute<JsonConverterAttribute>() is JsonConverterAttribute tca &&
-            Type.GetType(tca.ConverterType.Name, throwOnError: false) is Type converterType &&
-            Activator.CreateInstance(converterType) is JsonConverter converter)
+        if (targetType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
+            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
+            Activator.CreateInstance(converterType) is TypeConverter converter)
         {
             return converter;
         }
 
-        return new SimpleJsonConverter();
+        // now returns a JSON-serializing TypeConverter by default, instead of returning null
+        return new JsonSerializationTypeConverter();
     }
 
-    private class JsonConverterWrapper : JsonConverter<object> {
-        private readonly TypeConverter _converter;
-
-        public JsonConverterWrapper(TypeConverter converter)
-        {
-            this._converter = converter;
-        }
-
-        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return this._converter.ConvertFromString(null, CultureInfo.InvariantCulture, reader.GetString());
-        }
-
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(this._converter.ConvertToString(null, CultureInfo.InvariantCulture, value));
-        }
-    }
-
-
-    private class SimpleJsonConverter : JsonConverter<object>
+    private sealed class JsonSerializationTypeConverter : TypeConverter
     {
-        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            return JsonSerializer.Deserialize(ref reader, typeToConvert, options);
+            return JsonSerializer.Deserialize<object>((string)value);
         }
 
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
-            JsonSerializer.Serialize(writer, value, value.GetType(), options);
-        }
-    }
-
-```
-
-If a developer wants to customize the serialization and/or deserialization of a custom type, they can implement their own `JsonConverter` and apply the `JsonConverterAttribute` their custom type as seen below.
-
-**Example usage of the `JsonConverter`** class and attribute:
-
-```csharp
-    [JsonConverter(typeof(MyCustomTypeConverter))]
-    private sealed class MyCustomType
-    {
-        public int Number { get; set; }
-
-        public string? Text { get; set; }
-    }
-
-    private sealed class MyCustomTypeConverter : JsonConverter<MyCustomType>
-    {
-        public override MyCustomType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return JsonSerializer.Deserialize<MyCustomType>(ref reader, options);
-        }
-
-        public override void Write(Utf8JsonWriter writer, MyCustomType value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(writer, value, options);
+            return JsonSerializer.Serialize(value);
         }
     }
+
 ```
 
 _When is serialization/deserialization required?_
