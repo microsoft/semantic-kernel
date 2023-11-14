@@ -63,7 +63,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IDictionary<string, RestApiOperationResponse>? Responses { get; }
+    public IDictionary<string, RestApiOperationResponse> Responses { get; }
 
     /// <summary>
     /// The operation payload.
@@ -101,7 +101,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
-        this.Responses = responses;
+        this.Responses = responses ?? new Dictionary<string, RestApiOperationResponse>();
     }
 
     /// <summary>

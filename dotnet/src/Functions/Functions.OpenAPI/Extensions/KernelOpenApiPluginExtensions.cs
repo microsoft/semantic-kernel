@@ -268,8 +268,21 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
-        // TODO -- operation.GetResponseParameters() should return the default response parameter
-        var restOperationResponse = operation.Responses.First().Value;
+        RestApiOperationResponse? restOperationResponse = null;
+
+        foreach (var response in operation.Responses)
+        {
+            if (response.Key == "200" || response.Key == "default" || restOperationResponse == null)
+            {
+                restOperationResponse = response.Value;
+
+                if (response.Key == "200") // If it's a 200 response, no need to look further.
+                {
+                    break;
+                }
+            }
+        }
+
 
         // TODO -- Include the response schema in the return parameter view
         var r = restOperationResponse.ContentType; // or restOperationResponse.Schema?.Type

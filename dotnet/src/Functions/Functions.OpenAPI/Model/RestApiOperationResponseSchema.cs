@@ -48,7 +48,7 @@ public sealed class RestApiOperationResponseSchema
     /// </summary>
     /// <param name="content">The content to validate.</param>
     /// <returns>True if the content matches the schema. False otherwise.</returns>
-    public bool Validate(string content) // object or string?
+    public bool IsValid(string content) // object or string?
     {
         if (this.Type == null)
         {
@@ -56,8 +56,16 @@ public sealed class RestApiOperationResponseSchema
         }
 
         var jsonSchema = Json.Schema.JsonSchema.FromText(JsonSerializer.Serialize(this.Schema));
-        var contentDoc = JsonDocument.Parse(content);
-        var result = jsonSchema.Evaluate(contentDoc);
-        return result.IsValid;
+
+        try
+        {
+            var contentDoc = JsonDocument.Parse(content);
+            var result = jsonSchema.Evaluate(contentDoc);
+            return result.IsValid;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }

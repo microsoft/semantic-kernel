@@ -45,15 +45,13 @@ public sealed class RestApiOperationResponse
     /// <remarks>
     /// If no schema is available, the response is considered valid.
     /// </remarks>
-    public bool ValidateResponse(RestApiOperationResponseSchema? schema = null)
+    public bool IsValid()
     {
-        schema ??= this.Schema;
-
-        if (schema == null)
+        if (this.Schema is null)
         {
             return true;
         }
 
-        return schema.Validate(this.Content.ToString()); // TODO -- is this correct?
+        return this.Schema.IsValid(this.Content.ToString()); // TODO -- is this correct thing to do with Content?
     }
 }

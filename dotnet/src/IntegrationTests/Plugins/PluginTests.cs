@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
@@ -99,7 +100,18 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        var result = await kernel.RunAsync(plugin[functionName], contextVariables);
+        var result = (await kernel.RunAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsValid());
+        Assert.NotNull(result.Schema);
+        Assert.NotNull(result.Content);
+        Assert.True(result.Schema.IsValid(result.Content.ToString() ?? ""));
+        Assert.True(result.Schema.IsValid("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}]}"));
+
+        Assert.False(result.Schema.IsValid("{\"p\": [{\"id\": \"1234\", \"name\": \"Laptop\"}"));
+        Assert.False(result.Schema.IsValid("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}"));
     }
 
     [Theory]

@@ -172,19 +172,38 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        // todo response header?
         var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
 
         if (responses is not null)
         {
-            // Get the responses that matches the responseMessage.StatusCode and validate the response content against the schema
-            var matchingResponse = responses.FirstOrDefault(r => r.Key == $"{(int)responseMessage.StatusCode}");
+            var statusCodeKey = $"{(int)responseMessage.StatusCode}";
+            var matchingResponse = responses.FirstOrDefault(r => r.Key == statusCodeKey).Value;
 
-            // return schema.Validate(this.Content.ToString()); // TODO -- is this correct?
-            if (matchingResponse.Value is not null && !(matchingResponse.Value.Schema?.Validate(response.Content.ToString()) ?? true))
+            if (matchingResponse is null)
             {
-                throw new SKException($"The response of the {matchingResponse.Value} operation is not valid."); // TODO Needs test coverage
+                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value;
+
+                // // Throw exception if no matching or default response is found
+                // if (matchingResponse.Value is null)
+                // {
+                //     throw new SKException($"No response defined for status code {statusCodeKey} or default in the OpenAPI specification.");
+                // }
             }
+
+            if (matchingResponse is not null)
+            {
+                response.Schema ??= matchingResponse.Schema;
+            }
+            // var expectedSchema = matchingResponse.Schema;
+            // if (expectedSchema is not null)
+            // {
+            //     response.Schema ??= expectedSchema;
+            //     // var responseContentIsValid = expectedSchema.IsValid(response.Content.ToString());
+            //     // if (!responseContentIsValid)
+            //     // {
+            //     //     throw new SKException($"The response of the {matchingResponse.Value} operation is not valid."); // TODO Needs test coverage
+            //     // }
+            // }
         }
 
         return response;
