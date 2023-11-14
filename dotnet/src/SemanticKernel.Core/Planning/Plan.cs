@@ -79,7 +79,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonPropertyName("model_settings")]
-    public List<AIRequestSettings>? ModelSettings { get; private set; }
+    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
 
     #endregion ISKFunction implementation
 
@@ -269,7 +269,7 @@ public sealed class Plan : ISKFunction
             var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
             var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired);
+            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired, stepDescription?.ParameterType, stepDescription?.Schema);
         }
         ).ToList();
 

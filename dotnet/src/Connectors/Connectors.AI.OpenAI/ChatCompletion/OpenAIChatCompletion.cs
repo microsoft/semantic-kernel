@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -34,6 +35,8 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(OrganizationKey, organization!);
     }
 
     /// <summary>
@@ -47,7 +50,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(

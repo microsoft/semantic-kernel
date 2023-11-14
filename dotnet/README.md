@@ -26,7 +26,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 var builder = new KernelBuilder();
 
-builder.WithAzureChatCompletionService(
+builder.WithAzureOpenAIChatCompletionService(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
          "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
          "...your Azure OpenAI Key...");      // Azure OpenAI Key
