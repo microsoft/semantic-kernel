@@ -49,16 +49,6 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndReturnParameterType()
     {
-        /** Testing a function that might be generated as follows:
-            [SKFunction]
-            [Description("My test function")]
-            [return: Description("My test result")]
-            string TestFunction([Description("String param 1")] string param1, [Description("int param 2")] int param2)
-            {
-                return $"{param1}{param2}";
-            }
-        */
-
         string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
 
         OpenAIFunctionParameter param1 = new()
@@ -108,16 +98,6 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndNoReturnParameterType()
     {
-        /** Testing a function that might be generated as follows:
-            [SKFunction]
-            [Description("My test function")]
-            [return: Description("My test result")]
-            string TestFunction([Description("String param 1")] string param1, [Description("int param 2")] int param2)
-            {
-                return $"{param1}{param2}";
-            }
-        */
-
         string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
 
         OpenAIFunctionParameter param1 = new()
