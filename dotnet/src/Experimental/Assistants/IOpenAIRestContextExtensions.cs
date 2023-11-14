@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using YamlDotNet.Serialization;
@@ -93,31 +91,55 @@ public static class IOpenAIRestContextExtensions
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="IAssistant"> instance.</see></returns>
-    public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, IKernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        return Assistant.GetAsync(restContext, assistantId, kernel, cancellationToken);
-    }
-
-    /// <summary>
-    /// Modify an existing assistant
-    /// </summary>
-    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId">The assistant identifier</param>
     /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
+    /// <returns>An initialized <see cref="IAssistant"> instance.</see></returns>
     public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, IEnumerable<ISKFunction>? functions = null, CancellationToken cancellationToken = default)
     {
         return Assistant.GetAsync(restContext, assistantId, functions, cancellationToken);
     }
 
     /// <summary>
-    /// Retrieve all assistants.
+    /// Modify an existing assistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantToModify">Instance ID of assistant to modify</param>
+    /// <param name="model">New model, if not null</param>
+    /// <param name="instructions">New instructions, if not null</param>
+    /// <param name="name">New name, if not null</param>
+    /// <param name="description">New description, if not null</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>Modified <see cref="IAssistant"> instance.</see></returns>
+    public static Task<IAssistant> ModifyAssistantAsync(
+        this IOpenAIRestContext restContext,
+        string assistantToModify,
+        string? model = null,
+        string? instructions = null,
+        string? name = null,
+        string? description = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Assistant.ModifyAsync(restContext, assistantToModify, model, instructions, name, description, cancellationToken);
+    }
+
+    /// <summary>
+    /// Delete an existing assistant
+    /// </summary>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantId">Instance ID of assistant to delete</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    public static Task DeleteAssistantAsync(
+        this IOpenAIRestContext restContext,
+        string assistantId,
+        CancellationToken cancellationToken = default)
+    {
+        return Assistant.DeleteAsync(restContext, assistantId, cancellationToken);
+    }
+
+    /// <summary>
+    /// List existing Assistant instances from OpenAI
+    /// </summary>
+    /// <param name="restContext">Context to make calls to OpenAI</param>
     /// <param name="limit">A limit on the number of objects to be returned.
     /// Limit can range between 1 and 100, and the default is 20.</param>
     /// <param name="ascending">Set to true to sort by ascending created_at timestamp
@@ -144,7 +166,15 @@ public static class IOpenAIRestContextExtensions
         return Assistant.ListAsync(restContext, limit, ascending, after, before, cancellationToken);
     }
 
-        return models.Select(m => new Assistant(m, restContext, new FunctionCollection())).ToArray(); // TODO: @chris/@gil - deal with functions
+    /// <summary>
+    /// Create a new thread.
+    /// </summary>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An initialized <see cref="IChatThread"> instance.</see></returns>
+    public static Task<IChatThread> CreateThreadAsync(this IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    {
+        return ChatThread.CreateAsync(restContext, cancellationToken);
     }
 
     /// <summary>

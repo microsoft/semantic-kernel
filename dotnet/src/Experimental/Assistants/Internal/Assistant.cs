@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -101,7 +100,7 @@ internal sealed class Assistant : IAssistant
             await restContext.ModifyAssistantModelAsync(assistantId, model, instructions, name, description, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure modifying assistant: no result.");
 
-        return new Assistant(resultModel, restContext, null); // TODO: find way to preserve kernel
+        return new Assistant(resultModel, restContext, new FunctionCollection()); // TODO: find way to preserve FunctionCollection
     }
 
     /// <summary>
@@ -174,7 +173,7 @@ internal sealed class Assistant : IAssistant
     {
         List<AssistantModel> models = new(await restContext.ListAssistantsModelsAsync(limit, ascending, after, before, cancellationToken: cancellationToken).ConfigureAwait(false));
 
-        return models.Select(a => (IAssistant)a).ToList();
+        return models.Select(a => (IAssistant)new Assistant(a, restContext, new FunctionCollection())).ToList();
     }
 
     /// <summary>
