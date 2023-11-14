@@ -96,6 +96,26 @@ public sealed class AssistantHarness
     /// Verify creation and retrieval of assistant.
     /// </summary>
     [Fact(Skip = SkipReason)]
+    public async Task VerifyAssistantDeleteAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
+        foreach (var assistant in assistants)
+        {
+            if (assistant.Name == "Fred")
+            {
+                this._output.WriteLine($"Removing: {assistant.Name} - {assistant.Id}");
+                await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Verify creation and retrieval of assistant.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantDefinitionAsync()
     {
         using var httpClient = new HttpClient();
