@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -70,6 +72,9 @@ public class FunctionCallingStepwisePlanner
             throw new SKException("Goal not found.");
         }
 
+        // Add the final answer function
+        this._kernel.ImportFunctions(new UserInteraction(), "UserInteraction");
+
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
         string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* request settings */, cancellationToken).ConfigureAwait(false));
@@ -93,28 +98,47 @@ public class FunctionCallingStepwisePlanner
             OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
             if (functionResponse is null)
             {
-                // The model replied with a message - check for final answer
-                var messageContent = (await chatResult.GetChatMessageAsync(cancellationToken).ConfigureAwait(false)).Content;
+                continue;
+            }
 
-                Match finalAnswerMatch = s_finalAnswerRegex.Match(messageContent);
-                if (finalAnswerMatch.Success)
+            if (functionResponse.PluginName == "UserInteraction" && functionResponse.FunctionName == "SendFinalAnswer")
+            {
+                if (functionResponse.Parameters.Count > 0 && functionResponse.Parameters.TryGetValue("answer", out object valueObj))
                 {
+                    string resultStr = "";
+                    if (valueObj is string valueStr)
+                    {
+                        resultStr = valueStr;
+                    }
+                    else if (valueObj is JsonElement valueElement)
+                    {
+                        if (valueElement.ValueKind == JsonValueKind.String)
+                        {
+                            resultStr = valueElement.GetString() ?? "";
+                        }
+                        else
+                        {
+                            resultStr = valueElement.ToJsonString();
+                        }
+                    }
+
                     return new FunctionCallingStepwisePlannerResult
                     {
-                        FinalAnswer = finalAnswerMatch.Groups[1].Value.Trim(),
+                        FinalAnswer = resultStr.Trim(),
                         ChatHistory = chatHistoryForSteps,
                         Iterations = i + 1,
                     };
                 }
-
-                // No final answer found yet, so continue looping through steps
-                continue;
+                else
+                {
+                    throw new SKException($"Returned answer in incorrect format.");
+                }
             }
 
             // Look up SKFunction
             if (!this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
             {
-                throw new SKException($"Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found in kernel.");
+                throw new SKException($"Function {functionResponse.PluginName}_{functionResponse.FunctionName} not found in kernel.");
             }
 
             // Execute function and add to chat history
@@ -155,9 +179,7 @@ public class FunctionCallingStepwisePlanner
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
-        var availableFunctions = await this._kernel.Functions.GetFunctionsAsync(this.Config, null, this._logger, cancellationToken).ConfigureAwait(false);
-
-        return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
+        return await this._kernel.Functions.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
     private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
@@ -238,7 +260,7 @@ public class FunctionCallingStepwisePlanner
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
     /// </summary>
-    private const string StepwiseUserMessage = "Perform the next step of the plan, or reply with the final answer prefixed with [FINAL ANSWER]";
+    private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.";
 
     /// <summary>
     /// The regex for parsing the final answer response
@@ -251,4 +273,14 @@ public class FunctionCallingStepwisePlanner
     private const string GoalKey = "goal";
 
     #endregion private
+
+    public class UserInteraction
+    {
+        [SKFunction]
+        [Description("This function is used to send the final answer of a plan to the user.")]
+        public string SendFinalAnswer([Description("The final answer")] string answer)
+        {
+            return "Thanks";
+        }
+    }
 }

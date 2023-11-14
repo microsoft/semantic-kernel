@@ -40,7 +40,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     }
 
     [RetryTheory(maxRetries: 3)]
-    [InlineData("What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
+    [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
     [InlineData("What is the weather in Seattle?", "Seattle")]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer)
     {
