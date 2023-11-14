@@ -2,8 +2,6 @@
 
 //#define DISABLEHOST // Comment line to enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -59,7 +57,6 @@ public sealed class AssistantHarness
 
         this.DumpAssistant(modifiedCopy);
     }
-
 
     /// <summary>
     /// Verify creation and retrieval of assistant.
