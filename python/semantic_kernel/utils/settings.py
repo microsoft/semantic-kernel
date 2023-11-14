@@ -198,7 +198,7 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
 
 
-def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str, str, str]:
+def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
     """
     Reads the Azure CosmosDB environment variables for the .env file.
 
@@ -208,20 +208,13 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str, str, str]:
     config = dotenv_values(".env")
     cosmos_api = config.get("AZCOSMOS_API")
     cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
-    cosmos_database_name = config.get("AZCOSMOS_DATABASE_NAME")
-    cosmos_container_name = config.get("AZCOSMOS_CONTAINER_NAME")
+
 
     assert (
         cosmos_connstr is not None
     ), "Azure Cosmos Connection String not found in .env file"
-    assert (
-        cosmos_database_name is not None
-    ), "Azure Cosmos Database Name not found in .env file"
-    assert (
-        cosmos_container_name is not None
-    ), "Azure Cosmos Container Name not found in .env file"
 
-    return cosmos_api, cosmos_connstr, cosmos_database_name, cosmos_container_name
+    return cosmos_api, cosmos_connstr
 
 
 def redis_settings_from_dot_env() -> str:
