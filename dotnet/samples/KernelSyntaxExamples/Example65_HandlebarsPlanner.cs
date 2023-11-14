@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planners.Handlebars;
 using RepoUtils;
 
@@ -16,13 +17,29 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example65_HandlebarsPlanner
 {
+    private static int s_sampleCount;
+
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
     public static async Task RunAsync()
     {
+        s_sampleCount = 0;
         Console.WriteLine($"======== {nameof(Example65_HandlebarsPlanner)} ========");
 
+        await PlanNotPossibleSampleAsync();
+        await RunDictionarySampleAsync();
+        await RunPoetrySampleAsync();
+        await RunBookSampleAsync();
+    }
+
+    private static void WriteSampleHeadingToConsole(string name)
+    {
+        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleCount++} - Create and Execute {name} Plan ========");
+    }
+
+    private static async Task RunSampleAsync(string goal, params string[] pluginDirectoryNames)
+    {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
@@ -42,20 +59,126 @@ public static class Example65_HandlebarsPlanner
                 apiKey: apiKey)
             .Build();
 
-        kernel.ImportFunctions(new DictionaryPlugin(), DictionaryPlugin.PluginName);
+        if (pluginDirectoryNames[0] == DictionaryPlugin.PluginName)
+        {
+            kernel.ImportFunctions(new DictionaryPlugin(), DictionaryPlugin.PluginName);
+        }
+        else
+        {
+            string folder = RepoFiles.SamplePluginsPath();
+            kernel.ImportSemanticFunctionsFromDirectory(folder, pluginDirectoryNames);
+        }
 
         var planner = new HandlebarsPlanner(kernel);
+        Console.WriteLine($"Goal: {goal}");
 
-        var goal = "Teach me a new word!";
+        // Create the plan
         var plan = await planner.CreatePlanAsync(goal);
+        Console.WriteLine($"\nOriginal plan:\n{plan}");
 
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan);
-
+        // Execute the plan
         var result = plan.Invoke(kernel.CreateNewContext(), new Dictionary<string, object?>(), CancellationToken.None);
+        Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
+    }
 
-        Console.WriteLine("Result:");
-        Console.WriteLine(result.GetValue<string>());
+    private static async Task PlanNotPossibleSampleAsync()
+    {
+        WriteSampleHeadingToConsole("Plan Not Possible");
+
+        try
+        {
+            // Load additional plugins to enable planner but not enough for the given goal.
+            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", "SummarizePlugin");
+        }
+        catch (SKException e)
+        {
+            /*
+                Unable to create plan for goal with available functions.
+                Goal: Email me a list of meetings I have scheduled today.
+                Available Functions: SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Topics
+                Planner output:
+                I'm sorry, but it seems that the provided helpers do not include any helper to fetch or filter meetings scheduled for today. 
+                Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
+                Additional helpers may be required.
+            */
+            Console.WriteLine($"{e.Message}\n");
+        }
+    }
+
+    private static async Task RunDictionarySampleAsync()
+    {
+        WriteSampleHeadingToConsole("Dictionary");
+        await RunSampleAsync("Get a random word and its definition.", DictionaryPlugin.PluginName);
+        /*
+            Original plan:
+            {{!-- Step 1: Get a random word --}}
+            {{set "randomWord" (DictionaryPlugin-GetRandomWord)}}
+
+            {{!-- Step 2: Get the definition of the random word --}}
+            {{set "definition" (DictionaryPlugin-GetDefintion word=(get "randomWord"))}}
+
+            {{!-- Step 3: Output the random word and its definition --}}
+            {{json (array (get "randomWord") (get "definition"))}}
+
+            Result:
+            ["book","a set of printed or written pages bound together along one edge"]
+        */
+    }
+
+    private static async Task RunPoetrySampleAsync()
+    {
+        WriteSampleHeadingToConsole("Poetry");
+        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", "SummarizePlugin", "WriterPlugin");
+        /*
+            Original plan:
+            {{!-- Step 1: Initialize the scenario for the poem --}}
+            {{set "scenario" "John Doe, a mysterious and kind-hearted person"}}
+
+            {{!-- Step 2: Generate a short poem about John Doe --}}
+            {{set "poem" (WriterPlugin-ShortPoem input=(get "scenario"))}}
+
+            {{!-- Step 3: Translate the poem into Italian --}}
+            {{set "translatedPoem" (WriterPlugin-Translate input=(get "poem") language="Italian")}}
+
+            {{!-- Step 4: Output the translated poem --}}
+            {{json (get "translatedPoem")}}
+
+            Result:
+            C'era una volta un uomo di nome John Doe,
+            La cui gentilezza si mostrava costantemente,
+            Aiutava con un sorriso,
+            E non si arrendeva mai,
+            Al mistero che lo faceva brillare.
+        */
+    }
+
+    private static async Task RunBookSampleAsync()
+    {
+        WriteSampleHeadingToConsole("Book Creation");
+        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", "WriterPlugin", "MiscPlugin");
+        /*
+            Original plan:
+            {{!-- Step 1: Initialize variables --}}
+            {{set "bookTitle" "The Thinking Caps"}}
+            {{set "chapterCount" 3}}
+            {{set "clubName" "The Thinking Caps"}}
+            {{set "theme" "A group of kids in a club called 'The Thinking Caps'"}}
+
+            {{!-- Step 2: Create an array of chapter numbers --}}
+            {{set "chapterNumbers" (array 1 2 3)}}
+
+            {{!-- Step 3: Loop through the chapter numbers and generate chapters --}}
+                {{#each chapterNumbers as |chapterIndex|}}
+                {{!-- Step 3.1: Generate chapter notes --}}
+                {{set "chapterNotes" (concat "Chapter " chapterIndex ": The " clubName " club members face a new challenge.")}}
+
+                {{!-- Step 3.2: Generate the chapter using the WriterPlugin-NovelChapterWithNotes helper --}}
+                {{set "chapter" (WriterPlugin-NovelChapterWithNotes theme=theme notes=chapterNotes chapterIndex=chapterIndex)}}
+
+                {{!-- Step 3.3: Output the chapter --}}
+                {{json chapter}}
+            {{/each}}
+        */
     }
 
     /// <summary>

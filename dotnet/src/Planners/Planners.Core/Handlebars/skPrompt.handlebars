@@ -5,7 +5,7 @@ Explain how to achieve the user's goal with the available helpers with a Handleb
 If the user wanted you to generate 10 random numbers and use them in another helper, you could answer with the following.{{/message}}
 {{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal.
 
-##Goal
+## Goal
 I want you to generate 10 random numbers and send them to another helper.{{/message}}
 {{#message role="assistant"}}Here's the Handlebars template that achieves the goal:
 ```handlebars
@@ -36,7 +36,7 @@ I want you to generate 10 random numbers and send them to another helper.{{/mess
   }}
   {{!-- Step 4: call example helper with random number and print the result to the screen --}}
   \{{json
-    (example.helper
+    (Example-Helper
       input=(get
         "randomNumber"
       )
@@ -47,7 +47,7 @@ I want you to generate 10 random numbers and send them to another helper.{{/mess
 {{#message role="system"}}Now let's try the real thing.{{/message}}
 {{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
 
-##Goal
+## Goal
 {{goal}}
 
 ## Out-of-the-box helpers
@@ -56,6 +56,8 @@ The following helpers are available to you:
 - {{{{raw}}}}`{{#unless}}{{/unless}}}`{{{{/raw}}}}
 - {{{{raw}}}}`{{#each}}{{/each}}`{{{{/raw}}}}
 - {{{{raw}}}}`{{#with}}{{/with}}`{{{{/raw}}}}
+
+IMPORTANT: `hash` is NOT supported.
 
 ## Loop helpers
 If you need to loop through a list of values with `\{{#each}}`, you can use the following helpers:
@@ -70,7 +72,7 @@ If you need to compare two values, you can use the following helpers:
 - {{{{raw}}}}`{{lessThanOrEqual}}`{{{{/raw}}}}
 - {{{{raw}}}}`{{greaterThanOrEqual}}`{{{{/raw}}}}
 
-To use the comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is equal to the number `1`, you would use the following helper like so: `\{{#if (equal var 1)}}\{{/if}}`.
+To use the comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is less than the number `1`, you would use the following helper like so: `\{{#if (lessThan var 1)}}\{{/if}}`.
 
 ## Variable helpers
 If you need to create or retrieve a variable, you can use the following helpers:
@@ -107,12 +109,16 @@ Inputs:
   {{/each}}
 {{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} - {{ReturnDescription}}--}}
 Output: string - The result of the helper.
-{{/each}}{{/message}}
+
+{{/each}}
+
+IMPORTANT: You can only use the helpers that are listed above. Do not use any other helpers that are not listed here. For example, do not use `\{{log}}` or any `\{{Example}}` helpers, as they are not supported.{{/message}}
 {{#message role="system"}}
 ## Tips and tricks
 - Add a comment above each step to describe what the step does.
 - Use the `\{{set}}` and `\{{get}}` helpers to save and retrieve the results of another helper so you can use it later in the template without wasting resources.
 - There are no initial variables available to you. You must create them yourself using the `\{{set}}` helper and then access them using `\{{get}}`.
+- Do not make up values. Use the helpers to generate the data you need or extract it from the goal.
 - Each variable should have a unique name. Create and assign each variable only once.
 - Be extremely careful about types. For example, if you pass an array to a helper that expects a number, the template will error out.
 - Loops can be tricky, so only use them if they're absolutely necessary.
@@ -122,7 +128,9 @@ Output: string - The result of the helper.
 
 ## Start
 Now take a deep breath and accomplish the task:
-1. The first steps should always be to initialize any variables you need.
-2. The template should use the \{{json}} helper to output the result of the final step.
-3. Don't forget to use the tips and tricks otherwise the template will not work.
-4. Don't close the ``` handlebars block until you're done with all the steps.{{/message}}
+1. Do not use helpers that were not provided to you. Do not assume any helpers or operations that were not previously defined, as they will cause an error in the template.
+2. If none of the available helpers can achieve the goal, respond explicitly with "Additional helpers may be required".
+3. The first steps should always be to initialize any variables you need.
+4. The template should use the \{{json}} helper to output the result of the final step.
+5. Don't forget to use the tips and tricks otherwise the template will not work.
+6. Don't close the ``` handlebars block until you're done with all the steps.{{/message}}
