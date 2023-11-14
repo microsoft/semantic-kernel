@@ -12,10 +12,12 @@ IS_TELEMETRY_ENABLED = os.environ.get(
 
 HTTP_USER_AGENT = "Semantic-Kernel"
 
-APP_INFO = {
-    "name": HTTP_USER_AGENT if IS_TELEMETRY_ENABLED else "",
-    "version": pkg_resources.get_distribution("semantic-kernel").version
+APP_INFO = (
+    {
+        "name": HTTP_USER_AGENT,
+        "version": pkg_resources.get_distribution("semantic-kernel").version,
+        "url": "",
+    }
     if IS_TELEMETRY_ENABLED
-    else "",
-    "url": "",
-}
+    else None
+)
