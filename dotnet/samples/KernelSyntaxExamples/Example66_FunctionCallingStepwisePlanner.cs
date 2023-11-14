@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
 
@@ -16,14 +17,16 @@ public static class Example66_FunctionCallingStepwisePlanner
     {
         string[] questions = new string[]
         {
-            "Write a limerick and send it via email to John"
+            "What is the current hour number, plus 5?",
+            "What is 387 minus 22? Email the solution to John and Mary.",
+            "Write a limerick, translate it to Spanish, and send it to Jane",
         };
 
         var kernel = InitializeKernel();
 
         var config = new FunctionCallingStepwisePlannerConfig
         {
-            MaxIterations = 10,
+            MaxIterations = 15,
             MaxTokens = 4000,
         };
         var planner = new FunctionCallingStepwisePlanner(kernel, config);
@@ -34,7 +37,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
-            // Console.WriteLine($"Chat history:\n{result.ChatHistory.AsJson()}");
+            // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
         }
     }
 
@@ -53,6 +56,8 @@ public static class Example66_FunctionCallingStepwisePlanner
             .Build();
 
         kernel.ImportFunctions(new EmailPlugin(), "EmailPlugin");
+        kernel.ImportFunctions(new MathPlugin(), "MathPlugin");
+        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
 
         return kernel;
     }
