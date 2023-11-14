@@ -12,14 +12,11 @@ internal static class IKernelExtensions
     public static ISKFunction GetAssistantTool(this IKernel kernel, string toolName)
     {
         string[] nameParts = toolName.Split('-');
-        switch (nameParts.Length)
+        return nameParts.Length switch
         {
-            case 1:
-                return kernel.Functions.GetFunction(toolName);
-            case 2:
-                return kernel.Functions.GetFunction(nameParts[0], nameParts[1]);
-            default:
-                throw new SKException($"Unknown tool: {toolName}");
-        }
+            1 => kernel.Functions.GetFunction(toolName),
+            2 => kernel.Functions.GetFunction(nameParts[0], nameParts[1]),
+            _ => throw new SKException($"Unknown tool: {toolName}"),
+        };
     }
 }
