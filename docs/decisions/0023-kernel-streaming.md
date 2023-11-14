@@ -31,15 +31,15 @@ Needs to be clear for the sk developer when he is attempting to get streaming da
 //(providing the type at as generic parameter)
 
 // Getting a Raw Streaming data from Kernel
-await foreach(string update in kernel.StreamingRunAsync<byte[]>(variables, function))
+await foreach(string update in kernel.StreamingRunAsync<byte[]>(function, variables))
 
 // Getting a String as Streaming data from Kernel
-await foreach(string update in kernel.StreamingRunAsync<string>(variables, function))
+await foreach(string update in kernel.StreamingRunAsync<string>(function, variables))
 
 // Getting a StreamingResultUpdate as Streaming data from Kernel
 await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync<StreamingResultUpdate>(variables, function))
 // OR
-await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync(variables, function)) // defaults to Generic above)
+await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync(function, variables)) // defaults to Generic above)
 {
     Console.WriteLine(update);
 }
