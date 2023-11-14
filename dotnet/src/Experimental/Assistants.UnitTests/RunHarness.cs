@@ -102,15 +102,15 @@ public sealed class RunHarness
 
         var kernel = new KernelBuilder().Build();
 
-        kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
+        var gamePlugin = kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
 
         var assistant =
             await context.CreateAssistant()
-                .WithKernel(kernel)
+                //.WithKernel(kernel) $$$
                 .WithModel("gpt-3.5-turbo-1106")
                 .WithInstructions("Run a guessing game where the user tries to guess the answer to a question but don't tell them the answer unless they give up by asking for the answer.")
                 .WithName("Fred")
-                .WithTools()
+                .WithTools(gamePlugin.Values)
                 .BuildAsync().ConfigureAwait(true);
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);

@@ -33,12 +33,14 @@ public static class IOpenAIRestContextExtensions
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="model">The LLM name</param>
     /// <param name="configurationPath">Path to a configuration file.</param>
+    /// <param name="functions">Functions to associate with the tool.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
     public static async Task<IAssistant> CreateAssistantAsync(
         this IOpenAIRestContext restContext,
         string model,
         string configurationPath,
+        IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(configurationPath);
@@ -102,12 +104,12 @@ public static class IOpenAIRestContextExtensions
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
+    /// <param name="functions">$$$</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
-    public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, IKernel? kernel = null, CancellationToken cancellationToken = default)
+    public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, IEnumerable<ISKFunction>? functions = null, CancellationToken cancellationToken = default)
     {
-        return Assistant.GetAsync(restContext, assistantId, kernel, cancellationToken);
+        return Assistant.GetAsync(restContext, assistantId, functions, cancellationToken);
     }
 
     /// <summary>
@@ -136,7 +138,7 @@ public static class IOpenAIRestContextExtensions
     {
         var models = await restContext.GetAssistantsModelsAsync(limit, ascending, after, before).ConfigureAwait(false);
 
-        return models.Select(m => new Assistant(m, restContext, kernel: null)).ToArray(); // TODO: @chris - deal with kernel
+        return models.Select(m => new Assistant(m, restContext)).ToArray(); // TODO: @chris - deal with kernel
     }
 
     /// <summary>

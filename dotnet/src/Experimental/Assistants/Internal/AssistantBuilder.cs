@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -18,9 +16,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
 {
     private readonly IOpenAIRestContext _context;
     private readonly AssistantModel _model;
-    private readonly Dictionary<string, FunctionView> _functions;
-
-    private IKernel? _kernel;
+    private readonly Dictionary<string, ISKFunction> _functions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
@@ -30,20 +26,6 @@ internal sealed class AssistantBuilder : IAssistantBuilder
         this._context = restContext;
         this._model = new AssistantModel();
         this._functions = new(12);
-    }
-
-    /// <inheritdoc/>
-    public IAssistantBuilder WithKernel(IKernel kernel)
-    {
-        // Once tools are defined, the kernel is pinned.
-        if (this._kernel != null && this._model.Tools.Count > 0)
-        {
-            throw new SKException("IKernel already associated with tool definitions.");
-        }
-
-        this._kernel = kernel;
-
-        return this;
     }
 
     /// <inheritdoc/>
@@ -59,22 +41,11 @@ internal sealed class AssistantBuilder : IAssistantBuilder
             throw new SKException("Instructions must be defined for assistant.");
         }
 
-        if (this._kernel == null && this._functions.Count > 0)
-        {
-            throw new SKException("Tool definition requires an IKernel instance.");
-        }
-
-        // Add tool definitions to the assistant model.
-        foreach (var kvp in this._functions)
-        {
-            this.DefineTool(kvp.Key, kvp.Value);
-        }
-
         return
             await Assistant.CreateAsync(
                 this._context,
                 this._model,
-                this._kernel,
+                this._functions.Values,
                 cancellationToken).ConfigureAwait(false);
     }
 
@@ -130,7 +101,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithTool(FunctionView tool)
+    public IAssistantBuilder WithTool(ISKFunction tool)
     {
         this._functions[tool.GetQualifiedName()] = tool;
 
@@ -138,7 +109,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithTools(IEnumerable<FunctionView> tools)
+    public IAssistantBuilder WithTools(IEnumerable<ISKFunction> tools)
     {
         foreach (var tool in tools)
         {
@@ -146,54 +117,5 @@ internal sealed class AssistantBuilder : IAssistantBuilder
         }
 
         return this;
-    }
-
-    /// <inheritdoc/>
-    public IAssistantBuilder WithTools()
-    {
-        this.WithTools(this._kernel?.Functions.GetFunctionViews() ?? Array.Empty<FunctionView>());
-
-        return this;
-    }
-
-    private void DefineTool(string toolKey, FunctionView tool)
-    {
-        var required = new List<string>(tool.Parameters.Count);
-        var parameters =
-            tool.Parameters.ToDictionary(
-                p => p.Name,
-                p =>
-                {
-                    if (p.IsRequired ?? false)
-                    {
-                        required.Add(p.Name);
-                    }
-
-                    return
-                        new OpenAIParameter
-                        {
-                            Type = p.Type?.Name ?? nameof(System.String),
-                            Description = p.Description,
-                        };
-                });
-
-        var payload =
-            new AssistantModel.ToolModel
-            {
-                Type = "function",
-                Function =
-                    new()
-                    {
-                        Name = toolKey,
-                        Description = tool.Description,
-                        Parameters =
-                        {
-                            Properties = parameters,
-                            Required = required,
-                        }
-                    },
-            };
-
-        this._model.Tools.Add(payload);
     }
 }

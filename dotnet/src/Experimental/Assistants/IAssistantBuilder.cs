@@ -11,12 +11,12 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// </summary>
 public interface IAssistantBuilder
 {
-    /// <summary>
-    /// Assigns a semantic-kernel to the assistant (for function calling).
-    /// </summary>
-    /// <param name="kernel">The semantic-kernel associated with the assistant.</param>
-    /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithKernel(IKernel kernel);
+    ///// <summary>
+    ///// Assigns a semantic-kernel to the assistant (for function calling).
+    ///// </summary>
+    ///// <param name="kernel">The semantic-kernel associated with the assistant.</param>
+    ///// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
+    //IAssistantBuilder WithKernel(IKernel kernel);
 
     /// <summary>
     /// Define the chat model associated with the assistant (required).
@@ -48,20 +48,14 @@ public interface IAssistantBuilder
     /// </summary>
     /// <param name="tool">A SK function view</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTool(FunctionView tool);
+    IAssistantBuilder WithTool(ISKFunction tool);
 
     /// <summary>
     /// Adds assistant tools.
     /// </summary>
     /// <param name="tools">A list of SK function views</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTools(IEnumerable<FunctionView> tools);
-
-    /// <summary>
-    /// Adds all the functions in the associated kernel as the assistant tools.
-    /// </summary>
-    /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTools();
+    IAssistantBuilder WithTools(IEnumerable<ISKFunction> tools);
 
     /// <summary>
     /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
