@@ -2,6 +2,7 @@
 
 //#define DISABLEHOST // Comment line to enable
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -98,13 +99,20 @@ public sealed class AssistantHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantDeleteAsync()
     {
+        var names =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Fred",
+                "Barney",
+                "Poet",
+            };
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
         var assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
         foreach (var assistant in assistants)
         {
-            if (assistant.Name == "Fred")
+            if (!string.IsNullOrWhiteSpace(assistant.Name) && names.Contains(assistant.Name))
             {
                 this._output.WriteLine($"Removing: {assistant.Name} - {assistant.Id}");
                 await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
