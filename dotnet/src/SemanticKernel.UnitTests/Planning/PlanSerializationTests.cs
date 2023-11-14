@@ -557,6 +557,7 @@ public sealed class PlanSerializationTests
             .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        mockFunction.Setup(x => x.Name).Returns("functionName");
 
         plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
 

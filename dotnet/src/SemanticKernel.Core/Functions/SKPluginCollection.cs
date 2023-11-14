@@ -39,7 +39,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
 
         if (plugins is SKPluginCollection existing)
         {
-            this._plugins = new Dictionary<string, ISKPlugin>(existing._plugins);
+            this._plugins = new Dictionary<string, ISKPlugin>(existing._plugins, StringComparer.OrdinalIgnoreCase);
         }
         else
         {
@@ -99,6 +99,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
     public bool Contains(ISKPlugin plugin)
     {
         Verify.NotNull(plugin);
+
         return this._plugins.TryGetValue(plugin.Name, out ISKPlugin? existing) && plugin == existing;
     }
 

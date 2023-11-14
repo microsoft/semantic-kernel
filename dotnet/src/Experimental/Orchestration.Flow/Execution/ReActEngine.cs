@@ -239,15 +239,8 @@ internal sealed class ReActEngine
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        if (!kernel.Plugins.TryGetPlugin(RestrictedPluginName, out ISKPlugin? plugin))
-        {
-            plugin = new SKPlugin(RestrictedPluginName);
-        }
-
-        SKPlugin p = plugin as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
-        ISKFunction function = kernel.CreateFunctionFromPrompt(template, config, functionName);
-        p.AddFunction(function);
-        return function;
+        SKPlugin p = kernel.Plugins[RestrictedPluginName] as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
+        return p.AddFunctionFromPrompt(template, config, functionName);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)

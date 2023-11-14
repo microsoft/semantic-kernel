@@ -840,7 +840,7 @@ public sealed class KernelFunctionFromMethod : ISKFunction
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.

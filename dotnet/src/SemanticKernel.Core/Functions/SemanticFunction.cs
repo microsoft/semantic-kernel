@@ -142,7 +142,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)

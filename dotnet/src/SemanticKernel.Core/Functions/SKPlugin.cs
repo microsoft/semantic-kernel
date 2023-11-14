@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>Provides an <see cref="ISKPlugin"/> implementation around a collection of functions.</summary>
 [DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
 [DebuggerTypeProxy(typeof(SKPlugin.TypeProxy))]
-public class SKPlugin : ISKPlugin
+public sealed class SKPlugin : ISKPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, ISKFunction> _functions;
@@ -62,7 +62,7 @@ public class SKPlugin : ISKPlugin
     public string Description { get; }
 
     /// <summary>Gets the number of functions in this plugin.</summary>
-    public int FunctionCount { get; }
+    public int FunctionCount => this._functions.Count;
 
     /// <inheritdoc/>
     public ISKFunction this[string functionName] => this._functions[functionName];

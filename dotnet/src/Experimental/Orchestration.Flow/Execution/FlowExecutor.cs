@@ -111,11 +111,17 @@ internal class FlowExecutor : IFlowExecutor
 
         var checkRepeatStepPrompt = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt")!;
         var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json")!);
-        this._checkRepeatStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
+        this._checkRepeatStepFunction = CreateSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
 
         var checkStartStepPrompt = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt")!;
         var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
-        this._checkStartStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
+        this._checkStartStepFunction = CreateSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
+
+        this._systemKernel.Plugins.Add(new SKPlugin(RestrictedPluginName, new[]
+        {
+            this._checkRepeatStepFunction,
+            this._checkStartStepFunction,
+        }));
 
         this._config.ExcludedPlugins.Add(RestrictedPluginName);
         this._reActEngine = new ReActEngine(this._systemKernel, this._logger, this._config);
@@ -682,20 +688,11 @@ internal class FlowExecutor : IFlowExecutor
         throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private static ISKFunction CreateSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
-
-        if (!kernel.Plugins.TryGetPlugin(RestrictedPluginName, out ISKPlugin? plugin))
-        {
-            plugin = new SKPlugin(RestrictedPluginName);
-        }
-
-        SKPlugin p = plugin as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
-        ISKFunction func = kernel.CreateFunctionFromPrompt(template, config, functionName);
-        p.AddFunction(func);
-        return func;
+        return kernel.CreateFunctionFromPrompt(template, config, functionName);
     }
 
     private class RepeatOrStartStepResult

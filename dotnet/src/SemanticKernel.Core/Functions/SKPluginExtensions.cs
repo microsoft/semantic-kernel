@@ -152,5 +152,4 @@ public static class SKPluginExtensions
         return function;
     }
     #endregion
-
 }
