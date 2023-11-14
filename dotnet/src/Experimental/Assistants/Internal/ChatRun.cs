@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,11 +126,11 @@ internal sealed class ChatRun : IChatRun
 
             var function = kernel.GetAssistantTool(functionDetails.Name);
 
-            //// TODO: @chris: change back to Dictionary<string, object> $$$
+            //// TODO: @chris: change back to Dictionary<string, object>
             ////Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
+            var variables = new ContextVariables();
 
-            var variables = new ContextVariables(); // $$$
-            var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false); // $$$ TRY/CATCH
+            var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

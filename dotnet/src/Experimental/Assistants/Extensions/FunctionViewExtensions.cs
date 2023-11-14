@@ -5,10 +5,8 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 internal static class FunctionViewExtensions
 {
     /// <summary>
-    /// $$$
+    /// Produce a fully qualified toolname.
     /// </summary>
-    /// <param name="functionView"></param>
-    /// <returns></returns>
     public static string GetQualifiedName(this FunctionView functionView)
     {
         return

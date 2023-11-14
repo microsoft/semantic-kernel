@@ -7,11 +7,8 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 internal static class IKernelExtensions
 {
     /// <summary>
-    /// $$$
+    /// Retrieve a kernel function based on the tool name.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="toolName"></param>
-    /// <returns></returns>
     public static ISKFunction GetAssistantTool(this IKernel kernel, string toolName)
     {
         string[] nameParts = toolName.Split('-');
