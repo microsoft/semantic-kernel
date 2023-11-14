@@ -49,7 +49,7 @@ public sealed class RestApiOperationResponse
     {
         if (this.Schema is null)
         {
-            return true;
+            return true; // todo add tests
         }
 
         return this.Schema.IsValid(this.Content.ToString()); // TODO -- is this correct thing to do with Content?

@@ -181,7 +181,7 @@ internal sealed class RestApiOperationRunner
 
             if (matchingResponse is null)
             {
-                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value;
+                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value; // todo add tests
             }
 
             if (matchingResponse is not null)

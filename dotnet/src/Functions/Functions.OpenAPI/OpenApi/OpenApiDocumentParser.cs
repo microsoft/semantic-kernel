@@ -291,14 +291,14 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         if (responses == null)
         {
-            yield break;
+            yield break; // todo add tests
         }
 
         foreach (var response in responses)
         {
             if (response.Value == null)
             {
-                yield break;
+                yield break; // todo add tests
             }
 
             var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
@@ -324,7 +324,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         if (schema == null)
         {
-            return null;
+            return null; // todo add tests
         }
 
         return new RestApiOperationResponseSchema

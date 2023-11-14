@@ -52,7 +52,7 @@ public sealed class RestApiOperationResponseSchema
     {
         if (this.Type == null)
         {
-            return true;
+            return true; // TODO -- add tests
         }
 
         var jsonSchema = Json.Schema.JsonSchema.FromText(JsonSerializer.Serialize(this.Schema));
