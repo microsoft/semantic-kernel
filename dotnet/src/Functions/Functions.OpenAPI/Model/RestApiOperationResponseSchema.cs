@@ -73,10 +73,13 @@ public sealed class RestApiOperationResponseSchema
         {
             if (this.Type == "object")
             {
-                var contentJson = JsonDocument.Parse(content);
+                JObject contentObj = JObject.Parse(content);
+                JSchema schema = JSchema.Parse(JsonSerializer.Serialize(this));
 
-                return JObject.Parse(content).IsValid(JSchema.Parse(JsonSerializer.Serialize(this)), out IList<string> _);
+                return contentObj.IsValid(schema, out IList<string> _);
             }
+
+            // TODO More type support.
 
             return false;
         }
