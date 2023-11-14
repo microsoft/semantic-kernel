@@ -48,16 +48,15 @@ public class RestApiOperationTests
             new Dictionary<string, string>()
         );
 
-        var arguments = new Dictionary<string, string>
-        {
-            { "server-url", "https://fake-random-test-host-override" }
-        };
+        var fakeHostUrlOverride = "https://fake-random-test-host-override";
+
+        var arguments = new Dictionary<string, string>();
 
         // Act
-        var url = sut.BuildOperationUrl(arguments);
+        var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
 
         // Assert
-        Assert.Equal("https://fake-random-test-host-override/", url.OriginalString);
+        Assert.Equal(fakeHostUrlOverride, url.OriginalString.TrimEnd('/'));
     }
 
     [Fact]
@@ -144,17 +143,18 @@ public class RestApiOperationTests
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
+        var fakeHostUrlOverride = "https://fake-random-test-host-override";
+
         var arguments = new Dictionary<string, string>
         {
-            { "server-url", "https://fake-random-test-host-override" },
             { "fake-path", "fake-path-value" },
         };
 
         // Act
-        var url = sut.BuildOperationUrl(arguments);
+        var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
 
         // Assert
-        Assert.Equal("https://fake-random-test-host-override/fake-path-value/", url.OriginalString);
+        Assert.Equal($"{fakeHostUrlOverride}/fake-path-value/", url.OriginalString);
     }
 
     [Fact]
@@ -272,8 +272,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter(name : "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name : "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>

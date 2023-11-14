@@ -21,6 +21,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -66,6 +67,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._log = log if log is not None else NullLogger()
         self._messages = []
+        openai.app_info = APP_INFO
 
     async def complete_chat_async(
         self,

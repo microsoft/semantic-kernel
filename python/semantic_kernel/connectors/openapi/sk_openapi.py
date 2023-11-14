@@ -11,6 +11,7 @@ from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 from semantic_kernel.utils.null_logger import NullLogger
@@ -92,7 +93,7 @@ class RestApiOperation:
 
         url = urljoin(self.server_url, path)
 
-        processed_query_params, processed_headers = {}, {}
+        processed_query_params, processed_headers = {}, headers
         for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
@@ -126,6 +127,10 @@ class RestApiOperation:
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
             processed_payload = request_body
+
+        processed_headers["User-Agent"] = " ".join(
+            (HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))
+        ).rstrip()
 
         req = PreparedRestApiRequest(
             method=self.method,
