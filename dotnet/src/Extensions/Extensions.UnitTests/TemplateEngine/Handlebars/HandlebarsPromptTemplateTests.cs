@@ -21,7 +21,7 @@ public sealed class HandlebarsPromptTemplateTests
     private readonly HandlebarsPromptTemplateFactory _factory;
     private readonly Kernel _kernel;
     private readonly ContextVariables _variables;
-    private readonly Mock<IReadOnlyFunctionCollection> _functions;
+    private readonly Mock<IReadOnlySKPluginCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IFunctionRunner> _functionRunner;
     private readonly Mock<IAIServiceProvider> _serviceProvider;
@@ -34,7 +34,7 @@ public sealed class HandlebarsPromptTemplateTests
         this._kernel = new KernelBuilder().Build();
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
 
-        this._functions = new Mock<IReadOnlyFunctionCollection>();
+        this._functions = new Mock<IReadOnlySKPluginCollection>();
         this._functionRunner = new Mock<IFunctionRunner>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
         this._serviceSelector = new Mock<IAIServiceSelector>();
@@ -60,7 +60,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportFunctions(new Foo(), "Foo");
+        this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
         var context = this._kernel.CreateNewContext(this._variables);
@@ -76,7 +76,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersAsyncFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportFunctions(new Foo(), "Foo");
+        this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
         var context = this._kernel.CreateNewContext(this._variables);

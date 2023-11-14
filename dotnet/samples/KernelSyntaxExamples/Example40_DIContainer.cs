@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -78,7 +79,7 @@ public static class Example40_DIContainer
         var collection = new ServiceCollection();
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
         collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
-        collection.AddTransient<IFunctionCollection, FunctionCollection>();
+        collection.AddTransient<ISKPluginCollection, SKPluginCollection>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
@@ -119,9 +120,9 @@ public static class Example40_DIContainer
         {
             string folder = RepoFiles.SamplePluginsPath();
 
-            var summarizeFunctions = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+            var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
+            var result = await this._kernel.RunAsync(ask, summarizePlugin["Summarize"]);
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }

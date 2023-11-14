@@ -55,7 +55,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
         var plan = new Plan(emailFunctions["SendEmail"]);
@@ -77,7 +77,7 @@ public sealed class PlanTests : IDisposable
         // Arrange
         Kernel target = this.InitializeKernel(false, true);
 
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
         var plan = new Plan(emailFunctions["SendEmail"]);
@@ -98,12 +98,12 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
-        var writerPlugin = TestHelpers.ImportSamplePlugins(target, "WriterPlugin");
+        var emailPlugin = target.Plugins[nameof(EmailPluginFake)];
+        var writerPlugin = target.Plugins["WriterPlugin"];
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
-        plan.AddSteps(writerPlugin["Translate"], emailFunctions["SendEmail"]);
+        plan.AddSteps(writerPlugin["Translate"], emailPlugin["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -127,7 +127,7 @@ public sealed class PlanTests : IDisposable
         var plan = new Plan(goal);
         var subPlan = new Plan("Write a poem or joke");
 
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         // Arrange
         var returnContext = target.CreateNewContext();
@@ -154,7 +154,7 @@ public sealed class PlanTests : IDisposable
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
         var subPlan = new Plan("Write a poem or joke");
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
         var returnContext = target.CreateNewContext();
         var expectedInvocations = 6;
         // 1 - Outer Plan - Write poem and send email goal
@@ -219,7 +219,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -252,7 +252,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -285,7 +285,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -316,9 +316,9 @@ public sealed class PlanTests : IDisposable
         // Arrange
         Kernel target = this.InitializeKernel();
 
-        var summarizePlugin = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
-        var writerPlugin = TestHelpers.ImportSamplePlugins(target, "WriterPlugin");
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var summarizePlugin = target.Plugins["SummarizePlugin"];
+        var writerPlugin = target.Plugins["WriterPlugin"];
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -389,9 +389,9 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var summarizePlugin = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
-        var writerPlugin = TestHelpers.ImportSamplePlugins(target, "WriterPlugin");
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var summarizePlugin = target.Plugins["SummarizePlugin"];
+        var writerPlugin = target.Plugins["WriterPlugin"];
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -449,13 +449,13 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var summarizePlugin = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
-        var writerPlugin = TestHelpers.ImportSamplePlugins(target, "WriterPlugin");
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var summarizePlugins = target.Plugins["SummarizePlugin"];
+        var writerPlugin = target.Plugins["WriterPlugin"];
+        var emailFunction = target.Plugins[nameof(EmailPluginFake)];
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
-        var summarizePlan = new Plan(summarizePlugin["Summarize"]);
+        var summarizePlan = new Plan(summarizePlugins["Summarize"]);
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
@@ -476,7 +476,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailFunctions["GetEmailAddress"])
+        var getEmailPlan = new Plan(emailFunction["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -485,7 +485,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailFunctions["SendEmail"])
+        var sendEmailPlan = new Plan(emailFunction["SendEmail"])
         {
             Parameters = cv
         };
@@ -495,7 +495,7 @@ public sealed class PlanTests : IDisposable
 
         // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, target.Functions);
+        var deserializedPlan = Plan.FromJson(serializedPlan, target.Plugins);
         var result = (await target.RunAsync(inputToSummarize, deserializedPlan)).GetValue<string>();
 
         // Assert
@@ -511,9 +511,9 @@ public sealed class PlanTests : IDisposable
         // Arrange
         Kernel target = this.InitializeKernel();
 
-        var summarizePlugin = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
-        var writerPlugin = TestHelpers.ImportSamplePlugins(target, "WriterPlugin");
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var summarizePlugin = target.Plugins["SummarizePlugin"];
+        var writerPlugin = target.Plugins["WriterPlugin"];
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -537,11 +537,11 @@ public sealed class PlanTests : IDisposable
 
     [Theory]
     [InlineData("computers")]
-    public async Task CanImportAndRunPlanAsync(string input)
+    public async Task CanRunPlanAsync(string input)
     {
         // Arrange
         Kernel target = this.InitializeKernel();
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         var plan = new Plan("Write a poem about a topic and send in an email.");
 
@@ -557,9 +557,7 @@ public sealed class PlanTests : IDisposable
         plan.Outputs.Add("EMAIL_RESULT");
 
         //Act
-        var t = target.ImportPlan(plan);
-
-        var result = await t.InvokeAsync(input, target);
+        var result = await plan.InvokeAsync(input, target);
 
         // Assert
         Assert.NotNull(result);
@@ -607,7 +605,7 @@ public sealed class PlanTests : IDisposable
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
 
-        kernel.ImportFunctions(new EmailPluginFake());
+        kernel.ImportPluginFromObject<EmailPluginFake>();
         return kernel;
     }
 

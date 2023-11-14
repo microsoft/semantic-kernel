@@ -116,7 +116,7 @@ public static class Example16_CustomLLM
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
-        var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        var textValidationFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         var result = await textValidationFunction.InvokeAsync("I mised the training session this morning", kernel);
         Console.WriteLine(result.GetValue<string>());

@@ -3,6 +3,7 @@
 // ReSharper disable once InconsistentNaming
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -23,72 +24,72 @@ public static class Example09_FunctionTypes
         var variables = new ContextVariables();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var testFunctions = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
+        var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
-            testFunctions["type01"],
-            testFunctions["type02"],
-            testFunctions["type03"],
-            testFunctions["type04"],
-            testFunctions["type05"],
-            testFunctions["type06"],
-            testFunctions["type07"],
-            testFunctions["type08"],
-            testFunctions["type09"],
-            testFunctions["type10"],
-            testFunctions["type11"],
-            testFunctions["type12"],
-            testFunctions["type13"],
-            testFunctions["type14"],
-            testFunctions["type15"],
-            testFunctions["type16"],
-            testFunctions["type17"],
-            testFunctions["type18"]
+            plugin["type01"],
+            plugin["type02"],
+            plugin["type03"],
+            plugin["type04"],
+            plugin["type05"],
+            plugin["type06"],
+            plugin["type07"],
+            plugin["type08"],
+            plugin["type09"],
+            plugin["type10"],
+            plugin["type11"],
+            plugin["type12"],
+            plugin["type13"],
+            plugin["type14"],
+            plugin["type15"],
+            plugin["type16"],
+            plugin["type17"],
+            plugin["type18"]
         );
 
         // Using Kernel.RunAsync
-        await kernel.RunAsync(testFunctions["type01"]);
-        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type01"));
+        await kernel.RunAsync(plugin["type01"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type01"]);
 
-        await kernel.RunAsync(testFunctions["type02"]);
-        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type02"));
+        await kernel.RunAsync(plugin["type02"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type02"]);
 
-        await kernel.RunAsync(testFunctions["type03"]);
-        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type03"));
+        await kernel.RunAsync(plugin["type03"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type03"]);
 
-        await kernel.RunAsync(testFunctions["type04"], variables);
-        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type04"));
+        await kernel.RunAsync(plugin["type04"], variables);
+        await kernel.RunAsync(variables, kernel.Plugins["test"]["type04"]);
 
-        await kernel.RunAsync(testFunctions["type05"], variables);
-        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type05"));
+        await kernel.RunAsync(plugin["type05"], variables);
+        await kernel.RunAsync(variables, kernel.Plugins["test"]["type05"]);
 
-        await kernel.RunAsync(testFunctions["type06"], variables);
-        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type06"));
+        await kernel.RunAsync(plugin["type06"], variables);
+        await kernel.RunAsync(variables, kernel.Plugins["test"]["type06"]);
 
-        await kernel.RunAsync(testFunctions["type07"], variables);
-        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type07"));
+        await kernel.RunAsync(plugin["type07"], variables);
+        await kernel.RunAsync(variables, kernel.Plugins["test"]["type07"]);
 
-        await kernel.RunAsync("", testFunctions["type08"]);
-        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type08"));
+        await kernel.RunAsync("", plugin["type08"]);
+        await kernel.RunAsync("", kernel.Plugins["test"]["type08"]);
 
-        await kernel.RunAsync("", testFunctions["type09"]);
-        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type09"));
+        await kernel.RunAsync("", plugin["type09"]);
+        await kernel.RunAsync("", kernel.Plugins["test"]["type09"]);
 
-        await kernel.RunAsync("", testFunctions["type10"]);
-        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type10"));
+        await kernel.RunAsync("", plugin["type10"]);
+        await kernel.RunAsync("", kernel.Plugins["test"]["type10"]);
 
-        await kernel.RunAsync("", testFunctions["type11"]);
-        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type11"));
+        await kernel.RunAsync("", plugin["type11"]);
+        await kernel.RunAsync("", kernel.Plugins["test"]["type11"]);
 
-        await kernel.RunAsync(variables, testFunctions["type12"]);
-        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type12"));
+        await kernel.RunAsync(variables, plugin["type12"]);
+        await kernel.RunAsync(variables, kernel.Plugins["test"]["type12"]);
 
-        await kernel.RunAsync(testFunctions["type18"]);
-        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type18"));
+        await kernel.RunAsync(plugin["type18"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type18"]);
     }
 }
 
@@ -131,7 +132,7 @@ public class LocalExamplePlugin
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
+        var summarizer = context.Plugins["SummarizePlugin"]["Summarize"];
         var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
 
         Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");

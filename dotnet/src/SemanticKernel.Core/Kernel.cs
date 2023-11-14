@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -38,10 +34,8 @@ public sealed class Kernel
     /// </summary>
     public ILoggerFactory LoggerFactory { get; }
 
-    /// <summary>
-    /// Reference to the read-only function collection containing all the imported functions
-    /// </summary>
-    public IReadOnlyFunctionCollection Functions => this._functionCollection;
+    /// <inheritdoc/>
+    public ISKPluginCollection Plugins { get; }
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -69,7 +63,7 @@ public sealed class Kernel
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="functionCollection">function collection</param>
+    /// <param name="plugins">The plugins.</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
@@ -79,13 +73,13 @@ public sealed class Kernel
     [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
-        IFunctionCollection functionCollection,
+        ISKPluginCollection plugins,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine? promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null) : this(functionCollection, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
+        IAIServiceSelector? serviceSelector = null) : this(plugins, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
     {
         this.PromptTemplateEngine = promptTemplateEngine;
     }
@@ -93,7 +87,7 @@ public sealed class Kernel
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="functionCollection">function collection</param>
+    /// <param name="plugins">The plugins.</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="memory">Semantic text Memory</param>
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
@@ -101,7 +95,7 @@ public sealed class Kernel
     /// <param name="serviceSelector">AI Service selector</param>
     [Obsolete("This constructor is obsolete and will be removed in one of the next version of SK. Please use one of the available overload.")]
     public Kernel(
-        IFunctionCollection functionCollection,
+        ISKPluginCollection plugins,
         IAIServiceProvider aiServiceProvider,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
@@ -114,7 +108,7 @@ public sealed class Kernel
         this.HttpHandlerFactory = httpHandlerFactory;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
-        this._functionCollection = functionCollection;
+        this.Plugins = plugins;
         this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
@@ -124,13 +118,13 @@ public sealed class Kernel
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
     /// <param name="aiServiceProvider">AI Service Provider</param>
-    /// <param name="functionCollection">function collection</param>
+    /// <param name="plugins">The plugins.</param>
     /// <param name="serviceSelector">AI Service selector</param>
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         IAIServiceProvider aiServiceProvider,
-        IFunctionCollection? functionCollection = null,
+        ISKPluginCollection? plugins = null,
         IAIServiceSelector? serviceSelector = null,
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
@@ -138,7 +132,7 @@ public sealed class Kernel
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this._aiServiceProvider = aiServiceProvider;
-        this._functionCollection = functionCollection ?? new FunctionCollection();
+        this.Plugins = plugins ?? new SKPluginCollection();
         this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = this.LoggerFactory.CreateLogger(typeof(Kernel));
@@ -154,7 +148,7 @@ public sealed class Kernel
     {
         Verify.NotNull(customFunction);
 
-        this._functionCollection.AddFunction(customFunction);
+        this.Plugins.Add(new SKPlugin($"plugin{Guid.NewGuid():N}", new[] { customFunction }));
 
         return customFunction;
     }
@@ -163,13 +157,13 @@ public sealed class Kernel
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="functions">Provide specific scoped functions. Defaults to all existing in the kernel</param>
+    /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
     /// <param name="loggerFactory">Logged factory used within the context</param>
     /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null,
+        IReadOnlySKPluginCollection? plugins = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
@@ -178,7 +172,7 @@ public sealed class Kernel
             this._aiServiceProvider,
             this._aiServiceSelector,
             variables,
-            functions ?? this.Functions,
+            plugins ?? this.Plugins,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,
@@ -203,8 +197,6 @@ public sealed class Kernel
     }
 
     #region private ================================================================================
-
-    private readonly IFunctionCollection _functionCollection;
     private ISemanticTextMemory _memory;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
@@ -224,20 +216,6 @@ public sealed class Kernel
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISemanticTextMemory Memory => this._memory;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IReadOnlyFunctionCollection Skills => this._functionCollection;
-#pragma warning restore CS1591
-
-    /// <inheritdoc/>
-    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Functions collection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction Func(string pluginName, string functionName)
-    {
-        return this.Functions.GetFunction(pluginName, functionName);
-    }
-
     /// <inheritdoc/>
     [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -245,15 +223,5 @@ public sealed class Kernel
     {
         this._memory = memory;
     }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
-    {
-        return this.ImportFunctions(functionsInstance, pluginName);
-    }
-#pragma warning restore CS1591
-
     #endregion
 }

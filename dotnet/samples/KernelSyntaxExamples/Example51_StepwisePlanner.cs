@@ -108,20 +108,9 @@ public static class Example51_StepwisePlanner
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
-
-        // StepwisePlanner is instructed to depend on available functions.
-        // We expose this function to increase the flexibility in it's ability to answer
-        // given the relatively small number of functions we have in this example.
-        // This seems to be particularly helpful in these examples with gpt-35-turbo -- even though it
-        // does not *use* this function. It seems to help the planner find a better path to the answer.
-        kernel.CreateSemanticFunction(
-            "Generate an answer for the following question: {{$input}}",
-            functionName: "GetAnswerForQuestion",
-            pluginName: "AnswerBot",
-            description: "Given a question, get an answer and return it as the result of the function");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("semanticCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();

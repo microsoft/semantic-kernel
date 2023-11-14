@@ -24,8 +24,8 @@ public static class Example63_ChatCompletionPrompts
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var textSemanticFunction = kernel.CreateSemanticFunction(TextPrompt);
-        var chatSemanticFunction = kernel.CreateSemanticFunction(ChatPrompt);
+        var textSemanticFunction = kernel.CreateFunctionFromPrompt(TextPrompt);
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
 
         var textPromptResult = await kernel.RunAsync(textSemanticFunction);
         var chatPromptResult = await kernel.RunAsync(chatSemanticFunction);

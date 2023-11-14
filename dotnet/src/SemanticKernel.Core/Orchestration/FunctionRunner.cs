@@ -32,7 +32,7 @@ internal class FunctionRunner : IFunctionRunner
     /// <inheritdoc/>
     public Task<FunctionResult?> RunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
-        var function = this._kernel.Functions.GetFunction(pluginName, functionName);
+        var function = this._kernel.Plugins.GetFunction(pluginName, functionName);
         return this.RunAsync(function, variables, cancellationToken);
     }
 }

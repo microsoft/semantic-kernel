@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
@@ -23,11 +22,6 @@ public interface ISKFunction
     /// Name of the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     string Name { get; }
-
-    /// <summary>
-    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
-    /// </summary>
-    string PluginName { get; }
 
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
@@ -81,42 +75,6 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
-
-    /// <summary>
-    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}
-    /// </summary>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    string SkillName { get; }
-
-    /// <summary>
-    /// Set the default function collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
-    /// </summary>
-    /// <param name="skills">Kernel's function collection</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
-
-    /// <summary>
-    /// Set the default function collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
-    /// </summary>
-    /// <param name="functions">Kernel's function collection</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
-
-    /// <summary>
-    /// Whether the function is defined using a prompt template.
-    /// IMPORTANT: native functions might use semantic functions internally,
-    /// so when this property is False, executing the function might still involve AI calls.
-    /// </summary>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IsSemantic { get; }
 
     #endregion
 }

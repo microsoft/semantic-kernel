@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -26,9 +25,9 @@ public interface IKernel
     ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Reference to the read-only function collection containing all the imported functions
+    /// Gets a read-only collection of plugins registered in the kernel.
     /// </summary>
-    IReadOnlyFunctionCollection Functions { get; }
+    ISKPluginCollection Plugins { get; }
 
     /// <summary>
     /// Reference to Http handler factory
@@ -40,19 +39,21 @@ public interface IKernel
     /// </summary>
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("This will be removed in a future release. Use RegisterPlugin instead.")]
     ISKFunction RegisterCustomFunction(ISKFunction customFunction);
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="functions">Provide specific scoped functions. Defaults to all existing in the kernel</param>
+    /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
     /// <param name="loggerFactory">Logged factory used within the context</param>
     /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null,
+        IReadOnlySKPluginCollection? plugins = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null);
 
@@ -91,29 +92,6 @@ public interface IKernel
     [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ISemanticTextMemory Memory { get; }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IReadOnlyFunctionCollection Skills { get; }
-#pragma warning restore CS1591
-
-    /// <summary>
-    /// Access registered functions by plugin name and function name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="pluginName">Plugin name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Plugins collection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    ISKFunction Func(string pluginName, string functionName);
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
-#pragma warning restore CS1591
 
     /// <summary>
     /// Set the semantic memory to use

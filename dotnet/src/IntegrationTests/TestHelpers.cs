@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
 
@@ -42,12 +42,12 @@ internal static class TestHelpers
             "QASkill");
     }
 
-    internal static IDictionary<string, ISKFunction> ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
+    internal static ISKPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
         return ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
     }
 
-    internal static IDictionary<string, ISKFunction> ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
+    internal static ISKPluginCollection ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -57,6 +57,8 @@ internal static class TestHelpers
 
         string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, path));
 
-        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
+        return new SKPluginCollection(
+            from pluginName in pluginNames
+            select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
     }
 }

@@ -17,7 +17,7 @@ public static class Example11_WebSearchQueries
 
         // Load native plugins
         var plugin = new SearchUrlPlugin();
-        var bing = kernel.ImportFunctions(plugin, "search");
+        var bing = kernel.ImportPluginFromObject(plugin, "search");
 
         // Run
         var ask = "What's the tallest building in Europe?";

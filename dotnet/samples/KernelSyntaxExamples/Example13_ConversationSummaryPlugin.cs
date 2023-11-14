@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -132,8 +131,7 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         Kernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+        ISKPlugin conversationSummaryPlugin = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -148,8 +146,7 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         Kernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummary =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+        ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -164,8 +161,7 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         Kernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummary =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+        ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,

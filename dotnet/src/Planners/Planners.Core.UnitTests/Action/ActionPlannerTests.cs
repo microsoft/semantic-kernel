@@ -18,9 +18,9 @@ public sealed class ActionPlannerTests
     public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResultAsync()
     {
         // Arrange
-        var functionCollection = this.CreateFunctionCollection();
+        var plugins = this.CreatePluginCollection();
 
-        var kernel = this.CreateKernel(ValidPlanString, functionCollection);
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
 
         var planner = new ActionPlanner(kernel);
 
@@ -75,22 +75,21 @@ public sealed class ActionPlannerTests
         // Arrange
 
         // Extra opening brace before rationale
-        string invalidJsonString = @"Here is a possible plan to accomplish the user intent:
+        string invalidJsonString =
+            @"Here is a possible plan to accomplish the user intent:
+            {
+                ""plan"": { {
+                    ""rationale"": ""the list contains a function that allows to list pull requests"",
+                    ""function"": ""GitHubPlugin.PullsList"",
+                    ""parameters"": {
+                        ""owner"": ""microsoft"",
+                        ""repo"": ""semantic-kernel"",
+                        ""state"": ""open""
+                    }
+                }
+            }
 
-{
-    ""plan"": { {
-        ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubPlugin.PullsList"",
-        ""parameters"": {
-            ""owner"": ""microsoft"",
-            ""repo"": ""semantic-kernel"",
-            ""state"": ""open""
-        }
-    }
-}
-
-This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.
-";
+            This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 
         var kernel = this.CreateKernel(invalidJsonString);
 
@@ -101,12 +100,15 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     }
 
     [Fact]
-    public async Task ListOfFunctionsIncludesNativeAndSemanticFunctionsAsync()
+    public async Task ListOfFunctionsIncludesNativeAndPromptFunctionsAsync()
     {
         // Arrange
-        var functionCollection = this.CreateFunctionCollection();
-        var kernel = this.CreateKernel(ValidPlanString, functionCollection);
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
+
         var planner = new ActionPlanner(kernel);
+
         var context = kernel.CreateNewContext();
 
         // Act
@@ -121,11 +123,15 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
     {
         // Arrange
-        var functionCollection = this.CreateFunctionCollection();
-        var kernel = this.CreateKernel(ValidPlanString, functionCollection);
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
+
         var config = new ActionPlannerConfig();
         config.ExcludedPlugins.Add("GitHubPlugin");
+
         var planner = new ActionPlanner(kernel, config: config);
+
         var context = kernel.CreateNewContext();
 
         // Act
@@ -140,8 +146,9 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
     {
         // Arrange
-        var functionCollection = this.CreateFunctionCollection();
-        var kernel = this.CreateKernel(ValidPlanString, functionCollection);
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
 
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("PullsList");
@@ -158,11 +165,11 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         Assert.Equal(expected, result);
     }
 
-    private Kernel CreateKernel(string testPlanString, FunctionCollection? functions = null)
+    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
-        if (functions is null)
+        if (plugins is null)
         {
-            functions = new FunctionCollection();
+            plugins = new SKPluginCollection();
         }
 
         var textResult = new Mock<ITextResult>();
@@ -185,65 +192,38 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
 
-        return new Kernel(serviceProvider.Object, functions, serviceSelector.Object);
+        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-    // Method to create Mock<ISKFunction> objects
-    private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
+    private SKPluginCollection CreatePluginCollection()
     {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Describe()).Returns(functionView);
-        mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
-        return mockFunction;
-    }
-
-    private FunctionCollection CreateFunctionCollection()
-    {
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic)>()
+        return new()
         {
-            ("SendEmail", "email", "Send an e-mail", false),
-            ("PullsList", "GitHubPlugin", "List pull requests", true),
-            ("RepoList", "GitHubPlugin", "List repositories", true),
+            new SKPlugin("email", new[]
+            {
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+            }),
+            new SKPlugin("GitHubPlugin", new[]
+            {
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+            })
         };
+    }
 
-        var collection = new FunctionCollection();
-
-        foreach (var (name, pluginName, description, isSemantic) in functions)
+    private const string ValidPlanString =
+        @"Here is a possible plan to accomplish the user intent:
         {
-            var functionView = new FunctionView(name, pluginName, description);
-            var mockFunction = CreateMockFunction(functionView);
-
-            mockFunction.Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-                .Returns<
-                    SKContext,
-                    AIRequestSettings,
-                    CancellationToken>((context, settings, CancellationToken) =>
-                {
-                    return Task.FromResult(new FunctionResult(name, pluginName, context));
-                });
-
-            collection.AddFunction(mockFunction.Object);
+            ""plan"":{
+                ""rationale"": ""the list contains a function that allows to list pull requests"",
+                ""function"": ""GitHubPlugin.PullsList"",
+                ""parameters"": {
+                    ""owner"": ""microsoft"",
+                    ""repo"": ""semantic-kernel"",
+                    ""state"": ""open""
+                }
+            }
         }
 
-        return collection;
-    }
-
-    private const string ValidPlanString = @"Here is a possible plan to accomplish the user intent:
-{
-    ""plan"":{
-        ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubPlugin.PullsList"",
-        ""parameters"": {
-            ""owner"": ""microsoft"",
-            ""repo"": ""semantic-kernel"",
-            ""state"": ""open""
-        }
-    }
-}
-
-This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
+        This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 }

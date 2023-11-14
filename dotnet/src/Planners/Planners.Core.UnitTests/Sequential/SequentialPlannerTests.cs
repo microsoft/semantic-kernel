@@ -19,7 +19,7 @@ public sealed class SequentialPlannerTests
     public async Task ItCanCreatePlanAsync(string goal)
     {
         // Arrange
-        var functionCollection = this.CreateFunctionCollection();
+        var plugins = this.CreatePluginCollection();
 
         var planString =
             @"<plan>
@@ -29,7 +29,7 @@ public sealed class SequentialPlannerTests
                     <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
               </plan>";
 
-        var kernel = this.CreateKernel(planString, functionCollection);
+        var kernel = this.CreateKernel(planString, plugins);
 
         var planner = new SequentialPlanner(kernel);
 
@@ -41,7 +41,7 @@ public sealed class SequentialPlannerTests
 
         Assert.Equal(4, plan.Steps.Count);
 
-        Assert.Contains(plan.Steps, step => functionCollection.TryGetFunction(step.PluginName, step.Name, out var _));
+        Assert.Contains(plan.Steps, step => plugins.TryGetFunction(step.PluginName, step.Name, out var _));
     }
 
     [Fact]
@@ -88,11 +88,11 @@ public sealed class SequentialPlannerTests
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
 
-    private Kernel CreateKernel(string testPlanString, FunctionCollection? functions = null)
+    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
-        if (functions is null)
+        if (plugins is null)
         {
-            functions = new FunctionCollection();
+            plugins = new SKPluginCollection();
         }
 
         var textResult = new Mock<ITextResult>();
@@ -115,51 +115,26 @@ public sealed class SequentialPlannerTests
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
 
-        return new Kernel(serviceProvider.Object, functions, serviceSelector.Object);
+        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-    private FunctionCollection CreateFunctionCollection()
+    private SKPluginCollection CreatePluginCollection()
     {
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic)>()
+        return new()
         {
-            ("SendEmail", "email", "Send an e-mail", false),
-            ("GetEmailAddress", "email", "Get an e-mail address", false),
-            ("Translate", "WriterPlugin", "Translate something", true),
-            ("Summarize", "SummarizePlugin", "Summarize something", true)
+            new SKPlugin("email", new[]
+            {
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
+            }),
+            new SKPlugin("WriterPlugin", new[]
+            {
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
+            }),
+            new SKPlugin("SummarizePlugin", new[]
+            {
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
+            })
         };
-
-        var collection = new FunctionCollection();
-
-        foreach (var (name, pluginName, description, isSemantic) in functions)
-        {
-            var functionView = new FunctionView(name, pluginName, description);
-            var mockFunction = CreateMockFunction(functionView);
-
-            mockFunction.Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-                .Returns<
-                    SKContext,
-                    AIRequestSettings,
-                    CancellationToken>((context, settings, CancellationToken) =>
-                    {
-                        return Task.FromResult(new FunctionResult(name, pluginName, context));
-                    });
-
-            collection.AddFunction(mockFunction.Object);
-        }
-
-        return collection;
-    }
-
-    // Method to create Mock<ISKFunction> objects
-    private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
-    {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Describe()).Returns(functionView);
-        mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
-        return mockFunction;
     }
 }

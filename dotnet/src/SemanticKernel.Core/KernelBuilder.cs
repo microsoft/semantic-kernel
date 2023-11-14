@@ -46,7 +46,7 @@ public sealed class KernelBuilder
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS0618 // Type or member is obsolete
         var instance = new Kernel(
-            new FunctionCollection(),
+            new SKPluginCollection(),
             this._aiServices.Build(),
             this._promptTemplateEngine,
             this._memoryFactory.Invoke(),

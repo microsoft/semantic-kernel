@@ -25,7 +25,7 @@ public static class Example21_ChatGptPlugins
         using HttpClient httpClient = new();
 
         //Import an Open AI plugin via URI
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

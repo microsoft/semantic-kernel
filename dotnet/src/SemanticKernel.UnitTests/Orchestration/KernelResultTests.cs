@@ -32,8 +32,8 @@ public class KernelResultTests
         // Arrange
         var functionResults = new List<FunctionResult>
         {
-            new("function1", "plugin1", this._context, "value1"),
-            new("function2", "plugin2", this._context, "value2"),
+            new("function1", this._context, "value1"),
+            new("function2", this._context, "value2"),
         };
 
         // Act
@@ -63,7 +63,6 @@ public class KernelResultTests
     private void AssertFunctionResult(FunctionResult expected, FunctionResult actual)
     {
         Assert.Equal(expected.FunctionName, actual.FunctionName);
-        Assert.Equal(expected.PluginName, actual.PluginName);
         Assert.Equal(expected.Context, actual.Context);
         Assert.Equal(expected.Value, actual.Value);
     }

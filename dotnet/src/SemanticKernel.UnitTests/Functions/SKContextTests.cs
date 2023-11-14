@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
@@ -14,8 +11,6 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public class SKContextTests
 {
-    private readonly Mock<IFunctionCollection> _functions = new();
-
     [Fact]
     public void ItHasHelpersForContextVariables()
     {
@@ -37,50 +32,5 @@ public class SKContextTests
         Assert.Equal(target.Variables["INPUT"], target.ToString());
         Assert.Equal(target.Variables["INPUT"], target.Variables.Input);
         Assert.Equal(target.Variables["INPUT"], target.Variables.ToString());
-    }
-
-    [Fact]
-    public async Task ItHasHelpersForFunctionCollectionAsync()
-    {
-        // Arrange
-        IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
-        this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
-
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel(this._functions.Object);
-
-        var target = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(), this._functions.Object);
-        Assert.NotNull(target.Functions);
-
-        // Act
-        var say = target.Functions.GetFunction("func");
-
-        FunctionResult result = await say.InvokeAsync("ciao", kernel);
-
-        // Assert
-        Assert.Equal("ciao", result.Context.Result);
-        Assert.Equal("ciao", result.GetValue<string>());
-    }
-
-    private (Kernel kernel, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IFunctionCollection? functions = null)
-    {
-        functions ??= new Mock<IFunctionCollection>().Object;
-
-        var functionRunner = new Mock<IFunctionRunner>();
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
-        var kernel = new Kernel(serviceProvider.Object, functions);
-
-        return (kernel, functionRunner, serviceProvider, serviceSelector);
-    }
-
-    private sealed class Parrot
-    {
-        [SKFunction, Description("say something")]
-        // ReSharper disable once UnusedMember.Local
-        public string Say(string input)
-        {
-            return input;
-        }
     }
 }

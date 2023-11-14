@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -35,9 +34,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Name { get; }
 
     /// <inheritdoc/>
-    public string PluginName { get; }
-
-    /// <inheritdoc/>
     public string Description => this._promptTemplateConfig.Description;
 
     /// <inheritdoc/>
@@ -51,20 +47,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
-    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
-        string pluginName,
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        ILoggerFactory? loggerFactory = null,
-        CancellationToken cancellationToken = default)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptTemplateConfig);
         Verify.NotNull(promptTemplate);
@@ -72,7 +64,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return new SemanticFunction(
             template: promptTemplate,
             promptTemplateConfig: promptTemplateConfig,
-            pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
         );
@@ -81,7 +72,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
+        return new FunctionView(this.Name, PluginName: null, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>
@@ -117,12 +108,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     internal SemanticFunction(
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
-        string pluginName,
         string functionName,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
-        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
@@ -132,9 +121,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
-        this.PluginName = pluginName;
 
-        this._view = new(() => new(functionName, pluginName, promptTemplateConfig.Description, this.Parameters));
+        this._view = new(() => new(functionName, PluginName: null, promptTemplateConfig.Description, this.Parameters));
     }
 
     #region private
@@ -154,7 +142,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
@@ -184,9 +172,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
-            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context);
+                return new FunctionResult(this.Name, context);
             }
 
             renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
@@ -199,20 +187,20 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+            result = new FunctionResult(this.Name, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
             this.CallFunctionInvoked(result, context, renderedPrompt);
-            if (SKFunction.IsInvokedCancelRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
+                return new FunctionResult(this.Name, context, result.Value);
             }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
             throw;
         }
 
@@ -305,9 +293,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         else
         {
-            var serviceSelector = new DelegatingAIServiceSelector();
-            serviceSelector.ServiceFactory = serviceFactory;
-            this._serviceSelector = serviceSelector;
+            this._serviceSelector = new DelegatingAIServiceSelector { ServiceFactory = serviceFactory };
         }
         return this;
     }
@@ -322,32 +308,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         else
         {
-            var configurationProvider = new DelegatingAIServiceSelector();
-            configurationProvider.RequestSettings = requestSettings;
-            this._serviceSelector = configurationProvider;
+            this._serviceSelector = new DelegatingAIServiceSelector() { RequestSettings = requestSettings };
         }
         return this;
     }
-
-    /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
-
-    /// <inheritdoc/>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => true;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

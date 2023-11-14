@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -36,12 +37,12 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var searchFunctions = kernel.ImportFunctions(bing, "bing");
+        var searchFunctions = kernel.ImportPluginFromObject(bing, "bing");
 
         // Load semantic plugins defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var summarizeFunctions = kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+        var summarizeFunctions = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         // Run
         var ask = "What's the tallest building in South America";

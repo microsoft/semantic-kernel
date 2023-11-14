@@ -79,7 +79,7 @@ public static class Example42_KernelBuilder
             loggerFactory: loggerFactory);
 
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-        var plugins = new FunctionCollection();
+        var plugins = new SKPluginCollection();
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
         //var httpHandlerFactory = new PollyHttpRetryHandlerFactory( your policy );
