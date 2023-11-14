@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
@@ -51,8 +52,57 @@ public sealed class MyChatCompletionService : IChatCompletion
             new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
         }).ToAsyncEnumerable();
     }
+    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        {
+            yield return update.ToByteArray();
+        }
+    }
+
+    public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        var list = new List<MyStreamingChatResultUpdate>()
+        {
+            new MyStreamingChatResultUpdate("llm content update 1"),
+            new MyStreamingChatResultUpdate("llm content update 2")
+        };
+
+        return list.ToAsyncEnumerable();
+    }
+
+    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        {
+            yield return update.ToString();
+        }
+    }
 }
 
+public class MyStreamingChatResultUpdate : StreamingResultUpdate
+{
+    public override string Type => "my_chat_type";
+
+    public override int ResultIndex => 0;
+
+    public string Content { get; }
+
+    public MyStreamingChatResultUpdate(string content)
+    {
+        this.Content = content;
+    }
+
+    public override byte[] ToByteArray()
+    {
+        return Encoding.UTF8.GetBytes(this.Content);
+    }
+
+    public override string ToString()
+    {
+        return this.Content;
+    }
+}
 public class MyChatStreamingResult : IChatStreamingResult
 {
     private readonly ChatMessageBase _message;

@@ -22,22 +22,22 @@ public class StreamingChatResultUpdate : StreamingResultUpdate
     /// <summary>
     /// Function call associated to the message payload
     /// </summary>
-    public FunctionCall FunctionCall { get; }
+    public FunctionCall? FunctionCall { get; }
 
     /// <summary>
     /// Text associated to the message payload
     /// </summary>
-    public string Content { get; }
+    public string? Content { get; }
 
     /// <summary>
     /// Role of the author of the message
     /// </summary>
-    public AuthorRole Role { get; }
+    public AuthorRole? Role { get; }
 
     /// <summary>
     /// Name of the author of the message. Name is required if the role is 'function'.
     /// </summary>
-    public string Name { get; }
+    public string? Name { get; }
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatResultUpdate"/> class.
@@ -51,6 +51,20 @@ public class StreamingChatResultUpdate : StreamingResultUpdate
         this.Content = chatMessage.Content;
         this.Role = new AuthorRole(chatMessage.Role.ToString());
         this.Name = chatMessage.Name;
+    }
+
+    /// <summary>
+    /// Create a new instance of the <see cref="StreamingChatResultUpdate"/> class.
+    /// </summary>
+    /// <param name="chatMessage">Original Azure SDK Message update representation</param>
+    /// <param name="resultIndex">Index of the choice</param>
+    public StreamingChatResultUpdate(SKChatMessage chatMessage, int resultIndex)
+    {
+        this.ResultIndex = resultIndex;
+        this.FunctionCall = chatMessage.FunctionCall;
+        this.Content = chatMessage.Content;
+        this.Role = new AuthorRole(chatMessage.Role.ToString());
+        this.Name = chatMessage.FunctionCall?.Name;
     }
 
     /// <inheritdoc/>

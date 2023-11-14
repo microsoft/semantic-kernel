@@ -3,7 +3,7 @@
 using System.Text;
 using Microsoft.SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Streaming text result update.
@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public class StreamingTextResultUpdate : StreamingResultUpdate
 {
     /// <inheritdoc/>
-    public override string Type => "openai_text_update";
+    public override string Type => "huggingface_text_update";
 
     /// <inheritdoc/>
     public override int ResultIndex { get; }

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -34,5 +36,15 @@ internal class FunctionRunner : IFunctionRunner
     {
         var function = this._kernel.Functions.GetFunction(pluginName, functionName);
         return this.RunAsync(function, variables, cancellationToken);
+    }
+
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+    {
+        return this._kernel.StreamingRunAsync(skFunction, variables, cancellationToken);
+    }
+
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+    {
+        throw new System.NotImplementedException();
     }
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +89,42 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(
+        string input,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var resultIndex = 0;
+        foreach (var result in await this.ExecuteGetCompletionsAsync(input, cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var completion = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+            yield return new StreamingTextResultUpdate(completion, resultIndex);
+
+            resultIndex++;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToString();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToByteArray();
+        }
     }
 
     #region private ================================================================================

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -115,6 +116,42 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        var chat = this.PrepareChatHistory(input, chatRequestSettings);
+
+        var resultIndex = 0;
+        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (var message in result.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return new StreamingChatResultUpdate((SKChatMessage)message, resultIndex);
+            }
+            resultIndex++;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToString();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToByteArray();
         }
     }
 

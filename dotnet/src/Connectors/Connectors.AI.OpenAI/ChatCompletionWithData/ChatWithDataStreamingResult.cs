@@ -37,7 +37,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
         var result = new SKChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
 
-        return await Task.FromResult<ChatMessageBase>(result).ConfigureAwait(false);
+        return await Task.FromResult<SKChatMessage>(result).ConfigureAwait(false);
     }
 
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

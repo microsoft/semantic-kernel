@@ -2,6 +2,8 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -100,5 +102,30 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     {
         this.LogActionDetails();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        var chatHistory = JsonSerializer.Deserialize<ChatHistory>(input) ?? new();
+        return this.InternalGetChatStreamingUpdatesAsync(chatHistory, requestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToString();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update.ToByteArray();
+        }
     }
 }

@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +48,57 @@ public class MyTextCompletionService : ITextCompletion
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
+    }
+
+    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        {
+            yield return update.ToByteArray();
+        }
+    }
+
+    public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        var list = new List<StreamingResultUpdate>()
+        {
+            new MyStreamingResultUpdate("llm content update 1"),
+            new MyStreamingResultUpdate("llm content update 2")
+        };
+
+        return list.ToAsyncEnumerable();
+    }
+
+    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        {
+            yield return update.ToString();
+        }
+    }
+}
+
+public class MyStreamingResultUpdate : StreamingResultUpdate
+{
+    public override string Type => "my_text_type";
+
+    public override int ResultIndex => 0;
+
+    public string Content { get; }
+
+    public MyStreamingResultUpdate(string content)
+    {
+        this.Content = content;
+    }
+
+    public override byte[] ToByteArray()
+    {
+        return Encoding.UTF8.GetBytes(this.Content);
+    }
+
+    public override string ToString()
+    {
+        return this.Content;
     }
 }
 
