@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
@@ -15,7 +18,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public static class IOpenAIRestContextExtensions
 {
     /// <summary>
-    /// Create a new thread.
+    /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <returns>An <see cref="AssistantBuilder"> for definition.</see></returns>
@@ -25,14 +28,48 @@ public static class IOpenAIRestContextExtensions
     }
 
     /// <summary>
-    /// Create a new thread.
+    /// Create a new assistant.
+    /// </summary>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="model">The LLM name</param>
+    /// <param name="configurationPath">Path to a configuration file.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>The requested <see cref="IAssistant">.</see></returns>
+    public static async Task<IAssistant> CreateAssistantAsync(
+        this IOpenAIRestContext restContext,
+        string model,
+        string configurationPath,
+        CancellationToken cancellationToken = default)
+    {
+        var yamlContent = File.ReadAllText(configurationPath);
+
+        var deserializer = new DeserializerBuilder()
+            //.WithTypeConverter(new ExecutionSettingsModelConverter()) // TODO: @chris MATTHEW
+            .Build();
+
+        var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(yamlContent);
+
+        var builder =
+            new AssistantBuilder(restContext)
+                .WithModel(model)
+                .WithInstructions(assistantKernelModel.Instructions.Trim())
+                .WithName(assistantKernelModel.Name.Trim())
+                .WithDescription(assistantKernelModel.Description.Trim());
+
+        // TODO: @chris - TOOLS
+
+        return await builder.BuildAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="model">The assistant chat model (required)</param>
     /// <param name="instructions">The assistant instructions (required)</param>
     /// <param name="name">The assistant name (optional)</param>
     /// <param name="description">The assistant description(optional)</param>
-    /// <returns>An <see cref="AssistantBuilder"> for definition.</see></returns>
+    /// <returns>The requested <see cref="IAssistant">.</see></returns>
     public static async Task<IAssistant> CreateAssistantAsync(
         this IOpenAIRestContext restContext,
         string model,

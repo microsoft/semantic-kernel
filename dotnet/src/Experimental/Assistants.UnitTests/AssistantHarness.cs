@@ -46,13 +46,40 @@ public sealed class AssistantHarness
                 name: "Fred",
                 description: "test assistant").ConfigureAwait(true);
 
-        this._output.WriteLine($"# {assistant.Id}");
+        this.DumpAssistant(assistant);
 
         var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
 
-        this._output.WriteLine($"# {copy.Model}");
-        this._output.WriteLine($"# {copy.Instructions}");
-        this._output.WriteLine($"# {copy.Name}");
-        this._output.WriteLine($"# {copy.Description}");
+        this.DumpAssistant(copy);
+    }
+
+    /// <summary>
+    /// Verify creation and retrieval of assistant.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
+    public async Task VerifyAssistantDefinitionAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
+
+        this.DumpAssistant(assistant);
+
+        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
+
+        this.DumpAssistant(copy);
+    }
+
+    private void DumpAssistant(IAssistant assistant)
+    {
+        this._output.WriteLine($"# {assistant.Id}");
+        this._output.WriteLine($"# {assistant.Model}");
+        this._output.WriteLine($"# {assistant.Instructions}");
+        this._output.WriteLine($"# {assistant.Name}");
+        this._output.WriteLine($"# {assistant.Description}");
     }
 }

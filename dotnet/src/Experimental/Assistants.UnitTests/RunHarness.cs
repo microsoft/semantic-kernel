@@ -67,6 +67,34 @@ public sealed class RunHarness
     /// Verify creation of run.
     /// </summary>
     [Fact(Skip = SkipReason)]
+    public async Task VerifyRunFromDefinitionAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
+
+        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+
+        await this.ChatAsync(
+            thread,
+            assistant,
+            "Eggs are yummy and beautiful geometric gems.",
+            "It rains a lot in Seattle.").ConfigureAwait(true);
+
+        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
+        this.DumpMessages(copy);
+
+        Assert.Equal(4, copy.Messages.Count);
+    }
+
+    /// <summary>
+    /// Verify creation of run.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
         using var httpClient = new HttpClient();

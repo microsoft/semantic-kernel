@@ -32,6 +32,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <None Update="PoetAssistant.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
