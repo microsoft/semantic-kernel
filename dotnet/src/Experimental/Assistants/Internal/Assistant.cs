@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -51,20 +54,27 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
-    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
+    /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         IOpenAIRestContext restContext,
         AssistantModel assistantModel,
-        IKernel? kernel,
+        IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
+        var functionCollection = new FunctionCollection();
+        foreach (var function in functions ?? Array.Empty<ISKFunction>())
+        {
+            assistantModel.Tools.Add(DefineTool(function));
+            functionCollection.AddFunction(function);
+        }
+
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating assisant: no result.");
+            throw new SKException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, restContext, kernel);
+        return new Assistant(resultModel, restContext, functionCollection);
     }
 
     /// <summary>
@@ -99,20 +109,26 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
+    /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> GetAsync(
         IOpenAIRestContext restContext,
         string assistantId,
-        IKernel? kernel,
+        IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
+            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
 
-        return new Assistant(resultModel, restContext, kernel);
+        var functionCollection = new FunctionCollection();
+        foreach (var function in functions ?? Array.Empty<ISKFunction>())
+        {
+            functionCollection.AddFunction(function);
+        }
+
+        return new Assistant(resultModel, restContext, functionCollection);
     }
 
     /// <summary>
@@ -164,10 +180,61 @@ internal sealed class Assistant : IAssistant
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
     /// </summary>
-    internal Assistant(AssistantModel model, IOpenAIRestContext restContext, IKernel? kernel)
+    internal Assistant(
+        AssistantModel model,
+        IOpenAIRestContext restContext,
+        FunctionCollection functions)
     {
         this._model = model;
         this._restContext = restContext;
-        this.Kernel = kernel;
+        this.Kernel =
+            new Kernel(
+                functions,
+                aiServiceProvider: null!,
+                memory: null!,
+                NullHttpHandlerFactory.Instance,
+                loggerFactory: null);
+    }
+
+    private static AssistantModel.ToolModel DefineTool(ISKFunction tool)
+    {
+        var view = tool.Describe();
+        var required = new List<string>(view.Parameters.Count);
+        var parameters =
+            view.Parameters.ToDictionary(
+                p => p.Name,
+                p =>
+                {
+                    if (p.IsRequired ?? false)
+                    {
+                        required.Add(p.Name);
+                    }
+
+                    return
+                        new OpenAIParameter
+                        {
+                            Type = p.Type?.Name ?? nameof(System.String),
+                            Description = p.Description,
+                        };
+                });
+
+        var payload =
+            new AssistantModel.ToolModel
+            {
+                Type = "function",
+                Function =
+                    new()
+                    {
+                        Name = tool.GetQualifiedName(),
+                        Description = tool.Description,
+                        Parameters =
+                        {
+                            Properties = parameters,
+                            Required = required,
+                        }
+                    },
+            };
+
+        return payload;
     }
 }

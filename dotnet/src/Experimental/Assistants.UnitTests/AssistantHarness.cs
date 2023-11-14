@@ -25,7 +25,7 @@ public sealed class AssistantHarness
     private readonly ITestOutputHelper _output;
 
     /// <summary>
-    /// Test contructor.
+    /// Test constructor.
     /// </summary>
     public AssistantHarness(ITestOutputHelper output)
     {
@@ -48,37 +48,40 @@ public sealed class AssistantHarness
                 name: "Fred",
                 description: "test assistant").ConfigureAwait(true);
 
-        this._output.WriteLine($"# {assistant.Id}");
+        this.DumpAssistant(assistant);
 
         var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
 
-        this._output.WriteLine($"# {copy.Model}");
-        this._output.WriteLine($"# {copy.Instructions}");
-        this._output.WriteLine($"# {copy.Name}");
-        this._output.WriteLine($"# {copy.Description}");
+        this.DumpAssistant(copy);
+    }
 
-        var modifiedCopy = await context.ModifyAssistantAsync(copy.Id, name: "Barney").ConfigureAwait(true);
+    /// <summary>
+    /// Verify creation and retrieval of assistant.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
+    public async Task VerifyAssistantDefinitionAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
 
-        this._output.WriteLine($"New name {modifiedCopy.Name}");
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
 
-        IList<IAssistant> assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
+        this.DumpAssistant(assistant);
 
-        if (assistants.Any(a => a.Id == assistant.Id))
-        {
-            this._output.WriteLine("Found Fred");
+        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
 
-            await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
+        this.DumpAssistant(copy);
+    }
 
-            this._output.WriteLine("Now he's gone");
-        }
-
-        if (assistants.Any(a => a.Id == modifiedCopy.Id))
-        {
-            this._output.WriteLine("Found Barney");
-
-            await context.DeleteAssistantAsync(modifiedCopy.Id).ConfigureAwait(true);
-
-            this._output.WriteLine("Now he's gone");
-        }
+    private void DumpAssistant(IAssistant assistant)
+    {
+        this._output.WriteLine($"# {assistant.Id}");
+        this._output.WriteLine($"# {assistant.Model}");
+        this._output.WriteLine($"# {assistant.Instructions}");
+        this._output.WriteLine($"# {assistant.Name}");
+        this._output.WriteLine($"# {assistant.Description}");
     }
 }

@@ -11,15 +11,15 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// </summary>
 public interface IAssistantBuilder
 {
-    /// <summary>
-    /// Assigns a semantic-kernel to the assistant (for function calling).
-    /// </summary>
-    /// <param name="kernel">The semantic-kernel associated with the assistant.</param>
-    /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithKernel(IKernel kernel);
+    ///// <summary>
+    ///// Assigns a semantic-kernel to the assistant (for function calling).
+    ///// </summary>
+    ///// <param name="kernel">The semantic-kernel associated with the assistant.</param>
+    ///// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
+    //IAssistantBuilder WithKernel(IKernel kernel);
 
     /// <summary>
-    /// Define the chat model assocaited with the assistant (required).
+    /// Define the chat model associated with the assistant (required).
     /// </summary>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
     IAssistantBuilder WithModel(string model);
@@ -48,23 +48,17 @@ public interface IAssistantBuilder
     /// </summary>
     /// <param name="tool">A SK function view</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTool(FunctionView tool);
+    IAssistantBuilder WithTool(ISKFunction tool);
 
     /// <summary>
     /// Adds assistant tools.
     /// </summary>
     /// <param name="tools">A list of SK function views</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTools(IEnumerable<FunctionView> tools);
+    IAssistantBuilder WithTools(IEnumerable<ISKFunction> tools);
 
     /// <summary>
-    /// Adds all the functions in the associated kernel as the assistant tools.
-    /// </summary>
-    /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>
-    IAssistantBuilder WithTools();
-
-    /// <summary>
-    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
     /// </summary>
     /// <param name="key">The metadata key</param>
     /// <param name="value">The metadata value</param>
@@ -72,7 +66,7 @@ public interface IAssistantBuilder
     IAssistantBuilder WithMetadata(string key, object value);
 
     /// <summary>
-    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+    /// Stores metadata whose keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
     /// </summary>
     /// <param name="metadata">A set of metadata</param>
     /// <returns><see cref="IAssistantBuilder"/> instance for fluid expression.</returns>

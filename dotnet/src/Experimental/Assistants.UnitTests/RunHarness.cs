@@ -26,7 +26,7 @@ public sealed class RunHarness
     private readonly ITestOutputHelper _output;
 
     /// <summary>
-    /// Test contructor.
+    /// Test constructor.
     /// </summary>
     public RunHarness(ITestOutputHelper output)
     {
@@ -67,6 +67,34 @@ public sealed class RunHarness
     /// Verify creation of run.
     /// </summary>
     [Fact(Skip = SkipReason)]
+    public async Task VerifyRunFromDefinitionAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
+
+        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+
+        await this.ChatAsync(
+            thread,
+            assistant,
+            "Eggs are yummy and beautiful geometric gems.",
+            "It rains a lot in Seattle.").ConfigureAwait(true);
+
+        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
+        this.DumpMessages(copy);
+
+        Assert.Equal(4, copy.Messages.Count);
+    }
+
+    /// <summary>
+    /// Verify creation of run.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
         using var httpClient = new HttpClient();
@@ -74,16 +102,13 @@ public sealed class RunHarness
 
         var kernel = new KernelBuilder().Build();
 
-        kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
+        var gamePlugin = kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
 
         var assistant =
-            await context.CreateAssistant()
-                .WithKernel(kernel)
-                .WithModel("gpt-3.5-turbo-1106")
-                .WithInstructions("Run a guessing game where the user tries to guess the answer to a question.  If they give up by asking for the answer, the loose (and tell them the answer).")
-                .WithName("Fred")
-                .WithTools()
-                .BuildAsync().ConfigureAwait(true);
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "GameAssistant.yaml",
+                functions: gamePlugin.Values).ConfigureAwait(true);
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);
         await this.ChatAsync(

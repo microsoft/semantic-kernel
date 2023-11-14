@@ -23,7 +23,7 @@ public sealed class ThreadHarness
     private readonly ITestOutputHelper _output;
 
     /// <summary>
-    /// Test contructor.
+    /// Test constructor.
     /// </summary>
     public ThreadHarness(ITestOutputHelper output)
     {

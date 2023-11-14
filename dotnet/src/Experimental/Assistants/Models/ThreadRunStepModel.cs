@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable CA1812
 
 using System;
 using System.Text.Json.Serialization;
@@ -8,7 +9,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// list of run steps belonging to a run.
 /// </summary>
-internal class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
+internal sealed class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
 {
     // No specialization
 }
@@ -16,7 +17,7 @@ internal class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
 /// <summary>
 /// Step in a run on a thread.
 /// </summary>
-internal class ThreadRunStepModel
+internal sealed class ThreadRunStepModel
 {
     /// <summary>
     /// Identifier of the run step, which can be referenced in API endpoints.
@@ -104,13 +105,18 @@ internal class ThreadRunStepModel
     /// The details of the run step.
     /// </summary>
     [JsonPropertyName("step_details")]
-    public StepDetailsModel StepDetails { get; set; }
+    public StepDetailsModel StepDetails { get; set; } = StepDetailsModel.Empty;
 
     /// <summary>
     /// Details of a run step.
     /// </summary>
-    public class StepDetailsModel
+    public sealed class StepDetailsModel
     {
+        /// <summary>
+        /// Empty definition
+        /// </summary>
+        public static StepDetailsModel Empty = new();
+
         /// <summary>
         /// Type of detail.
         /// </summary>
@@ -133,7 +139,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Message creation details.
     /// </summary>
-    public class MessageCreationDetailsModel
+    public sealed class MessageCreationDetailsModel
     {
         /// <summary>
         /// ID of the message that was created by this run step.
@@ -145,10 +151,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Tool call details.
     /// </summary>
-    /// <remarks>
-    /// TODO: @chris This model and all those below it are not quite correct - Fix that
-    /// </remarks>
-    public class ToolCallsDetailsModel
+    public sealed class ToolCallsDetailsModel
     {
         /// <summary>
         /// ID of the tool call.
@@ -166,17 +169,19 @@ internal class ThreadRunStepModel
         /// The definition of the function that was called.
         /// </summary>
         [JsonPropertyName("function")]
-        public FunctionDetailsModel Function { get; set; }
+        public FunctionDetailsModel Function { get; set; } = FunctionDetailsModel.Empty;
     }
 
     /// <summary>
     /// Function call details.
     /// </summary>
-    /// <remarks>
-    /// TODO: @chris This model and all those below it are not quite correct - Fix that
-    /// </remarks>
-    public class FunctionDetailsModel
+    public sealed class FunctionDetailsModel
     {
+        /// <summary>
+        /// Empty definition
+        /// </summary>
+        public static FunctionDetailsModel Empty = new();
+
         /// <summary>
         /// The name of the function.
         /// </summary>
@@ -193,6 +198,7 @@ internal class ThreadRunStepModel
         /// The output of the function.
         /// This will be null if the outputs have not been submitted yet.
         /// </summary>
+        [JsonPropertyName("output")]
         public string Output { get; set; } = string.Empty;
     }
 }

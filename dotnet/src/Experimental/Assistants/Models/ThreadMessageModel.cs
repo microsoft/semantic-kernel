@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable CA1812
+#pragma warning disable CA1852
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -16,7 +18,7 @@ internal class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
 /// <summary>
 /// Represents a message within a thread.
 /// </summary>
-internal class ThreadMessageModel
+internal sealed class ThreadMessageModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
@@ -78,7 +80,7 @@ internal class ThreadMessageModel
     /// Set of 16 key-value pairs that can be attached to an object.
     /// This can be useful for storing additional information about the
     /// object in a structured format. Keys can be a maximum of 64
-    /// characters long and values can be a maxium of 512 characters long.
+    /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
@@ -86,7 +88,7 @@ internal class ThreadMessageModel
     /// <summary>
     /// Representa contents within a message.
     /// </summary>
-    public class ContentModel
+    public sealed class ContentModel
     {
         /// <summary>
         /// Type of content.
@@ -104,7 +106,7 @@ internal class ThreadMessageModel
     /// <summary>
     /// Text content.
     /// </summary>
-    public class TextContentModel
+    public sealed class TextContentModel
     {
         /// <summary>
         /// The text itself.
