@@ -52,17 +52,6 @@ public sealed class HandlebarsPlan
     {
         string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, executionContext, this._template, variables, cancellationToken);
         executionContext.Variables.Update(results);
-
-        // try
-        // {
-        //     variables.TryGetValue(HandlebarsPromptTemplateEngineExtensions.ReservedOutputTypeKey, out var returnType);
-        //     var deserializedResult = JsonSerializer.Deserialize(results, (returnType as Type) ?? typeof(string));
-        //     results = deserializedResult != null ? deserializedResult.ToString() : results;
-        // }
-        // catch (Exception)
-        // {
-        // }
-
         return new FunctionResult("Plan", "HandlebarsPlanner", executionContext, results?.Trim());
     }
 }

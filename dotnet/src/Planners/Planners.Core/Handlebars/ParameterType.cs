@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
-internal class Property
+internal class NestedProperty
 {
-    public Property(string name, Type propertyType)
+    public NestedProperty(string name, Type propertyType)
     {
         this.Name = name;
         this.Type = propertyType;
@@ -34,7 +34,7 @@ internal class ParameterType
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<Property> Properties { get; set; } = new();
+    public List<NestedProperty> Properties { get; set; } = new();
 }
 
 internal static class ParameterTypeExtensions
@@ -82,7 +82,7 @@ internal static class ParameterTypeExtensions
             {
                 Name = type.Name,
                 IsComplexType = true,
-                Properties = properties.Select(p => new Property(p.Name, p.PropertyType)).ToList()
+                Properties = properties.Select(p => new NestedProperty(p.Name, p.PropertyType)).ToList()
             });
 
             // Add nested complex types
