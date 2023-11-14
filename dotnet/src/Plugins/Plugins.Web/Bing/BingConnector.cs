@@ -30,11 +30,11 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="uri"></param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
         Justification = "A constant Uri cannot be defined, as required by this class")]
-    public BingConnector(string apiKey, string uri = DefaultUri, ILogger<BingConnector>? logger = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, logger)
+    public BingConnector(string apiKey, string uri = DefaultUri, ILoggerFactory? loggerFactory = null) :
+        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, loggerFactory)
     {
     }
 
@@ -44,16 +44,17 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="uri"></param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
         Justification = "A constant Uri cannot be defined, as required by this class")]
-    public BingConnector(string apiKey, HttpClient httpClient, string uri = DefaultUri, ILogger<BingConnector>? logger = null)
+    public BingConnector(string apiKey, HttpClient httpClient, string uri = DefaultUri, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = logger is not null ? logger : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
         this._uri = string.IsNullOrEmpty(uri) ? BingConnector.DefaultUri : uri;
     }
 
@@ -91,9 +92,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
             else if (typeof(T) == typeof(WebPage))
             {
                 List<WebPage>? webPages = new();
-#pragma warning disable 8602 // Disable null check warning for data?.WebPages?.Value which is not null here.
-                foreach (var webPage in data?.WebPages?.Value)
-#pragma warning restore 8602
+
+                foreach (var webPage in data.WebPages.Value)
+
                 {
                     webPages.Add(webPage);
                 }
