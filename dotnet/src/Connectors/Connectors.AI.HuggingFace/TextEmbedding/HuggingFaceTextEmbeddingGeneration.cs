@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -22,6 +23,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
+    private readonly Dictionary<string, string> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -34,9 +36,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
-
+        this._endpoint = endpoint.AbsoluteUri;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -52,7 +55,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         this._model = model;
         this._endpoint = endpoint;
-
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -70,12 +74,17 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._model = model;
         this._endpoint = endpoint;
         this._httpClient = httpClient;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? this._httpClient.BaseAddress.ToString());
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
