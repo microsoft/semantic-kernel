@@ -128,9 +128,6 @@ public sealed class OpenAIFunctionTests
 
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
-        var exp = JsonSerializer.Serialize(JsonDocument.Parse(expectedParameterSchema));
-        var act = JsonSerializer.Serialize(JsonDocument.Parse(functionDefinition.Parameters));
-
         Assert.NotNull(functionDefinition);
         Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
