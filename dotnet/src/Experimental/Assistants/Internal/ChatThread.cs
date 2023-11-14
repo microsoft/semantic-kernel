@@ -20,12 +20,7 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public string Id { get; private set; }
 
-    /// <inheritdoc/>
-    public IReadOnlyList<IChatMessage> Messages => this._messages.AsReadOnly();
-
     private readonly IOpenAIRestContext _restContext;
-    private readonly List<IChatMessage> _messages;
-    private readonly Dictionary<string, IChatMessage> _messageIndex;
 
     /// <summary>
     /// Create a new thread.
@@ -71,7 +66,7 @@ internal sealed class ChatThread : IChatThread
                 message,
                 cancellationToken).ConfigureAwait(false);
 
-        return this.AddMessage(messageModel);
+        return new ChatMessage(messageModel);
     }
 
     /// <inheritdoc/>
@@ -103,7 +98,7 @@ internal sealed class ChatThread : IChatThread
         var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
         foreach (var message in messages)
         {
-            yield return this.AddMessage(message);
+            yield return new ChatMessage(message);
         }
     }
 
@@ -116,18 +111,6 @@ internal sealed class ChatThread : IChatThread
         IOpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;
-        this._messages = ((IList<ThreadMessageModel>?)messageListModel?.Data ?? Array.Empty<ThreadMessageModel>()).Reverse().Select(m => (IChatMessage)new ChatMessage(m)).ToList();
-        this._messageIndex = this._messages.ToDictionary(m => m.Id);
         this._restContext = restContext;
-    }
-
-    private ChatMessage AddMessage(ThreadMessageModel messageModel)
-    {
-        var message = new ChatMessage(messageModel);
-
-        this._messages.Add(message);
-        this._messageIndex.Add(message.Id, message);
-
-        return message;
     }
 }

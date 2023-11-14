@@ -17,11 +17,6 @@ public interface IChatThread
     string Id { get; }
 
     /// <summary>
-    /// The messages associated with the thread.
-    /// </summary>
-    IReadOnlyList<IChatMessage> Messages { get; }
-
-    /// <summary>
     /// Add a textual user message to the thread.
     /// </summary>
     /// <param name="message">The user message</param>
