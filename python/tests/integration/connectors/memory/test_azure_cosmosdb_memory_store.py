@@ -9,6 +9,7 @@ try:
     from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
         AzureCosmosDBMemoryStore,
     )
+
     azure_cosmosdb_memory_store_installed = True
 except AssertionError:
     azure_cosmosdb_memory_store_installed = False
@@ -27,6 +28,7 @@ pytestmark = pytest.mark.skipif(
     not azure_cosmosdb_memory_store_installed,
     reason="Azure CosmosDB Memory Store is not installed",
 )
+
 
 def create_embedding(non_zero_pos: int) -> np.ndarray:
     # Create a NumPy array with a single non-zero value of dimension 1546
