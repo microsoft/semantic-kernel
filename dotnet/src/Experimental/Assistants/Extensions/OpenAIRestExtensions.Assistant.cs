@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -45,50 +44,6 @@ internal static partial class OpenAIRestExtensions
             context.ExecutePostAsync<AssistantModel>(
                 BaseAssistantUrl,
                 payload,
-                cancellationToken);
-    }
-
-    /// <summary>
-    /// Modify an existing Aasistant
-    /// </summary>
-    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="model">New LLM model, if not null</param>
-    /// <param name="instructions">New instructions, if not null</param>
-    /// <param name="name">New name, if not null</param>
-    /// <param name="description">New description, if not null</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    public static Task<AssistantModel> ModifyAssistantModelAsync(
-        this IOpenAIRestContext context,
-        string assistantId,
-        string? model = null,
-        string? instructions = null,
-        string? name = null,
-        string? description = null,
-        CancellationToken cancellationToken = default)
-    {
-        var payload = new StringBuilder("{");
-        if (model is not null)
-        {
-            payload.Append($"\"{nameof(model)}\":\"{model}\"");
-        }
-        if (instructions is not null)
-        {
-            payload.Append($"\"{nameof(instructions)}\":\"{instructions}\"");
-        }
-        if (name is not null)
-        {
-            payload.Append($"\"{nameof(name)}\":\"{name}\"");
-        }
-        if (description is not null)
-        {
-            payload.Append($"\"{nameof(description)}\":\"{description}\"");
-        }
-        payload.Append('}');
-
-        return context.ExecutePostAsync<AssistantModel>(
-                GetAssistantUrl(assistantId),
-                payload.ToString(),
                 cancellationToken);
     }
 

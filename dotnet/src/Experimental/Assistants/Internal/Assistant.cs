@@ -77,33 +77,6 @@ internal sealed class Assistant : IAssistant
     }
 
     /// <summary>
-    /// Modify an existing Assistant
-    /// </summary>
-    /// <param name="restContext">Context to make calls to OpenAI</param>
-    /// <param name="assistantId">ID of assistant to modify</param>
-    /// <param name="model">New model, if not null</param>
-    /// <param name="instructions">New instructions, if not null</param>
-    /// <param name="name">New name, if not null</param>
-    /// <param name="description">New description, if not null</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>The modified <see cref="Assistant"> instance.</see></returns>
-    public static async Task<IAssistant> ModifyAsync(
-        IOpenAIRestContext restContext,
-        string assistantId,
-        string? model = null,
-        string? instructions = null,
-        string? name = null,
-        string? description = null,
-        CancellationToken cancellationToken = default)
-    {
-        var resultModel =
-            await restContext.ModifyAssistantModelAsync(assistantId, model, instructions, name, description, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure modifying assistant: no result.");
-
-        return new Assistant(resultModel, restContext, new FunctionCollection()); // TODO: @gil find way to preserve FunctionCollection (maybe why out of scope)
-    }
-
-    /// <summary>
     /// Retrieve an existing assistant, by identifier.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>

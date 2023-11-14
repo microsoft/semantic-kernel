@@ -100,29 +100,6 @@ public static class IOpenAIRestContextExtensions
     }
 
     /// <summary>
-    /// Modify an existing assistant TODO: @chris / @gil (out of scope)
-    /// </summary>
-    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantToModify">Instance ID of assistant to modify</param>
-    /// <param name="model">New model, if not null</param>
-    /// <param name="instructions">New instructions, if not null</param>
-    /// <param name="name">New name, if not null</param>
-    /// <param name="description">New description, if not null</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>Modified <see cref="IAssistant"> instance.</see></returns>
-    public static Task<IAssistant> ModifyAssistantAsync(
-        this IOpenAIRestContext restContext,
-        string assistantToModify,
-        string? model = null,
-        string? instructions = null,
-        string? name = null,
-        string? description = null,
-        CancellationToken cancellationToken = default)
-    {
-        return Assistant.ModifyAsync(restContext, assistantToModify, model, instructions, name, description, cancellationToken);
-    }
-
-    /// <summary>
     /// Delete an existing assistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>

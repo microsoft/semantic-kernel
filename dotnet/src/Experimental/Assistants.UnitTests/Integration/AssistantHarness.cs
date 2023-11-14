@@ -53,10 +53,6 @@ public sealed class AssistantHarness
         var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
 
         this.DumpAssistant(copy);
-
-        var modifiedCopy = await context.ModifyAssistantAsync(copy.Id, name: "Barney").ConfigureAwait(true);
-
-        this.DumpAssistant(modifiedCopy);
     }
 
     /// <summary>
