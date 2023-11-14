@@ -104,13 +104,18 @@ internal class ThreadRunStepModel
     /// The details of the run step.
     /// </summary>
     [JsonPropertyName("step_details")]
-    public StepDetailsModel StepDetails { get; set; }
+    public StepDetailsModel StepDetails { get; set; } = StepDetailsModel.Empty;
 
     /// <summary>
     /// Details of a run step.
     /// </summary>
     public class StepDetailsModel
     {
+        /// <summary>
+        /// Empty definition
+        /// </summary>
+        public static StepDetailsModel Empty = new();
+
         /// <summary>
         /// Type of detail.
         /// </summary>
