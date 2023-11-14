@@ -269,7 +269,6 @@ public static class KernelOpenApiPluginExtensions
             .ToList();
 
         RestApiOperationResponse? restOperationResponse = null;
-
         foreach (var response in operation.Responses)
         {
             if (response.Key == "200" || response.Key == "default" || restOperationResponse == null)
@@ -283,10 +282,8 @@ public static class KernelOpenApiPluginExtensions
             }
         }
 
-
-        // TODO -- Include the response schema in the return parameter view
-        var r = restOperationResponse.ContentType; // or restOperationResponse.Schema?.Type
-        var returnParameter = new ReturnParameterView(restOperationResponse.Content.ToString(), null, restOperationResponse.Schema?.Schema);
+        var returnParameter =
+            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Content.ToString(), null, restOperationResponse.Schema?.Schema) : null;
 
         var function = SKFunction.Create(
             method: ExecuteAsync,

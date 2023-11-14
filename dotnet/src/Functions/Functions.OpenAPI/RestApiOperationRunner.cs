@@ -182,28 +182,12 @@ internal sealed class RestApiOperationRunner
             if (matchingResponse is null)
             {
                 matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value;
-
-                // // Throw exception if no matching or default response is found
-                // if (matchingResponse.Value is null)
-                // {
-                //     throw new SKException($"No response defined for status code {statusCodeKey} or default in the OpenAPI specification.");
-                // }
             }
 
             if (matchingResponse is not null)
             {
                 response.Schema ??= matchingResponse.Schema;
             }
-            // var expectedSchema = matchingResponse.Schema;
-            // if (expectedSchema is not null)
-            // {
-            //     response.Schema ??= expectedSchema;
-            //     // var responseContentIsValid = expectedSchema.IsValid(response.Content.ToString());
-            //     // if (!responseContentIsValid)
-            //     // {
-            //     //     throw new SKException($"The response of the {matchingResponse.Value} operation is not valid."); // TODO Needs test coverage
-            //     // }
-            // }
         }
 
         return response;

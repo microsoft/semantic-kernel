@@ -294,7 +294,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             yield break;
         }
 
-        // TODO: support default/no response code
         foreach (var response in responses)
         {
             if (response.Value == null)
