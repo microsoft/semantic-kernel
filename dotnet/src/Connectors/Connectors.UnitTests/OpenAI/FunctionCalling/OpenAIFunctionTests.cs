@@ -69,7 +69,7 @@ public sealed class OpenAIFunctionTests
             ParameterType = typeof(int)
         };
 
-        OpenAIReturnParameter returnParameter = new()
+        OpenAIFunctionReturnParameter returnParameter = new()
         {
             Description = "My test Result",
             ParameterType = typeof(string)

@@ -35,7 +35,7 @@ public static class FunctionViewExtensions
             });
         }
 
-        var returnParameter = new OpenAIReturnParameter
+        var returnParameter = new OpenAIFunctionReturnParameter
         {
             Description = functionView.ReturnParameter.Description ?? string.Empty,
             Schema = functionView.ReturnParameter.Schema ?? GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),

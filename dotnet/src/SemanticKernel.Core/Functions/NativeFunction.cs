@@ -302,7 +302,6 @@ internal sealed class NativeFunction : ISKFunction
         return new MethodDetails
         {
             Function = Function,
-
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,

@@ -51,7 +51,7 @@ public class OpenAIFunctionParameter
 /// <summary>
 /// Represents a return parameter of a function that can be passed to the OpenAI API
 /// </summary>
-public class OpenAIReturnParameter
+public class OpenAIFunctionReturnParameter
 {
     /// <summary>
     /// Description of the parameter.
@@ -110,7 +110,7 @@ public class OpenAIFunction
     /// <summary>
     /// The return parameter of the function.
     /// </summary>
-    public OpenAIReturnParameter ReturnParameter { get; set; } = new OpenAIReturnParameter();
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
 
     /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> to OpenAI's <see cref="FunctionDefinition"/>.

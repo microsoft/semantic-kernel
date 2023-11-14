@@ -29,7 +29,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal($"{sut.PluginName}-{sut.Name}", result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
-        Assert.Equivalent(new OpenAIReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
-        Assert.Equivalent(new OpenAIReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
