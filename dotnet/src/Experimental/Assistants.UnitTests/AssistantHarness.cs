@@ -105,6 +105,7 @@ public sealed class AssistantHarness
                 "Fred",
                 "Barney",
                 "Poet",
+                "Math Tutor",
             };
         using var httpClient = new HttpClient();
         var context = OpenAIRestContext.CreateFromConfig(httpClient);
