@@ -56,7 +56,9 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:ServiceId" "..."
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:ModelId" "..."
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:ChatModelId" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 

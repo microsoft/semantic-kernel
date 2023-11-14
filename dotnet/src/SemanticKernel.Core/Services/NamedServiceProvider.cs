@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel.Services;
 
@@ -54,6 +55,33 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
         }
 
         return null;
+    }
+
+    /// <inheritdoc/>
+    public ICollection<T> GetServices<T>() where T : TService
+    {
+        if (typeof(T) == typeof(TService))
+        {
+            return this.GetAllServices<T>();
+        }
+
+        if (this._services.TryGetValue(typeof(T), out var namedServices))
+        {
+            return namedServices.Values.Select(f => f.Invoke()).Cast<T>().ToList();
+        }
+
+        return Array.Empty<T>();
+    }
+
+    private HashSet<T> GetAllServices<T>()
+    {
+        HashSet<T> services = new();
+        foreach (var namedServices in this._services.Values)
+        {
+            services.UnionWith(namedServices.Values.Select(f => f.Invoke()).Cast<T>());
+        }
+
+        return services;
     }
 
     private Func<T>? GetServiceFactory<T>(string? name = null) where T : TService

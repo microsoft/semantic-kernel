@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
@@ -199,10 +198,17 @@ public class OrderedIAIServiceConfigurationProviderTests
     #region private
     private sealed class AIService : IAIService
     {
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+        public string? ModelId { get; }
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+        public string? ModelId { get; }
+
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
