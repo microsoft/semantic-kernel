@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -57,26 +58,41 @@ public sealed class AssistantHarness
         var modifiedCopy = await context.ModifyAssistantAsync(copy.Id, name: "Barney").ConfigureAwait(true);
 
         this.DumpAssistant(modifiedCopy);
+    }
 
-        IList<IAssistant> assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
 
-        if (assistants.Any(a => a.Id == assistant.Id))
+    /// <summary>
+    /// Verify creation and retrieval of assistant.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
+    public async Task VerifyAssistantListAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistants = await context.ListAssistantsAsync().ConfigureAwait(true);
+        foreach (var assistant in assistants)
         {
-            this._output.WriteLine("Found Fred");
-
-            await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
-
-            this._output.WriteLine("Now he's gone");
+            this.DumpAssistant(assistant);
         }
 
-        if (assistants.Any(a => a.Id == modifiedCopy.Id))
-        {
-            this._output.WriteLine("Found Barney");
+        //if (assistants.Any(a => a.Id == assistant.Id))
+        //{
+        //    this._output.WriteLine("Found Fred");
 
-            await context.DeleteAssistantAsync(modifiedCopy.Id).ConfigureAwait(true);
+        //    await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
 
-            this._output.WriteLine("Now he's gone");
-        }
+        //    this._output.WriteLine("Now he's gone");
+        //}
+
+        //if (assistants.Any(a => a.Id == modifiedCopy.Id))
+        //{
+        //    this._output.WriteLine("Found Barney");
+
+        //    await context.DeleteAssistantAsync(modifiedCopy.Id).ConfigureAwait(true);
+
+        //    this._output.WriteLine("Now he's gone");
+        //}
     }
 
     /// <summary>
@@ -106,6 +122,6 @@ public sealed class AssistantHarness
         this._output.WriteLine($"# {assistant.Model}");
         this._output.WriteLine($"# {assistant.Instructions}");
         this._output.WriteLine($"# {assistant.Name}");
-        this._output.WriteLine($"# {assistant.Description}");
+        this._output.WriteLine($"# {assistant.Description}{Environment.NewLine}");
     }
 }
