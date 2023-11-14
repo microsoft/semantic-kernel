@@ -37,7 +37,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
+    public async Task<IList<RestApiOperation>> ParseAsync(
+        Stream stream,
+        bool ignoreNonCompliantErrors = false,
+        IList<string>? operationsToExclude = null,
+        CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
@@ -47,7 +51,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument);
+        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude);
     }
 
     #region private
@@ -147,8 +151,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Parses an OpenApi document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenApi document.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <returns>List of Rest operations.</returns>
-    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude = null)
     {
         var result = new List<RestApiOperation>();
 
@@ -156,7 +161,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value);
+            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude);
 
             result.AddRange(operations);
         }
@@ -170,8 +175,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="serverUrl">The server url.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <returns>Rest operation.</returns>
-    private static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem)
+    private static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude = null)
     {
         var operations = new List<RestApiOperation>();
 
@@ -180,6 +186,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             var method = operationPair.Key.ToString();
 
             var operationItem = operationPair.Value;
+
+            if (operationsToExclude != null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
