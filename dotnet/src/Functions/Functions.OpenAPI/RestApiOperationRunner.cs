@@ -115,7 +115,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<RestApiOperationResponse> RunAsync(
+    public async Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         IDictionary<string, string> arguments,
         RestApiOperationRunOptions? options = null,
@@ -127,7 +127,16 @@ internal sealed class RestApiOperationRunner
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
+        var result = await this.SendAsync(url, operation.Method, headers, payload, cancellationToken).ConfigureAwait(false);
+
+        // use the operation.Response to validate
+        // todo get success or matching perhaps? Should `sendAsync` do this?
+        if (!operation.Responses.Any() || result.ValidateResponse(operation.Responses.First().Schema))
+        {
+            return result;
+        }
+
+        throw new SKException($"The response of the {operation.Id} operation is not valid."); // TODO Needs test coverage
     }
 
     #region private
@@ -171,6 +180,7 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
+        // todo response header?
         return await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
     }
 
@@ -185,10 +195,10 @@ internal sealed class RestApiOperationRunner
 
         var mediaType = contentType.MediaType;
 
-        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)  
+        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
         {
-            // Split the media type into a primary-type and a sub-type  
+            // Split the media type into a primary-type and a sub-type
             var mediaTypeParts = mediaType.Split('/');
             if (mediaTypeParts.Length != 2)
             {
@@ -197,14 +207,14 @@ internal sealed class RestApiOperationRunner
 
             var primaryMediaType = mediaTypeParts.First();
 
-            // Try to obtain the content serializer by the primary type (e.g., text, application, image)  
+            // Try to obtain the content serializer by the primary type (e.g., text, application, image)
             if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
             {
                 throw new SKException($"The content type `{mediaType}` is not supported.");
             }
         }
 
-        // Serialize response content and return it  
+        // Serialize response content and return it
         var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType.ToString());

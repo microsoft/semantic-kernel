@@ -346,13 +346,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 }
             }
         }
-
-        // TODO Handle other schema types (arrays, primitives, etc.) as needed
-
-        if (schema.Type == "array")
+        else if (schema.Type == "array")
         {
             apiResponseSchema.Items = ParseSchema(schema.Items);
         }
+
+        // TODO Handle other schema types (arrays, primitives, etc.) as needed
 
         return apiResponseSchema;
     }
