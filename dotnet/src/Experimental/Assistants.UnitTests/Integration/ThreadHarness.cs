@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
-using System;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -57,5 +55,12 @@ public sealed class ThreadHarness
         Assert.NotNull(message);
 
         this._output.WriteLine($"# {message.Id}");
+
+        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var copy = await context.GetThreadModelAsync(thread.Id).ConfigureAwait(true);
+
+        await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
+
+        await Assert.ThrowsAsync<SKException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }

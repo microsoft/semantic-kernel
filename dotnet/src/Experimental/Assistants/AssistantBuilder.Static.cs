@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -94,7 +95,8 @@ public partial class AssistantBuilder
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
+        var chatService = new OpenAIChatCompletion(resultModel.Model, apiKey);
 
-        return new Assistant(resultModel, restContext, functions);
+        return new Assistant(resultModel, chatService, restContext, functions);
     }
 }

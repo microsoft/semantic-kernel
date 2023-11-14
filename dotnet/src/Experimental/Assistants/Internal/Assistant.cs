@@ -72,7 +72,7 @@ internal sealed class Assistant : IAssistant
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, restContext, functions);
+        return new Assistant(resultModel, chatService, restContext, functions);
     }
 
     /// <summary>
@@ -80,6 +80,7 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     internal Assistant(
         AssistantModel model,
+        OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
         IEnumerable<ISKFunction>? functions = null)
     {
@@ -96,7 +97,7 @@ internal sealed class Assistant : IAssistant
         this.Kernel =
             new Kernel(
                 functionCollection,
-                aiServiceProvider: null!,
+                aiServiceProvider: null!, // $$$
                 memory: null!,
                 NullHttpHandlerFactory.Instance,
                 loggerFactory: null);
