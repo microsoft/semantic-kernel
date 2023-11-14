@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
@@ -140,10 +139,10 @@ public class FunctionCallingStepwisePlanner
                         Iterations = i + 1,
                     };
                 }
-                else
-                {
-                    throw new SKException($"Returned answer in incorrect format.");
-                }
+
+                var errorMessage = "Returned answer in incorrect format. Try again!";
+                chatHistoryForSteps.AddUserMessage(errorMessage);
+                continue;
             }
 
             // Look up SKFunction
@@ -284,11 +283,6 @@ public class FunctionCallingStepwisePlanner
     /// </summary>
     private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.";
 
-    /// <summary>
-    /// The regex for parsing the final answer response
-    /// </summary>
-    private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
     // Context variable keys
     private const string AvailableFunctionsKey = "available_functions";
     private const string InitialPlanKey = "initial_plan";
@@ -296,8 +290,15 @@ public class FunctionCallingStepwisePlanner
 
     #endregion private
 
+    /// <summary>
+    /// Contains helper functions used by the <see cref="FunctionCallingStepwisePlanner"/>
+    /// </summary>
     public class UserInteraction
     {
+        /// <summary>
+        /// This function is used by the <see cref="FunctionCallingStepwisePlanner"/> to indicate when the final answer has been found.
+        /// </summary>
+        /// <param name="answer">The final answer for the plan.</param>
         [SKFunction]
         [Description("This function is used to send the final answer of a plan to the user.")]
         public string SendFinalAnswer([Description("The final answer")] string answer)
