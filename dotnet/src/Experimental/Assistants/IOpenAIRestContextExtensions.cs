@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,16 +52,15 @@ public static class IOpenAIRestContextExtensions
 
         var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(yamlContent);
 
-        var builder =
-            new AssistantBuilder(restContext)
+        return
+            await new AssistantBuilder(restContext)
                 .WithModel(model)
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
-                .WithDescription(assistantKernelModel.Description.Trim());
-
-        // TODO: @chris - TOOLS
-
-        return await builder.BuildAsync(cancellationToken).ConfigureAwait(false);
+                .WithDescription(assistantKernelModel.Description.Trim())
+                .WithTools(functions ?? Array.Empty<ISKFunction>())
+                .BuildAsync(cancellationToken)
+                .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public static class IOpenAIRestContextExtensions
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="functions">$$$</param>
+    /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static Task<IAssistant> GetAssistantAsync(this IOpenAIRestContext restContext, string assistantId, IEnumerable<ISKFunction>? functions = null, CancellationToken cancellationToken = default)

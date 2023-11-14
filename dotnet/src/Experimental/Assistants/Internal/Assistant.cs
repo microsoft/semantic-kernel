@@ -54,7 +54,7 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
-    /// <param name="functions">$$$</param>
+    /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
@@ -94,7 +94,7 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="functions">$$$</param>
+    /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> GetAsync(
