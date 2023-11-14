@@ -82,12 +82,6 @@ public static class HandlebarsTemplateEngineExtensions
                     // Prepare the input parameters for the function
                     foreach (var param in functionView.Parameters)
                     {
-                        // TODO: accomodate ServerUrl override? 
-                        if (param.Name.Contains("server_url") || param.Name.Contains("server-url"))
-                        {
-                            continue;
-                        }
-
                         var fullyQualifiedParamName = functionView.Name + "-" + param.Name;
                         var value = handlebarArgs != null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
 

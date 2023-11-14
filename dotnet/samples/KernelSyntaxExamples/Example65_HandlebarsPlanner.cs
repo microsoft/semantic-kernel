@@ -115,7 +115,7 @@ public static class Example65_HandlebarsPlanner
             {{set "randomWord" (DictionaryPlugin-GetRandomWord)}}
 
             {{!-- Step 2: Get the definition of the random word --}}
-            {{set "definition" (DictionaryPlugin-GetDefintion word=(get "randomWord"))}}
+            {{set "definition" (DictionaryPlugin-GetDefinition word=(get "randomWord"))}}
 
             {{!-- Step 3: Output the random word and its definition --}}
             {{json (array (get "randomWord") (get "definition"))}}
@@ -158,25 +158,24 @@ public static class Example65_HandlebarsPlanner
         await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
-            {{!-- Step 1: Initialize variables --}}
+            {{!-- Step 1: Initialize the book title and chapter count --}}
             {{set "bookTitle" "The Thinking Caps"}}
             {{set "chapterCount" 3}}
-            {{set "clubName" "The Thinking Caps"}}
-            {{set "theme" "A group of kids in a club called 'The Thinking Caps'"}}
 
-            {{!-- Step 2: Create an array of chapter numbers --}}
-            {{set "chapterNumbers" (array 1 2 3)}}
+            {{!-- Step 2: Generate the novel outline with the given chapter count --}}
+            {{set "novelOutline" (WriterPlugin-NovelOutline input=(get "bookTitle") chapterCount=(get "chapterCount"))}}
 
-            {{!-- Step 3: Loop through the chapter numbers and generate chapters --}}
-                {{#each chapterNumbers as |chapterIndex|}}
-                {{!-- Step 3.1: Generate chapter notes --}}
-                {{set "chapterNotes" (concat "Chapter " chapterIndex ": The " clubName " club members face a new challenge.")}}
-
-                {{!-- Step 3.2: Generate the chapter using the WriterPlugin-NovelChapterWithNotes helper --}}
-                {{set "chapter" (WriterPlugin-NovelChapterWithNotes theme=theme notes=chapterNotes chapterIndex=chapterIndex)}}
-
-                {{!-- Step 3.3: Output the chapter --}}
-                {{json chapter}}
+            {{!-- Step 3: Loop through the chapters and generate the content for each chapter --}}
+            {{#each (range 1 (get "chapterCount"))}}
+                {{set "chapterIndex" this}}
+                {{set "chapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex"))}}
+                {{set "previousChapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex" - 1))}}
+                
+                {{!-- Step 4: Write the chapter content using the WriterPlugin-NovelChapter helper --}}
+                {{set "chapterContent" (WriterPlugin-NovelChapter input=(get "chapterSynopsis") theme=(get "bookTitle") previousChapter=(get "previousChapterSynopsis") chapterIndex=(get "chapterIndex"))}}
+                
+                {{!-- Step 5: Output the chapter content --}}
+                {{json (get "chapterContent")}}
             {{/each}}
         */
     }
@@ -207,8 +206,8 @@ public static class Example65_HandlebarsPlanner
             return this._dictionary.ElementAt(index).Key;
         }
 
-        [SKFunction, SKName("GetDefintion"), System.ComponentModel.Description("Gets the definition for a given word.")]
-        public string GetDefintion([System.ComponentModel.Description("Word to get definition for.")] string word)
+        [SKFunction, SKName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
+        public string GetDefinition([System.ComponentModel.Description("Word to get definition for.")] string word)
         {
             return this._dictionary.TryGetValue(word, out var definition)
                 ? definition
