@@ -70,7 +70,7 @@ Event: {{$input}}
         // Streaming can be of any type depending on the underlying service the function is using.
         await foreach (var update in kernel.StreamingRunAsync(excuseFunction, new ContextVariables("I missed the F1 final race"), cancellationToken))
         {
-            // You will be aways able to know the type of the update by checking the Type property.
+            // You will be always able to know the type of the update by checking the Type property.
             if (update.Type == "openai_chat_message_update" && update is StreamingChatResultUpdate chatUpdate)
             {
                 if (!roleDisplayed && chatUpdate.Role.HasValue)
