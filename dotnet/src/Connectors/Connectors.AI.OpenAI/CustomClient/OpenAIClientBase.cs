@@ -12,13 +12,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 
 /// <summary>Base type for OpenAI clients.</summary>
 public abstract class OpenAIClientBase
 {
+    /// <summary>
+    /// Key used to store the organizarion in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string OrganizationKey = "Organization";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
@@ -29,6 +34,11 @@ public abstract class OpenAIClientBase
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
@@ -75,6 +85,19 @@ public abstract class OpenAIClientBase
         return result.Images.Select(extractResponseFunc).ToList();
     }
 
+    /// <summary>
+    /// Add attribute to the internal attribute dictionary if the value is not null or empty.
+    /// </summary>
+    /// <param name="key">Attribute key</param>
+    /// <param name="value">Attribute value</param>
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
+        }
+    }
+
     #region private ================================================================================
 
     /// <summary>
@@ -98,7 +121,7 @@ public abstract class OpenAIClientBase
 
     private protected T JsonDeserialize<T>(string responseJson)
     {
-        var result = Json.Deserialize<T>(responseJson);
+        var result = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(responseJson);
         if (result is null)
         {
             throw new SKException("Response JSON parse error");

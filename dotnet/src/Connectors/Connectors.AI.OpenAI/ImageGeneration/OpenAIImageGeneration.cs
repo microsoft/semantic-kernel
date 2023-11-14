@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
@@ -9,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
@@ -49,7 +49,12 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Verify.NotNullOrWhiteSpace(apiKey);
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
+
+        this.AddAttribute(OrganizationKey, organization!);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)
@@ -86,7 +91,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

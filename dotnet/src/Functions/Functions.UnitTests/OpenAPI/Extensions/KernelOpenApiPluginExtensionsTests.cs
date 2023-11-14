@@ -104,14 +104,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
-        Assert.NotNull(setSecretFunction);
-
-        var functionView = setSecretFunction.Describe();
-        Assert.NotNull(functionView);
-
-        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
-        Assert.Equal(ServerUrlOverride, serverUrlParameter.DefaultValue);
-
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -142,14 +134,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
-        Assert.NotNull(setSecretFunction);
-
-        var functionView = setSecretFunction.Describe();
-        Assert.NotNull(functionView);
-
-        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
-        Assert.Equal(ServerUrlFromDocument, serverUrlParameter.DefaultValue);
-
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -187,14 +171,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
-        Assert.NotNull(setSecretFunction);
-
-        var functionView = setSecretFunction.Describe();
-        Assert.NotNull(functionView);
-
-        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
-        Assert.Equal(expectedServerUrl, serverUrlParameter.DefaultValue);
-
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }

@@ -51,7 +51,7 @@ public class FunctionViewTests
     public void ItReturnsFunctionReturnParameter()
     {
         // Arrange
-        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA");
+        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA", ParameterType: typeof(string), Schema: System.Text.Json.JsonDocument.Parse("\"schema\""));
 
         // Act
         var funcViewA = new FunctionView("funcA", "s1", "", null, ReturnParameterViewA);
@@ -60,13 +60,15 @@ public class FunctionViewTests
         Assert.NotNull(funcViewA);
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
+        Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
+        Assert.Equivalent(System.Text.Json.JsonDocument.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]
     public void ItSupportsValidFunctionName()
     {
         // Act
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -79,7 +81,7 @@ public class FunctionViewTests
     public void ItSupportsValidFunctionAsyncName()
     {
         // Act
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
         FunctionView fv = function.Describe();
 
@@ -96,7 +98,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -117,7 +119,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -125,8 +127,11 @@ public class FunctionViewTests
         // Assert
         Assert.Equal("function description", fv.Description);
         Assert.Equal("first parameter description", fv.Parameters[0].Description);
+        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
         Assert.Equal("second parameter description", fv.Parameters[1].Description);
+        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
         Assert.Equal("return parameter description", fv.ReturnParameter.Description);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -136,7 +141,7 @@ public class FunctionViewTests
         static void TestFunctionName(int p1, int p2) { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -144,8 +149,11 @@ public class FunctionViewTests
         // Assert
         Assert.Equal(string.Empty, fv.Description);
         Assert.Equal(string.Empty, fv.Parameters[0].Description);
+        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
         Assert.Equal(string.Empty, fv.Parameters[1].Description);
+        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
         Assert.Equal(string.Empty, fv.ReturnParameter.Description);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -155,7 +163,7 @@ public class FunctionViewTests
         static void TestFunctionName() { }
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -164,12 +172,13 @@ public class FunctionViewTests
         var emptyList = new List<ParameterView>();
 
         Assert.Equal(emptyList, fv.Parameters);
+        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
-        var function = SKFunction.FromNativeMethod(Method(ValidFunctionName));
+        var function = SKFunction.Create(Method(ValidFunctionName));
         var context = MockContext("");
         var result = await function.InvokeAsync(context);
     }
