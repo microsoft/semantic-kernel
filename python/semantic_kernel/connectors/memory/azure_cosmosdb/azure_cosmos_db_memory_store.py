@@ -4,18 +4,22 @@ from typing import List, Tuple
 
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import get_mongodb_resources
-from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
+    AzureCosmosDBStoreApi,
+)
+from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+    get_mongodb_resources,
+)
+from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import (
+    MongoStoreApi,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
 
 # Load environment variables
-(
-    cosmos_api,
-    cosmos_connstr
-) = azure_cosmos_db_settings_from_dot_env()
+(cosmos_api, cosmos_connstr) = azure_cosmos_db_settings_from_dot_env()
+
 
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
     """A memory store that uses AzureCosmosDB for MongoDB vCore, to perform vector similarity search on a fully
@@ -32,14 +36,15 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     similarity = None
     collection_name = None
 
-    def __init__(self,
-                 cosmosStore: AzureCosmosDBStoreApi,
-                 database_name: str,
-                 index_name: str,
-                 vector_dimensions: int,
-                 num_lists: int,
-                 similarity: str,
-                 ):
+    def __init__(
+        self,
+        cosmosStore: AzureCosmosDBStoreApi,
+        database_name: str,
+        index_name: str,
+        vector_dimensions: int,
+        num_lists: int,
+        similarity: str,
+    ):
         if vector_dimensions <= 0:
             raise ValueError("Vector dimensions must be a positive number.")
         # if connection_string is None:
@@ -55,32 +60,40 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         self.similarity = similarity
 
     @staticmethod
-    async def create(database_name,
-                     collection_name,
-                     index_name,
-                     vector_dimensions,
-                     num_lists,
-                     similarity) -> MemoryStoreBase:
+    async def create(
+        database_name,
+        collection_name,
+        index_name,
+        vector_dimensions,
+        num_lists,
+        similarity,
+    ) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            mongodb_client, database = get_mongodb_resources(cosmos_connstr, database_name)
-            apiStore = MongoStoreApi(collection_name,
-                                     index_name,
-                                     vector_dimensions,
-                                     num_lists,
-                                     similarity,
-                                     database)
+            mongodb_client, database = get_mongodb_resources(
+                cosmos_connstr, database_name
+            )
+            apiStore = MongoStoreApi(
+                collection_name,
+                index_name,
+                vector_dimensions,
+                num_lists,
+                similarity,
+                database,
+            )
         else:
             raise NotImplementedError
 
-        store = AzureCosmosDBMemoryStore(apiStore,
-                                         database_name,
-                                         index_name,
-                                         vector_dimensions,
-                                         num_lists,
-                                         similarity)
+        store = AzureCosmosDBMemoryStore(
+            apiStore,
+            database_name,
+            index_name,
+            vector_dimensions,
+            num_lists,
+            similarity,
+        )
         await store.create_collection_async(collection_name)
         return store
 

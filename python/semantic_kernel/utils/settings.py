@@ -205,10 +205,11 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
     Returns:
         dict: The Azure CosmosDB environment variables
     """
-    config = dotenv_values(".env")
+    config = dotenv_values(
+        "/Users/aayushkataria/git/semantic-kernel/python/semantic_kernel/utils/mongo.env"
+    )
     cosmos_api = config.get("AZCOSMOS_API")
     cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
-
 
     assert (
         cosmos_connstr is not None

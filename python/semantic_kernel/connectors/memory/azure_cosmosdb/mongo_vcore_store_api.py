@@ -5,7 +5,9 @@ from typing import List, Tuple
 
 import numpy as np
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
+    AzureCosmosDBStoreApi,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -18,13 +20,15 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
     similarity = None
     collection = None
 
-    def __init__(self,
-                 collection_name: str,
-                 index_name: str,
-                 vector_dimensions: int,
-                 num_lists: int,
-                 similarity: str,
-                 database=None):
+    def __init__(
+        self,
+        collection_name: str,
+        index_name: str,
+        vector_dimensions: int,
+        num_lists: int,
+        similarity: str,
+        database=None,
+    ):
         self.database = database
         self.collection_name = collection_name
         self.index_name = index_name
@@ -61,10 +65,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         return self.collection.drop()
 
     async def does_collection_exist(self, collection_name: str) -> bool:
-        return (
-            collection_name
-            in self.database.list_collection_names()
-        )
+        return collection_name in self.database.list_collection_names()
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         result = await self.upsert_batch(collection_name, [record])

@@ -96,7 +96,6 @@ async def test_create_get_drop_exists_collection_async():
     assert result is True
 
 
-
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async_and_remove_async(
     memory_record1: MemoryRecord,
