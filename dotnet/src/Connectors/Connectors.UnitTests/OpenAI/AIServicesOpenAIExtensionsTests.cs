@@ -9,7 +9,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit tests of <see cref="OpenAKernelBuilderExtensions"/>.
+/// Unit tests of <see cref="OpenAIKernelBuilderExtensions"/>.
 /// </summary>
 public class AIServicesOpenAIExtensionsTests
 {
