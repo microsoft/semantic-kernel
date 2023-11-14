@@ -173,13 +173,13 @@ repeat:
     /// <summary>
     /// Run a function in streaming mode.
     /// </summary>
-    /// <param name="variables">Input to process</param>
     /// <param name="skFunction">Target function to run</param>
+    /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
-    public async IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ContextVariables variables, ISKFunction skFunction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var context = this.CreateNewContext();
+        var context = this.CreateNewContext(variables);
 
         var repeatRequested = false;
 

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -345,80 +343,13 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        // Keep this implementation for a future refactoring
-        throw new NotSupportedException("StreamingInvokeAsync is not supported for plans");
-
-        // Suggested change bellow...
-
-#pragma warning disable CS0162 // Unreachable code detected
-        if (this.Function is not null)
-        {
-            // Merge state with the current context variables.
-            // Then filter the variables to only those needed for the next step.
-            // This is done to prevent the function from having access to variables that it shouldn't.
-            AddVariablesToContext(this.State, context);
-            var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables, context.Functions);
-
-            // Execute the step
-            await foreach (var update in this.Function
-                .WithInstrumentation(context.LoggerFactory)
-                .StreamingInvokeAsync(functionContext, requestSettings, cancellationToken)
-                .ConfigureAwait(false))
-            {
-                yield return update;
-            }
-
-            // Ensure after the stream ended the data processed in skcontext is passed further
-            var functionResult = new FunctionResult(this.Function.Name, this.Function.PluginName, context);
-            this.UpdateFunctionResultWithOutputs(functionResult);
-
-            yield break;
-        }
-
-        this.CallFunctionInvoking(context);
-        if (SKFunction.IsInvokingCancelOrSkipRequested(context))
-        {
-            yield break;
-        }
-
-        // loop through steps and execute until completion
-        while (this.HasNextStep)
-        {
-            AddVariablesToContext(this.State, context);
-            SKContext? resultContext = null;
-
-            int streamingUpdates = 0;
-            await foreach (var update in this.InternalStreamingInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false))
-            {
-                // This currently is needed as plans need use it to update the variables created after the stream ends.
-                resultContext ??= update.Context;
-
-                streamingUpdates++;
-
-                yield return update;
-            };
-
-            if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
-            {
-                continue;
-            }
-
-            if (streamingUpdates > 0)
-            {
-                this.UpdateContextWithOutputs(resultContext!);
-            }
-        }
-
-        this.CallFunctionInvoked(context);
-
-        // Post cancellation is not supported as the stream data was already sent.
-#pragma warning restore CS0162 // Unreachable code detected
+        // Implementation will be added in future streaming feature iteration
+        throw new NotSupportedException("Streaming currently is not supported for plans");
     }
 
     #endregion ISKFunction implementation
@@ -512,67 +443,6 @@ public sealed class Plan : ISKFunction
         }
 
         throw new InvalidOperationException("There isn't a next step");
-    }
-
-    private async IAsyncEnumerable<StreamingResultUpdate> InternalStreamingInvokeNextStepAsync(SKContext context, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (!this.HasNextStep)
-        {
-            throw new InvalidOperationException("There isn't a next step");
-        }
-
-        var step = this.Steps[this.NextStepIndex];
-
-        // Merge the state with the current context variables for step execution
-        var functionVariables = this.GetNextStepVariables(context.Variables, step);
-
-        // Execute the step
-        StringBuilder fullResult = new();
-        SKContext? resultContext = null;
-        await foreach (var update in context.Runner.StreamingRunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false))
-        {
-            resultContext ??= update.Context;
-
-            fullResult.Append(update);
-            yield return update;
-        }
-
-        var resultValue = fullResult.ToString().Trim();
-
-        #region Update State
-
-        // Update state with result
-        this.State.Update(resultValue);
-
-        // Update Plan Result in State with matching outputs (if any)
-        if (this.Outputs.Intersect(step.Outputs).Any())
-        {
-            if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
-            {
-                this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
-            }
-            else
-            {
-                this.State.Set(DefaultResultKey, resultValue);
-            }
-        }
-
-        // Update state with outputs (if any)
-        foreach (var item in step.Outputs)
-        {
-            if (resultContext?.Variables.TryGetValue(item, out string? val) ?? false)
-            {
-                this.State.Set(item, val);
-            }
-            else
-            {
-                this.State.Set(item, resultValue);
-            }
-        }
-
-        #endregion Update State
-
-        this.NextStepIndex++;
     }
 
     private void CallFunctionInvoking(SKContext context)

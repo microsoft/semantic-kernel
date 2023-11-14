@@ -79,6 +79,14 @@ internal sealed class InstrumentedSKFunction : ISKFunction
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+            => this.StreamingInvokeWithInstrumentationAsync(
+                () => this._function.StreamingInvokeAsync(context, requestSettings, cancellationToken));
+
     #region private ================================================================================
 
     private readonly ISKFunction _function;
@@ -163,6 +171,36 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         return result;
     }
 
+    /// <summary>
+    /// Wrapper for instrumentation to be used in multiple invocation places.
+    /// </summary>
+    /// <param name="func">Delegate to instrument.</param>
+    private async IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeWithInstrumentationAsync(Func<IAsyncEnumerable<StreamingResultUpdate>> func)
+    {
+        using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
+
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution started.", this.PluginName, this.Name);
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        await foreach (var update in func().ConfigureAwait(false))
+        {
+            yield return update;
+        }
+
+        stopwatch.Stop();
+        this._executionTotalCounter.Add(1);
+        this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution status: {Status}",
+                this.PluginName, this.Name, "Success");
+
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
+            this.PluginName, this.Name, stopwatch.ElapsedMilliseconds);
+
+        this._executionSuccessCounter.Add(1);
+    }
     #endregion
 
     #region Obsolete =======================================================================

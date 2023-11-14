@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -71,6 +72,7 @@ internal sealed class NativeFunction : ISKFunction
         MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger);
         var result = new NativeFunction(
             methodDetails.Function,
+            methodDetails.StreamingFunc,
             pluginName!,
             functionName ?? methodDetails.Name,
             description ?? methodDetails.Description,
@@ -152,6 +154,42 @@ internal sealed class NativeFunction : ISKFunction
         }
     }
 
+    public async IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(SKContext context,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Invoke pre hook, and stop if skipping requested.
+        this.CallFunctionInvoking(context);
+        if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+        {
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Function {Plugin}.{Name} canceled or skipped prior to invocation.", this.PluginName, this.Name);
+            }
+
+            yield break;
+        }
+
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Function {Plugin}.{Name} streaming invoke.", this.PluginName, this.Name);
+        }
+
+        await foreach (var update in this._streamingFunction(null, requestSettings, context, cancellationToken).ConfigureAwait(false))
+        {
+            yield return update;
+        }
+
+        var result = this.CallFunctionInvoked(context);
+
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Function {Plugin}.{Name} invocation {Completion}: {Result}",
+                this.PluginName, this.Name,
+                SKFunction.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                result.Value);
+        }
+    }
     private void CallFunctionInvoking(SKContext context)
     {
         var eventWrapper = context.FunctionInvokingHandler;
@@ -161,6 +199,9 @@ internal sealed class NativeFunction : ISKFunction
             handler.Invoke(this, eventWrapper.EventArgs);
         }
     }
+
+    private FunctionResult CallFunctionInvoked(SKContext context) =>
+        this.CallFunctionInvoked(new FunctionResult(this.Name, this.PluginName, context), context);
 
     private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
     {
@@ -203,17 +244,25 @@ internal sealed class NativeFunction : ISKFunction
         SKContext context,
         CancellationToken cancellationToken);
 
+    private delegate IAsyncEnumerable<StreamingNativeResultUpdate> ImplementationStreamingFunc(
+        ITextCompletion? textCompletion,
+        AIRequestSettings? requestSettingsk,
+        SKContext context,
+        CancellationToken cancellationToken);
+
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ImplementationFunc _function;
+    private readonly ImplementationStreamingFunc _streamingFunction;
     private readonly IReadOnlyList<ParameterView> _parameters;
     private readonly ReturnParameterView _returnParameter;
     private readonly ILogger _logger;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
+    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, ImplementationStreamingFunc StreamingFunc, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
 
     private NativeFunction(
         ImplementationFunc implementationFunc,
+        ImplementationStreamingFunc implementationStreamingFunc,
         string pluginName,
         string functionName,
         string description,
@@ -227,6 +276,7 @@ internal sealed class NativeFunction : ISKFunction
         this._logger = logger;
 
         this._function = implementationFunc;
+        this._streamingFunction = implementationStreamingFunc;
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
         this._returnParameter = returnParameter;
@@ -298,11 +348,65 @@ internal sealed class NativeFunction : ISKFunction
             return returnFunc(functionName!, pluginName, result, context);
         }
 
+        // Create the streaming func
+        async IAsyncEnumerable<StreamingNativeResultUpdate> StreamingFunction(
+            ITextCompletion? text,
+            AIRequestSettings? requestSettings,
+            SKContext context,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            // Create the arguments.
+            object?[] args = parameterFuncs!.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = parameterFuncs[i](context, cancellationToken);
+            }
+
+            if (IsAsyncEnumerable(method, out var enumeratedTypes))
+            {
+                // Invoke the method to get the IAsyncEnumerable<T> instance
+                object asyncEnumerable = method.Invoke(target, null);
+                if (asyncEnumerable == null)
+                {
+                    yield break;
+                }
+
+                // Get the method for GetAsyncEnumerator()
+                MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+                    .MakeGenericType(enumeratedTypes)
+                    .GetMethod("GetAsyncEnumerator");
+
+                object asyncEnumerator = getAsyncEnumeratorMethod.Invoke(asyncEnumerable, null);
+
+                // Get the MoveNextAsync() and Current properties
+                MethodInfo moveNextAsyncMethod = asyncEnumerator.GetType().GetMethod("MoveNextAsync");
+                PropertyInfo currentProperty = asyncEnumerator.GetType().GetProperty("Current");
+
+                // Iterate over the items
+                while (await ((ValueTask<bool>)moveNextAsyncMethod.Invoke(asyncEnumerator, null)).ConfigureAwait(false))
+                {
+                    object currentItem = currentProperty.GetValue(asyncEnumerator);
+
+                    yield return new StreamingNativeResultUpdate(currentItem);
+                }
+            }
+            else
+            {
+                // Invoke the method.
+                object? result = method.Invoke(target, args);
+
+                if (result is not null)
+                {
+                    yield return new StreamingNativeResultUpdate(result);
+                }
+            }
+        }
+
         // And return the details.
         return new MethodDetails
         {
             Function = Function,
-
+            StreamingFunc = StreamingFunction,
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
@@ -329,6 +433,20 @@ internal sealed class NativeFunction : ISKFunction
             }
         }
 
+        return false;
+    }
+
+    private static bool IsAsyncEnumerable(MethodInfo method, out Type[] enumeratedTypes)
+    {
+        Type returnType = method.ReturnType;
+
+        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+        {
+            enumeratedTypes = returnType.GetGenericArguments();
+            return true;
+        }
+
+        enumeratedTypes = Array.Empty<Type>();
         return false;
     }
 

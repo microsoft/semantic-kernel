@@ -7,7 +7,7 @@ consulted:
 informed:
 ---
 
-# Streaming Capability for Kernel and Functions usage
+# Streaming Capability for Kernel and Functions usage - Phase 1
 
 ## Context and Problem Statement
 
@@ -44,6 +44,11 @@ await foreach(StreamingResultUpdate update in kernel.StreamingRunAsync(variables
     Console.WriteLine(update);
 }
 ```
+
+## Out of Scope
+
+- Streaming with plans will not be supported in this phase. Attempting to do so will throw an exception.
+- Kernel streaming will not support multiple functions (pipeline).
 
 ## Considered Options
 
@@ -120,6 +125,18 @@ interface ISKFunction
     IAsyncEnumerable<T> StreamingInvokeAsync<T>(SKContext context);
 }
 ```
+
+## Semantic Functions Behavior
+
+When Semantic Functions are invoked using the Streaming API, they will attempt to use the Connectors streaming implementation. The connector will be responsible to provide the specialized type of `StreamingResultUpdate` as well as to keep the API streaming working (streaming the single complete result) even when the backend don't support it.
+
+## Native Functions Behavior
+
+NativeFunctions will support StreamingResults automatically with a StreamingNativeResultUpdate wrapping the object returned in the iterator.
+
+If NativeFunctions are already IAsyncEnumerable methods, the result will be automatically wrapped in the StreamingNativeResultUpdate keeping the streaming behavior and the overall abstraction consistent.
+
+If NativeFunctions don't return IAsyncEnumerable, the result will be wrapped in a StreamingNativeResultUpdate and the result will be returned as a single result.
 
 ## Pros
 

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
@@ -54,6 +55,15 @@ public interface IKernel
         ContextVariables variables,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Result of the function composition</returns>
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables, CancellationToken cancellationToken);
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.

@@ -61,6 +61,14 @@ internal sealed class InstrumentedPlan : ISKFunction
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Implementation will be added in future streaming feature iteration
+        throw new NotSupportedException("Streaming currently is not supported for plans");
+    }
     #region private ================================================================================
 
     private readonly ISKFunction _plan;
