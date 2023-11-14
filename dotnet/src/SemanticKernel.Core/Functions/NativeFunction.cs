@@ -365,7 +365,7 @@ internal sealed class NativeFunction : ISKFunction
             if (IsAsyncEnumerable(method, out var enumeratedTypes))
             {
                 // Invoke the method to get the IAsyncEnumerable<T> instance
-                object asyncEnumerable = method.Invoke(target, null);
+                object asyncEnumerable = method.Invoke(target, args);
                 if (asyncEnumerable == null)
                 {
                     yield break;
@@ -376,11 +376,15 @@ internal sealed class NativeFunction : ISKFunction
                     .MakeGenericType(enumeratedTypes)
                     .GetMethod("GetAsyncEnumerator");
 
-                object asyncEnumerator = getAsyncEnumeratorMethod.Invoke(asyncEnumerable, null);
+                // Get the IAsyncEnumerator<T> type
+                Type asyncEnumeratorType = typeof(IAsyncEnumerator<>).MakeGenericType(enumeratedTypes);
+
+                // Invoke GetAsyncEnumerator() to get the IAsyncEnumerator<T> instance
+                object asyncEnumerator = getAsyncEnumeratorMethod.Invoke(asyncEnumerable, new object[] { cancellationToken });
 
                 // Get the MoveNextAsync() and Current properties
-                MethodInfo moveNextAsyncMethod = asyncEnumerator.GetType().GetMethod("MoveNextAsync");
-                PropertyInfo currentProperty = asyncEnumerator.GetType().GetProperty("Current");
+                MethodInfo moveNextAsyncMethod = asyncEnumeratorType.GetMethod("MoveNextAsync");
+                PropertyInfo currentProperty = asyncEnumeratorType.GetProperty("Current");
 
                 // Iterate over the items
                 while (await ((ValueTask<bool>)moveNextAsyncMethod.Invoke(asyncEnumerator, null)).ConfigureAwait(false))
@@ -392,12 +396,18 @@ internal sealed class NativeFunction : ISKFunction
             }
             else
             {
-                // Invoke the method.
+                // When streaming is requested for a non-streaming native method, it returns just one result
                 object? result = method.Invoke(target, args);
 
                 if (result is not null)
                 {
-                    yield return new StreamingNativeResultUpdate(result);
+                    var functionResult = await returnFunc(functionName!, pluginName, result, context).ConfigureAwait(false);
+
+                    // The enumeration will only return if there's actually a result.
+                    if (functionResult.Value is not null)
+                    {
+                        yield return new StreamingNativeResultUpdate(functionResult.Value);
+                    }
                 }
             }
         }
@@ -427,7 +437,7 @@ internal sealed class NativeFunction : ISKFunction
         if (t.IsGenericType)
         {
             t = t.GetGenericTypeDefinition();
-            if (t == typeof(Task<>) || t == typeof(ValueTask<>))
+            if (t == typeof(Task<>) || t == typeof(ValueTask<>) || t == typeof(IAsyncEnumerable<>))
             {
                 return true;
             }

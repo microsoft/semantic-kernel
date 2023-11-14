@@ -20,25 +20,25 @@ public sealed class StreamingNativeResultUpdate : StreamingResultUpdate
     public override int ResultIndex => 0;
 
     /// <summary>
-    /// Native object that represents the update
+    /// Native object value that represents the update
     /// </summary>
-    public object Update { get; }
+    public object Value { get; }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        if (this.Update is byte[])
+        if (this.Value is byte[])
         {
-            return (byte[])this.Update;
+            return (byte[])this.Value;
         }
 
-        return Encoding.UTF8.GetBytes(this.Update?.ToString());
+        return Encoding.UTF8.GetBytes(this.Value?.ToString());
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Update.ToString();
+        return this.Value.ToString();
     }
 
     /// <summary>
@@ -47,6 +47,6 @@ public sealed class StreamingNativeResultUpdate : StreamingResultUpdate
     /// <param name="update">Underlying object that represents the update</param>
     public StreamingNativeResultUpdate(object update)
     {
-        this.Update = update;
+        this.Value = update;
     }
 }
