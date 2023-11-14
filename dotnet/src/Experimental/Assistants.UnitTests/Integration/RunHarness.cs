@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests;
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating runs.
@@ -72,7 +72,7 @@ public sealed class RunHarness
         var assistant =
             await context.CreateAssistantAsync(
                 model: "gpt-3.5-turbo-1106",
-                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
+                configurationPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);
 
@@ -101,7 +101,7 @@ public sealed class RunHarness
         var assistant =
             await context.CreateAssistantAsync(
                 model: "gpt-3.5-turbo-1106",
-                configurationPath: "GameAssistant.yaml",
+                configurationPath: "Templates/GameAssistant.yaml",
                 functions: gamePlugin.Values).ConfigureAwait(true);
 
         var thread = await context.CreateThreadAsync().ConfigureAwait(true);

@@ -32,10 +32,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Update="GameAssistant.yaml">
+    <None Update="Templates\GameAssistant.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PoetAssistant.yaml">
+    <None Update="Templates\PoetAssistant.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="testsettings.development.json">

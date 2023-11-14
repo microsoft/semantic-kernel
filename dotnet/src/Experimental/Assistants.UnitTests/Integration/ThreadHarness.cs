@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests;
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating threads.

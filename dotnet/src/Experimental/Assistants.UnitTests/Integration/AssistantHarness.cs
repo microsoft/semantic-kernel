@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests;
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating assistants.
@@ -63,6 +63,27 @@ public sealed class AssistantHarness
     /// Verify creation and retrieval of assistant.
     /// </summary>
     [Fact(Skip = SkipReason)]
+    public async Task VerifyAssistantDefinitionAsync()
+    {
+        using var httpClient = new HttpClient();
+        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+
+        var assistant =
+            await context.CreateAssistantAsync(
+                model: "gpt-3.5-turbo-1106",
+                configurationPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+
+        this.DumpAssistant(assistant);
+
+        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
+
+        this.DumpAssistant(copy);
+    }
+
+    /// <summary>
+    /// Verify creation and retrieval of assistant.
+    /// </summary>
+    [Fact(Skip = SkipReason)]
     public async Task VerifyAssistantListAsync()
     {
         using var httpClient = new HttpClient();
@@ -101,27 +122,6 @@ public sealed class AssistantHarness
                 await context.DeleteAssistantAsync(assistant.Id).ConfigureAwait(true);
             }
         }
-    }
-
-    /// <summary>
-    /// Verify creation and retrieval of assistant.
-    /// </summary>
-    [Fact(Skip = SkipReason)]
-    public async Task VerifyAssistantDefinitionAsync()
-    {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
-
-        var assistant =
-            await context.CreateAssistantAsync(
-                model: "gpt-3.5-turbo-1106",
-                configurationPath: "PoetAssistant.yaml").ConfigureAwait(true);
-
-        this.DumpAssistant(assistant);
-
-        var copy = await context.GetAssistantAsync(assistant.Id).ConfigureAwait(true);
-
-        this.DumpAssistant(copy);
     }
 
     private void DumpAssistant(IAssistant assistant)
