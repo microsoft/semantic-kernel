@@ -158,7 +158,7 @@ Event: {{$input}}
         }
     }
 
-    private class MyNativePlugin
+    private sealed class MyNativePlugin
     {
         [SKFunction]
         public async IAsyncEnumerable<string> MyValueTypeStreamingNativeFunctionAsync(string input)
@@ -175,7 +175,7 @@ Event: {{$input}}
         public async IAsyncEnumerable<MyStreamingBlock> MyComplexTypeStreamingNativeFunctionAsync(string input)
         {
             // Base64 encoded string "Base64VideoPacket1 Base64VideoPacket2 Base64VideoPacket3"
-            var result = $"QmFzZTY0VmlkZW9QYWNrZXQx QmFzZTY0VmlkZW9QYWNrZXQy QmFzZTY0VmlkZW9QYWNrZXQz".Split(' ');
+            var result = "QmFzZTY0VmlkZW9QYWNrZXQx QmFzZTY0VmlkZW9QYWNrZXQy QmFzZTY0VmlkZW9QYWNrZXQz".Split(' ');
 
             foreach (var item in result)
             {
@@ -200,7 +200,7 @@ Event: {{$input}}
         }
     }
 
-    private record MyStreamingBlock(byte[] Content);
+    private sealed record MyStreamingBlock(byte[] Content);
 
     /// <summary>
     /// In order to use custom types, <see cref="TypeConverter"/> should be specified,
