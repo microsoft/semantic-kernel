@@ -19,7 +19,7 @@ public static class Example65_HandlebarsPlanner
     private static int s_sampleCount;
 
     /// <summary>
-    /// Show how to combine multiple prompt template factories.
+    /// Show how to create a plan with Handlebars and execute it.
     /// </summary>
     public static async Task RunAsync()
     {
