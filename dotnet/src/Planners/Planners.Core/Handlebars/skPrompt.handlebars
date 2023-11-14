@@ -36,7 +36,7 @@ I want you to generate 10 random numbers and send them to another helper.{{/mess
   }}
   {{!-- Step 4: call example helper with random number and print the result to the screen --}}
   \{{json
-    (Example-Helper
+    (Example{{reservedNameDelimiter}}Helper
       input=(get
         "randomNumber"
       )
@@ -101,13 +101,13 @@ Before we get to custom helpers, let's learn about complex objects. Some helpers
 Lastly, you also have the following Handlebars helpers that you can use to accomplish my goal.
 
 {{#each functions}}
-### `{{doubleOpen}}{{PluginName}}-{{Name}}{{doubleClose}}`
+### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
   {{#each Parameters}}
     - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
   {{/each}}
-{{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} - {{ReturnDescription}}--}}
+{{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} {{../reservedNameDelimiter}} {{ReturnDescription}}--}}
 Output: string - The result of the helper.
 
 {{/each}}
@@ -129,7 +129,7 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 ## Start
 Now take a deep breath and accomplish the task:
 1. Do not use helpers that were not provided to you. Do not assume any helpers or operations that were not previously defined, as they will cause an error in the template.
-2. If none of the available helpers can achieve the goal, respond explicitly with "Additional helpers may be required".
+2. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
 3. The first steps should always be to initialize any variables you need.
 4. The template should use the \{{json}} helper to output the result of the final step.
 5. Don't forget to use the tips and tricks otherwise the template will not work.

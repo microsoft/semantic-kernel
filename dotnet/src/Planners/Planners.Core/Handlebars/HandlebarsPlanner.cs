@@ -63,9 +63,9 @@ public class HandlebarsPlanner : IHandlebarsPlanner
         var resultContext = this._kernel.CreateNewContext();
         resultContext.Variables.Update(completionMessage.Content);
 
-        if (resultContext.Result.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) > 0)
+        if (resultContext.Result.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}-{func.Name}");
+            var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
             throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{resultContext.Result}");
         }
 
@@ -134,17 +134,13 @@ public class HandlebarsPlanner : IHandlebarsPlanner
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
+                { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
                 { "complexTypeDefinitions", this._parameterTypes.Count > 0 && this._parameterTypes.Any(p => p.IsComplexType) ? this._parameterTypes.Where(p => p.IsComplexType) : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };
 
         return HandlebarsTemplateEngineExtensions.Render(kernel, kernel.CreateNewContext(), plannerTemplate, variables);
-    }
-
-    private string GetFormattedFunctionSpecificTypeName(string functionName, string parameterName, Type parameterType)
-    {
-        return $"{functionName}-{parameterName}:{parameterType}";
     }
 
     private static string MinifyHandlebarsTemplate(string template)

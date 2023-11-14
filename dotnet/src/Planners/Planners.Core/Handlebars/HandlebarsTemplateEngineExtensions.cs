@@ -25,6 +25,11 @@ public static class HandlebarsTemplateEngineExtensions
     public const string ReservedOutputTypeKey = "RESERVED_OUTPUT_TYPE";
 
     /// <summary>
+    /// The character used to delimit the plugin name and function name in a Handlebars template.
+    /// </summary>
+    public const string ReservedNameDelimiter = "-";
+
+    /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
     /// </summary>
     /// <param name="kernel">The Semantic Kernel.</param>
@@ -67,7 +72,7 @@ public static class HandlebarsTemplateEngineExtensions
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
-        string fullyResolvedFunctionName = functionView.PluginName + "-" + functionView.Name;
+        string fullyResolvedFunctionName = functionView.PluginName + ReservedNameDelimiter + functionView.Name;
 
         handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
@@ -82,7 +87,7 @@ public static class HandlebarsTemplateEngineExtensions
                     // Prepare the input parameters for the function
                     foreach (var param in functionView.Parameters)
                     {
-                        var fullyQualifiedParamName = functionView.Name + "-" + param.Name;
+                        var fullyQualifiedParamName = functionView.Name + ReservedNameDelimiter + param.Name;
                         var value = handlebarArgs != null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
 
                         if (value != null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
