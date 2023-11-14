@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,14 +87,25 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
+        return this.RunPromptAsync(requestSettings, context, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        this.AddDefaultValues(context.Variables);
+
+        return this.RunStreamingPromptAsync(requestSettings, context, cancellationToken);
     }
 
     /// <summary>
@@ -166,6 +179,43 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
                 variables[parameter.Name] = parameter.DefaultValue;
             }
         }
+    }
+
+    private async IAsyncEnumerable<StreamingResultUpdate> RunStreamingPromptAsync(
+        AIRequestSettings? requestSettings,
+        SKContext context,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+
+        var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
+        Verify.NotNull(textCompletion);
+
+        this.CallFunctionInvoking(context, renderedPrompt);
+        if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+        {
+            yield break;
+        }
+
+        renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
+
+        StringBuilder fullCompletion = new();
+        await foreach (StreamingResultUpdate update in textCompletion.GetStreamingUpdatesAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            fullCompletion.Append(update);
+
+            // This currently is needed as plans need use it to update the variables created after the stream ends.
+            update.Context = context;
+
+            yield return update;
+        }
+
+        // Update the result with the completion
+        context.Variables.Update(fullCompletion.ToString());
+        this.CallFunctionInvoked(context, renderedPrompt);
+
+        // Post cancellation is not supported as the stream data was already sent.
     }
 
     private async Task<FunctionResult> RunPromptAsync(
@@ -266,6 +316,17 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         // will reflect in the result metadata
         result.Metadata = eventWrapper.EventArgs.Metadata;
     }
+
+    /// <summary>
+    /// Handles the FunctionInvoked event
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <param name="prompt">Prompt used by the function</param>
+    private void CallFunctionInvoked(SKContext context, string prompt) =>
+        this.CallFunctionInvoked(
+            new FunctionResult(this.Name, this.PluginName, context),
+            context,
+            prompt);
 
     /// <summary>
     /// Try to get the prompt from the event args metadata.

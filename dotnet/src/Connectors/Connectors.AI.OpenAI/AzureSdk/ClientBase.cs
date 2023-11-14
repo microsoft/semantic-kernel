@@ -152,6 +152,33 @@ public abstract class ClientBase
         }
     }
 
+    private protected async IAsyncEnumerable<StreamingTextResultUpdate> InternalGetTextStreamingUpdatesAsync(
+    string prompt,
+    AIRequestSettings? requestSettings,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
+
+        ValidateMaxTokens(textRequestSettings.MaxTokens);
+
+        var options = CreateCompletionsOptions(prompt, textRequestSettings);
+
+        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
+            () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        using StreamingCompletions streamingChatCompletions = response.Value;
+
+        int choiceIndex = 0;
+        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (string textUpdate in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                yield return new StreamingTextResultUpdate(textUpdate, choiceIndex);
+            }
+            choiceIndex++;
+        }
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -258,6 +285,39 @@ public abstract class ClientBase
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
             yield return new ChatStreamingResult(response.Value, choice);
+        }
+    }
+
+    private protected async IAsyncEnumerable<StreamingChatResultUpdate> InternalGetChatStreamingUpdatesAsync(
+        IEnumerable<ChatMessageBase> chat,
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
+
+        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        if (response is null)
+        {
+            throw new SKException("Chat completions null response");
+        }
+
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+        int choiceIndex = 0;
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (ChatMessage chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                yield return new StreamingChatResultUpdate(chatMessage, choiceIndex);
+            }
+            choiceIndex++;
         }
     }
 

@@ -1,8 +1,8 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: proposed
-date: 2023-09-26
-deciders: rbarreto,markwallace,sergey,dmytro
+date: 2023-11-13
+deciders: rogerbarreto,markwallace-microsoft,SergeyMenshykh,dmytrostruk
 consulted:
 informed:
 ---
@@ -23,7 +23,7 @@ Needs to be clear for the sk developer when he is attempting to get streaming da
 
 2. The sk developer should be able to get the data in a generic way, so the Kernel and Functions can be able to stream data of any type, not limited to text.
 
-3. The sk developer when using streaming from a model that doesn't support streaming should still be able to use it with only one streaming update representing the whole data.
+3. The sk developer when using streaming from a model that does not support streaming should still be able to use it with only one streaming update representing the whole data.
 
 ## User Experience Goal
 
@@ -57,7 +57,7 @@ This approach also exposes dedicated interfaces in the kernel and functions to u
 
 The sk developer will be able to specify a generic type to the `Kernel.StreamingRunAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultUpdate.
 
-If the type isn't specified or if the string representation can't be cast, an exception will be thrown.
+If the type is not specified or if the string representation cannot be cast, an exception will be thrown.
 
 If the type specified is `StreamingResultUpdate`, `string` or `byte[]` no error will be thrown as the connectors will have interface methods that guarantee the data to be given in at least those types.
 
@@ -69,21 +69,19 @@ If the type specified is `StreamingResultUpdate`, `string` or `byte[]` no error 
 abstract class StreamingResultUpdate
 {
     public abstract string Type { get; }
-    [JsonIgnore]
-    public abstract string Value { get; }
-    [JsonIgnore]
-    public abstract byte[] RawValue { get; }
-
     // In a scenario of multiple results, this represents zero-based index of the result in the streaming sequence
     public abstract int ResultIndex { get; }
+
+    public abstract override string ToString();
+    public abstract byte[] ToByteArray();
 }
 
 // Specialization example of a ChatMessageUpdate
 public class ChatMessageUpdate : StreamingResultUpdate
 {
     public override string Type => "ChatMessage";
-    public override string Value => JsonSerialize(this);
-    public override byte[] RawValue => Encoding.UTF8.GetBytes(Value);
+    public override string ToString() => JsonSerializer.Serialize(this);
+    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(Value);
 
     public string Message { get; }
     public string Role { get; }
@@ -98,16 +96,16 @@ public class ChatMessageUpdate : StreamingResultUpdate
 
 interface IChatCompletion
 {
-    IAsyncEnumerable<ChatMessageUpdate> GetStreamingResultAsync();
-    IAsyncEnumerable<string> GetStringStreamingResultAsync();
-    IAsyncEnumerable<byte[]> GetByteStreamingResultAsync();
+    IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync();
+    IAsyncEnumerable<string> GetStringStreamingUpdatesAsync();
+    IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync();
 }
 
 interface ITextCompletion
 {
-    IAsyncEnumerable<TextMessageUpdate> GetStreamingResultAsync();
-    IAsyncEnumerable<string> GetStringStreamingResultAsync();
-    IAsyncEnumerable<byte[]> GetByteStreamingResultAsync();
+    IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync();
+    IAsyncEnumerable<string> GetStringStreamingUpdatesAsync();
+    IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync();
 }
 
 interface IKernel

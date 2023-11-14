@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -166,6 +168,49 @@ repeat:
         }
 
         return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
+    }
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="variables">Input to process</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Result of the function composition</returns>
+    public async IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ContextVariables variables, ISKFunction skFunction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var context = this.CreateNewContext();
+
+        var repeatRequested = false;
+
+        do
+        {
+            repeatRequested = false;
+
+            var functionDetails = skFunction.Describe();
+            await foreach (StreamingResultUpdate update in skFunction.StreamingInvokeAsync(context, null, cancellationToken).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (this.IsCancelRequested(skFunction, context, 1))
+                {
+                    break;
+                }
+
+                if (this.IsSkipRequested(skFunction, context, 1))
+                {
+                    break;
+                }
+
+                yield return update;
+            }
+
+            if (this.IsRepeatRequested(skFunction, context, 1))
+            {
+                repeatRequested = true;
+            }
+        }
+        while (repeatRequested);
     }
 
     /// <inheritdoc/>

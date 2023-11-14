@@ -57,6 +57,18 @@ public interface ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Invoke the <see cref="ISKFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="context">SK context</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default);
+
     #region Obsolete
 
     /// <summary>
