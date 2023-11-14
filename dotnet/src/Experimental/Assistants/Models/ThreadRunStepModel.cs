@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable CA1812
 
 using System;
 using System.Text.Json.Serialization;
@@ -8,7 +9,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// list of run steps belonging to a run.
 /// </summary>
-internal class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
+internal sealed class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
 {
     // No specialization
 }

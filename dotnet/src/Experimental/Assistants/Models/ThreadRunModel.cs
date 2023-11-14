@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable CA1812
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
