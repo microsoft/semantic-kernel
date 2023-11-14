@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -143,9 +144,15 @@ internal sealed class ChatRun
 
             var function = kernel.GetAssistantTool(functionDetails.Name);
 
-            //// TODO: @chris: change back to Dictionary<string, object>
-            ////Dictionary<string, object> variables = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments)!;
             var variables = new ContextVariables();
+            if (string.IsNullOrWhiteSpace(functionDetails.Arguments))
+            {
+                var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
+                foreach (var argument in arguments)
+                {
+                    variables[argument.Key] = argument.Value.ToString();
+                }
+            }
 
             var results = await kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
