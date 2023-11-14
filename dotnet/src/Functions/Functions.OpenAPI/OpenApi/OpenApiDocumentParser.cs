@@ -201,7 +201,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationResponses(operationItem.Responses)
+                CreateRestApiOperationResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
 
             operations.Add(operation);
@@ -287,36 +287,38 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
     }
 
-    private static RestApiOperationResponse? CreateRestApiOperationResponses(OpenApiResponses responses)
+    private static IEnumerable<(string, RestApiOperationResponse)> CreateRestApiOperationResponses(OpenApiResponses responses)
     {
         if (responses == null)
         {
-            return null;
+            yield break;
         }
 
         // TODO: support default/no response code
-        // TODO: support other response codes
-        var response = responses.FirstOrDefault(r => r.Key == "200");
-
-        if (response.Value == null)
+        foreach (var response in responses)
         {
-            return null;
+            if (response.Value == null)
+            {
+                yield break;
+            }
+
+            var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
+            if (mediaType == null)
+            {
+                // TODO -- use text/plain or application/json as default?
+                yield return (response.Key, new RestApiOperationResponse(string.Empty, string.Empty));
+            }
+            else
+            {
+                var mediaTypeMetadata = response.Value.Content[mediaType];
+
+                // Parse schema
+                var schema = ParseSchema(mediaTypeMetadata.Schema);
+
+                // TODO - Kind of overloading `content` and `contentType` properties here.
+                yield return (response.Key, new RestApiOperationResponse(response.Value.Description ?? mediaTypeMetadata.Schema?.Description ?? string.Empty, mediaType, schema));
+            }
         }
-
-        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
-        if (mediaType == null)
-        {
-            // TODO -- use text/plain or application/json as default?
-            return new RestApiOperationResponse(string.Empty, string.Empty);
-        }
-
-        var mediaTypeMetadata = response.Value.Content[mediaType];
-
-        // Parse schema
-        var schema = ParseSchema(mediaTypeMetadata.Schema);
-
-        // TODO - Kind of overloading `content` and `contentType` properties here.
-        return new RestApiOperationResponse(mediaType, response.Value.Description ?? mediaTypeMetadata.Schema?.Description ?? string.Empty, schema);
     }
 
     private static RestApiOperationResponseSchema? ParseSchema(OpenApiSchema schema)

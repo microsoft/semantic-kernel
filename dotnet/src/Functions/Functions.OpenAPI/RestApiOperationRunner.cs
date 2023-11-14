@@ -115,7 +115,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public async Task<RestApiOperationResponse> RunAsync(
+    public Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         IDictionary<string, string> arguments,
         RestApiOperationRunOptions? options = null,
@@ -127,16 +127,7 @@ internal sealed class RestApiOperationRunner
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
-        var result = await this.SendAsync(url, operation.Method, headers, payload, cancellationToken).ConfigureAwait(false);
-
-        // use the operation.Response to validate
-        // todo get success or matching perhaps? Should `sendAsync` do this?
-        if (!operation.Responses.Any() || result.ValidateResponse(operation.Responses.First().Schema))
-        {
-            return result;
-        }
-
-        throw new SKException($"The response of the {operation.Id} operation is not valid."); // TODO Needs test coverage
+        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses, cancellationToken);
     }
 
     #region private
@@ -155,6 +146,7 @@ internal sealed class RestApiOperationRunner
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         HttpContent? payload = null,
+        IDictionary<string, RestApiOperationResponse>? responses = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -181,7 +173,21 @@ internal sealed class RestApiOperationRunner
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
         // todo response header?
-        return await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+        var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+
+        if (responses is not null)
+        {
+            // Get the responses that matches the responseMessage.StatusCode and validate the response content against the schema
+            var matchingResponse = responses.FirstOrDefault(r => r.Key == $"{(int)responseMessage.StatusCode}");
+
+            // return schema.Validate(this.Content.ToString()); // TODO -- is this correct?
+            if (matchingResponse.Value is not null && !(matchingResponse.Value.Schema?.Validate(response.Content.ToString()) ?? true))
+            {
+                throw new SKException($"The response of the {matchingResponse.Value} operation is not valid."); // TODO Needs test coverage
+            }
+        }
+
+        return response;
     }
 
     /// <summary>
@@ -330,44 +336,44 @@ internal sealed class RestApiOperationRunner
         switch (propertyMetadata.Type)
         {
             case "number":
-            {
-                if (long.TryParse(propertyValue, out var intValue))
                 {
-                    return JsonValue.Create(intValue);
-                }
+                    if (long.TryParse(propertyValue, out var intValue))
+                    {
+                        return JsonValue.Create(intValue);
+                    }
 
-                return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
-            }
+                    return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
+                }
 
             case "boolean":
-            {
-                return JsonValue.Create(bool.Parse(propertyValue));
-            }
-
-            case "integer":
-            {
-                return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
-            }
-
-            case "array":
-            {
-                if (JsonArray.Parse(propertyValue) is JsonArray array)
                 {
-                    return array;
+                    return JsonValue.Create(bool.Parse(propertyValue));
                 }
 
-                throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
-            }
+            case "integer":
+                {
+                    return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
+                }
+
+            case "array":
+                {
+                    if (JsonArray.Parse(propertyValue) is JsonArray array)
+                    {
+                        return array;
+                    }
+
+                    throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
+                }
 
             case "string":
-            {
-                return JsonValue.Create(propertyValue);
-            }
+                {
+                    return JsonValue.Create(propertyValue);
+                }
 
             default:
-            {
-                throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
-            }
+                {
+                    throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
+                }
         }
     }
 

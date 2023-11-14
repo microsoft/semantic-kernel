@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -62,7 +63,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IList<RestApiOperationResponse> Responses { get; } = new List<RestApiOperationResponse>();
+    public IDictionary<string, RestApiOperationResponse>? Responses { get; }
 
     /// <summary>
     /// The operation payload.
@@ -80,7 +81,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
-    /// <param name="response">The operation response.</param>
+    /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
         string id,
         Uri? serverUrl,
@@ -90,7 +91,7 @@ public sealed class RestApiOperation
         IList<RestApiOperationParameter> parameters,
         IDictionary<string, string> headers,
         RestApiOperationPayload? payload = null,
-        RestApiOperationResponse? response = null)
+        IDictionary<string, RestApiOperationResponse>? responses = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -100,7 +101,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
-        if (response != null) { this.Responses.Add(response); } // TODO should this remain a collection or not
+        this.Responses = responses;
     }
 
     /// <summary>
