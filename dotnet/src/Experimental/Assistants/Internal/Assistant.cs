@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -47,7 +48,6 @@ internal sealed class Assistant : IAssistant
 
     private readonly IOpenAIRestContext _restContext;
     private readonly AssistantModel _model;
-    private readonly IKernel _kernel;
 
     /// <summary>
     /// Create a new assistant.
@@ -63,11 +63,18 @@ internal sealed class Assistant : IAssistant
         IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
+        var functionCollection = new FunctionCollection();
+        foreach (var function in functions ?? Array.Empty<ISKFunction>())
+        {
+            assistantModel.Tools.Add(DefineTool(function));
+            functionCollection.AddFunction(function);
+        }
+
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, restContext, functions);
+        return new Assistant(resultModel, restContext, functionCollection);
     }
 
     /// <summary>
@@ -86,7 +93,7 @@ internal sealed class Assistant : IAssistant
             await openAiRestContext.ModifyAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure modifying assistant: no result.");
 
-        return new Assistant(resultModel, openAiRestContext);
+        return new Assistant(resultModel, openAiRestContext, new FunctionCollection());
     }
 
     /// <summary>
@@ -107,7 +114,13 @@ internal sealed class Assistant : IAssistant
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
 
-        return new Assistant(resultModel, restContext, functions);
+        var functionCollection = new FunctionCollection();
+        foreach (var function in functions ?? Array.Empty<ISKFunction>())
+        {
+            functionCollection.AddFunction(function);
+        }
+
+        return new Assistant(resultModel, restContext, functionCollection);
     }
 
     /// <summary>
@@ -116,28 +129,20 @@ internal sealed class Assistant : IAssistant
     internal Assistant(
         AssistantModel model,
         IOpenAIRestContext restContext,
-        IEnumerable<ISKFunction>? functions = null)
+        FunctionCollection functions)
     {
         this._model = model;
         this._restContext = restContext;
-
-        var functionCollection = new FunctionCollection();
-        foreach (var function in functions ?? Array.Empty<ISKFunction>())
-        {
-            this.DefineTool(function);
-            functionCollection.AddFunction(function);
-        }
-
-        this._kernel =
+        this.Kernel =
             new Kernel(
-                functionCollection,
+                functions,
                 aiServiceProvider: null!,
                 memory: null!,
                 NullHttpHandlerFactory.Instance,
                 loggerFactory: null);
     }
 
-    private void DefineTool(ISKFunction tool)
+    private static AssistantModel.ToolModel DefineTool(ISKFunction tool)
     {
         var view = tool.Describe();
         var required = new List<string>(view.Parameters.Count);
@@ -176,6 +181,6 @@ internal sealed class Assistant : IAssistant
                     },
             };
 
-        this._model.Tools.Add(payload);
+        return payload;
     }
 }

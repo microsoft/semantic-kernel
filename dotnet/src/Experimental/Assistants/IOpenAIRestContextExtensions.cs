@@ -138,7 +138,7 @@ public static class IOpenAIRestContextExtensions
     {
         var models = await restContext.GetAssistantsModelsAsync(limit, ascending, after, before).ConfigureAwait(false);
 
-        return models.Select(m => new Assistant(m, restContext)).ToArray(); // TODO: @chris - deal with kernel
+        return models.Select(m => new Assistant(m, restContext, new FunctionCollection())).ToArray(); // TODO: @chris/@gil - deal with functions
     }
 
     /// <summary>
