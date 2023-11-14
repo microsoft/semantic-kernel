@@ -1,29 +1,34 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Fluent builder for initializing an <see cref="IAssistant"/> instance.
 /// </summary>
-internal sealed class AssistantBuilder : IAssistantBuilder
+public partial class AssistantBuilder
 {
-    private readonly IOpenAIRestContext _context;
     private readonly AssistantModel _model;
     private readonly Dictionary<string, ISKFunction> _functions;
+
+    private string? _apiKey;
+    private Func<HttpClient>? _httpClientProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
     /// </summary>
-    public AssistantBuilder(IOpenAIRestContext restContext)
+    public AssistantBuilder()
     {
-        this._context = restContext;
         this._model = new AssistantModel();
         this._functions = new(12);
     }
@@ -36,21 +41,39 @@ internal sealed class AssistantBuilder : IAssistantBuilder
             throw new SKException("Model must be defined for assistant.");
         }
 
-        if (string.IsNullOrWhiteSpace(this._model.Instructions))
+        if (string.IsNullOrWhiteSpace(this._apiKey))
         {
-            throw new SKException("Instructions must be defined for assistant.");
+            throw new SKException("ApiKey must be provided for assistant.");
         }
 
         return
             await Assistant.CreateAsync(
-                this._context,
+                new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
+                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
                 this._model,
                 this._functions.Values,
                 cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithDescription(string? description)
+    public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
+    {
+        this._apiKey = apiKey;
+        this._model.Model = model;
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public AssistantBuilder WithHttpClient(HttpClient httpClient)
+    {
+        this._httpClientProvider ??= () => httpClient;
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public AssistantBuilder WithDescription(string? description)
     {
         this._model.Description = description;
 
@@ -58,7 +81,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithInstructions(string instructions)
+    public AssistantBuilder WithInstructions(string instructions)
     {
         this._model.Instructions = instructions;
 
@@ -66,7 +89,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithMetadata(string key, object value)
+    public AssistantBuilder WithMetadata(string key, object value)
     {
         this._model.Metadata[key] = value;
 
@@ -74,7 +97,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithMetadata(IDictionary<string, object> metadata)
+    public AssistantBuilder WithMetadata(IDictionary<string, object> metadata)
     {
         foreach (var kvp in metadata)
         {
@@ -85,15 +108,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithModel(string model)
-    {
-        this._model.Model = model;
-
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public IAssistantBuilder WithName(string? name)
+    public AssistantBuilder WithName(string? name)
     {
         this._model.Name = name;
 
@@ -101,7 +116,7 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithTool(ISKFunction tool)
+    public AssistantBuilder WithFunction(ISKFunction tool)
     {
         this._functions[tool.GetQualifiedName()] = tool;
 
@@ -109,11 +124,11 @@ internal sealed class AssistantBuilder : IAssistantBuilder
     }
 
     /// <inheritdoc/>
-    public IAssistantBuilder WithTools(IEnumerable<ISKFunction> tools)
+    public AssistantBuilder WithFunctions(IEnumerable<ISKFunction> tools)
     {
         foreach (var tool in tools)
         {
-            this.WithTool(tool);
+            this.WithFunction(tool);
         }
 
         return this;

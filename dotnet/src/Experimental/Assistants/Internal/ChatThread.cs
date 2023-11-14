@@ -19,7 +19,7 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public string Id { get; private set; }
 
-    private readonly IOpenAIRestContext _restContext;
+    private readonly OpenAIRestContext _restContext;
 
     /// <summary>
     /// Create a new thread.
@@ -27,7 +27,7 @@ internal sealed class ChatThread : IChatThread
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<IChatThread> CreateAsync(IOpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    public static async Task<IChatThread> CreateAsync(OpenAIRestContext restContext, CancellationToken cancellationToken = default)
     {
         var threadModel =
             await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false) ??
@@ -43,7 +43,7 @@ internal sealed class ChatThread : IChatThread
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<IChatThread> GetAsync(IOpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
+    public static async Task<IChatThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
         var threadModel =
             await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false) ??
@@ -69,11 +69,12 @@ internal sealed class ChatThread : IChatThread
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, string? instructions, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
     {
-        var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, instructions, cancellationToken).ConfigureAwait(false);
+        var tools = assistant.Functions.Select(f => f.ToToolModel()).ToArray();
+        var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
-        var run = new ChatRun(runModel, assistant, this._restContext);
+        var run = new ChatRun(runModel, assistant.Kernel, this._restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
         var messages = await this.GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -107,7 +108,7 @@ internal sealed class ChatThread : IChatThread
     private ChatThread(
         ThreadModel threadModel,
         ThreadMessageListModel? messageListModel,
-        IOpenAIRestContext restContext)
+        OpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;
         this._restContext = restContext;

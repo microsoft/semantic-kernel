@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -22,6 +23,9 @@ internal sealed class Assistant : IAssistant
 
     /// <inheritdoc/>
     public IKernel Kernel { get; }
+
+    /// <inheritdoc/>
+    public IList<ISKFunction> Functions { get; }
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
@@ -45,108 +49,30 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public string Instructions => this._model.Instructions;
 
-    private readonly IOpenAIRestContext _restContext;
+    private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
 
     /// <summary>
     /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="chatService">An OpenAI chat service.</param>
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="functions">Functions to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
-        IOpenAIRestContext restContext,
+        OpenAIRestContext restContext,
+        OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
         IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
-        var functionCollection = new FunctionCollection();
-        foreach (var function in functions ?? Array.Empty<ISKFunction>())
-        {
-            assistantModel.Tools.Add(DefineTool(function));
-            functionCollection.AddFunction(function);
-        }
-
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, restContext, functionCollection);
-    }
-
-    /// <summary>
-    /// Retrieve an existing assistant, by identifier.
-    /// </summary>
-    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="functions">Functions to initialize as assistant tools</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
-    public static async Task<IAssistant> GetAsync(
-        IOpenAIRestContext restContext,
-        string assistantId,
-        IEnumerable<ISKFunction>? functions = null,
-        CancellationToken cancellationToken = default)
-    {
-        var resultModel =
-            await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
-
-        var functionCollection = new FunctionCollection();
-        foreach (var function in functions ?? Array.Empty<ISKFunction>())
-        {
-            functionCollection.AddFunction(function);
-        }
-
-        return new Assistant(resultModel, restContext, functionCollection);
-    }
-
-    /// <summary>
-    /// Delete an existing assistant
-    /// </summary>
-    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="assistantId">Identifier of assistant to delete</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    public static Task DeleteAsync(
-        IOpenAIRestContext restContext,
-        string assistantId,
-        CancellationToken cancellationToken = default)
-    {
-        return restContext.DeleteAssistantModelAsync(assistantId, cancellationToken);
-    }
-
-    /// <summary>
-    /// Retrieve all assistants. // TODO: @chris / @gil - Assistant "Reference" (are these functional)?
-    /// </summary>
-    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="limit">A limit on the number of objects to be returned.
-    /// Limit can range between 1 and 100, and the default is 20.</param>
-    /// <param name="ascending">Set to true to sort by ascending created_at timestamp
-    /// instead of descending.</param>
-    /// <param name="after">A cursor for use in pagination. This is an object ID that defines
-    /// your place in the list. For instance, if you make a list request and receive 100 objects,
-    /// ending with obj_foo, your subsequent call can include after=obj_foo in order to
-    /// fetch the next page of the list.</param>
-    /// <param name="before">A cursor for use in pagination. This is an object ID that defines
-    /// your place in the list. For instance, if you make a list request and receive 100 objects,
-    /// ending with obj_foo, your subsequent call can include before=obj_foo in order to
-    /// fetch the previous page of the list.</param>
-    /// <returns>List of retrieved Assistants</returns>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>An enumeration of assistant definitions</returns>
-    public static async Task<IList<IAssistant>> ListAsync(
-        IOpenAIRestContext restContext,
-        int limit = 20,
-        bool ascending = false,
-        string? after = null,
-        string? before = null,
-        CancellationToken cancellationToken = default)
-    {
-        var models = await restContext.ListAssistantsModelsAsync(limit, ascending, after, before, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        return models.Select(a => (IAssistant)new Assistant(a, restContext, new FunctionCollection())).ToList();
+        return new Assistant(resultModel, chatService, restContext, functions);
     }
 
     /// <summary>
@@ -154,59 +80,32 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     internal Assistant(
         AssistantModel model,
-        IOpenAIRestContext restContext,
-        FunctionCollection functions)
+        OpenAIChatCompletion chatService,
+        OpenAIRestContext restContext,
+        IEnumerable<ISKFunction>? functions = null)
     {
         this._model = model;
         this._restContext = restContext;
+        this.Functions = new List<ISKFunction>(functions ?? Array.Empty<ISKFunction>());
+
+        var functionCollection = new FunctionCollection();
+        foreach (var function in this.Functions)
+        {
+            functionCollection.AddFunction(function);
+        }
+
         this.Kernel =
             new Kernel(
-                functions,
-                aiServiceProvider: null!,
+                functionCollection,
+                aiServiceProvider: null!, // $$$
                 memory: null!,
                 NullHttpHandlerFactory.Instance,
                 loggerFactory: null);
     }
 
-    private static AssistantModel.ToolModel DefineTool(ISKFunction tool)
+    /// <inheritdoc/>
+    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
-        var view = tool.Describe();
-        var required = new List<string>(view.Parameters.Count);
-        var parameters =
-            view.Parameters.ToDictionary(
-                p => p.Name,
-                p =>
-                {
-                    if (p.IsRequired ?? false)
-                    {
-                        required.Add(p.Name);
-                    }
-
-                    return
-                        new OpenAIParameter
-                        {
-                            Type = p.Type?.Name ?? nameof(System.String),
-                            Description = p.Description,
-                        };
-                });
-
-        var payload =
-            new AssistantModel.ToolModel
-            {
-                Type = "function",
-                Function =
-                    new()
-                    {
-                        Name = tool.GetQualifiedName(),
-                        Description = tool.Description,
-                        Parameters =
-                        {
-                            Properties = parameters,
-                            Required = required,
-                        }
-                    },
-            };
-
-        return payload;
+        return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 }

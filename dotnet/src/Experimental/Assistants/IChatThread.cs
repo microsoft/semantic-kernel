@@ -28,10 +28,9 @@ public interface IChatThread
     /// Advance the thread with the specified assistant.
     /// </summary>
     /// <param name="assistant">An assistant instance.</param>
-    /// <param name="instructions">Optional instruction override</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
-    Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, string? instructions = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete existing thread.

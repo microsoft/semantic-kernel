@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
-using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,10 +38,14 @@ public sealed class ThreadHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyThreadLifecycleAsync()
     {
-        using var httpClient = new HttpClient();
-        var context = OpenAIRestContext.CreateFromConfig(httpClient);
+        var assistant =
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletionService(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithName("DeleteMe")
+                .BuildAsync()
+                .ConfigureAwait(true);
 
-        var thread = await context.CreateThreadAsync().ConfigureAwait(true);
+        var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
         Assert.NotNull(thread.Id);
 
@@ -50,6 +56,11 @@ public sealed class ThreadHarness
 
         this._output.WriteLine($"# {message.Id}");
 
-        var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
+        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var copy = await context.GetThreadModelAsync(thread.Id).ConfigureAwait(true);
+
+        await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
+
+        await Assert.ThrowsAsync<SKException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }

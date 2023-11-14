@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -20,7 +21,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A thread definition</returns>
     public static Task<ThreadModel> CreateThreadModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         CancellationToken cancellationToken = default)
     {
         return
@@ -37,7 +38,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A thread definition</returns>
     public static Task<ThreadModel> GetThreadModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +55,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="id">Identifier of thread to delete</param>
     /// <param name="cancellationToken">A cancellation token</param>
     public static Task DeleteThreadModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string id,
         CancellationToken cancellationToken = default)
     {

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -19,13 +20,15 @@ internal static partial class OpenAIRestExtensions
     /// <param name="threadId">A thread identifier</param>
     /// <param name="assistantId">The assistant identifier</param>
     /// <param name="instructions">Optional instruction override</param>
+    /// <param name="tools">The assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
     public static Task<ThreadRunModel> CreateRunAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string assistantId,
-        string? instructions,
+        string? instructions = null,
+        IEnumerable<AssistantModel.ToolModel>? tools = null,
         CancellationToken cancellationToken = default)
     {
         var payload =
@@ -33,6 +36,7 @@ internal static partial class OpenAIRestExtensions
             {
                 assistant_id = assistantId,
                 instructions,
+                tools,
             };
 
         return
@@ -51,7 +55,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
     public static Task<ThreadRunModel> GetRunAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string runId,
         CancellationToken cancellationToken = default)
@@ -71,7 +75,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A set of run steps</returns>
     public static Task<ThreadRunStepListModel> GetRunStepsAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string runId,
         CancellationToken cancellationToken = default)
@@ -92,7 +96,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
     public static Task<ThreadRunModel> AddToolOutputsAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string runId,
         IList<ToolResultModel> results,

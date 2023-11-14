@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -24,7 +25,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> CreateAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         AssistantModel model,
         CancellationToken cancellationToken = default)
     {
@@ -55,7 +56,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An assistant definition</returns>
     public static Task<AssistantModel> GetAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string assistantId,
         CancellationToken cancellationToken = default)
     {
@@ -85,7 +86,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An enumeration of assistant definitions</returns>
     public static async Task<IList<AssistantModel>> ListAssistantsModelsAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         int limit = 20,
         bool ascending = false,
         string? after = null,
@@ -121,7 +122,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="id">Identifier of assistant to delete</param>
     /// <param name="cancellationToken">A cancellation token</param>
     public static Task DeleteAssistantModelAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string id,
         CancellationToken cancellationToken = default)
     {

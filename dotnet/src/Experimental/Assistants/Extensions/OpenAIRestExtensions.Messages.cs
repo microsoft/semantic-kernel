@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -23,7 +24,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message definition</returns>
     public static Task<ThreadMessageModel> CreateUserTextMessageAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string content,
         CancellationToken cancellationToken = default)
@@ -51,7 +52,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message definition</returns>
     public static Task<ThreadMessageModel> GetMessageAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         string messageId,
         CancellationToken cancellationToken = default)
@@ -70,7 +71,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
     public static Task<ThreadMessageListModel> GetMessagesAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         CancellationToken cancellationToken = default)
     {
@@ -89,7 +90,7 @@ internal static partial class OpenAIRestExtensions
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
     public static async Task<IEnumerable<ThreadMessageModel>> GetMessagesAsync(
-        this IOpenAIRestContext context,
+        this OpenAIRestContext context,
         string threadId,
         IList<string> messageIds,
         CancellationToken cancellationToken = default)
