@@ -395,8 +395,8 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
 
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+        var function1 = SKFunction.Create(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.Create(Method(Function2), pluginName: PluginName);
 
         var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
 
