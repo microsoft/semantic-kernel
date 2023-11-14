@@ -139,7 +139,7 @@ internal static partial class OpenAIRestExtensions
     {
         var query = HttpUtility.ParseQueryString(string.Empty);
         query["limit"] = limit.ToString(CultureInfo.InvariantCulture);
-        query["order"] = ascending ? "asc" : "dec";
+        query["order"] = ascending ? "asc" : "desc";
         if (!string.IsNullOrWhiteSpace(after))
         {
             query["after"] = after;

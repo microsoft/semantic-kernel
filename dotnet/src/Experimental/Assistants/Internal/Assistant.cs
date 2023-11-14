@@ -171,7 +171,7 @@ internal sealed class Assistant : IAssistant
         string? before = null,
         CancellationToken cancellationToken = default)
     {
-        List<AssistantModel> models = new(await restContext.ListAssistantsModelsAsync(limit, ascending, after, before, cancellationToken: cancellationToken).ConfigureAwait(false));
+        var models = await restContext.ListAssistantsModelsAsync(limit, ascending, after, before, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return models.Select(a => (IAssistant)new Assistant(a, restContext, new FunctionCollection())).ToList();
     }
