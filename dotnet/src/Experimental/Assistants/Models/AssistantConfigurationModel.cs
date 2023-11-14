@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Represents a yaml configuration file for an assistant.
 /// </summary>
-internal class AssistantConfigurationModel
+internal sealed class AssistantConfigurationModel
 {
     /// <summary>
     /// The assistant name

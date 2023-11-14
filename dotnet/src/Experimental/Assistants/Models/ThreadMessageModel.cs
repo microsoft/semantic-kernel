@@ -16,7 +16,7 @@ internal class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
 /// <summary>
 /// Represents a message within a thread.
 /// </summary>
-internal class ThreadMessageModel
+internal sealed class ThreadMessageModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
@@ -86,7 +86,7 @@ internal class ThreadMessageModel
     /// <summary>
     /// Representa contents within a message.
     /// </summary>
-    public class ContentModel
+    public sealed class ContentModel
     {
         /// <summary>
         /// Type of content.
@@ -104,7 +104,7 @@ internal class ThreadMessageModel
     /// <summary>
     /// Text content.
     /// </summary>
-    public class TextContentModel
+    public sealed class TextContentModel
     {
         /// <summary>
         /// The text itself.

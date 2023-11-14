@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Model of Assistant data returned from OpenAI
 /// </summary>
-internal record AssistantModel
+internal sealed record AssistantModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints
@@ -83,7 +83,7 @@ internal record AssistantModel
     /// <summary>
     /// Tool entry
     /// </summary>
-    public record ToolModel
+    public sealed record ToolModel
     {
         /// <summary>
         /// Type of tool to have at assistant's disposition
@@ -102,7 +102,7 @@ internal record AssistantModel
     /// <summary>
     /// Defines the function when ToolModel.Type == 'function'.
     /// </summary>
-    public record FunctionModel
+    public sealed record FunctionModel
     {
         /// <summary>
         /// The function name.

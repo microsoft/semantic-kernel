@@ -16,7 +16,7 @@ internal class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
 /// <summary>
 /// Step in a run on a thread.
 /// </summary>
-internal class ThreadRunStepModel
+internal sealed class ThreadRunStepModel
 {
     /// <summary>
     /// Identifier of the run step, which can be referenced in API endpoints.
@@ -109,7 +109,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Details of a run step.
     /// </summary>
-    public class StepDetailsModel
+    public sealed class StepDetailsModel
     {
         /// <summary>
         /// Empty definition
@@ -138,7 +138,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Message creation details.
     /// </summary>
-    public class MessageCreationDetailsModel
+    public sealed class MessageCreationDetailsModel
     {
         /// <summary>
         /// ID of the message that was created by this run step.
@@ -150,7 +150,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Tool call details.
     /// </summary>
-    public class ToolCallsDetailsModel
+    public sealed class ToolCallsDetailsModel
     {
         /// <summary>
         /// ID of the tool call.
@@ -174,7 +174,7 @@ internal class ThreadRunStepModel
     /// <summary>
     /// Function call details.
     /// </summary>
-    public class FunctionDetailsModel
+    public sealed class FunctionDetailsModel
     {
         /// <summary>
         /// Empty definition

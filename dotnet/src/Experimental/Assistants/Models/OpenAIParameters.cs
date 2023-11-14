@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Wrapper for parameter map.
 /// </summary>
-internal class OpenAIParameters
+internal sealed class OpenAIParameters
 {
     /// <summary>
     /// Empty parameter set.
@@ -37,7 +37,7 @@ internal class OpenAIParameters
 /// <summary>
 /// Wrapper for parameter definition.
 /// </summary>
-internal class OpenAIParameter
+internal sealed class OpenAIParameter
 {
     /// <summary>
     /// The parameter type.

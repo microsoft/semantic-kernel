@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// Represents an execution run on a thread.
 /// </summary>
-internal class ThreadRunModel
+internal sealed class ThreadRunModel
 {
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
@@ -121,7 +121,7 @@ internal class ThreadRunModel
     /// <summary>
     /// Tool entry
     /// </summary>
-    public class ToolModel
+    public sealed class ToolModel
     {
         /// <summary>
         /// Type of tool to have at assistant's disposition
@@ -133,7 +133,7 @@ internal class ThreadRunModel
     /// <summary>
     /// Run error information.
     /// </summary>
-    public class ErrorModel
+    public sealed class ErrorModel
     {
         /// <summary>
         /// Error code.
