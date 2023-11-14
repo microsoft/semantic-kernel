@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 
@@ -122,7 +121,7 @@ public abstract class OpenAIClientBase
 
     private protected T JsonDeserialize<T>(string responseJson)
     {
-        var result = Json.Deserialize<T>(responseJson);
+        var result = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(responseJson);
         if (result is null)
         {
             throw new SKException("Response JSON parse error");
