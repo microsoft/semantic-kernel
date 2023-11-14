@@ -80,7 +80,7 @@ public sealed class RunHarness
             await context.CreateAssistant()
                 .WithKernel(kernel)
                 .WithModel("gpt-3.5-turbo-1106")
-                .WithInstructions("Run a guessing game where the user tries to guess the answer to a question.  If they give up by asking for the answer, the loose (and tell them the answer).")
+                .WithInstructions("Run a guessing game where the user tries to guess the answer to a question but don't tell them the answer unless they give up by asking for the answer.")
                 .WithName("Fred")
                 .WithTools()
                 .BuildAsync().ConfigureAwait(true);

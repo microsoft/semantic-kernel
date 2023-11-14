@@ -166,7 +166,7 @@ internal class ThreadRunStepModel
         /// The definition of the function that was called.
         /// </summary>
         [JsonPropertyName("function")]
-        public FunctionDetailsModel Function { get; set; }
+        public FunctionDetailsModel Function { get; set; } = FunctionDetailsModel.Empty;
     }
 
     /// <summary>
@@ -177,6 +177,11 @@ internal class ThreadRunStepModel
     /// </remarks>
     public class FunctionDetailsModel
     {
+        /// <summary>
+        /// Empty definition
+        /// </summary>
+        public static FunctionDetailsModel Empty = new();
+
         /// <summary>
         /// The name of the function.
         /// </summary>
@@ -193,6 +198,7 @@ internal class ThreadRunStepModel
         /// The output of the function.
         /// This will be null if the outputs have not been submitted yet.
         /// </summary>
+        [JsonPropertyName("output")]
         public string Output { get; set; } = string.Empty;
     }
 }

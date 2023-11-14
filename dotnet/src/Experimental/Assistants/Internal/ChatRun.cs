@@ -45,19 +45,7 @@ internal sealed class ChatRun : IChatRun
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
     {
         // Poll until actionable
-        while (s_pollingStates.Contains(this._model.Status))
-        {
-            await Task.Delay(s_pollingInterval, cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception exception) when (!exception.IsCriticalException())
-            {
-                // Retry anyway..
-            }
-        }
+        await PollRunStatus().ConfigureAwait(false);
 
         // Retrieve steps
         var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
@@ -69,7 +57,10 @@ internal sealed class ChatRun : IChatRun
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            // Refresh steps $$$ ???
+            this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+
+            await PollRunStatus().ConfigureAwait(false);
+
             steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
         }
 
@@ -86,6 +77,23 @@ internal sealed class ChatRun : IChatRun
                 .ToArray();
 
         return messageIds; // TODO: @chris HAXX
+
+        async Task PollRunStatus()
+        {
+            while (s_pollingStates.Contains(this._model.Status))
+            {
+                await Task.Delay(s_pollingInterval, cancellationToken).ConfigureAwait(false);
+
+                try
+                {
+                    this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (!exception.IsCriticalException())
+                {
+                    // Retry anyway..
+                }
+            }
+        }
     }
 
     /// <summary>
