@@ -12,9 +12,8 @@ using Microsoft.SemanticKernel.Planners.Handlebars;
 using RepoUtils;
 
 /**
- * This example shows how to use multiple prompt template formats.
+ * This example shows how to use the Handlebars sequential planner.
  */
-// ReSharper disable once InconsistentNaming
 public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleCount;

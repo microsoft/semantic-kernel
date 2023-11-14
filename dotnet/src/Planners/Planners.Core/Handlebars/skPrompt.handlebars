@@ -64,6 +64,8 @@ If you need to loop through a list of values with `\{{#each}}`, you can use the 
 - {{{{raw}}}}`{{range}}`{{{{/raw}}}} – Generates a range of numbers from the given start to the given end.
 - {{{{raw}}}}`{{array}}`{{{{/raw}}}} – Generates an array of values from the given values.
 
+IMPORTANT: You cannot use any other methods or properties on the built-in data structures, such as array.push or range.length. Only use the helpers as they are listed above.
+
 ## Comparison helpers
 If you need to compare two values, you can use the following helpers:
 - {{{{raw}}}}`{{equal}}`{{{{/raw}}}}
