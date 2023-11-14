@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import 
     OpenAIChatCompletionBase,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (

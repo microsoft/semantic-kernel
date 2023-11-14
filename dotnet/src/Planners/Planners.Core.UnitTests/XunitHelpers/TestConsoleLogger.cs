@@ -16,7 +16,7 @@ internal static class TestConsoleLogger
 
     private static ILoggerFactory LogBuilder()
     {
-        return Extensions.Logging.LoggerFactory.Create(builder =>
+        return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
         {
             builder.SetMinimumLevel(LogLevel.Trace);
             // builder.AddFilter("Microsoft", LogLevel.Trace);
