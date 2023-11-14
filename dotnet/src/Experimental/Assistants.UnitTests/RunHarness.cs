@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //#define DISABLEHOST // Comment line to enable
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;

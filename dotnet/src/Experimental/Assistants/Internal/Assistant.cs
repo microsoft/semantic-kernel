@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -68,22 +70,28 @@ internal sealed class Assistant : IAssistant
     /// <summary>
     /// Modify an existing Assistant
     /// </summary>
-    /// <param name="openAiRestContext">Context to make calls to OpenAI</param>
-    /// <param name="assistantModel">New properties for our instance</param>
-    /// <param name="kernel">A semantic-kernel instance (for tool/function execution)</param>
+    /// <param name="restContext">Context to make calls to OpenAI</param>
+    /// <param name="assistantId">ID of assistant to modify</param>
+    /// <param name="model">New model, if not null</param>
+    /// <param name="instructions">New instructions, if not null</param>
+    /// <param name="name">New name, if not null</param>
+    /// <param name="description">New description, if not null</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The modified <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> ModifyAsync(
-        IOpenAIRestContext openAiRestContext,
-        AssistantModel assistantModel,
-        IKernel? kernel,
+        IOpenAIRestContext restContext,
+        string assistantId,
+        string? model = null,
+        string? instructions = null,
+        string? name = null,
+        string? description = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
-            await openAiRestContext.ModifyAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
+            await restContext.ModifyAssistantModelAsync(assistantId, model, instructions, name, description, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure modifying assistant: no result.");
 
-        return new Assistant(resultModel, openAiRestContext, kernel);
+        return new Assistant(resultModel, restContext, null); // TODO: find way to preserve kernel
     }
 
     /// <summary>
@@ -105,6 +113,52 @@ internal sealed class Assistant : IAssistant
             throw new SKException($"Unexpected failure retrieving assisant: no result. ({assistantId})");
 
         return new Assistant(resultModel, restContext, kernel);
+    }
+
+    /// <summary>
+    /// Delete an existing assistant
+    /// </summary>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantId">Identifier of assistant to delete</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    public static Task DeleteAsync(
+        IOpenAIRestContext restContext,
+        string assistantId,
+        CancellationToken cancellationToken = default)
+    {
+        return restContext.DeleteAssistantModelAsync(assistantId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieve all assistants.
+    /// </summary>
+    /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="limit">A limit on the number of objects to be returned.
+    /// Limit can range between 1 and 100, and the default is 20.</param>
+    /// <param name="ascending">Set to true to sort by ascending created_at timestamp
+    /// instead of descending.</param>
+    /// <param name="after">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include after=obj_foo in order to
+    /// fetch the next page of the list.</param>
+    /// <param name="before">A cursor for use in pagination. This is an object ID that defines
+    /// your place in the list. For instance, if you make a list request and receive 100 objects,
+    /// ending with obj_foo, your subsequent call can include before=obj_foo in order to
+    /// fetch the previous page of the list.</param>
+    /// <returns>List of retrieved Assistants</returns>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An enumeration of assistant definitions</returns>
+    public static async Task<IList<IAssistant>> ListAsync(
+        IOpenAIRestContext restContext,
+        int limit = 20,
+        bool ascending = false,
+        string? after = null,
+        string? before = null,
+        CancellationToken cancellationToken = default)
+    {
+        List<AssistantModel> models = new(await restContext.ListAssistantsModelsAsync(limit, ascending, after, before, cancellationToken: cancellationToken).ConfigureAwait(false));
+
+        return models.Select(a => (IAssistant)a).ToList();
     }
 
     /// <summary>

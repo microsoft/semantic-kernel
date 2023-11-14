@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -40,8 +41,7 @@ internal static partial class OpenAIRestExtensions
                 metadata = model.Metadata,
             };
 
-        return
-            context.ExecutePostAsync<AssistantModel>(
+        return context.ExecutePostAsync<AssistantModel>(
                 BaseAssistantUrl,
                 payload,
                 cancellationToken);
@@ -51,28 +51,43 @@ internal static partial class OpenAIRestExtensions
     /// Modify an existing Aasistant
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="model">New properties for our instance</param>
+    /// <param name="assistantId">The assistant identifier</param>
+    /// <param name="model">New LLM model, if not null</param>
+    /// <param name="instructions">New instructions, if not null</param>
+    /// <param name="name">New name, if not null</param>
+    /// <param name="description">New description, if not null</param>
     /// <param name="cancellationToken">A cancellation token</param>
     public static Task<AssistantModel> ModifyAssistantModelAsync(
         this IOpenAIRestContext context,
-        AssistantModel model,
+        string assistantId,
+        string? model = null,
+        string? instructions = null,
+        string? name = null,
+        string? description = null,
         CancellationToken cancellationToken = default)
     {
-        var payload =
-        new
+        var payload = new StringBuilder("{");
+        if (model is not null)
         {
-            model = model.Model,
-            name = model.Name,
-            description = model.Description,
-            instructions = model.Instructions,
-            tools = model.Tools,
-            file_ids = model.FileIds,
-            metadata = model.Metadata,
-        };
-        return
-            context.ExecutePostAsync<AssistantModel>(
-                GetAssistantUrl(model.Id),
-                payload,
+            payload.Append($"\"{nameof(model)}\":\"{model}\"");
+        }
+        if (instructions is not null)
+        {
+            payload.Append($"\"{nameof(instructions)}\":\"{instructions}\"");
+        }
+        if (name is not null)
+        {
+            payload.Append($"\"{nameof(name)}\":\"{name}\"");
+        }
+        if (description is not null)
+        {
+            payload.Append($"\"{nameof(description)}\":\"{description}\"");
+        }
+        payload.Append('}');
+
+        return context.ExecutePostAsync<AssistantModel>(
+                GetAssistantUrl(assistantId),
+                payload.ToString(),
                 cancellationToken);
     }
 
@@ -88,8 +103,7 @@ internal static partial class OpenAIRestExtensions
         string assistantId,
         CancellationToken cancellationToken = default)
     {
-        return
-            context.ExecuteGetAsync<AssistantModel>(
+        return context.ExecuteGetAsync<AssistantModel>(
                 GetAssistantUrl(assistantId),
                 cancellationToken);
     }
@@ -113,7 +127,7 @@ internal static partial class OpenAIRestExtensions
     /// <returns>List of retrieved Assistants</returns>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An enumeration of assistant definitions</returns>
-    public static Task<IList<AssistantModel>> GetAssistantsModelsAsync(
+    public static Task<IList<AssistantModel>> ListAssistantsModelsAsync(
         this IOpenAIRestContext context,
         int limit = 20,
         bool ascending = false,
