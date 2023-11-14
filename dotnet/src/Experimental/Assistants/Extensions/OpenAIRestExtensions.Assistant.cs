@@ -129,7 +129,7 @@ internal static partial class OpenAIRestExtensions
     /// <returns>List of retrieved Assistants</returns>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An enumeration of assistant definitions</returns>
-    public static Task<IList<AssistantModel>> ListAssistantsModelsAsync(
+    public static async Task<IList<AssistantModel>> ListAssistantsModelsAsync(
         this IOpenAIRestContext context,
         int limit = 20,
         bool ascending = false,
@@ -151,9 +151,12 @@ internal static partial class OpenAIRestExtensions
 
         string requestUrl = string.Join("?", BaseAssistantUrl, query.ToString());
 
-        return context.ExecuteGetAsync<IList<AssistantModel>>(
+        var result =
+            await context.ExecuteGetAsync<AssistantListModel>(
                 requestUrl,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
+
+        return result.Data;
     }
 
     /// <summary>
