@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
@@ -265,7 +264,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private T DeserializeResponse<T>(string body)
     {
-        var response = Json.Deserialize<T>(body);
+        var response = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(body);
 
         if (response is null)
         {

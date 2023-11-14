@@ -28,8 +28,6 @@ public static class Example65_KernelStreaming
     /// </summary>
     public static async Task RunAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("======== Example65_KernelStreaming ========");
-
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
@@ -67,7 +65,7 @@ Event: {{$input}}
 
         var roleDisplayed = false;
 
-        Console.WriteLine("===  Semantic Function - Streaming ===\n");
+        Console.WriteLine("\n===  Semantic Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
         await foreach (var update in kernel.StreamingRunAsync(excuseFunction, new ContextVariables("I missed the F1 final race"), cancellationToken))
@@ -101,7 +99,7 @@ Event: {{$input}}
 
     private static async Task NativeStreamingValueTypeAsync(IKernel kernel, IDictionary<string, ISKFunction> functions, CancellationToken cancellationToken)
     {
-        Console.WriteLine("\n=== Native Streaming Functions - Streaming (Value Type) ===\n");
+        Console.WriteLine("\n\n=== Native Streaming Functions - Streaming (Value Type) ===\n");
 
         // Native string value type streaming function
         await foreach (var update in kernel.StreamingRunAsync(functions["MyValueTypeStreamingNativeFunction"], new ContextVariables("My Value Type Streaming Function Input"), cancellationToken))
@@ -115,7 +113,7 @@ Event: {{$input}}
 
     private static async Task NativeStreamingComplexTypeAsync(IKernel kernel, IDictionary<string, ISKFunction> functions, CancellationToken cancellationToken)
     {
-        Console.WriteLine("\n=== Native Streaming Functions - Streaming (Complex Type) ===\n");
+        Console.WriteLine("\n\n=== Native Streaming Functions - Streaming (Complex Type) ===\n");
 
         // Native complex type streaming function
         await foreach (var update in kernel.StreamingRunAsync(functions["MyComplexTypeStreamingNativeFunction"], new ContextVariables("My Complex Type Streaming Function Input"), cancellationToken))
