@@ -21,7 +21,7 @@ internal sealed class Assistant : IAssistant
     public string Id => this._model.Id;
 
     /// <inheritdoc/>
-    public IKernel? Kernel { get; }
+    public IKernel Kernel { get; }
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema

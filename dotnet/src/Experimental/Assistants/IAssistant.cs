@@ -18,7 +18,7 @@ public interface IAssistant
     /// <remarks>
     /// The kernel is only used for tool/function execution.
     /// </remarks>
-    IKernel? Kernel { get; }
+    IKernel Kernel { get; }
 
     /// <summary>
     /// Always "assistant"
