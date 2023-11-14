@@ -93,6 +93,7 @@ async def test_create_get_drop_exists_collection_async():
     await store.delete_collection_async(test_collection)
 
     result = await store.does_collection_exist_async(test_collection)
+    assert result is True
 
 
 

@@ -34,7 +34,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     async def create_collection(self, collection_name: str) -> None:
         if not await self.does_collection_exist(collection_name):
-            if not self.index_name in self.database[collection_name].list_indexes():
+            if self.index_name not in self.database[collection_name].list_indexes():
                 self.database.command(
                     {
                         "createIndexes": collection_name,
