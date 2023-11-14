@@ -1,12 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
@@ -15,7 +26,7 @@ if TYPE_CHECKING:
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
@@ -38,9 +49,35 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         else:
             return [choice.message.content for choice in response.choices]
 
+    async def complete_chat_with_functions_async(
+        self,
+        messages: List[Dict[str, str]],
+        functions: List[Dict[str, Any]],
+        request_settings: "ChatRequestSettings",
+        logger: Optional[Logger] = None,
+    ) -> Union[
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
+    ]:
+        # TODO: tracking on token counts/etc.
+
+        response = await self._send_request(
+            messages=messages,
+            request_settings=request_settings,
+            stream=False,
+            functions=functions,
+        )
+
+        if len(response.choices) == 1:
+            return _parse_message(response.choices[0].message, self.log)
+        else:
+            return [
+                _parse_message(choice.message, self.log) for choice in response.choices
+            ]
+
     async def complete_chat_stream_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:

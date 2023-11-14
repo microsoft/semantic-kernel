@@ -3,6 +3,8 @@
 from logging import Logger
 from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 
+from openai.types.completion import Completion
+
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
@@ -35,10 +37,13 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             prompt=prompt, request_settings=settings, stream=False
         )
 
-        if len(response.choices) == 1:
-            return response.choices[0].text
-        else:
+        if isinstance(response, Completion):
+            if len(response.choices) == 1:
+                return response.choices[0].text
             return [choice.text for choice in response.choices]
+        if len(response.choices) == 1:
+            return response.choices[0].message.content
+        return [choice.message.content for choice in response.choices]
 
     async def complete_stream_async(
         self,

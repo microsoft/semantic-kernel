@@ -12,7 +12,6 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 class AIServiceClientBase(SKBaseModel, ABC):
     model_id: constr(strip_whitespace=True, min_length=1)
-    api_key: constr(strip_whitespace=True, min_length=1)
     log: Optional[Logger]
 
     @validator("log", pre=True)

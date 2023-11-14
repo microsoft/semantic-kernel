@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
-import openai
 from numpy import array, ndarray
+from openai import AsyncOpenAI
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -21,6 +21,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
 class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
+    client: AsyncOpenAI
     model_type: OpenAIModelTypes = OpenAIModelTypes.TEXT
     prompt_tokens: int = Field(0, init=False)
     completion_tokens: int = Field(0, init=False)
@@ -30,8 +31,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         self,
         request_settings: Union[CompleteRequestSettings, ChatRequestSettings],
         prompt: Optional[str] = None,
-        messages: Optional[List[Tuple[str, str]]] = None,
+        messages: Optional[List[Dict[str, str]]] = None,
         stream: bool = False,
+        functions: Optional[List[Dict[str, Any]]] = None,
     ):
         """
         Completes the given prompt. Returns a single string completion.
@@ -68,7 +70,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             )
 
         base_args = {
-            "api_key": self.api_key,
             "stream": stream,
             "temperature": request_settings.temperature,
             "top_p": request_settings.top_p,
@@ -89,23 +90,24 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ),
             "n": request_settings.number_of_responses,
         }
-        if hasattr(request_settings, "logprobs"):
+        if hasattr(request_settings, "logprobs") and self.model_type == OpenAIModelTypes.TEXT:
             base_args["logprobs"] = request_settings.logprobs
 
         model_args = self.get_model_args()
         model_args.update(base_args)
 
         if self.model_type == OpenAIModelTypes.CHAT:
-            if messages:
-                model_args["messages"] = [
-                    {"role": role, "content": message} for role, message in messages
-                ]
-            if prompt:
-                model_args["messages"] = [{"role": "user", "content": prompt}]
-            if "messages" not in model_args:
-                raise ValueError(
-                    "The messages cannot be `None` or empty, please use either prompt or messages"
-                )
+            model_args["messages"] = messages or [{"role": "user", "content": prompt}]
+            if functions and request_settings.function_call is not None:
+                model_args["function_call"] = request_settings.function_call
+                if request_settings.function_call != "auto":
+                    model_args["functions"] = [
+                        func
+                        for func in functions
+                        if func["name"] == request_settings.function_call
+                    ]
+                else:
+                    model_args["functions"] = functions
         if self.model_type == OpenAIModelTypes.TEXT:
             model_args["prompt"] = prompt
             if "prompt" not in model_args:
@@ -114,10 +116,11 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 )
 
         try:
-            if self.model_type == OpenAIModelTypes.CHAT:
-                response: Any = await openai.ChatCompletion.acreate(**model_args)
-            if self.model_type == OpenAIModelTypes.TEXT:
-                response: Any = await openai.Completion.acreate(**model_args)
+            response: Any = await (
+                self.client.chat.completions.create(**model_args)
+                if self.model_type == OpenAIModelTypes.CHAT
+                else self.client.completions.create(**model_args)
+            )
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -125,7 +128,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
-        if not stream and "usage" in response:
+        if not stream and response.usage is not None:
             self.log.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.completion_tokens += response.usage.completion_tokens
@@ -141,15 +144,14 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 "The model type is not supported for this operation, please use an embedding model"
             )
         model_args = self.get_model_args()
-        model_args["api_key"] = self.api_key
         try:
             raw_embeddings = []
             batch_size = batch_size or len(texts)
             for i in range(0, len(texts), batch_size):
                 batch = texts[i : i + batch_size]  # noqa: E203
-                response: Any = await openai.Embedding.acreate(
-                    **model_args,
+                response: Any = await self.client.embeddings.create(
                     input=batch,
+                    **model_args,
                 )
                 # make numpy arrays from the response
                 raw_embeddings.extend([array(x["embedding"]) for x in response["data"]])

@@ -4,6 +4,8 @@
 from logging import Logger
 from typing import Dict, Optional
 
+from openai.lib.azure import AsyncAzureADTokenProvider
+
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -22,9 +24,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         self,
         deployment_name: str,
         endpoint: str,
-        api_key: str,
         api_version: str = "2022-12-01",
-        ad_auth=False,
+        api_key: Optional[str] = None,
+        ad_token: Optional[str] = None,
+        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -55,11 +58,12 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint,
-            api_key=api_key,
             api_version=api_version,
+            api_key=api_key,
+            ad_token=ad_token,
+            ad_token_provider=ad_token_provider,
             log=log or logger,
             model_type=OpenAIModelTypes.TEXT,
-            ad_auth=ad_auth,
         )
 
     @classmethod
@@ -72,15 +76,13 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 should contains keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth, log
         """
-        if "api_type" in settings:
-            settings["ad_auth"] = settings["api_type"] == "azure_ad"
-            del settings["api_type"]
 
         return AzureTextCompletion(
             deployment_name=settings["deployment_name"],
             endpoint=settings["endpoint"],
+            api_version=settings.get("api_version", "2022-12-01"),
             api_key=settings["api_key"],
-            api_version=settings.get("api_version"),
-            ad_auth=settings.get("ad_auth", False),
+            ad_token=settings.get("ad_token"),
+            ad_token_provider=settings.get("ad_token_provider"),
             log=settings.get("log"),
         )
