@@ -37,7 +37,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var kernel = new Mock<IKernel>();
 
         var variables = new ContextVariables();
-        var functions = new FunctionCollection();
+        var functions = new SKPluginCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -67,7 +67,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+        var result = await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
@@ -78,7 +78,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         config.SemanticMemoryConfig = new();
 
         // Act
-        result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+        result = await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
@@ -89,7 +89,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         config.SemanticMemoryConfig = new() { Memory = memory.Object };
 
         // Act
-        result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+        result = await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
@@ -109,14 +109,18 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
-        // Arrange FunctionView
-        var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "pluginName", "description");
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description");
-        var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
-
         // Arrange Mock Memory and Result
-        var functions = new Mock<IFunctionCollection>();
+        var plugins = new SKPluginCollection()
+        {
+            new SKPlugin("pluginName", new[]
+            {
+                KernelFunctionFromMethod.Create(() => { }, "functionName", "description"),
+                KernelFunctionFromMethod.Create(() => { }, "nativeFunctionName", "description"),
+            }),
+        };
+        var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };
+        var nativeFunctionView = plugins["pluginName"]["nativeFunctionName"].Describe() with { PluginName = "pluginName" };
+
         var memoryQueryResult =
             new MemoryQueryResult(
                 new MemoryRecordMetadata(
@@ -134,21 +138,17 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, functions.Object);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, plugins);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
+        var result = (await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -160,7 +160,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
-        result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
+        result = (await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -181,14 +181,18 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
-        // Arrange FunctionView
-        var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "pluginName", "description");
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description");
-        var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
-
         // Arrange Mock Memory and Result
-        var functions = new Mock<IFunctionCollection>();
+        var plugins = new SKPluginCollection()
+        {
+            new SKPlugin("pluginName", new[]
+            {
+                KernelFunctionFromMethod.Create(() => { }, "functionName", "description"),
+                KernelFunctionFromMethod.Create(() => { }, "nativeFunctionName", "description"),
+            }),
+        };
+        var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };
+        var nativeFunctionView = plugins["pluginName"]["nativeFunctionName"].Describe() with { PluginName = "pluginName" };
+
         var memoryQueryResult =
             new MemoryQueryResult(
                 new MemoryRecordMetadata(
@@ -206,22 +210,18 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, functions.Object);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, plugins);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
+        var result = (await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -232,7 +232,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
-        result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
+        result = (await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -254,7 +254,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         var variables = new ContextVariables();
-        var functions = new FunctionCollection();
+        var functions = new SKPluginCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -282,7 +282,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+        var result = await context.Plugins.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);

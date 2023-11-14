@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,14 +24,12 @@ public class SequentialPlanParserTests
     }
 
     private Mock<IKernel> CreateKernelMock(
-        out Mock<IReadOnlyFunctionCollection> mockFunctionCollection,
         out Mock<ILogger> mockLogger)
     {
-        mockFunctionCollection = new Mock<IReadOnlyFunctionCollection>();
         mockLogger = new Mock<ILogger>();
 
         var kernelMock = new Mock<IKernel>();
-        kernelMock.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
+        kernelMock.SetupGet(k => k.Plugins).Returns(new SKPluginCollection());
         kernelMock.SetupGet(k => k.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         return kernelMock;
@@ -47,19 +44,10 @@ public class SequentialPlanParserTests
         return new SKContext(functionRunner, serviceProvider, serviceSelector, variables);
     }
 
-    private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
-    {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Describe()).Returns(functionView);
-        mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
-        return mockFunction;
-    }
-
-    private void CreateKernelAndFunctionCreateMocks(List<(string name, string pluginName, string description, bool isSemantic, string result)> functions,
+    private void CreateKernelAndFunctionCreateMocks(List<(string name, string pluginName, string description, string result)> functions,
         out IKernel kernel)
     {
-        var kernelMock = this.CreateKernelMock(out var functionCollection, out _);
+        var kernelMock = this.CreateKernelMock(out var functionCollection);
         kernel = kernelMock.Object;
 
         var functionRunnerMock = new Mock<IFunctionRunner>();
@@ -67,59 +55,32 @@ public class SequentialPlanParserTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySKPluginCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns<ContextVariables, IReadOnlySKPluginCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
             {
                 return this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object, serviceSelector.Object, contextVariables);
             });
 
-        var functionsView = new List<FunctionView>();
-        foreach (var (name, pluginName, description, isSemantic, resultString) in functions)
+        SKPluginCollection plugins = new();
+        foreach (var pluginFunctions in functions.GroupBy(f => f.pluginName, StringComparer.OrdinalIgnoreCase))
         {
-            var functionView = new FunctionView(name, pluginName, description)
-            {
-                Parameters = new ParameterView[] { new("param", "description") }
-            };
-            var mockFunction = CreateMockFunction(functionView);
-            functionsView.Add(functionView);
-
-            var result = this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object, serviceSelector.Object);
-            result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FunctionResult(name, pluginName, result));
-
-            if (string.IsNullOrEmpty(name))
-            {
-                kernelMock.Setup(x => x.RegisterSemanticFunction(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<PromptTemplateConfig>(),
-                    It.IsAny<IPromptTemplate>()
-                )).Returns(mockFunction.Object);
-            }
-            else
-            {
-                functionCollection.Setup(x => x.GetFunction(It.Is<string>(s => s == pluginName), It.Is<string>(s => s == name)))
-                    .Returns(mockFunction.Object);
-                ISKFunction? outFunc = mockFunction.Object;
-                functionCollection.Setup(x => x.TryGetFunction(It.Is<string>(s => s == name), out outFunc)).Returns(true);
-                functionCollection.Setup(x => x.TryGetFunction(It.Is<string>(s => s == pluginName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-            }
+            plugins.Add(new SKPlugin(
+                pluginFunctions.Key,
+                from f in pluginFunctions select KernelFunctionFromMethod.Create(() => f.result, f.name, f.description)));
         }
-
-        functionCollection.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        kernelMock.Setup(k => k.Plugins).Returns(plugins);
     }
 
     [Fact]
     public void CanCallToPlanFromXml()
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Summarize", "SummarizePlugin", "Summarize an input", true, "This is the summary."),
-            ("Translate", "WriterPlugin", "Translate to french", true, "Bonjour!"),
-            ("GetEmailAddressAsync", "email", "Get email address", false, "johndoe@email.com"),
-            ("SendEmailAsync", "email", "Send email", false, "Email sent."),
+            ("Summarize", "SummarizePlugin", "Summarize an input", "This is the summary."),
+            ("Translate", "WriterPlugin", "Translate to french", "Bonjour!"),
+            ("GetEmailAddressAsync", "email", "Get email address", "johndoe@email.com"),
+            ("SendEmailAsync", "email", "Send email", "Email sent."),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
@@ -134,7 +95,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, kernel.Functions.GetFunctionCallback());
+        var plan = planString.ToPlanFromXml(goal, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -181,7 +142,7 @@ public class SequentialPlanParserTests
         var planString = "<someTag>";
 
         // Act
-        Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, kernel.Functions.GetFunctionCallback()));
+        Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, kernel.Plugins.GetFunctionCallback()));
     }
 
     // Test that contains a #text node in the plan
@@ -194,14 +155,14 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithTextNodes(string goalText, string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", "MockPlugin", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "MockPlugin", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(goalText, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -218,14 +179,14 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithPartialXml(string goalText, string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", "MockPlugin", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "MockPlugin", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(goalText, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -238,25 +199,25 @@ public class SequentialPlanParserTests
     [Theory]
     [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
     <plan>
-    <function.Echo input=""Hello World"" />
+    <function.Global.Echo input=""Hello World"" />
     </plan>")]
     public void CanCreatePlanWithFunctionName(string goalText, string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", FunctionCollection.GlobalFunctionsPluginName, "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "Global", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(goalText, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
         Assert.Single(plan.Steps);
-        Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, plan.Steps[0].PluginName);
+        Assert.Equal("Global", plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
@@ -275,9 +236,9 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithInvalidFunctionNodes(string planText, bool allowMissingFunctions)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", "MockPlugin", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "MockPlugin", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
@@ -285,7 +246,7 @@ public class SequentialPlanParserTests
         if (allowMissingFunctions)
         {
             // it should not throw
-            var plan = planText.ToPlanFromXml(string.Empty, kernel.Functions.GetFunctionCallback(), allowMissingFunctions);
+            var plan = planText.ToPlanFromXml(string.Empty, kernel.Plugins.GetFunctionCallback(), allowMissingFunctions);
 
             // Assert
             Assert.NotNull(plan);
@@ -293,15 +254,15 @@ public class SequentialPlanParserTests
 
             Assert.Equal("MockPlugin", plan.Steps[0].PluginName);
             Assert.Equal("Echo", plan.Steps[0].Name);
-            Assert.Null(plan.Steps[0].Description);
+            Assert.Equal("Echo an input", plan.Steps[0].Description);
 
-            Assert.Equal(plan.GetType().Name, plan.Steps[1].PluginName);
+            Assert.Equal("MockPlugin", plan.Steps[1].PluginName);
             Assert.NotEmpty(plan.Steps[1].Name);
             Assert.Equal("MockPlugin.DoesNotExist", plan.Steps[1].Description);
         }
         else
         {
-            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, kernel.Functions.GetFunctionCallback(), allowMissingFunctions));
+            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, kernel.Plugins.GetFunctionCallback(), allowMissingFunctions));
         }
     }
 
@@ -328,14 +289,14 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithOtherText(string goalText, string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", "MockPlugin", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "MockPlugin", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(goalText, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -352,14 +313,14 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithOpenApiPlugin(string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("codesearchresults_post", "CodeSearch", "Echo an input", true, "Mock Echo Result"),
+            ("codesearchresults_post", "CodeSearch", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(string.Empty, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(string.Empty, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -378,14 +339,14 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithIgnoredNodes(string goalText, string planText)
     {
         // Arrange
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
+        var functions = new List<(string name, string pluginName, string description, string result)>()
         {
-            ("Echo", "MockPlugin", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", "MockPlugin", "Echo an input", "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, kernel.Functions.GetFunctionCallback());
+        var plan = planText.ToPlanFromXml(goalText, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);

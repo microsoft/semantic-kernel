@@ -25,7 +25,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = (from method in methods select SKFunction.Create(method, pluginInstance, "plugin")).ToArray();
+        ISKFunction[] functions = (from method in methods select KernelFunctionFromMethod.Create(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -42,7 +42,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = new KernelBuilder().Build().ImportFunctions(pluginInstance).Select(s => s.Value).ToArray();
+        ISKFunction[] functions = new KernelBuilder().Build().ImportPluginFromObject(pluginInstance).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -65,7 +65,7 @@ public sealed class SKFunctionTests3
         {
             try
             {
-                SKFunction.Create(method, instance, "plugin");
+                KernelFunctionFromMethod.Create(method, instance, "plugin");
             }
             catch (SKException)
             {
@@ -95,11 +95,10 @@ public sealed class SKFunctionTests3
         }
 
         // Act
-        ISKFunction function = SKFunction.Create(
+        ISKFunction function = KernelFunctionFromMethod.Create(
             method: ExecuteAsync,
             parameters: null,
             description: "description",
-            pluginName: "pluginName",
             functionName: "functionName");
 
         FunctionResult result = await function.InvokeAsync(context);
@@ -131,10 +130,9 @@ public sealed class SKFunctionTests3
         }
 
         // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
-        ISKFunction function = SKFunction.Create(
+        ISKFunction function = KernelFunctionFromMethod.Create(
             method: ExecuteAsync,
             description: "description",
-            pluginName: "pluginName",
             functionName: "functionName");
 
         FunctionResult result = await function.InvokeAsync(context);

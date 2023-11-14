@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -118,11 +119,12 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }

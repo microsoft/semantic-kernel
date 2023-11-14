@@ -18,11 +18,6 @@ public sealed class FunctionResult
     public string FunctionName { get; internal set; }
 
     /// <summary>
-    /// Name of the plugin containing the function.
-    /// </summary>
-    public string PluginName { get; internal set; }
-
-    /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
     public Dictionary<string, object> Metadata
@@ -45,12 +40,10 @@ public sealed class FunctionResult
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
-    /// <param name="pluginName">Name of the plugin containing the function.</param>
     /// <param name="context">Instance of <see cref="SKContext"/> to pass in function pipeline.</param>
-    public FunctionResult(string functionName, string pluginName, SKContext context)
+    public FunctionResult(string functionName, SKContext context)
     {
         this.FunctionName = functionName;
-        this.PluginName = pluginName;
         this.Context = context;
     }
 
@@ -58,11 +51,10 @@ public sealed class FunctionResult
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
-    /// <param name="pluginName">Name of the plugin containing the function.</param>
     /// <param name="context">Instance of <see cref="SKContext"/> to pass in function pipeline.</param>
     /// <param name="value">Function result object.</param>
-    public FunctionResult(string functionName, string pluginName, SKContext context, object? value)
-        : this(functionName, pluginName, context)
+    public FunctionResult(string functionName, SKContext context, object? value)
+        : this(functionName, context)
     {
         this.Value = value;
     }

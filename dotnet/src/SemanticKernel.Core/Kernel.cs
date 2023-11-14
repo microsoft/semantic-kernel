@@ -37,7 +37,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyFunctionCollection Functions => this._functionCollection;
+    public ISKPluginCollection Plugins { get; }
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -57,7 +57,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="functionCollection">function collection</param>
+    /// <param name="plugins">The plugins.</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
@@ -67,13 +67,13 @@ public sealed class Kernel : IKernel, IDisposable
     [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
-        IFunctionCollection functionCollection,
+        ISKPluginCollection plugins,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine? promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null) : this(functionCollection, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
+        IAIServiceSelector? serviceSelector = null) : this(plugins, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
     {
         this.PromptTemplateEngine = promptTemplateEngine;
     }
@@ -81,14 +81,14 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="functionCollection">function collection</param>
+    /// <param name="plugins">The plugins.</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="memory">Semantic text Memory</param>
     /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="serviceSelector">AI Service selector</param>
     public Kernel(
-        IFunctionCollection functionCollection,
+        ISKPluginCollection plugins,
         IAIServiceProvider aiServiceProvider,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
@@ -101,18 +101,20 @@ public sealed class Kernel : IKernel, IDisposable
         this.HttpHandlerFactory = httpHandlerFactory;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
-        this._functionCollection = functionCollection;
+        this.Plugins = plugins;
         this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
     /// <inheritdoc/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("This will be removed in a future release. Use RegisterPlugin instead.")]
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
         Verify.NotNull(customFunction);
 
-        this._functionCollection.AddFunction(customFunction);
+        this.Plugins.Add(new SKPlugin($"plugin{Guid.NewGuid():N}", new[] { customFunction }));
 
         return customFunction;
     }
@@ -158,7 +160,7 @@ repeat:
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.PluginName, skFunction.Name, pipelineStepCount, ex.Message);
+                this._logger.LogError("Function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.Name, pipelineStepCount, ex.Message);
                 throw;
             }
 
@@ -171,7 +173,7 @@ repeat:
     /// <inheritdoc/>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null,
+        IReadOnlySKPluginCollection? plugins = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
@@ -180,7 +182,7 @@ repeat:
             this._aiServiceProvider,
             this._aiServiceSelector,
             variables,
-            functions ?? this.Functions,
+            plugins ?? this.Plugins,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,
@@ -206,14 +208,9 @@ repeat:
     {
         // ReSharper disable once SuspiciousTypeConversion.Global
         if (this._memory is IDisposable mem) { mem.Dispose(); }
-
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
     #region private ================================================================================
-
-    private readonly IFunctionCollection _functionCollection;
     private ISemanticTextMemory _memory;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
@@ -228,9 +225,9 @@ repeat:
     /// <returns></returns>
     private bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (SKFunction.IsInvokingSkipRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokingSkipRequested(context))
         {
-            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
 
@@ -246,15 +243,15 @@ repeat:
     /// <returns></returns>
     private bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (SKFunction.IsInvokingCancelRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokingCancelRequested(context))
         {
-            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
 
-        if (SKFunction.IsInvokedCancelRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
         {
-            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
 
@@ -272,7 +269,7 @@ repeat:
     {
         if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
         {
-            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
         return false;
@@ -292,20 +289,6 @@ repeat:
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISemanticTextMemory Memory => this._memory;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IReadOnlyFunctionCollection Skills => this._functionCollection;
-#pragma warning restore CS1591
-
-    /// <inheritdoc/>
-    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Functions collection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction Func(string pluginName, string functionName)
-    {
-        return this.Functions.GetFunction(pluginName, functionName);
-    }
-
     /// <inheritdoc/>
     [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -313,15 +296,5 @@ repeat:
     {
         this._memory = memory;
     }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
-    {
-        return this.ImportFunctions(functionsInstance, pluginName);
-    }
-#pragma warning restore CS1591
-
     #endregion
 }

@@ -14,11 +14,11 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Specifies that a method is a native function available to Semantic Kernel.
+/// Specifies that a method on a class imported as a plugin with should be included as an <see cref="ISKFunction"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// When the kernel imports native functions, it searches all public methods tagged with this attribute.
+/// When the system imports functions from an object, it searches all public methods tagged with this attribute.
 /// If a method is not tagged with this attribute, it may still be imported directly via a <see cref="Delegate"/>
 /// or <see cref="MethodInfo"/> referencing the method directly.
 /// </para>

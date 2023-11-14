@@ -31,7 +31,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
-            Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+            Functions = kernel.Plugins.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
@@ -57,8 +57,8 @@ public static class Example59_OpenAIFunctionCalling
             .Build();
 
         // Load functions to kernel
-        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
-        await kernel.ImportOpenAIPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters());
+        kernel.ImportPluginFromObject<TimePlugin>("TimePlugin");
+        await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters());
 
         return kernel;
     }
@@ -80,7 +80,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // If the function returned by OpenAI is an SKFunction registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
                 var result = (await kernel.RunAsync(func, context)).GetValue<object>();
 
@@ -172,7 +172,7 @@ public static class Example59_OpenAIFunctionCalling
 
                 // If the function returned by OpenAI is an SKFunction registered with the kernel,
                 // you can invoke it using the following code.
-                if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
                 {
                     var kernelResult = await kernel.RunAsync(func, context);
 

@@ -17,13 +17,13 @@ public class SamplePluginsTests
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         // Assert
-        Assert.NotNull(kernel.Functions);
-        var functionViews = kernel.Functions.GetFunctionViews();
+        Assert.NotNull(kernel.Plugins);
+        var functionViews = kernel.Plugins.GetFunctionViews();
         Assert.NotNull(functionViews);
         Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
         functionViews.ToList().ForEach(view =>
         {
-            var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
+            var function = kernel.Plugins.GetFunction(view.PluginName, view.Name);
             Assert.NotNull(function);
         });
     }
@@ -39,13 +39,13 @@ public class SamplePluginsTests
         TestHelpers.ImportAllSampleSkills(kernel);
 
         // Assert
-        Assert.NotNull(kernel.Functions);
-        var functionViews = kernel.Functions.GetFunctionViews();
+        Assert.NotNull(kernel.Plugins);
+        var functionViews = kernel.Plugins.GetFunctionViews();
         Assert.NotNull(functionViews);
         Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
         functionViews.ToList().ForEach(view =>
         {
-            var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
+            var function = kernel.Plugins.GetFunction(view.PluginName, view.Name);
             Assert.NotNull(function);
         });
     }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planners;
@@ -66,14 +67,13 @@ after this event Caroline became his wife.""";
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
+        var summarizePlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        var groundingPlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        var create_summary = functions["Summarize"];
-        var entityExtraction = functions["ExtractEntities"];
-        var reference_check = functions["ReferenceCheckEntities"];
-        var entity_excision = functions["ExciseEntities"];
+        var create_summary = summarizePlugin["Summarize"];
+        var entityExtraction = groundingPlugin["ExtractEntities"];
+        var reference_check = groundingPlugin["ReferenceCheckEntities"];
+        var entity_excision = groundingPlugin["ExciseEntities"];
 
         var summaryText = @"
 My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of
@@ -131,11 +131,10 @@ which are not grounded in the original.
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        kernel.ImportFunctions(new TextPlugin());
+        kernel.ImportPluginFromObject<TextPlugin>();
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
@@ -178,7 +177,6 @@ which are not grounded in the original.
 
 
 Steps:
-  - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
   - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
   - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES

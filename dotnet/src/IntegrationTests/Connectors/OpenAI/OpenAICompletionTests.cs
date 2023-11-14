@@ -61,10 +61,10 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -81,10 +81,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -99,7 +99,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        var func = target.CreateSemanticFunction(
+        var func = target.CreateFunctionFromPrompt(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
             new OpenAIRequestSettings());
 
@@ -129,10 +129,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -160,10 +160,10 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["Summarize"]));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["SummarizePlugin"]["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -194,10 +194,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["Summarize"]));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["SummarizePlugin"]["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -218,10 +218,10 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["Summarize"]));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["SummarizePlugin"]["Summarize"]));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
@@ -242,10 +242,10 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["Summarize"]));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["SummarizePlugin"]["Summarize"]));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
@@ -266,11 +266,11 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -292,10 +292,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -312,7 +312,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -326,10 +326,10 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+        ISKPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(plugin["Limerick"]);
+        KernelResult actual = await target.RunAsync(plugin["FunPlugin"]["Limerick"]);
 
         // Assert
         Assert.Contains("Bob", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -357,14 +357,14 @@ public sealed class OpenAICompletionTests : IDisposable
                 }
             }");
 
-        var defaultFunc = target.RegisterSemanticFunction(
-            "WherePlugin", "FishMarket1",
+        var defaultFunc = target.CreateFunctionFromPrompt(
+            promptTemplateFactory.Create(prompt, defaultConfig),
             defaultConfig,
-            promptTemplateFactory.Create(prompt, defaultConfig));
-        var azureFunc = target.RegisterSemanticFunction(
-            "WherePlugin", "FishMarket2",
+            "FishMarket1");
+        var azureFunc = target.CreateFunctionFromPrompt(
+            promptTemplateFactory.Create(prompt, defaultConfig),
             azureConfig,
-            promptTemplateFactory.Create(prompt, defaultConfig));
+            "FishMarket2");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));

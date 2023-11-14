@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -22,9 +21,6 @@ internal sealed class InstrumentedPlan : ISKFunction
 {
     /// <inheritdoc/>
     public string Name => this._plan.Name;
-
-    /// <inheritdoc/>
-    public string PluginName => this._plan.PluginName;
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
@@ -161,26 +157,6 @@ internal sealed class InstrumentedPlan : ISKFunction
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._plan.SetAIService(serviceFactory);
-
-    /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this._plan.PluginName;
-
-    /// <inheritdoc/>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => this._plan.IsSemantic;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

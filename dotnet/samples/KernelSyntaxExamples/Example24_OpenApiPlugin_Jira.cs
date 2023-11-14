@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -40,7 +39,7 @@ public static class Example24_OpenApiPlugin_Jira
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
 
-        IDictionary<string, ISKFunction> jiraFunctions;
+        ISKPlugin jiraFunctions;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
@@ -54,7 +53,7 @@ public static class Example24_OpenApiPlugin_Jira
         if (useLocalFile)
         {
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
-            jiraFunctions = await kernel.ImportOpenApiPluginFunctionsAsync(
+            jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginFile,
                 new OpenApiFunctionExecutionParameters(
@@ -66,7 +65,7 @@ public static class Example24_OpenApiPlugin_Jira
         else
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraFunctions = await kernel.ImportOpenApiPluginFunctionsAsync(
+            jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginRawFileURL,
                 new OpenApiFunctionExecutionParameters(

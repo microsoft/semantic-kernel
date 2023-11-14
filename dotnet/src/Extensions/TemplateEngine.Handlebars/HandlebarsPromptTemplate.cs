@@ -36,16 +36,16 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        var functionViews = executionContext.Functions.GetFunctionViews();
-
-        foreach (FunctionView functionView in functionViews)
+        foreach (ISKPlugin plugin in executionContext.Plugins)
         {
-            var skfunction = executionContext.Functions.GetFunction(functionView.PluginName, functionView.Name);
-            handlebars.RegisterHelper($"{functionView.PluginName}_{functionView.Name}", (writer, hcontext, parameters) =>
+            foreach (ISKFunction skfunction in plugin)
             {
-                var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
-                writer.WriteSafeString(result.GetValue<string>());
-            });
+                handlebars.RegisterHelper($"{plugin.Name}_{skfunction.Name}", (writer, hcontext, parameters) =>
+                {
+                    var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
+                    writer.WriteSafeString(result.GetValue<string>());
+                });
+            }
         }
 
         var template = handlebars.Compile(this._templateString);

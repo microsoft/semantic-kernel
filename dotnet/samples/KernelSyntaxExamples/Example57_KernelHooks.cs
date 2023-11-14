@@ -58,9 +58,8 @@ public static class Example57_KernelHooks
 
         const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
 
-        var excuseFunction = kernel.CreateSemanticFunction(
+        var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
-            pluginName: "MyPlugin",
             functionName: "Excuse",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -106,9 +105,8 @@ public static class Example57_KernelHooks
 
         const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
 
-        var excuseFunction = kernel.CreateSemanticFunction(
+        var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
-            pluginName: "MyPlugin",
             functionName: "Excuse",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -159,9 +157,8 @@ public static class Example57_KernelHooks
 
         const string FunctionPrompt = "Write a paragraph about Handlers.";
 
-        var writerFunction = kernel.CreateSemanticFunction(
+        var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
-            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -195,9 +192,8 @@ public static class Example57_KernelHooks
 
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
 
-        var writerFunction = kernel.CreateSemanticFunction(
+        var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
-            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
@@ -233,8 +229,8 @@ public static class Example57_KernelHooks
         int functionInvokingCount = 0;
         int functionInvokedCount = 0;
 
-        var firstFunction = kernel.CreateSemanticFunction("Write a phrase with Invoke.", functionName: "InvokePhrase");
-        var secondFunction = kernel.CreateSemanticFunction("Write a phrase with Cancellation.", functionName: "CancellationPhrase");
+        var firstFunction = kernel.CreateFunctionFromPrompt("Write a phrase with Invoke.", functionName: "InvokePhrase");
+        var secondFunction = kernel.CreateFunctionFromPrompt("Write a phrase with Cancellation.", functionName: "CancellationPhrase");
 
         // Adding new inline handler to count invoking events
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -265,12 +261,10 @@ public static class Example57_KernelHooks
                apiKey: s_openAIApiKey!)
            .Build();
 
-        var skipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Skipping",
-            pluginName: "MyPlugin",
+        var skipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Skipping",
             functionName: "SkipMe");
 
-        var dontSkipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Handlers",
-            pluginName: "MyPlugin",
+        var dontSkipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Handlers",
             functionName: "DontSkipMe");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -310,8 +304,7 @@ public static class Example57_KernelHooks
 
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
 
-        var repeatMeFunction = kernel.CreateSemanticFunction("Write a sentence about {{$input}}",
-            pluginName: "MyPlugin",
+        var repeatMeFunction = kernel.CreateFunctionFromPrompt("Write a sentence about {{$input}}",
             functionName: "RepeatMe");
 
         var repeatTimes = 0;
