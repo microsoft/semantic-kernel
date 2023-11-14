@@ -23,7 +23,8 @@ public static class Example66_FunctionCallingStepwisePlanner
 
         var config = new FunctionCallingStepwisePlannerConfig
         {
-
+            MaxIterations = 10,
+            MaxTokens = 4000,
         };
         var planner = new FunctionCallingStepwisePlanner(kernel, config);
 
