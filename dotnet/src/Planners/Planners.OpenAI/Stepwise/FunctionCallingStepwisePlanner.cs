@@ -60,7 +60,7 @@ public class FunctionCallingStepwisePlanner
     /// <param name="question">The question to answer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result containing the model's response message and chat history.</returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="SKException">If no goal found or failed to retrieve function from kernel.</exception>
     public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
         string question,
         CancellationToken cancellationToken = default)
@@ -95,7 +95,18 @@ public class FunctionCallingStepwisePlanner
             var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.AddAssistantMessage(chatResult);
 
-            OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
+            OpenAIFunctionResponse? functionResponse = null;
+            try
+            {
+                functionResponse = chatResult.GetOpenAIFunctionResponse();
+            }
+            catch (JsonException)
+            {
+                var errorMessage = "That function call is invalid. Try something else!";
+                chatHistoryForSteps.AddUserMessage(errorMessage);
+                continue;
+            }
+
             if (functionResponse is null)
             {
                 continue;
@@ -138,26 +149,37 @@ public class FunctionCallingStepwisePlanner
             // Look up SKFunction
             if (!this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
             {
-                throw new SKException($"Function {functionResponse.PluginName}_{functionResponse.FunctionName} not found in kernel.");
+                var errorMessage = $"Function {functionResponse.FullyQualifiedName} does not exist in the kernel. Try something else!";
+                chatHistoryForSteps.AddUserMessage(errorMessage);
+
+                continue;
             }
 
             // Execute function and add to chat history
-            var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
+            try
+            {
+                var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
 
-            if (result is RestApiOperationResponse apiResponse)
-            {
-                resultContent = apiResponse.Content as string ?? string.Empty;
-            }
-            else if (result is string str)
-            {
-                resultContent = str;
-            }
-            else
-            {
-                resultContent = JsonSerializer.Serialize(result);
-            }
+                if (result is RestApiOperationResponse apiResponse)
+                {
+                    resultContent = apiResponse.Content as string ?? string.Empty;
+                }
+                else if (result is string str)
+                {
+                    resultContent = str;
+                }
+                else
+                {
+                    resultContent = JsonSerializer.Serialize(result);
+                }
 
-            chatHistoryForSteps.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
+                chatHistoryForSteps.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
+            }
+            catch (SKException)
+            {
+                var errorMessage = $"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!";
+                chatHistoryForSteps.AddUserMessage(errorMessage);
+            }
         }
 
         // We've completed the max iterations, but the model hasn't returned a final answer.
