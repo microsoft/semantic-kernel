@@ -46,14 +46,15 @@ The above approach will now only be needed when a custom type cannot be serializ
 
 ## Considered Options
 
-**1. Use TypeConverter for primitive types and native serialization methods for custom types**
+**1. Fallback to serialization using `System.Text.Json` if a `TypeConverter` is not available for the given type**
 
-- Primitive types will be handled using the native `TypeConverter`s, which will be wrapped as a `JsonConverter` to allow for serialization/deserialization to/from a string.
-  - We preserve the use of the native `TypeConverter`s for primitive types to prevent any lossy conversions.
-- Complex types will be handled by the registered `JsonConverter`, if registered.
-- If no `JsonConverter` is registered for a complex type, JSON serialization/deserialization using `System.Text.Json` will be used.
+- Primitive types will be handled using their native `TypeConverter`s
+  - We preserve the use of the native `TypeConverter` for primitive types to prevent any lossy conversions.
+- Complex types will be handled by their registered `TypeConverter`, if provided.
+- If no `TypeConverter` is registered for a complex type, our own `JsonSerializationTypeConverter` will be used to attempt JSON serialization/deserialization using `System.Text.Json`.
+  - A detailed error message will be thrown if the type cannot be serialized/deserialized.
 
-This will change the `GetTypeConverter()` method in `NativeFunction.cs` to look like the following, where before the return type was `null` if no `TypeConverter` was found for the type:
+This will change the `GetTypeConverter()` method in `NativeFunction.cs` to look like the following, where before `null` was returned if no `TypeConverter` was found for the type:
 
 ```csharp
 private static TypeConverter GetTypeConverter(Type targetType)
@@ -118,6 +119,6 @@ Not required
 - **Semantic to Semantic:** Passing variables from Semantic to Semantic **will not** require any serialization or deserialization as the the complex type will be passed around using its string representation.
 
 **2. Only use native serialization methods**
-This option was originally considered, which would have effectively removed the use of any of the native `TypeConverter`s in favor of the `SimpleJsonConverter` shown above, but it was pointed out that this may result in lossy conversion between primitive types. For example, when converting from a `float` to an `int`, the primitive may be truncated in a way by the native serialization methods that does not provide an accurate result.
+This option was originally considered, which would have effectively removed the use of the `TypeConverter`s in favor of a simple `JsonConverter`, but it was pointed out that this may result in lossy conversion between primitive types. For example, when converting from a `float` to an `int`, the primitive may be truncated in a way by the native serialization methods that does not provide an accurate result.
 
 ## Decision Outcome
