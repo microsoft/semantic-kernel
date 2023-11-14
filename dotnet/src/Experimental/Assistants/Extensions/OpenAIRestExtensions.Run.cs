@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -32,7 +33,6 @@ internal static partial class OpenAIRestExtensions
             {
                 assistant_id = assistantId,
                 instructions,
-                //tools = tools // TODO: @chris FUNCTIONS
             };
 
         return
@@ -88,30 +88,20 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">A thread identifier</param>
     /// <param name="runId">The run identifier</param>
-    /// <param name="callId">The tool-call identifier</param>
-    /// <param name="result">The function/tool result.</param>
+    /// <param name="results">The function/tool results.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A run definition</returns>
     public static Task<ThreadRunModel> AddToolOutputsAsync(
         this IOpenAIRestContext context,
         string threadId,
         string runId,
-        string callId, // $$$ ARRAY
-        object result, // $$$ ARRAY
+        IList<ToolResultModel> results,
         CancellationToken cancellationToken = default)
     {
         var payload =
            new
            {
-               tool_outputs =
-                   new[]
-                   {
-                        new
-                        {
-                            tool_call_id = callId,
-                            output = result
-                        }
-                   }
+               tool_outputs = results
            };
 
         return
