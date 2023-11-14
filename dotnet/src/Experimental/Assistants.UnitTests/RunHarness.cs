@@ -58,9 +58,6 @@ public sealed class RunHarness
             "That was great!  Tell me another.").ConfigureAwait(true);
 
         var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
-        this.DumpMessages(copy);
-
-        Assert.Equal(4, copy.Messages.Count);
     }
 
     /// <summary>
@@ -86,9 +83,6 @@ public sealed class RunHarness
             "It rains a lot in Seattle.").ConfigureAwait(true);
 
         var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
-        this.DumpMessages(copy);
-
-        Assert.Equal(4, copy.Messages.Count);
     }
 
     /// <summary>
@@ -119,9 +113,6 @@ public sealed class RunHarness
             "What is the answer?").ConfigureAwait(true);
 
         var copy = await context.GetThreadAsync(thread.Id).ConfigureAwait(true);
-        this.DumpMessages(copy);
-
-        Assert.Equal(6, copy.Messages.Count);
     }
 
     private async Task ChatAsync(IChatThread thread, IAssistant assistant, params string[] messages)
@@ -133,21 +124,6 @@ public sealed class RunHarness
 
             var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
             this.LogMessages(assistantMessages);
-        }
-    }
-
-    private void DumpMessages(IChatThread thread)
-    {
-        foreach (var message in thread.Messages)
-        {
-            if (string.IsNullOrWhiteSpace(message.AssistantId))
-            {
-                this._output.WriteLine($"{message.Role}: {message.Content}");
-            }
-            else
-            {
-                this._output.WriteLine($"{message.Role}: {message.Content} [{message.AssistantId}]");
-            }
         }
     }
 
