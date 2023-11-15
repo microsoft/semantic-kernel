@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
@@ -31,7 +32,9 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPlannerConfig _config;
 
-    private readonly HashSet<HandlebarsParameterTypeView> _parameterTypes = new();
+    private readonly HashSet<HandlebarsParameterTypeView> _parameterTypeView = new();
+
+    private readonly Dictionary<string, string> _parameterSchemaView = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -98,11 +101,56 @@ public sealed class HandlebarsPlanner
 
     private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
     {
-        return this._kernel.Functions.GetFunctionViews()
+        var availableFunctions = this._kernel.Functions.GetFunctionViews()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
-            .ToList();
+                .ToList();
+
+        var functionsView = new List<FunctionView>();
+        foreach (var skFunction in availableFunctions)
+        {
+            var parametersView = new List<ParameterView>();
+            foreach (var parameter in skFunction.Parameters)
+            {
+                var paramToAdd = this.SetComplexTypeDefinition(parameter);
+                parametersView.Add(paramToAdd);
+            }
+
+            var returnParameter = skFunction.ReturnParameter.ToParameterView(skFunction.Name);
+            returnParameter = this.SetComplexTypeDefinition(returnParameter);
+
+            var functionView = new FunctionView(skFunction.Name, skFunction.PluginName, skFunction.Description, parametersView, returnParameter.ToReturnParameterView());
+            functionsView.Add(functionView);
+        }
+
+        return functionsView;
+    }
+
+    private ParameterView SetComplexTypeDefinition(ParameterView parameter)
+    {
+        if (parameter.Schema != null)
+        {
+            var parsedParameter = parameter.ParseJsonSchema();
+            if (parsedParameter.Schema != null)
+            {
+                this._parameterSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+            }
+
+            parameter = parsedParameter;
+        }
+        else if (parameter.ParameterType != null)
+        {
+            var type = parameter.ParameterType;
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                parameter = parameter with { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
+            }
+
+            this._parameterTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
+        }
+
+        return parameter;
     }
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletion chatCompletion)
@@ -143,7 +191,8 @@ public sealed class HandlebarsPlanner
                 { "functions", availableFunctions},
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
-                { "complexTypeDefinitions", this._parameterTypes.Count > 0 && this._parameterTypes.Any(p => p.IsComplexType) ? this._parameterTypes.Where(p => p.IsComplexType) : null},
+                { "complexTypeDefinitions", this._parameterTypeView.Count > 0 && this._parameterTypeView.Any(p => p.IsComplexType) ? this._parameterTypeView.Where(p => p.IsComplexType) : null},
+                { "complexSchemaDefinitions", this._parameterSchemaView.Count > 0 ? this._parameterSchemaView : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };

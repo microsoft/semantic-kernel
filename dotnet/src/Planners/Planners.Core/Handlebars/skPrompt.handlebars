@@ -86,23 +86,30 @@ If you need to create or retrieve a variable, you can use the following helpers:
 - {{{{raw}}}}`{{json}}`{{{{/raw}}}} – Generates a JSON string from the given value; no need to use on strings.
 - {{{{raw}}}}`{{concat}}`{{{{/raw}}}} – Concatenates the given values into a string.
 
-{{#if complexTypeDefinitions}}
+{{#if (or complexTypeDefinitions complexSchemaDefinitions)}}
 ## Complex types
 Before we get to custom helpers, let's learn about complex objects. Some helpers require arguments that are complex objects. The JSON schemas for these complex objects are defined below. If a helper requires a argument with a complex type, use the `set` helper to store the value before using it or one of its properties in another step.
 
 {{#each complexTypeDefinitions}}
 ### {{Name}}:
-```json
 {
-{{#each Properties}}
-    "{{Name}}": {{Type.Name}},
-{{/each}}
+  "type": "object",
+  "properties": {
+  {{#each Properties}}
+    "{{Name}}": {
+      "type": "{{ParameterType.Name}}",
+    },
+  {{/each}}
+  }
 }
-```
+
+{{/each}}
+{{#each complexSchemaDefinitions}}
+### {{@key}}:
+{{this}}
 
 {{/each}}
 {{/if}}
-
 ## Custom helpers
 Lastly, you also have the following Handlebars helpers that you can use to accomplish my goal.
 
@@ -111,10 +118,9 @@ Lastly, you also have the following Handlebars helpers that you can use to accom
 Description: {{Description}}
 Inputs:
   {{#each Parameters}}
-    - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
+    - {{Name}}: {{#if ParameterType}}{{ParameterType.Name}} - {{else}}{{#if Schema}}{{getSchemaTypeName this}} - {{/if}}{{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
   {{/each}}
-{{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} {{../reservedNameDelimiter}} {{ReturnDescription}}--}}
-Output: string - The result of the helper.
+Output: {{#if ReturnParameter}}{{#if ReturnParameter.ParameterType}}{{ReturnParameter.ParameterType.Name}}{{else}}{{#if ReturnParameter.Schema}}{{getSchemaReturnTypeName ReturnParameter}}{{/if}}{{/if}}{{#if ReturnParameter.Description}} - {{ReturnParameter.Description}}{{/if}}{{else}}string - The result of the helper.{{/if}}
 
 {{/each}}
 

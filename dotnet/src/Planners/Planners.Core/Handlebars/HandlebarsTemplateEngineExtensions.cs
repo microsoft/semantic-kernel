@@ -10,6 +10,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
@@ -130,7 +131,8 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
             foreach (var v in variables)
             {
-                var varString = v.Value?.ToString() ?? "";
+                var value = v.Value ?? "";
+                var varString = !ParameterViewExtensions.isPrimitiveOrString(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
                 if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
                 {
                     executionContext.Variables[v.Key] = varString;
@@ -148,8 +150,12 @@ internal sealed class HandlebarsTemplateEngineExtensions
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
+            var returnType = function.Describe().ReturnParameter.ParameterType;
+            var resultAsObject = result.GetValue<object?>();
+            var serializedResult = JsonSerializer.Serialize(result.GetValue<object?>());
+
             // Write the result to the template
-            return result.GetValue<object?>();
+            return returnType != null && !(returnType.IsPrimitive || returnType == typeof(string)) ? JsonSerializer.Deserialize(serializedResult, returnType) : resultAsObject;
         });
     }
 
@@ -158,6 +164,33 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Dictionary<string, object?> variables
     )
     {
+        handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var atLeastOneTruthy = false;
+            foreach (var arg in arguments)
+            {
+                if (arg != null)
+                {
+                    atLeastOneTruthy = true;
+                }
+            }
+
+            return atLeastOneTruthy;
+        });
+
+        handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            ParameterView parameter = (ParameterView)arguments[0];
+            return parameter.GetSchemaTypeName();
+        });
+
+        handlebarsInstance.RegisterHelper("getSchemaReturnTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            ReturnParameterView parameter = (ReturnParameterView)arguments[0];
+            var functionName = arguments[1].ToString();
+            return parameter.ToParameterView(functionName).GetSchemaTypeName();
+        });
+
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             // Convert all the arguments to an array
