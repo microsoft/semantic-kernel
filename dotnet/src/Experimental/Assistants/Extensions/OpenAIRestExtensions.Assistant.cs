@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    private const string BaseAssistantUrl = $"{BaseUrl}assistants";
+    internal const string BaseAssistantUrl = $"{BaseUrl}assistants";
 
     /// <summary>
     /// Create a new assistant.
@@ -85,7 +85,7 @@ internal static partial class OpenAIRestExtensions
     /// <returns>List of retrieved Assistants</returns>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An enumeration of assistant definitions</returns>
-    public static async Task<IList<AssistantModel>> ListAssistantsModelsAsync(
+    public static async Task<IList<AssistantModel>> ListAssistantModelsAsync(
         this OpenAIRestContext context,
         int limit = 20,
         bool ascending = false,
@@ -129,7 +129,7 @@ internal static partial class OpenAIRestExtensions
         return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
     }
 
-    private static string GetAssistantUrl(string assistantId)
+    internal static string GetAssistantUrl(string assistantId)
     {
         return $"{BaseAssistantUrl}/{assistantId}";
     }
