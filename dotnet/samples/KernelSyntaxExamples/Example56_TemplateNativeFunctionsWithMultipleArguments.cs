@@ -31,7 +31,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: deploymentName,

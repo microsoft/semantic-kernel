@@ -85,7 +85,7 @@ internal sealed class ReActEngine
     private static readonly Regex s_finalAnswerRegex =
         new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
 
-    internal ReActEngine(IKernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
+    internal ReActEngine(Kernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
     {
         this._logger = logger;
 
@@ -176,7 +176,7 @@ internal sealed class ReActEngine
         return actionStep;
     }
 
-    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, IKernel kernel, SKContext context)
+    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, SKContext context)
     {
         var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
 
@@ -223,7 +223,7 @@ internal sealed class ReActEngine
         }
     }
 
-    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
+    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, Kernel kernel, SKContext context)
     {
         var actionContext = context.Clone();
         foreach (var kvp in actionVariables)
@@ -234,7 +234,7 @@ internal sealed class ReActEngine
         return actionContext;
     }
 
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);

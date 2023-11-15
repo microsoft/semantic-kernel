@@ -19,7 +19,7 @@ namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
 public sealed class HandlebarsPromptTemplateTests
 {
     private readonly HandlebarsPromptTemplateFactory _factory;
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySKPluginCollection> _functions;
     private readonly ITestOutputHelper _logger;

@@ -860,39 +860,4 @@ public sealed class KernelFunctionFromMethod : ISKFunction
     private FunctionView? _view;
 
     #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings { get; }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
-    /// <summary>
-    /// Throw an exception if the function is not semantic, use this method when some logic makes sense only for semantic functions.
-    /// </summary>
-    [Obsolete("Remove this when other obsolete members are removed.")]
-    [DoesNotReturn]
-    private void ThrowNotSemantic()
-    {
-        this._logger.LogError("The function is not semantic");
-        throw new SKException("Invalid operation, the method requires a semantic function");
-    }
-
-    #endregion
 }

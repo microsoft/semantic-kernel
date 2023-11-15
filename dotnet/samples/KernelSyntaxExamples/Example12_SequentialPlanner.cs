@@ -254,7 +254,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(plan.ToPlanWithGoalString());
     }
 
-    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
+    private static Kernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -269,7 +269,7 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
         // use these to generate and store embeddings for the function descriptions.
@@ -303,7 +303,7 @@ internal static class Example12_SequentialPlanner
     }
 
     private static async Task<Plan> ExecutePlanAsync(
-        IKernel kernel,
+        Kernel kernel,
         Plan plan,
         string input = "",
         int maxSteps = 10)

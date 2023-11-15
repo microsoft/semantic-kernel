@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,12 +37,12 @@ public sealed class PlanTests
     public async Task CanExecutePlanAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
 
         // Act
-        var result = await plan.InvokeAsync("Some input", kernel.Object);
+        var result = await plan.InvokeAsync("Some input", kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -91,7 +90,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -105,7 +104,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object));
 
         // Act
-        var result = await plan.InvokeAsync(planInput, kernel.Object);
+        var result = await plan.InvokeAsync(planInput, kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -124,7 +123,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -138,7 +137,7 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput, kernel.Object);
+        var result = await plan.InvokeAsync(planInput, kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -157,7 +156,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -171,7 +170,7 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput, kernel.Object);
+        var result = await plan.InvokeAsync(planInput, kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -190,7 +189,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -204,7 +203,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput, kernel.Object);
+        var result = await plan.InvokeAsync(planInput, kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -223,7 +222,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -237,7 +236,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
         // Act
-        var result = await plan.InvokeAsync(planInput, kernel.Object);
+        var result = await plan.InvokeAsync(planInput, kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -256,7 +255,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput)
         );
@@ -271,14 +270,14 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
-        var result = await kernel.Object.StepAsync(planInput, plan);
+        var result = await kernel.StepAsync(planInput, plan);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}", result.State.ToString());
 
         // Act
-        result = await kernel.Object.StepAsync(result);
+        result = await kernel.StepAsync(result);
 
         // Assert
         Assert.NotNull(result);
@@ -296,7 +295,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -318,7 +317,7 @@ public sealed class PlanTests
         // Act
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -327,7 +326,7 @@ public sealed class PlanTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
-        plan = await kernel.Object.StepAsync(cv, plan);
+        plan = await kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -345,7 +344,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
@@ -358,7 +357,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.Object.StepAsync(cv, plan));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -373,7 +372,7 @@ public sealed class PlanTests
         // Arrange
         var logger = new Mock<ILogger>();
         var functions = new Mock<ISKPluginCollection>();
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -386,7 +385,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.Object.StepAsync(cv, plan));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -399,7 +398,7 @@ public sealed class PlanTests
         var subPlan = new Plan("Write a poem or joke");
 
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -438,7 +437,7 @@ public sealed class PlanTests
         // Act
         while (plan.HasNextStep)
         {
-            plan = await kernel.Object.StepAsync(plan);
+            plan = await kernel.StepAsync(plan);
         }
 
         // Assert
@@ -480,7 +479,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithOneStepAndStateAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -495,7 +494,7 @@ public sealed class PlanTests
         plan.State.Set("input", "Cleopatra");
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -508,7 +507,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithStateAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
         .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>
@@ -538,7 +537,7 @@ public sealed class PlanTests
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -551,7 +550,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithCustomContextAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -570,7 +569,7 @@ public sealed class PlanTests
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -600,7 +599,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithCustomStateAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -622,7 +621,7 @@ public sealed class PlanTests
         plan.AddSteps(planStep);
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -639,7 +638,7 @@ public sealed class PlanTests
         plan.AddSteps(planStep);
 
         // Act
-        result = await plan.InvokeAsync(kernel.Object);
+        result = await plan.InvokeAsync(kernel);
 
         // Assert
         Assert.NotNull(result);
@@ -670,7 +669,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithJoinedResultAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
         .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>
@@ -774,7 +773,7 @@ public sealed class PlanTests
         plan.AddSteps(planStep);
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         var expected =
             @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
@@ -800,7 +799,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     public async Task CanExecutePlanWithExpandedAsync()
     {
         // Arrange
-        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernelMock();
+        var (kernel, functionRunner, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object);
 
@@ -821,7 +820,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         plan.State.Set("var", "foobar");
 
         // Act
-        var result = await plan.InvokeAsync(kernel.Object);
+        var result = await plan.InvokeAsync(kernel);
 
         var expected =
             @"Here is a payload '{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and foobar""}' for Function input.";
@@ -1220,7 +1219,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal("WritePoem", result.Value);
     }
 
-    private void PrepareKernelAndPlan(out IKernel kernel, out Plan plan)
+    private void PrepareKernelAndPlan(out Kernel kernel, out Plan plan)
     {
         kernel = new KernelBuilder().Build();
 
@@ -1241,21 +1240,15 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         return method.Method;
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernelMock(ISKPluginCollection? plugins = null)
+    private (Kernel kernel, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(ISKPluginCollection? plugins = null)
     {
         plugins ??= new Mock<ISKPluginCollection>().Object;
 
-        var kernel = new Mock<IKernel>();
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        kernel.SetupGet(x => x.Plugins).Returns(plugins);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySKPluginCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlySKPluginCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
-        {
-            return new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, contextVariables, plugins);
-        });
+        var kernel = new Kernel(serviceProvider.Object, plugins);
 
         functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
         .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>

@@ -28,7 +28,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
 
@@ -47,7 +47,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
         var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
 

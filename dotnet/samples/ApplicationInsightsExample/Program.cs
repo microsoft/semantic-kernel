@@ -105,7 +105,7 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILoggerFactory loggerFactory)
+    private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
@@ -130,7 +130,7 @@ public sealed class Program
     }
 
     private static ISequentialPlanner GetSequentialPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
@@ -140,14 +140,14 @@ public sealed class Program
     }
 
     private static IActionPlanner GetActionPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
     private static IStepwisePlanner GetStepwisePlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)

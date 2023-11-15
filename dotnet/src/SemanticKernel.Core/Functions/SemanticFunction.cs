@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -130,7 +129,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IAIServiceSelector? _serviceSelector;
     private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly Lazy<FunctionView> _view;
     private readonly IPromptTemplate _promptTemplate;
@@ -167,7 +165,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
-            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            var serviceSelector = context.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
             Verify.NotNull(textCompletion);
 
@@ -271,46 +269,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         // If prompt key exists and was modified to null default to an empty string
         return renderedPromptFromMetadata?.ToString() ?? string.Empty;
-    }
-
-    #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>();
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        Verify.NotNull(serviceFactory);
-
-        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
-        {
-            delegatingProvider.ServiceFactory = serviceFactory;
-        }
-        else
-        {
-            this._serviceSelector = new DelegatingAIServiceSelector { ServiceFactory = serviceFactory };
-        }
-        return this;
-    }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
-        {
-            delegatingProvider.RequestSettings = requestSettings;
-        }
-        else
-        {
-            this._serviceSelector = new DelegatingAIServiceSelector() { RequestSettings = requestSettings };
-        }
-        return this;
     }
 
     #endregion

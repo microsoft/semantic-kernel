@@ -129,7 +129,7 @@ Jane: Goodbye!
     private static async Task ConversationSummaryPluginAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
 
         ISKPlugin conversationSummaryPlugin = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
@@ -144,7 +144,7 @@ Jane: Goodbye!
     private static async Task GetConversationActionItemsAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
 
         ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
@@ -159,7 +159,7 @@ Jane: Goodbye!
     private static async Task GetConversationTopicsAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
 
         ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
@@ -171,9 +171,9 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,

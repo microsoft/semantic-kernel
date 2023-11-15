@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
@@ -21,15 +19,105 @@ public sealed class SequentialPlannerTests
     public async Task ItCanCreatePlanAsync(string goal)
     {
         // Arrange
-        var kernel = CreateMockKernel();
-        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
-            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
-            {
-                var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
-                return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
-            });
+        var plugins = this.CreatePluginCollection();
 
-        SKPluginCollection plugins = new()
+        var planString =
+            @"<plan>
+                    <function.SummarizePlugin.Summarize/>
+                    <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+                    <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+                    <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
+              </plan>";
+
+        var kernel = this.CreateKernel(planString, plugins);
+
+        var planner = new SequentialPlanner(kernel);
+
+        // Act
+        var plan = await planner.CreatePlanAsync(goal, default);
+
+        // Assert
+        Assert.Equal(goal, plan.Description);
+
+        Assert.Equal(4, plan.Steps.Count);
+
+        Assert.Contains(plan.Steps, step => plugins.TryGetFunction(step.PluginName, step.Name, out var _));
+    }
+
+    [Fact]
+    public async Task EmptyGoalThrowsAsync()
+    {
+        // Arrange
+        var kernel = this.CreateKernel(string.Empty);
+
+        var planner = new SequentialPlanner(kernel);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
+        Assert.Equal("The goal specified is empty", exception.Message);
+    }
+
+    [Fact]
+    public async Task InvalidXMLThrowsAsync()
+    {
+        // Arrange
+        var kernel = this.CreateKernel("<plan>notvalid<</plan>");
+
+        var planner = new SequentialPlanner(kernel);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml strings", StringComparison.InvariantCulture));
+    }
+
+    [Fact]
+    public void UsesPromptDelegateWhenProvided()
+    {
+        // Arrange
+        var kernel = this.CreateKernel(string.Empty);
+        var getPromptTemplateMock = new Mock<Func<string>>();
+        var config = new SequentialPlannerConfig()
+        {
+            GetPromptTemplate = getPromptTemplateMock.Object
+        };
+
+        // Act
+        var planner = new SequentialPlanner(kernel, config);
+
+        // Assert
+        getPromptTemplateMock.Verify(x => x(), Times.Once());
+    }
+
+    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    {
+        plugins ??= new SKPluginCollection();
+
+        var textResult = new Mock<ITextResult>();
+        textResult
+            .Setup(tr => tr.GetCompletionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(testPlanString);
+
+        var textCompletionResult = new List<ITextResult> { textResult.Object };
+
+        var textCompletion = new Mock<ITextCompletion>();
+        textCompletion
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(textCompletionResult);
+
+        var serviceSelector = new Mock<IAIServiceSelector>();
+        serviceSelector
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Returns((textCompletion.Object, new AIRequestSettings()));
+
+        var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
+
+        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
+    }
+
+    private SKPluginCollection CreatePluginCollection()
+    {
+        return new()
         {
             new SKPlugin("email", new[]
             {
@@ -38,157 +126,12 @@ public sealed class SequentialPlannerTests
             }),
             new SKPlugin("WriterPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Translate", "Translate something")
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
             new SKPlugin("SummarizePlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something")
+                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
         };
-
-        var functionRunner = new Mock<IFunctionRunner>();
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
-        var expectedPlugins = plugins.Select(x => x.Name).ToList();
-        var expectedFunctions = plugins.SelectMany(x => x).Select(f => f.Name).ToList();
-
-        var context = new SKContext(
-            functionRunner.Object,
-            serviceProvider.Object,
-            serviceSelector.Object,
-            new ContextVariables());
-
-        var returnContext = new SKContext(
-            functionRunner.Object,
-            serviceProvider.Object,
-            serviceSelector.Object,
-            new ContextVariables());
-
-        var planString =
-            @"
-<plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
-    <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
-</plan>";
-
-        returnContext.Variables.Update(planString);
-
-        // Mock Plugins
-        kernel.Setup(x => x.Plugins).Returns(plugins);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySKPluginCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns(context);
-
-        var planner = new SequentialPlanner(kernel.Object);
-        this.OverwritePlanningFunction(planner, planString);
-
-        // Act
-        var plan = await planner.CreatePlanAsync(goal, default);
-
-        // Assert
-        Assert.Equal(goal, plan.Description);
-
-        Assert.Contains(
-            plan.Steps,
-            step =>
-                expectedFunctions.Contains(step.Name) &&
-                expectedPlugins.Contains(step.PluginName));
-
-        foreach (var expectedFunction in expectedFunctions)
-        {
-            Assert.Contains(
-                plan.Steps,
-                step => step.Name == expectedFunction);
-        }
-
-        foreach (var expectedPlugin in expectedPlugins)
-        {
-            Assert.Contains(
-                plan.Steps,
-                step => step.PluginName == expectedPlugin);
-        }
-    }
-
-    [Fact]
-    public async Task EmptyGoalThrowsAsync()
-    {
-        // Arrange
-        var kernel = CreateMockKernel();
-
-        var planner = new SequentialPlanner(kernel.Object);
-
-        // Act
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
-    }
-
-    [Fact]
-    public async Task InvalidXMLThrowsAsync()
-    {
-        // Arrange
-        var functionRunner = new Mock<IFunctionRunner>();
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-        var kernel = new Mock<IKernel>();
-
-        var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(planString));
-
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables());
-
-        // Mock Plugins
-        kernel.Setup(x => x.Plugins).Returns(new SKPluginCollection());
-        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
-            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
-            {
-                var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
-                return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
-            });
-
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySKPluginCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns(context);
-
-        var planner = new SequentialPlanner(kernel.Object);
-        this.OverwritePlanningFunction(planner, planString);
-
-        // Act
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
-    }
-
-    [Fact]
-    public void UsesPromptDelegateWhenProvided()
-    {
-        // Arrange
-        var kernel = CreateMockKernel();
-        var getPromptTemplateMock = new Mock<Func<string>>();
-        var config = new SequentialPlannerConfig()
-        {
-            GetPromptTemplate = getPromptTemplateMock.Object
-        };
-
-        // Act
-        var planner = new SequentialPlanner(kernel.Object, config);
-
-        // Assert
-        getPromptTemplateMock.Verify(x => x(), Times.Once());
-    }
-
-    // Method to create Mock<IKernel> objects
-    private static Mock<IKernel> CreateMockKernel()
-    {
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
-
-        return kernel;
-    }
-
-    private void OverwritePlanningFunction(object planner, string planString)
-    {
-        // This is using private reflection to overwrite the planner's function.
-        // If the implementation changes, this will need to be updated as well.
-        FieldInfo plannerFunctionField = planner.GetType().GetField("_functionFlowFunction", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        Assert.NotNull(plannerFunctionField);
-        plannerFunctionField.SetValue(planner, KernelFunctionFromMethod.Create(() => planString, "FunctionName"));
     }
 }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,18 +17,6 @@ namespace Microsoft.SemanticKernel;
 public static class SKFunctionExtensions
 {
     /// <summary>
-    /// Configure the LLM settings used by semantic function.
-    /// </summary>
-    /// <param name="skFunction">Semantic function</param>
-    /// <param name="requestSettings">Request settings</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
-    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
-    {
-        return skFunction.SetAIConfiguration(requestSettings);
-    }
-
-    /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>
     /// <param name="function">Function to execute</param>
@@ -42,7 +29,7 @@ public static class SKFunctionExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
-        IKernel kernel,
+        Kernel kernel,
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null,
         CultureInfo? culture = null,
@@ -68,7 +55,7 @@ public static class SKFunctionExtensions
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
         string input,
-        IKernel kernel,
+        Kernel kernel,
         IReadOnlySKPluginCollection? plugins = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,

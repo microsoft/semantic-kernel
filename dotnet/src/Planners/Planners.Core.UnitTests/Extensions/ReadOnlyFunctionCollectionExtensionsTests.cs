@@ -34,8 +34,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync(Type t)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-
         var variables = new ContextVariables();
         var functions = new SKPluginCollection();
         var cancellationToken = default(CancellationToken);
@@ -105,7 +103,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithFunctionsAsync(Type t)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
         var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
@@ -176,8 +173,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithFunctionsWithRelevancyAsync(Type t)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-
         var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
@@ -248,7 +243,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync(Type t)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();

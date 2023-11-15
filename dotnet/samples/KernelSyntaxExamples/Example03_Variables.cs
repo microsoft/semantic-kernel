@@ -18,7 +18,7 @@ public static class Example03_Variables
     {
         Console.WriteLine("======== Variables ========");
 
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
         var textPlugin = kernel.ImportPluginFromObject<StaticTextPlugin>();
 
         var variables = new ContextVariables("Today is: ");

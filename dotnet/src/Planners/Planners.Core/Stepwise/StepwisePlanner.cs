@@ -39,7 +39,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">Optional configuration object</param>
     public StepwisePlanner(
-        IKernel kernel,
+        Kernel kernel,
         StepwisePlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -328,7 +328,7 @@ public class StepwisePlanner : IStepwisePlanner
         return chatHistory;
     }
 
-    private ChatHistory CreateChatHistory(IKernel kernel, out IAIService aiService)
+    private ChatHistory CreateChatHistory(Kernel kernel, out IAIService aiService)
     {
         ChatHistory chatHistory;
         if (TryGetChatCompletion(this._kernel, out var chatCompletion))
@@ -575,7 +575,7 @@ public class StepwisePlanner : IStepwisePlanner
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 
-    private static bool TryGetChatCompletion(IKernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
+    private static bool TryGetChatCompletion(Kernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
     {
         try
         {
@@ -623,7 +623,7 @@ public class StepwisePlanner : IStepwisePlanner
     private StepwisePlannerConfig Config { get; }
 
     // Context used to access the list of functions in the kernel
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly ILogger? _logger;
 
     /// <summary>

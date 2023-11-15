@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -50,31 +48,4 @@ public interface ISKFunction
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
-
-    #region Obsolete
-
-    /// <summary>
-    /// AI service settings
-    /// </summary>
-    [Obsolete("Use PromptTemplateConfig.ModelSettings instead. This will be removed in a future release.")]
-    AIRequestSettings? RequestSettings { get; }
-
-    /// <summary>
-    /// Set the AI service used by the semantic function, passing a factory method.
-    /// The factory allows to lazily instantiate the client and to properly handle its disposal.
-    /// </summary>
-    /// <param name="serviceFactory">AI service factory</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
-    ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
-
-    /// <summary>
-    /// Set the AI completion settings used with LLM requests
-    /// </summary>
-    /// <param name="requestSettings">LLM completion settings</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
-    ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
-
-    #endregion
 }

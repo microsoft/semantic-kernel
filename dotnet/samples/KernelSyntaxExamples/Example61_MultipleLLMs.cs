@@ -38,7 +38,7 @@ public static class Example61_MultipleLLMs
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureDeploymentName,
@@ -57,7 +57,7 @@ public static class Example61_MultipleLLMs
         await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", azureModelId, openAIModelId);
     }
 
-    public static async Task RunByServiceIdAsync(IKernel kernel, string serviceId)
+    public static async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
         Console.WriteLine($"======== Service Id: {serviceId} ========");
 
@@ -72,7 +72,7 @@ public static class Example61_MultipleLLMs
         Console.WriteLine(result.GetValue<string>());
     }
 
-    public static async Task RunByModelIdAsync(IKernel kernel, string modelId)
+    public static async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
         Console.WriteLine($"======== Model Id: {modelId} ========");
 
@@ -87,7 +87,7 @@ public static class Example61_MultipleLLMs
         Console.WriteLine(result.GetValue<string>());
     }
 
-    public static async Task RunByFirstModelIdAsync(IKernel kernel, params string[] modelIds)
+    public static async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
         Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 

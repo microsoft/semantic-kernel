@@ -27,7 +27,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
-        IKernel kernel,
+        Kernel kernel,
         SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -104,7 +104,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed

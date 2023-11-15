@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
 /// <summary>
-/// <see cref="IKernel"/> extensions methods for gRPC functionality.
+/// <see cref="Kernel"/> extensions methods for gRPC functionality.
 /// </summary>
 public static class KernelGrpcExtensions
 {
@@ -31,7 +31,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin ImportPluginFromGrpcDirectory(
-        this IKernel kernel,
+        this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName,
         HttpClient? httpClient = null)
@@ -50,7 +50,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin ImportPluginFromGrpcFile(
-        this IKernel kernel,
+        this Kernel kernel,
         string filePath,
         string pluginName,
         HttpClient? httpClient = null)
@@ -69,7 +69,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin ImportPluginFromGrpc(
-        this IKernel kernel,
+        this Kernel kernel,
         Stream documentStream,
         string pluginName,
         HttpClient? httpClient = null)
@@ -88,7 +88,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin CreatePluginFromGrpcDirectory(
-        this IKernel kernel,
+        this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName,
         HttpClient? httpClient = null)
@@ -124,7 +124,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin CreatePluginFromGrpcFile(
-        this IKernel kernel,
+        this Kernel kernel,
         string filePath,
         string pluginName,
         HttpClient? httpClient = null)
@@ -152,7 +152,7 @@ public static class KernelGrpcExtensions
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static ISKPlugin CreatePluginFromGrpc(
-        this IKernel kernel,
+        this Kernel kernel,
         Stream documentStream,
         string pluginName,
         HttpClient? httpClient = null)

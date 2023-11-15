@@ -38,10 +38,10 @@ public static class Example42_KernelBuilder
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
-        IKernel kernel1 = new KernelBuilder().Build();
+        Kernel kernel1 = new KernelBuilder().Build();
 #pragma warning restore CA1852 // Seal internal types
 
-        IKernel kernel2 = new KernelBuilder().Build();
+        Kernel kernel2 = new KernelBuilder().Build();
 
         // ==========================================================================================================
         // new KernelBuilder() returns a new builder instance, in case you want to configure the builder differently.
@@ -97,7 +97,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(plugins, aiServiceProvider, memory, httpHandlerFactory, loggerFactory);
+        var kernel3 = new Kernel(aiServiceProvider, plugins, httpHandlerFactory: httpHandlerFactory, loggerFactory: loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
