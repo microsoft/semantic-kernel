@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,9 @@ internal sealed class RestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";
+
+    private const string DefaultResponseKey = "default";
+    private const string WildcardResponseKeyFormat = "{0}XX";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -175,30 +180,7 @@ internal sealed class RestApiOperationRunner
 
         var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
 
-        if (responses is not null)
-        {
-            var statusCodeKey = $"{(int)responseMessage.StatusCode}";
-
-            // Exact Match
-            var matchingResponse = responses.FirstOrDefault(r => r.Key == statusCodeKey).Value;
-
-            // Wildcard match e.g. 2XX
-            if (matchingResponse is null)
-            {
-                matchingResponse = responses.FirstOrDefault(r => r.Key.EndsWith("X", StringComparison.InvariantCultureIgnoreCase) && statusCodeKey.StartsWith(r.Key.Substring(0, 1), StringComparison.InvariantCultureIgnoreCase)).Value;
-            }
-
-            // Default
-            if (matchingResponse is null)
-            {
-                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value;
-            }
-
-            if (matchingResponse is not null)
-            {
-                response.Schema ??= matchingResponse.Schema;
-            }
-        }
+        response.Schema ??= GetExpectedSchema(responses, responseMessage.StatusCode);
 
         return response;
     }
@@ -336,6 +318,42 @@ internal sealed class RestApiOperationRunner
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets the expected schema for the specified status code.
+    /// </summary>
+    /// <param name="expectedSchemas">The dictionary of expected schemas.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <returns>The expected schema for the given status code.</returns>
+    private static JsonDocument? GetExpectedSchema(IDictionary<string, RestApiOperationResponse>? expectedSchemas, HttpStatusCode statusCode)
+    {
+        if (expectedSchemas is not null)
+        {
+            var statusCodeKey = $"{(int)statusCode}";
+
+            // Exact Match
+            var matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
+
+            // Wildcard match e.g. 2XX
+            if (matchingResponse is null)
+            {
+                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
+            }
+
+            // Default
+            if (matchingResponse is null)
+            {
+                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;
+            }
+
+            if (matchingResponse is not null)
+            {
+                return matchingResponse.Schema;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
