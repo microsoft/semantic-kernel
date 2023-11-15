@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using System.Text.Json;
+using Json.Schema;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -21,9 +23,9 @@ public sealed class RestApiOperationResponse
     public string ContentType { get; }
 
     /// <summary>
-    /// The schema against which the response body should be validated.
+    /// The schema of the response.
     /// </summary>
-    public RestApiOperationResponseSchema? Schema { get; set; }
+    public JsonDocument? Schema { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
@@ -31,7 +33,7 @@ public sealed class RestApiOperationResponse
     /// <param name="content">The content of the response.</param>
     /// <param name="contentType">The content type of the response.</param>
     /// <param name="schema">The schema against which the response body should be validated.</param>
-    public RestApiOperationResponse(object content, string contentType, RestApiOperationResponseSchema? schema = null)
+    public RestApiOperationResponse(object content, string contentType, JsonDocument? schema = null)
     {
         this.Content = content;
         this.ContentType = contentType;
@@ -41,9 +43,9 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// Validates the response content against the schema.
     /// </summary>
-    /// <returns>True if a schema is available and the content matches the schema. False otherwise.</returns>
+    /// <returns>True if the response is valid, false otherwise.</returns>
     /// <remarks>
-    /// If no schema is available, the response is considered valid.
+    /// If the schema is not specified, the response is considered valid.
     /// </remarks>
     public bool IsValid()
     {
@@ -52,6 +54,17 @@ public sealed class RestApiOperationResponse
             return true; // todo add tests
         }
 
-        return this.Schema.IsValid(this.Content.ToString()); // TODO -- is this correct thing to do with Content?
+        var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(this.Schema));
+
+        try
+        {
+            var contentDoc = JsonDocument.Parse(this.Content.ToString());
+            var result = jsonSchema.Evaluate(contentDoc);
+            return result.IsValid;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }

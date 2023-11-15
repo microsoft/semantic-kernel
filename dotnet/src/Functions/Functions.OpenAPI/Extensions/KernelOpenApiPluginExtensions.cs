@@ -283,7 +283,7 @@ public static class KernelOpenApiPluginExtensions
         }
 
         var returnParameter =
-            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Content.ToString(), null, restOperationResponse.Schema?.Schema) : null;
+            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Content.ToString(), null, restOperationResponse.Schema) : null;
 
         var function = SKFunction.Create(
             method: ExecuteAsync,

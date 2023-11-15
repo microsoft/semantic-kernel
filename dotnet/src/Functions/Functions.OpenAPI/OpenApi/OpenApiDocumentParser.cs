@@ -309,30 +309,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             }
             else
             {
-                var mediaTypeMetadata = response.Value.Content[mediaType];
-
-                // Parse schema
-                var schema = ParseSchema(mediaTypeMetadata.Schema);
+                var matchingSchema = response.Value.Content[mediaType].Schema;
 
                 // TODO - Kind of overloading `content` and `contentType` properties here.
-                yield return (response.Key, new RestApiOperationResponse(response.Value.Description ?? mediaTypeMetadata.Schema?.Description ?? string.Empty, mediaType, schema));
+                yield return (response.Key, new RestApiOperationResponse(response.Value.Description ?? matchingSchema?.Description ?? string.Empty, mediaType, matchingSchema?.ToJsonDocument()));
             }
         }
-    }
-
-    private static RestApiOperationResponseSchema? ParseSchema(OpenApiSchema schema)
-    {
-        if (schema == null)
-        {
-            return null; // todo add tests
-        }
-
-        return new RestApiOperationResponseSchema
-        {
-            Title = schema.Title,
-            Type = schema.Type,
-            Schema = schema.ToJsonDocument(),
-        };
     }
 
     /// <summary>

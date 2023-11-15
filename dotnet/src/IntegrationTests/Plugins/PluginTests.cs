@@ -107,11 +107,7 @@ public class PluginTests
         Assert.True(result.IsValid());
         Assert.NotNull(result.Schema);
         Assert.NotNull(result.Content);
-        Assert.True(result.Schema.IsValid(result.Content.ToString() ?? ""));
-        Assert.True(result.Schema.IsValid("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}]}"));
-
-        Assert.False(result.Schema.IsValid("{\"p\": [{\"id\": \"1234\", \"name\": \"Laptop\"}"));
-        Assert.False(result.Schema.IsValid("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}"));
+        Assert.True(result.IsValid());
     }
 
     [Theory]
