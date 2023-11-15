@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -196,7 +195,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new ConcurrentBag<FunctionView>();
+        var relevantFunctions = new List<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
