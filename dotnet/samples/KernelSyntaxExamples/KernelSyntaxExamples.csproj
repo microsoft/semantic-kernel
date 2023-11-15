@@ -12,9 +12,6 @@
     <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="appsettings.json" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -45,6 +42,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Assistants\Experimental.Assistants.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
@@ -68,6 +66,12 @@
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
+    <EmbeddedResource Include="Resources\Assistants\ParrotAssistant.yaml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Assistants\ToolAssistant.yaml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\EnglishRoberta\dict.txt" />
     <EmbeddedResource Include="Resources\EnglishRoberta\encoder.json" />
     <EmbeddedResource Include="Resources\EnglishRoberta\vocab.bpe" />
