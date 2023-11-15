@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
