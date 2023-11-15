@@ -20,6 +20,8 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 /// Comment out DISABLEHOST definition to enable tests.
 /// Not enabled by default.
 /// </remarks>
+[Trait("Category", "Integration Tests")]
+[Trait("Feature", "Assistant")]
 public sealed class AssistantHarness
 {
 #if DISABLEHOST

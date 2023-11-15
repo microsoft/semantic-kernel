@@ -14,6 +14,7 @@ using Xunit;
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
+[Trait("Feature", "Assistant")]
 public sealed class OpenAIRestExtensionsAssistantTests
 {
     private const string BogusApiKey = "bogus";
