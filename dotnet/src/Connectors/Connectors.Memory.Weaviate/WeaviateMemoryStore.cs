@@ -563,11 +563,11 @@ public class WeaviateMemoryStore : IMemoryStore
 
         return new(
             false,
-            "",
-            weaviateObject.Properties["sk_id"].ToString() ?? "",
-            weaviateObject.Properties["sk_description"].ToString() ?? "",
-            weaviateObject.Properties["sk_text"].ToString() ?? "",
-            weaviateObject.Properties["sk_additional_metadata"].ToString() ?? ""
+            string.Empty,
+            weaviateObject.Properties["sk_id"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_description"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_text"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_additional_metadata"].ToString() ?? string.Empty
         );
     }
 }
