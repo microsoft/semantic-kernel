@@ -7,9 +7,9 @@ using System.Reflection;
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
 /// <summary>
-/// Extension methods for the <see cref="IHandlebarsPlanner"/> interface.
+/// Extension methods for the <see cref="HandlebarsPlanner"/> interface.
 /// </summary>
-public static class HandlebarsPlannerExtensions
+internal static class HandlebarsPlannerExtensions
 {
     /// <summary>
     /// Reads the prompt for the given file name.
@@ -17,7 +17,7 @@ public static class HandlebarsPlannerExtensions
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="fileName">The name of the file to read.</param>
     /// <returns>The content of the file as a string.</returns>
-    public static string ReadPrompt(this IHandlebarsPlanner planner, string fileName)
+    public static string ReadPrompt(this HandlebarsPlanner planner, string fileName)
     {
         using var stream = planner.ReadPromptStream(fileName);
         using var reader = new StreamReader(stream);
@@ -31,7 +31,7 @@ public static class HandlebarsPlannerExtensions
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="fileName">The name of the file to read.</param>
     /// <returns>The stream for the given file name.</returns>
-    public static Stream ReadPromptStream(this IHandlebarsPlanner planner, string fileName)
+    public static Stream ReadPromptStream(this HandlebarsPlanner planner, string fileName)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = $"{planner.GetType().Namespace}.{fileName}";
@@ -42,7 +42,7 @@ public static class HandlebarsPlannerExtensions
     /// <summary>
     /// Start the stopwatch.
     /// </summary>
-    public static void StartStopwatch(this IHandlebarsPlanner planner)
+    public static void StartStopwatch(this HandlebarsPlanner planner)
     {
         if (planner.Stopwatch.IsRunning)
         {
@@ -56,7 +56,7 @@ public static class HandlebarsPlannerExtensions
     /// Stop the stopwatch and return the elapsed time in milliseconds.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    public static double StopStopwatch(this IHandlebarsPlanner planner)
+    public static double StopStopwatch(this HandlebarsPlanner planner)
     {
         if (planner.Stopwatch.IsRunning)
         {

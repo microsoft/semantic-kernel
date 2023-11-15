@@ -15,21 +15,23 @@ namespace Microsoft.SemanticKernel.Planners.Handlebars;
 /// <summary>
 /// Represents a Handlebars planner.
 /// </summary>
-public class HandlebarsPlanner : IHandlebarsPlanner
+public class HandlebarsPlanner
 {
     /// <summary>
     /// The key for the available kernel functions.
     /// </summary>
     public const string AvailableKernelFunctionsKey = "AVAILABLE_KERNEL_FUNCTIONS";
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the stopwatch used for measuring planning time.
+    /// </summary>
     public Stopwatch Stopwatch { get; } = new();
 
     private readonly IKernel _kernel;
 
     private readonly HandlebarsPlannerConfig _config;
 
-    private readonly HashSet<ParameterType> _parameterTypes = new();
+    private readonly HashSet<HandlebarsParameterTypeView> _parameterTypes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -42,7 +44,13 @@ public class HandlebarsPlanner : IHandlebarsPlanner
         this._config = config ?? new HandlebarsPlannerConfig();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Create a plan for a goal.
+    /// </summary>
+    /// <param name="goal">The goal to create a plan for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The plan.</returns>
+    /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         var availableFunctions = this.GetAvailableFunctionsManual(cancellationToken);

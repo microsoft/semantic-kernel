@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using HandlebarsDotNet;
+using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
@@ -15,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planners.Handlebars;
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
 /// </summary>
-public static class HandlebarsTemplateEngineExtensions
+internal sealed class HandlebarsTemplateEngineExtensions
 {
     /// <summary>
     /// The key used to store the reserved output type in the dictionary of variables passed to the Handlebars template engine.

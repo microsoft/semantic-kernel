@@ -7,22 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
-internal class NestedProperty
-{
-    public NestedProperty(string name, Type propertyType)
-    {
-        this.Name = name;
-        this.Type = propertyType;
-    }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("type")]
-    public Type Type { get; set; } = typeof(object);
-}
-
-internal class ParameterType
+internal class HandlebarsParameterTypeView
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
@@ -34,7 +19,7 @@ internal class ParameterType
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<NestedProperty> Properties { get; set; } = new();
+    public List<ParameterView> Properties { get; set; } = new();
 }
 
 internal static class ParameterTypeExtensions
@@ -53,14 +38,14 @@ internal static class ParameterTypeExtensions
     ///    propertyB: str
     ///    propertyC: PropertyC
     /// </summary>
-    public static HashSet<ParameterType> ToParameterTypes(this Type type)
+    public static HashSet<HandlebarsParameterTypeView> ToParameterTypes(this Type type)
     {
-        var parameterTypes = new HashSet<ParameterType>();
+        var parameterTypes = new HashSet<HandlebarsParameterTypeView>();
 
         if (type.IsPrimitive || type == typeof(string))
         {
             // Primitive types and string
-            parameterTypes.Add(new ParameterType()
+            parameterTypes.Add(new HandlebarsParameterTypeView()
             {
                 Name = type.Name,
             });
@@ -68,7 +53,7 @@ internal static class ParameterTypeExtensions
         else if (type.IsEnum)
         {
             // Enum
-            parameterTypes.Add(new ParameterType()
+            parameterTypes.Add(new HandlebarsParameterTypeView()
             {
                 Name = type.Name,
             });
@@ -78,11 +63,11 @@ internal static class ParameterTypeExtensions
             // Class
             var properties = type.GetProperties();
 
-            parameterTypes.Add(new ParameterType()
+            parameterTypes.Add(new HandlebarsParameterTypeView()
             {
                 Name = type.Name,
                 IsComplexType = true,
-                Properties = properties.Select(p => new NestedProperty(p.Name, p.PropertyType)).ToList()
+                Properties = properties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
             });
 
             // Add nested complex types

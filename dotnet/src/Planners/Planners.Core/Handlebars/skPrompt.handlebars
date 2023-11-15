@@ -57,14 +57,12 @@ The following helpers are available to you:
 - {{{{raw}}}}`{{#each}}{{/each}}`{{{{/raw}}}}
 - {{{{raw}}}}`{{#with}}{{/with}}`{{{{/raw}}}}
 
-IMPORTANT: `hash` is NOT supported.
-
 ## Loop helpers
 If you need to loop through a list of values with `\{{#each}}`, you can use the following helpers:
 - {{{{raw}}}}`{{range}}`{{{{/raw}}}} – Generates a range of numbers from the given start to the given end.
 - {{{{raw}}}}`{{array}}`{{{{/raw}}}} – Generates an array of values from the given values.
 
-IMPORTANT: You cannot use any other methods or properties on the built-in data structures, such as array.push or range.length. Only use the helpers as they are listed above.
+IMPORTANT: `range` and `array` are the _only_ supported data structures. Also, you cannot use any methods or properties on the built-in data structures, such as array.push or range.length.
 
 ## Comparison helpers
 If you need to compare two values, you can use the following helpers:
@@ -130,7 +128,7 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 
 ## Start
 Now take a deep breath and accomplish the task:
-1. Do not use helpers that were not provided to you. Do not assume any helpers or operations that were not previously defined, as they will cause an error in the template.
+1. Do not use helpers that were not provided to you. Do not assume any helpers or operations that were not explicitly defined already, as they will cause an error in the template.
 2. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
 3. The first steps should always be to initialize any variables you need.
 4. The template should use the \{{json}} helper to output the result of the final step.
