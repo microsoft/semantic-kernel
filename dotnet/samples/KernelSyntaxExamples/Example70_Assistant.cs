@@ -32,11 +32,11 @@ public static class Example70_Assistant
             return;
         }
 
-        //await RunSimpleChatAsync();
+        await RunSimpleChatAsync();
 
-        //await RunWithNativeFunctionsAsync();
+        await RunWithNativeFunctionsAsync();
 
-        //await RunWithSemanticFunctionsAsync();
+        await RunWithSemanticFunctionsAsync();
 
         await RunAsFunctionAsync();
     }
