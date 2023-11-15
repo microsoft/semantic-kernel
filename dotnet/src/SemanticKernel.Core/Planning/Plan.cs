@@ -167,7 +167,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, s_includeFieldsOptions) ?? new Plan(string.Empty);
 
         if (functions != null)
         {
@@ -184,7 +184,9 @@ public sealed class Plan : ISKFunction
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return indented ?
+            JsonSerializer.Serialize(this, s_writeIndentedOptions) :
+            JsonSerializer.Serialize(this);
     }
 
     /// <summary>
@@ -679,6 +681,11 @@ public sealed class Plan : ISKFunction
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Deserialization options for including fields.</summary>
+    private static readonly JsonSerializerOptions s_includeFieldsOptions = new() { IncludeFields = true };
+    /// <summary>Serialization options for writing indented.</summary>
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
 
     private ISKFunction? Function { get; set; }
 
