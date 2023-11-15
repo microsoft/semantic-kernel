@@ -65,7 +65,7 @@ public class OpenAIFunctionResponse
 
             return response;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }
