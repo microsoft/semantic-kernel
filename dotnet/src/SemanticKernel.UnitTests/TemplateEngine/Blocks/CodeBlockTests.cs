@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 

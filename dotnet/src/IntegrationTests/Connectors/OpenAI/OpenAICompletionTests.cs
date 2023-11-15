@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -340,7 +340,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        var promptTemplateFactory = new BasicPromptTemplateFactory();
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 

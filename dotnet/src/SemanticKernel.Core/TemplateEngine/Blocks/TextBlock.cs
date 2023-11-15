@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class TextBlock : Block, ITextRendering
 {

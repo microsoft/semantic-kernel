@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-public sealed class BasicPromptTemplate : IPromptTemplate
+public sealed class KernelPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Constructor for PromptTemplate.
@@ -32,10 +32,10 @@ public sealed class BasicPromptTemplate : IPromptTemplate
     /// <param name="templateString">Prompt template string.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public BasicPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    public KernelPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplate));
+        this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
         this._templateString = templateString;
         this._promptTemplateConfig = promptTemplateConfig;
         this._parameters = new(() => this.InitParameters());
