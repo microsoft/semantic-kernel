@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -97,21 +98,28 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:AsFunction ========");
 
+        var definition = EmbeddedResource.Read("Assistants.ParrotAssistant.yaml");
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 OpenAIFunctionEnabledModel,
-                "Assistants.ParrotAssistant.yaml");
+                definition);
 
         IKernel bootstraper = new KernelBuilder().Build();
 
         var assistants = bootstraper.ImportFunctions(assistant, "Assistants");
 
-        var variables = new ContextVariables();
-        variables["input"] = "Practice makes perfect.";
+        var variables = new ContextVariables
+        {
+            ["input"] = "Practice makes perfect."
+        };
         var result = await bootstraper.RunAsync(assistants.Single().Value, variables);
+        var resultValue = result.GetValue<string>();
 
-        Console.WriteLine(result.GetValue<string>());
+        var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
+        Console.WriteLine(
+            response?.Response ??
+            $"No response from assistant: {assistant.Id}");
     }
 
     private static Task ChatAsync(

@@ -2,6 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -112,5 +115,30 @@ internal sealed class Assistant : IAssistant
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
+    }
+
+    /// <summary>
+    /// Marshal thread run through <see cref="ISKFunction"/> interface.
+    /// </summary>
+    /// <param name="input">The user input</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
+    [SKFunction, Description("Provide input to assistant a response")]
+    public async Task<string> AskAsync(
+        [Description("The input for the assistant.")]
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
+        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
+        var response =
+            new AssistantResponse
+            {
+                ThreadId = thread.Id,
+                Response = string.Concat(message.Select(m => m.Content)),
+            };
+
+        return JsonSerializer.Serialize(response);
     }
 }
