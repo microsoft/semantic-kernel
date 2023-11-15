@@ -64,6 +64,11 @@ If you need to loop through a list of values with `\{{#each}}`, you can use the 
 
 IMPORTANT: `range` and `array` are the _only_ supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures, such as `array.push` or `range.length`.
 
+# Math helpers
+If you need to do basic operations, you can use these two helpers with numerical values:
+- {{{{raw}}}}`{{add}}`{{{{/raw}}}} – Adds two values together.
+- {{{{raw}}}}`{{subtract}}`{{{{/raw}}}} – Subtracts the second value from the first.
+
 ## Comparison helpers
 If you need to compare two values, you can use the following helpers:
 - {{{{raw}}}}`{{equal}}`{{{{/raw}}}}
@@ -72,7 +77,7 @@ If you need to compare two values, you can use the following helpers:
 - {{{{raw}}}}`{{lessThanOrEqual}}`{{{{/raw}}}}
 - {{{{raw}}}}`{{greaterThanOrEqual}}`{{{{/raw}}}}
 
-To use the comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is less than the number `1`, you would use the following helper like so: `\{{#if (lessThan var 1)}}\{{/if}}`.
+To use the math and comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is less than the number `1`, you would use the following helper like so: `\{{#if (lessThan var 1)}}\{{/if}}`.
 
 ## Variable helpers
 If you need to create or retrieve a variable, you can use the following helpers:
@@ -122,7 +127,7 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 - Do not make up values. Use the helpers to generate the data you need or extract it from the goal.
 - Keep data well-defined. Each variable should have a unique name. Create and assign each variable only once.
 - Be extremely careful about types. For example, if you pass an array to a helper that expects a number, the template will error out.
-- Loops can be tricky, so only use them if they're absolutely necessary.
+- Avoid using loops. Try a solution without loops before you deploy a loop.
 - There is no need to check your results in the template.
 - Do not nest sub-expressions or helpers because it will cause the template to error out.
 - Each step should contain only one helper call.
@@ -130,7 +135,7 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 ## Start
 Now take a deep breath and accomplish the task:
 1. Keep the template short and sweet. Be as effecient as possible.
-2. Do not use helpers that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
+2. Do not use helpers or functions that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
 3. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
 4. The first steps should always be to initialize any variables you need.
 5. The template should use the \{{json}} helper at least once to output the result of the final step.

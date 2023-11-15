@@ -169,7 +169,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var start = int.Parse(arguments[0].ToString(), CultureInfo.InvariantCulture);
-            var end = int.Parse(arguments[1].ToString(), CultureInfo.InvariantCulture);
+            var end = int.Parse(arguments[1].ToString(), CultureInfo.InvariantCulture) + 1;
 
             var count = end - start;
 
@@ -190,6 +190,22 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 return var!.ToString();
             }).ToList();
             return string.Concat(strings);
+        });
+
+        handlebarsInstance.RegisterHelper("add", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            double left = CastToNumber(arguments[0]);
+            double right = CastToNumber(arguments[1]);
+
+            return left + right;
+        });
+
+        handlebarsInstance.RegisterHelper("subtract", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            double left = CastToNumber(arguments[0]);
+            double right = CastToNumber(arguments[1]);
+
+            return right - left;
         });
 
         handlebarsInstance.RegisterHelper("equal", (in HelperOptions options, in Context context, in Arguments arguments) =>
