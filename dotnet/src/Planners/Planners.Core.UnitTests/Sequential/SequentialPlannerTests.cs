@@ -90,10 +90,7 @@ public sealed class SequentialPlannerTests
 
     private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
-        if (plugins is null)
-        {
-            plugins = new SKPluginCollection();
-        }
+        plugins ??= new SKPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult
