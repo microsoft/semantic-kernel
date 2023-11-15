@@ -97,12 +97,7 @@ public sealed class ActionPlanner : IActionPlanner
         this._context.Variables.Update(goal);
 
         FunctionResult result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        ActionPlanResponse? planData = this.ParsePlannerResult(result);
-
-        if (planData == null)
-        {
-            throw new SKException("The plan deserialized to a null object");
-        }
+        ActionPlanResponse? planData = this.ParsePlannerResult(result) ?? throw new SKException("The plan deserialized to a null object");
 
         // Build and return plan
         Plan? plan = null;

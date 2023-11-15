@@ -446,7 +446,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         // Azure Cognitive Search score formula. The min value is 0.333 for cosine similarity -1.
         score = Math.Max(score, 1.0 / 3);
-        return 2 - 1 / score;
+        return 2 - (1 / score);
     }
 
     private static double CosineSimilarityToScore(double similarity)

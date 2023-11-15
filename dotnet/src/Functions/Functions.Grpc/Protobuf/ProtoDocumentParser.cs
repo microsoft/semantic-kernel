@@ -59,10 +59,10 @@ internal sealed class ProtoDocumentParser
 
                 var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
-                var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
-                operation.Package = model.Package;
-
-                operations.Add(operation);
+                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                {
+                    Package = model.Package
+                });
             }
         }
 
@@ -88,11 +88,8 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
-        if (messageType == null)
-        {
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
             throw new SKException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
-        }
 
         var fields = this.GetDataContractFields(messageType.Fields);
 
@@ -128,12 +125,8 @@ internal sealed class ProtoDocumentParser
         var fieldInfo = typeof(FieldDescriptorProto.Type).GetField(type.ToString());
 
         //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
-        var attribute = (ProtoEnumAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
-
-        if (attribute == null)
-        {
+        var attribute = (ProtoEnumAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute)) ??
             throw new SKException($"Impossible to find protobuf type name corresponding to '{type}' type.");
-        }
 
         return attribute.Name;
     }

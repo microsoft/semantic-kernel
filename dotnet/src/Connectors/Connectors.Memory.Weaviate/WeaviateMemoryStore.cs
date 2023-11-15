@@ -201,11 +201,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
-        if (getSchemaResponse == null)
-        {
+        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions) ??
             throw new SKException("Unable to deserialize list collections response");
-        }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
         {
@@ -275,12 +272,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
-
-        if (result == null)
-        {
+        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions) ??
             throw new SKException("Unable to deserialize batch response");
-        }
 
         foreach (BatchResponse batchResponse in result)
         {
@@ -326,7 +319,7 @@ public class WeaviateMemoryStore : IMemoryStore
                 : null;
 
         MemoryRecord record = new(
-            key: weaviateObject.Id!,
+            key: weaviateObject.Id,
             timestamp: timestamp,
             embedding: weaviateObject.Vector,
             metadata: ToMetadata(weaviateObject));
@@ -502,7 +495,7 @@ public class WeaviateMemoryStore : IMemoryStore
     // Get a class description, useful for checking name collisions
     private static string ToWeaviateFriendlyClassDescription(string collectionName)
     {
-        return $"{"Semantic Kernel memory store for collection:"} {collectionName}";
+        return $"Semantic Kernel memory store for collection: {collectionName}";
     }
 
     // Convert a collectionName to a valid Weaviate class name

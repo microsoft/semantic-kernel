@@ -558,12 +558,8 @@ public sealed class PineconeClient : IPineconeClient
 
         this._logger.LogDebug("Getting index host from Pinecone.");
 
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-
-        if (pineconeIndex == null)
-        {
+        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Index not found in Pinecone. Create index to perform operations with vectors.");
-        }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {

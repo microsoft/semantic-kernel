@@ -96,12 +96,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
-        if (jsonObject == null)
-        {
-            // The document is malformed.
-            throw new SKException("Parsing of OpenAPI document failed.");
-        }
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ??
+            throw new SKException("Parsing of OpenAPI document failed."); // The document is malformed.
 
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
@@ -274,11 +270,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt));
-        if (mediaType == null)
-        {
+        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt)) ??
             throw new SKException($"Neither of the media types of {operationId} is supported.");
-        }
 
         var mediaTypeMetadata = requestBody.Content[mediaType];
 

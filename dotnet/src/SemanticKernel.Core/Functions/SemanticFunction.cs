@@ -305,9 +305,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         else
         {
-            var serviceSelector = new DelegatingAIServiceSelector();
-            serviceSelector.ServiceFactory = serviceFactory;
-            this._serviceSelector = serviceSelector;
+            this._serviceSelector = new DelegatingAIServiceSelector { ServiceFactory = serviceFactory };
         }
         return this;
     }
@@ -322,9 +320,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         else
         {
-            var configurationProvider = new DelegatingAIServiceSelector();
-            configurationProvider.RequestSettings = requestSettings;
-            this._serviceSelector = configurationProvider;
+            this._serviceSelector = new DelegatingAIServiceSelector { RequestSettings = requestSettings };
         }
         return this;
     }

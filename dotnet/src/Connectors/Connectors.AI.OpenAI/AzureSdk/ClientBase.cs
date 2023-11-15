@@ -105,12 +105,8 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
+            () => this.Client.GetCompletionsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false) ??
             throw new SKException("Text completions null response");
-        }
 
         var responseData = response.Value;
 
@@ -168,12 +164,8 @@ public abstract class ClientBase
             var options = new EmbeddingsOptions(text);
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
-
-            if (response is null)
-            {
+                () => this.Client.GetEmbeddingsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false) ??
                 throw new SKException("Text embedding null response");
-            }
 
             if (response.Value.Data.Count == 0)
             {
@@ -207,12 +199,8 @@ public abstract class ClientBase
         var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
+            () => this.Client.GetChatCompletionsAsync(this.DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false) ??
             throw new SKException("Chat completions null response");
-        }
 
         var responseData = response.Value;
 
@@ -247,12 +235,8 @@ public abstract class ClientBase
         var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
+            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false) ??
             throw new SKException("Chat completions null response");
-        }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))

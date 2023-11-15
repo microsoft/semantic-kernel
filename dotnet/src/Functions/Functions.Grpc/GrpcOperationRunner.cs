@@ -54,29 +54,28 @@ internal sealed class GrpcOperationRunner
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
-        using (var channel = GrpcChannel.ForAddress(address, channelOptions))
-        {
-            var requestType = BuildGrpcOperationDataContractType(operation.Request);
+        using var channel = GrpcChannel.ForAddress(address, channelOptions);
 
-            var responseType = BuildGrpcOperationDataContractType(operation.Response);
+        var requestType = BuildGrpcOperationDataContractType(operation.Request);
 
-            var method = new Method<object, object>
-            (
-                MethodType.Unary,
-                operation.FullServiceName,
-                operation.Name,
-                this.CreateMarshaller<object>(requestType),
-                this.CreateMarshaller<object>(responseType)
-            );
+        var responseType = BuildGrpcOperationDataContractType(operation.Response);
 
-            var invoker = channel.CreateCallInvoker();
+        var method = new Method<object, object>
+        (
+            MethodType.Unary,
+            operation.FullServiceName,
+            operation.Name,
+            this.CreateMarshaller<object>(requestType),
+            this.CreateMarshaller<object>(responseType)
+        );
 
-            var request = this.GenerateOperationRequest(operation, requestType, arguments);
+        var invoker = channel.CreateCallInvoker();
 
-            var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+        var request = this.GenerateOperationRequest(operation, requestType, arguments);
 
-            return ConvertResponse(response, responseType);
-        }
+        var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+
+        return ConvertResponse(response, responseType);
     }
 
     /// <summary>
@@ -90,10 +89,11 @@ internal sealed class GrpcOperationRunner
         var content = JsonSerializer.Serialize(response, responseType, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         //First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject();
-        result.Add("content", content);
-        result.Add("contentType", "application/json; charset=utf-8");
-        return result;
+        return new JsonObject
+        {
+            { "content", content },
+            { "contentType", "application/json; charset=utf-8" }
+        };
     }
 
     /// <summary>
@@ -159,13 +159,8 @@ internal sealed class GrpcOperationRunner
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        if (instance == null)
-        {
+        return JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ??
             throw new SKException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
-        }
-
-        return instance;
     }
 
     /// <summary>
@@ -223,13 +218,8 @@ internal sealed class GrpcOperationRunner
         var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes), Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
-        var type = typeBuilder.CreateTypeInfo();
-        if (type == null)
-        {
+        return typeBuilder.CreateTypeInfo() ??
             throw new SKException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
-        }
-
-        return type;
     }
 
     /// <summary>
@@ -239,40 +229,24 @@ internal sealed class GrpcOperationRunner
     /// <returns>The .net type.</returns>
     private static Type GetNetType(string type)
     {
-        switch (type)
+        return type switch
         {
-            case "TYPE_DOUBLE":
-                return typeof(double);
-            case "TYPE_FLOAT":
-                return typeof(float);
-            case "TYPE_INT64":
-                return typeof(long);
-            case "TYPE_UINT64":
-                return typeof(ulong);
-            case "TYPE_INT32":
-                return typeof(int);
-            case "TYPE_FIXED64":
-                return typeof(ulong);
-            case "TYPE_FIXED32":
-                return typeof(uint);
-            case "TYPE_BOOL":
-                return typeof(bool);
-            case "TYPE_STRING":
-                return typeof(string);
-            case "TYPE_BYTES":
-                return typeof(byte[]);
-            case "TYPE_UINT32":
-                return typeof(uint);
-            case "TYPE_SFIXED32":
-                return typeof(int);
-            case "TYPE_SFIXED64":
-                return typeof(long);
-            case "TYPE_SINT32":
-                return typeof(int);
-            case "TYPE_SINT64":
-                return typeof(long);
-            default:
-                throw new ArgumentException($"Unknown type {type}", nameof(type));
-        }
+            "TYPE_DOUBLE" => typeof(double),
+            "TYPE_FLOAT" => typeof(float),
+            "TYPE_INT64" => typeof(long),
+            "TYPE_UINT64" => typeof(ulong),
+            "TYPE_INT32" => typeof(int),
+            "TYPE_FIXED64" => typeof(ulong),
+            "TYPE_FIXED32" => typeof(uint),
+            "TYPE_BOOL" => typeof(bool),
+            "TYPE_STRING" => typeof(string),
+            "TYPE_BYTES" => typeof(byte[]),
+            "TYPE_UINT32" => typeof(uint),
+            "TYPE_SFIXED32" => typeof(int),
+            "TYPE_SFIXED64" => typeof(long),
+            "TYPE_SINT32" => typeof(int),
+            "TYPE_SINT64" => typeof(long),
+            _ => throw new ArgumentException($"Unknown type {type}", nameof(type)),
+        };
     }
 }
