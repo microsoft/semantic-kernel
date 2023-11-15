@@ -120,7 +120,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
-            collectionDict.TryRemove(key, out MemoryRecord _);
+            collectionDict.TryRemove(key, out _);
         }
 
         return Task.CompletedTask;
