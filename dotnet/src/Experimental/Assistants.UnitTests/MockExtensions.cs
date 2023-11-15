@@ -3,8 +3,8 @@
 using System;
 using System.Net.Http;
 using System.Threading;
-using Moq.Protected;
 using Moq;
+using Moq.Protected;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 

@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
+using System;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Moq;
 using Moq.Protected;
 using Xunit;
-using System;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
