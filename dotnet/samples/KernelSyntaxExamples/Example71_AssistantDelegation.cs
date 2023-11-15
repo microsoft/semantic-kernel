@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Plugins;
 using Resources;
 
 // ReSharper disable once InconsistentNaming
@@ -31,17 +32,20 @@ public static class Example71_AssistantDelegation
 
         IKernel bootstraper = new KernelBuilder().Build();
 
+        var functions = bootstraper.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+
         var assistant1 =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"));
+                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
+                functions: functions.Values);
 
         var assistant2 =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"));
+                template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
         var helperAssistants = Import(assistant1, assistant2).ToArray();
 
@@ -54,7 +58,9 @@ public static class Example71_AssistantDelegation
 
         await ChatAsync(
             assistant3,
-            "What's on the menu?");
+            "What's on the menu?",
+            "Can you talk like pirate?",
+            "Thank you");
 
         IEnumerable<ISKFunction> Import(params IAssistant[] assistants)
         {
