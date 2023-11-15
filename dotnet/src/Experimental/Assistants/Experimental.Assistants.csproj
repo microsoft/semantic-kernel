@@ -26,4 +26,7 @@
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Experimental.Assistants.UnitTests" />
+  </ItemGroup>
 </Project>
