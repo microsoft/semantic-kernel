@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -23,9 +24,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
     _endpoint: Optional[str] = None
     _org_id: Optional[str] = None
     _log: Logger
-    _prompt_tokens: int
-    _completion_tokens: int
-    _total_tokens: int
+    _prompt_tokens: int = 0
+    _completion_tokens: int = 0
+    _total_tokens: int = 0
 
     def __init__(
         self,
@@ -56,6 +57,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        openai.app_info = APP_INFO
 
     async def complete_async(
         self,
@@ -164,12 +166,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"{self.__class__.__name__} failed to complete the prompt",
                 ex,
             )
-
-        if "usage" in response:
-            self._log.info(f"OpenAI usage: {response.usage}")
-            self._prompt_tokens += response.usage.prompt_tokens
-            self._completion_tokens += response.usage.completion_tokens
-            self._total_tokens += response.usage.total_tokens
 
         return response
 
