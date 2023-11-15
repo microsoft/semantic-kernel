@@ -339,44 +339,44 @@ internal sealed class RestApiOperationRunner
         switch (propertyMetadata.Type)
         {
             case "number":
+            {
+                if (long.TryParse(propertyValue, out var intValue))
                 {
-                    if (long.TryParse(propertyValue, out var intValue))
-                    {
-                        return JsonValue.Create(intValue);
-                    }
-
-                    return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
+                    return JsonValue.Create(intValue);
                 }
+
+                return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
+            }
 
             case "boolean":
-                {
-                    return JsonValue.Create(bool.Parse(propertyValue));
-                }
+            {
+                return JsonValue.Create(bool.Parse(propertyValue));
+            }
 
             case "integer":
-                {
-                    return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
-                }
+            {
+                return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
+            }
 
             case "array":
+            {
+                if (JsonArray.Parse(propertyValue) is JsonArray array)
                 {
-                    if (JsonArray.Parse(propertyValue) is JsonArray array)
-                    {
-                        return array;
-                    }
-
-                    throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
+                    return array;
                 }
+
+                throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
+            }
 
             case "string":
-                {
-                    return JsonValue.Create(propertyValue);
-                }
+            {
+                return JsonValue.Create(propertyValue);
+            }
 
             default:
-                {
-                    throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
-                }
+            {
+                throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
+            }
         }
     }
 
