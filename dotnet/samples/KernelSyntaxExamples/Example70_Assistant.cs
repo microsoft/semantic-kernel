@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Orchestration;
 using Resources;
 
 // ReSharper disable once InconsistentNaming
@@ -29,13 +31,13 @@ public static class Example70_Assistant
             return;
         }
 
-        await RunSimpleChatAsync();
+        //await RunSimpleChatAsync();
 
-        await RunWithNativeFunctionsAsync();
+        //await RunWithNativeFunctionsAsync();
 
-        await RunWithSemanticFunctionsAsync();
+        //await RunWithSemanticFunctionsAsync();
 
-        //await RunAsFunctionAsync();
+        await RunAsFunctionAsync();
     }
 
     private static async Task RunSimpleChatAsync()
@@ -95,7 +97,21 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:AsFunction ========");
 
-        await Task.Delay(0);
+        var assistant =
+            await AssistantBuilder.FromDefinitionAsync(
+                TestConfiguration.OpenAI.ApiKey,
+                OpenAIFunctionEnabledModel,
+                "Assistants.ParrotAssistant.yaml");
+
+        IKernel bootstraper = new KernelBuilder().Build();
+
+        var assistants = bootstraper.ImportFunctions(assistant, "Assistants");
+
+        var variables = new ContextVariables();
+        variables["input"] = "Practice makes perfect.";
+        var result = await bootstraper.RunAsync(assistants.Single().Value, variables);
+
+        Console.WriteLine(result.GetValue<string>());
     }
 
     private static Task ChatAsync(

@@ -56,13 +56,14 @@ public sealed class SKFunctionExtensionTests
         mockFunction.Setup(f => f.Describe()).Returns(functionView);
 
         AssistantModel.ToolModel toolModel = mockFunction.Object.ToToolModel();
+        var properties = toolModel.Function?.Parameters.Properties?.ToObjectFromJson<Dictionary<string, object>>();
 
         Assert.Equal("function", toolModel.Type);
         Assert.Equal($"{PluginName}-{ToolName}", toolModel.Function?.Name);
         Assert.Equal(FunctionDescription, toolModel.Function?.Description);
-        Assert.Equal(2, toolModel.Function?.Parameters.Properties.Count);
-        Assert.True(toolModel.Function?.Parameters.Properties.ContainsKey(RequiredParamName));
-        Assert.True(toolModel.Function?.Parameters.Properties.ContainsKey(OptionalParamName));
+        Assert.Equal(2, properties?.Count);
+        Assert.True(properties?.ContainsKey(RequiredParamName));
+        Assert.True(properties?.ContainsKey(OptionalParamName));
         Assert.Equal(1, toolModel.Function?.Parameters.Required.Count);
         Assert.True(toolModel.Function?.Parameters.Required.Contains(RequiredParamName));
     }
