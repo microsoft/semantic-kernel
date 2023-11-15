@@ -158,8 +158,13 @@ public static class Example70_Assistant
     {
         foreach (var message in messages)
         {
-            Console.WriteLine($"[{message.Id}]");
-            Console.WriteLine($"# {message.Role}: {message.Content}");
+            DisplayMessage(message);
         }
+    }
+
+    private static void DisplayMessage(IChatMessage message)
+    {
+        Console.WriteLine($"[{message.Id}]");
+        Console.WriteLine($"# {message.Role}: {message.Content}");
     }
 }

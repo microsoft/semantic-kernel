@@ -91,8 +91,13 @@ public static class Example71_AssistantDelegation
     {
         foreach (var message in messages)
         {
-            Console.WriteLine($"[{message.Id}]");
-            Console.WriteLine($"# {message.Role}: {message.Content}");
+            DisplayMessage(message);
         }
+    }
+
+    private static void DisplayMessage(IChatMessage message)
+    {
+        Console.WriteLine($"[{message.Id}]");
+        Console.WriteLine($"# {message.Role}: {message.Content}");
     }
 }
