@@ -109,7 +109,6 @@ public sealed class SequentialPlannerTests
             .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
-        var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
 
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);

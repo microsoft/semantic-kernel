@@ -17,7 +17,7 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private readonly Mock<IFunctionRunner> _functionRunner = new();
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
 
@@ -87,7 +87,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var returnContext = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
+        var returnContext = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -118,7 +118,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -151,7 +151,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -184,7 +184,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -216,7 +216,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -298,7 +298,7 @@ public sealed class PlanSerializationTests
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
 
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -366,7 +366,7 @@ public sealed class PlanSerializationTests
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -406,7 +406,7 @@ public sealed class PlanSerializationTests
         cv.Update(string.Empty);
 
         var nextContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables()
         );
         plan = Plan.FromJson(serializedPlan1, plugins);
@@ -440,7 +440,7 @@ public sealed class PlanSerializationTests
         var plugins = new SKPluginCollection();
 
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -482,7 +482,7 @@ public sealed class PlanSerializationTests
         var plugins = new SKPluginCollection();
 
         var returnContext = new SKContext(
-            this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
