@@ -56,9 +56,9 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
-        IKernel bootstraper = new KernelBuilder().Build();
+        IKernel kernel = new KernelBuilder().Build();
 
-        var functions = bootstraper.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+        var functions = kernel.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
@@ -73,12 +73,12 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithSemanticFunctions ========");
 
-        IKernel bootstraper = new KernelBuilder().Build();
+        IKernel kernel = new KernelBuilder().Build();
 
         var functions =
             new[]
             {
-                bootstraper.CreateSemanticFunction(
+                kernel.CreateSemanticFunction(
                     "Correct any misspelling or gramatical errors provided in input: {{$input}}",
                     functionName: "spellChecker",
                     pluginName: "test",
@@ -104,14 +104,14 @@ public static class Example70_Assistant
                 OpenAIFunctionEnabledModel,
                 EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
-        IKernel bootstraper = new KernelBuilder().Build();
-        var assistants = bootstraper.ImportFunctions(assistant, assistant.Id);
+        IKernel kernel = new KernelBuilder().Build();
+        var assistants = kernel.ImportFunctions(assistant, assistant.Id);
 
         var variables = new ContextVariables
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await bootstraper.RunAsync(assistants.Single().Value, variables);
+        var result = await kernel.RunAsync(assistants.Single().Value, variables);
         var resultValue = result.GetValue<string>();
 
         var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
@@ -150,11 +150,11 @@ public static class Example70_Assistant
             DisplayMessage(messageUser);
 
             var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
-            DisplayMessage(assistantMessages);
+            DisplayMessages(assistantMessages);
         }
     }
 
-    private static void DisplayMessage(IEnumerable<IChatMessage> messages)
+    private static void DisplayMessages(IEnumerable<IChatMessage> messages)
     {
         foreach (var message in messages)
         {

@@ -30,26 +30,26 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        IKernel bootstraper = new KernelBuilder().Build();
+        IKernel kernel = new KernelBuilder().Build();
 
-        var functions = bootstraper.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+        var functions = kernel.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
 
-        var assistant1 =
+        var menuAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
                 functions: functions.Values);
 
-        var assistant2 =
+        var parrotAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
-        var helperAssistants = Import(assistant1, assistant2).ToArray();
+        var helperAssistants = Import(menuAssistant, parrotAssistant).ToArray();
 
-        var assistant3 =
+        var toolAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
@@ -57,7 +57,7 @@ public static class Example71_AssistantDelegation
                 functions: helperAssistants);
 
         await ChatAsync(
-            assistant3,
+            toolAssistant,
             "What's on the menu?",
             "Can you talk like pirate?",
             "Thank you");
@@ -66,7 +66,7 @@ public static class Example71_AssistantDelegation
         {
             foreach (var assistant in assistants)
             {
-                var functions = bootstraper.ImportFunctions(assistant, assistant.Id);
+                var functions = kernel.ImportFunctions(assistant, assistant.Id);
                 foreach (var function in functions.Values)
                 {
                     yield return function;
@@ -83,11 +83,11 @@ public static class Example71_AssistantDelegation
             DisplayMessage(messageUser);
 
             var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
-            DisplayMessage(assistantMessages);
+            DisplayMessages(assistantMessages);
         }
     }
 
-    private static void DisplayMessage(IEnumerable<IChatMessage> messages)
+    private static void DisplayMessages(IEnumerable<IChatMessage> messages)
     {
         foreach (var message in messages)
         {
