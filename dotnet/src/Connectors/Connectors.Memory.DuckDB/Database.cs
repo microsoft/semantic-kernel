@@ -121,23 +121,24 @@ internal sealed class Database
             SELECT key, metadata, timestamp, embedding, (embedding <=> {embeddingArrayString}) as score FROM {TableName}
             WHERE collection=?1 AND len(embedding) > 0 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
             ORDER BY score DESC
-            LIMIT {limit};";
+            LIMIT ?2;";
 
         cmd.Parameters.Add(new DuckDBParameter(collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(limit));
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            string key = dataReader.GetString("key");
+            string key = dataReader.GetFieldValue<string>("key");
             if (string.IsNullOrWhiteSpace(key))
             {
                 continue;
             }
 
-            string metadata = dataReader.IsDBNull("metadata") ? string.Empty : dataReader.GetString("metadata");
-            float[] embeddingFromSearch = dataReader.IsDBNull("embedding") ? Array.Empty<float>() : ((dataReader.GetValue("embedding") as List<float>)?.ToArray()) ?? Array.Empty<float>();
-            string timestamp = dataReader.IsDBNull("timestamp") ? string.Empty : dataReader.GetString("timestamp");
-            float score = dataReader.IsDBNull("score") ? 0f : dataReader.GetFloat("score");
+            string metadata = dataReader.GetFieldValue<string?>("metadata") ?? string.Empty;
+            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>?>("embedding")?.ToArray()) ?? Array.Empty<float>();
+            string timestamp = dataReader.GetFieldValue<string?>("timestamp") ?? string.Empty;
+            float score = dataReader.GetFieldValue<float?>("score") ?? 0f;
 
             yield return new DatabaseEntry
             {
@@ -166,9 +167,10 @@ internal sealed class Database
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            string metadata = dataReader.IsDBNull("metadata") ? string.Empty : dataReader.GetString("metadata");
-            float[] embeddingFromSearch = dataReader.IsDBNull("embedding") ? Array.Empty<float>() : ((dataReader.GetValue("embedding") as List<float>)?.ToArray()) ?? Array.Empty<float>();
-            string timestamp = dataReader.IsDBNull("timestamp") ? string.Empty : dataReader.GetString("timestamp");
+            string metadata = dataReader.GetFieldValue<string?>("metadata") ?? string.Empty;
+            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>?>("embedding")?.ToArray()) ?? Array.Empty<float>();
+            string timestamp = dataReader.GetFieldValue<string?>("timestamp") ?? string.Empty;
+
             return new DatabaseEntry
             {
                 Key = key,

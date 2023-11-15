@@ -24,6 +24,12 @@ internal static class DuckDBExtensions
         return reader.GetValue(ordinal);
     }
 
+    public static T GetFieldValue<T>(this DbDataReader reader, string fieldName)
+    {
+        int ordinal = reader.GetOrdinal(fieldName);
+        return reader.GetFieldValue<T>(ordinal);
+    }
+
     public static bool IsDBNull(this DbDataReader reader, string fieldName)
     {
         int ordinal = reader.GetOrdinal(fieldName);
