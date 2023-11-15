@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,18 +16,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class SKFunctionExtensions
 {
-    /// <summary>
-    /// Configure the LLM settings used by semantic function.
-    /// </summary>
-    /// <param name="skFunction">Semantic function</param>
-    /// <param name="requestSettings">Request settings</param>
-    /// <returns>Self instance</returns>
-    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
-    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
-    {
-        return skFunction.SetAIConfiguration(requestSettings);
-    }
-
     /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>

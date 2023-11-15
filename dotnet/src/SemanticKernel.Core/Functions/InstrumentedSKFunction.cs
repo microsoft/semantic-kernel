@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -158,24 +157,6 @@ internal sealed class InstrumentedSKFunction : ISKFunction
 
         return result;
     }
-
-    #endregion
-
-    #region Obsolete =======================================================================
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._function.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._function.SetAIService(serviceFactory);
 
     #endregion
 }

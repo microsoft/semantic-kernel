@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
@@ -669,10 +668,6 @@ public sealed class Plan : ISKFunction
         this.Function = function;
         this.Name = function.Name;
         this.Description = function.Description;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        this.RequestSettings = function.RequestSettings;
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
@@ -705,26 +700,4 @@ public sealed class Plan : ISKFunction
             return display;
         }
     }
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings { get; private set; }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
-    }
-
-    #endregion
 }

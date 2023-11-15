@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel;
 
@@ -38,12 +35,6 @@ public sealed class Kernel
     public ISKPluginCollection Plugins { get; }
 
     /// <summary>
-    /// Return a new instance of the kernel builder, used to build and configure kernel instances.
-    /// </summary>
-    [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
-    public static KernelBuilder Builder => new();
-
-    /// <summary>
     /// Reference to Http handler factory
     /// </summary>
     public IDelegatingHandlerFactory HttpHandlerFactory { get; }
@@ -63,60 +54,6 @@ public sealed class Kernel
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="plugins">The plugins.</param>
-    /// <param name="aiServiceProvider">AI Service Provider</param>
-    /// <param name="promptTemplateEngine">Prompt template engine</param>
-    /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory">HTTP handler factory</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="serviceSelector">AI Service selector</param>
-    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public Kernel(
-        ISKPluginCollection plugins,
-        IAIServiceProvider aiServiceProvider,
-        IPromptTemplateEngine? promptTemplateEngine,
-        ISemanticTextMemory memory,
-        IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null) : this(plugins, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
-    {
-        this.PromptTemplateEngine = promptTemplateEngine;
-    }
-
-    /// <summary>
-    /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
-    /// </summary>
-    /// <param name="plugins">The plugins.</param>
-    /// <param name="aiServiceProvider">AI Service Provider</param>
-    /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory">HTTP handler factory</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="serviceSelector">AI Service selector</param>
-    [Obsolete("This constructor is obsolete and will be removed in one of the next version of SK. Please use one of the available overload.")]
-    public Kernel(
-        ISKPluginCollection plugins,
-        IAIServiceProvider aiServiceProvider,
-        ISemanticTextMemory memory,
-        IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory? loggerFactory,
-        IAIServiceSelector? serviceSelector = null)
-    {
-        loggerFactory ??= NullLoggerFactory.Instance;
-
-        this.LoggerFactory = loggerFactory;
-        this.HttpHandlerFactory = httpHandlerFactory;
-        this._memory = memory;
-        this._aiServiceProvider = aiServiceProvider;
-        this.Plugins = plugins;
-        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
-
-        this._logger = loggerFactory.CreateLogger(typeof(Kernel));
-    }
-
-    /// <summary>
-    /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
-    /// </summary>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="plugins">The plugins.</param>
     /// <param name="serviceSelector">AI Service selector</param>
@@ -129,14 +66,13 @@ public sealed class Kernel
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this._aiServiceProvider = aiServiceProvider;
         this.Plugins = plugins ?? new SKPluginCollection();
         this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
+        this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
         this._logger = this.LoggerFactory.CreateLogger(typeof(Kernel));
-        this._memory = NullMemory.Instance;
     }
 
     /// <summary>
@@ -183,31 +119,9 @@ public sealed class Kernel
     }
 
     #region private ================================================================================
-    private ISemanticTextMemory _memory;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
-    #endregion
-
-    #region Obsolete ===============================================================================
-
-    /// <inheritdoc/>
-    [Obsolete("Use IPromptTemplateFactory instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public IPromptTemplateEngine? PromptTemplateEngine { get; }
-
-    /// <inheritdoc/>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISemanticTextMemory Memory => this._memory;
-
-    /// <inheritdoc/>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public void RegisterMemory(ISemanticTextMemory memory)
-    {
-        this._memory = memory;
-    }
     #endregion
 }

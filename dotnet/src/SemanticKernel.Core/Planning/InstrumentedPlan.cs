@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -139,24 +138,6 @@ internal sealed class InstrumentedPlan : ISKFunction
 
         return result;
     }
-
-    #endregion
-
-    #region Obsolete =======================================================================
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._plan.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._plan.SetAIService(serviceFactory);
 
     #endregion
 }
