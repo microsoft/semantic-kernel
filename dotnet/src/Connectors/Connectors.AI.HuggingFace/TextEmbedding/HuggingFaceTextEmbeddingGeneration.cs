@@ -70,17 +70,16 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
-
-        this._model = model;
-        this._endpoint = endpoint;
-        this._httpClient = httpClient;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? this._httpClient.BaseAddress.ToString());
-
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
+
+        this._model = model;
+        this._endpoint = endpoint;
+        this._httpClient = httpClient;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
 
     /// <inheritdoc/>
