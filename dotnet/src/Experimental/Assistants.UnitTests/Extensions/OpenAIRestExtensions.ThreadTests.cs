@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -14,25 +13,20 @@ using Xunit;
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
-public sealed class OpenAIRestExtensionsThreadTests : IDisposable
+public sealed class OpenAIRestExtensionsThreadTests
 {
     private const string BogusApiKey = "bogus";
     private const string TestThreadId = "threadId";
 
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
-    private readonly HttpResponseMessage _emptyResponse = new()
-    {
-        StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("{}"),
-    };
 
     public OpenAIRestExtensionsThreadTests()
     {
         this._mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._emptyResponse);
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
@@ -58,10 +52,5 @@ public sealed class OpenAIRestExtensionsThreadTests : IDisposable
         await this._restContext.DeleteThreadModelAsync(TestThreadId).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, OpenAIRestExtensions.GetThreadUrl(TestThreadId));
-    }
-
-    public void Dispose()
-    {
-        this._emptyResponse.Dispose();
     }
 }

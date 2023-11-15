@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -14,7 +13,7 @@ using Xunit;
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
-public sealed class OpenAIRestExtensionsMessagesTests : IDisposable
+public sealed class OpenAIRestExtensionsMessagesTests
 {
     private const string BogusApiKey = "bogus";
     private const string TestThreadId = "threadId";
@@ -23,18 +22,13 @@ public sealed class OpenAIRestExtensionsMessagesTests : IDisposable
 
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
-    private readonly HttpResponseMessage _emptyResponse = new()
-    {
-        StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("{}"),
-    };
 
     public OpenAIRestExtensionsMessagesTests()
     {
         this._mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._emptyResponse);
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
@@ -62,19 +56,13 @@ public sealed class OpenAIRestExtensionsMessagesTests : IDisposable
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId));
     }
 
-    /* TODO: Need to find a way around disposal of StringContent
     [Fact]
     public async Task GetSpecificMessageModelsAsync()
     {
         var messageIDs = new string[] { "1", "2", "3" };
 
-        await this._restContext.GetMessagesAsync(BogusThreadId, messageIDs).ConfigureAwait(true);
+        await this._restContext.GetMessagesAsync(TestThreadId, messageIDs).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, messageIDs.Length);
-    }*/
-
-    public void Dispose()
-    {
-        this._emptyResponse.Dispose();
     }
 }

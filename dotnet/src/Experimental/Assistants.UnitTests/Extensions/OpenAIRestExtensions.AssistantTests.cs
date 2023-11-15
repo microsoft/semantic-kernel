@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -15,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
-public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
+public sealed class OpenAIRestExtensionsAssistantTests
 {
     private const string BogusApiKey = "bogus";
     private const string TestAssistantId = "assistantId";
@@ -23,18 +22,13 @@ public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
     private readonly AssistantModel _assistantModel = new();
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
-    private readonly HttpResponseMessage _emptyResponse = new()
-    {
-        StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("{}"),
-    };
 
     public OpenAIRestExtensionsAssistantTests()
     {
         this._mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._emptyResponse);
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
@@ -57,9 +51,9 @@ public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
     [Fact]
     public async Task ListAssistantModelsAsync()
     {
-        await this._restContext.ListAssistantModelsAsync().ConfigureAwait(true);
+        await this._restContext.ListAssistantModelsAsync(10, false, "20").ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=20&order=desc");
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=10&order=desc&after=20");
     }
 
     [Fact]
@@ -68,10 +62,5 @@ public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
         await this._restContext.DeleteAssistantModelAsync(TestAssistantId).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, OpenAIRestExtensions.GetAssistantUrl(TestAssistantId));
-    }
-
-    public void Dispose()
-    {
-        this._emptyResponse.Dispose();
     }
 }

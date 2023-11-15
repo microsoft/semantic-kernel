@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Moq;
 using Xunit;
@@ -23,7 +24,7 @@ public sealed class KernelExtensionTests
         kernel.Object.GetAssistantTool(SinglePartToolName);
 
         kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Once());
-        kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+        kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>(), SinglePartToolName), Times.Never());
     }
 
     [Fact]
@@ -35,7 +36,20 @@ public sealed class KernelExtensionTests
 
         kernel.Object.GetAssistantTool(TwoPartToolName);
 
-        kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>()), Times.Never());
+        kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Never());
         kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Once());
+    }
+
+    [Fact]
+    public static void InvokeInvalidThreePartTool()
+    {
+        var mockFunctionCollection = new Mock<IReadOnlyFunctionCollection>();
+        var kernel = new Mock<IKernel>();
+        kernel.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
+
+        Assert.Throws<SKException>(() => kernel.Object.GetAssistantTool("i-am-not-valid"));
+
+        kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Never());
+        kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Never());
     }
 }

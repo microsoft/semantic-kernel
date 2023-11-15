@@ -15,7 +15,7 @@ using Xunit;
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
-public sealed class OpenAIRestExtensionsRunTests : IDisposable
+public sealed class OpenAIRestExtensionsRunTests
 {
     private const string BogusApiKey = "bogus";
     private const string TestAssistantId = "assistantId";
@@ -24,18 +24,13 @@ public sealed class OpenAIRestExtensionsRunTests : IDisposable
 
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
-    private readonly HttpResponseMessage _emptyResponse = new()
-    {
-        StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("{}"),
-    };
 
     public OpenAIRestExtensionsRunTests()
     {
         this._mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._emptyResponse);
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
@@ -71,10 +66,5 @@ public sealed class OpenAIRestExtensionsRunTests : IDisposable
         await this._restContext.AddToolOutputsAsync(TestThreadId, TestRunId, toolResults).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.GetRunToolOutput(TestThreadId, TestRunId));
-    }
-
-    public void Dispose()
-    {
-        this._emptyResponse.Dispose();
     }
 }
