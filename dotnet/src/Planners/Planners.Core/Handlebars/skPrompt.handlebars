@@ -59,7 +59,7 @@ The following helpers are available to you:
 
 ## Loop helpers
 If you need to loop through a list of values with `\{{#each}}`, you can use the following helpers:
-- {{{{raw}}}}`{{range}}`{{{{/raw}}}} – Generates a range of numbers from the given start to the given end.
+- {{{{raw}}}}`{{range}}`{{{{/raw}}}} – Generates a sequence of integral numbers within a specified range, inclusive of last value.
 - {{{{raw}}}}`{{array}}`{{{{/raw}}}} – Generates an array of values from the given values.
 
 IMPORTANT: `range` and `array` are the _only_ supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures, such as `array.push` or `range.length`.

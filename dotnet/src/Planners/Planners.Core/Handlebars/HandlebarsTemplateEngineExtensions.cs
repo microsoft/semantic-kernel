@@ -174,7 +174,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             var count = end - start;
 
             // Create array from start to end
-            var array = Enumerable.Range(start, count).Select(i => (object)i).ToList();
+            var array = Enumerable.Range(start, count).ToList();
 
             return array;
         });

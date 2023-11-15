@@ -94,7 +94,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
 
         // Assert
-        Assert.Equal("1234", result);
+        Assert.Equal("12345", result);
     }
 
     [Fact]
