@@ -26,7 +26,7 @@ internal static class ParameterTypeExtensions
 {
     /// <summary>
     /// Converts a type to a data class definition.
-    /// Primitive types will become a primitive type.
+    /// Primitive types will stay a primitive type.
     /// Complex types will become a data class.
     /// If there are nested complex types, the nested complex type will also be returned.
     /// Example:

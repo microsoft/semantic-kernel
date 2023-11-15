@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using System.Threading;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -14,12 +13,6 @@ public sealed class HandlebarsPlan
 {
     private readonly IKernel _kernel;
     private readonly string _template;
-
-    private class PlanResponse
-    {
-        [JsonPropertyName("response")]
-        public object Response { get; set; } = new();
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
