@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-//#define DISABLEHOST // Comment line to enable
+#define DISABLEHOST // Comment line to enable
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -14,6 +14,10 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 /// <summary>
 /// Dev harness for manipulating runs.
 /// </summary>
+/// <remarks>
+/// Comment out DISABLEHOST definition to enable tests.
+/// Not enabled by default.
+/// </remarks>
 public sealed class RunHarness
 {
 #if DISABLEHOST
