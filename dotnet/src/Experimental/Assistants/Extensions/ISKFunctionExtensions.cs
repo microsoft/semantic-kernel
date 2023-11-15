@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Json.More;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
@@ -41,7 +43,7 @@ internal static class ISKFunctionExtensions
                     return
                         new OpenAIParameter
                         {
-                            Type = p.Type?.Name ?? "string", // $$$
+                            Type = ConvertType(p.ParameterType),
                             Description = p.Description,
                         };
                 });
@@ -65,5 +67,25 @@ internal static class ISKFunctionExtensions
             };
 
         return payload;
+    }
+
+    private static string ConvertType(Type? type)
+    {
+        if (type == null || type == typeof(string))
+        {
+            return "string";
+        }
+
+        if (type.IsNumber())
+        {
+            return "number";
+        }
+
+        if (type.IsEnum)
+        {
+            return "enum";
+        }
+
+        return type.Name;
     }
 }
