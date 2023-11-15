@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Unit;
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 public sealed class KernelExtensionTests

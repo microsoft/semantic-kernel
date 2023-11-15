@@ -12,7 +12,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Unit;
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 public sealed class OpenAIRestExtensionsRunTests : IDisposable

@@ -8,7 +8,7 @@ using Moq;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
-internal static class UnitTestExtensions
+internal static class MockExtensions
 {
     public static void VerifyMock(this Mock<HttpMessageHandler> mockHandler, HttpMethod method, int times, string? uri = null)
     {
