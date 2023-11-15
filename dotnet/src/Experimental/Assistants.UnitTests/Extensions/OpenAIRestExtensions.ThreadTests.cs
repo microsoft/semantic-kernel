@@ -41,7 +41,7 @@ public sealed class OpenAIRestExtensionsThreadTests : IDisposable
     {
         await this._restContext.CreateThreadModelAsync().ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1,OpenAIRestExtensions.BaseThreadUrl);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseThreadUrl);
     }
 
     [Fact]
