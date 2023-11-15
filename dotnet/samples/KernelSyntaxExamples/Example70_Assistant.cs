@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Microsoft.SemanticKernel.Orchestration;
+using Plugins;
 using Resources;
 
 // ReSharper disable once InconsistentNaming
@@ -166,26 +167,5 @@ public static class Example70_Assistant
     {
         Console.WriteLine($"[{message.Id}]");
         Console.WriteLine($"# {message.Role}: {message.Content}");
-    }
-
-    private sealed class MenuPlugin
-    {
-        [SKFunction, Description("Provides a list of specials from the menu.")]
-        public string GetSpecials()
-        {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Chowder
-Special Drink: Chai Tea
-";
-        }
-
-        [SKFunction, Description("Provides the price of the requested menu item.")]
-        public string GetItemPrice(
-            [Description("The name of the menu item.")]
-            string menuItem)
-        {
-            return "$9.99";
-        }
     }
 }
