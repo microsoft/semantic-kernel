@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Planners.Handlebars;
 /// <summary>
 /// Represents a Handlebars planner.
 /// </summary>
-public class HandlebarsPlanner
+public sealed class HandlebarsPlanner
 {
     /// <summary>
     /// The key for the available kernel functions.

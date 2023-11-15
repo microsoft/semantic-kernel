@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
-internal class HandlebarsParameterTypeView
+internal sealed class HandlebarsParameterTypeView
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
