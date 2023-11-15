@@ -21,6 +21,8 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 
+#pragma warning disable SKEXP0001 // This is an experimental feature.
+
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
  */

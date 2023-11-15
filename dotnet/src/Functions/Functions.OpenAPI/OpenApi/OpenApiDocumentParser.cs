@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -240,7 +241,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
-                parameter.Description
+                parameter.Description,
+                parameter.Schema.ToJsonDocument()
             );
 
             result.Add(restParameter);
@@ -282,7 +284,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
     }
 
     /// <summary>
@@ -319,7 +321,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description);
+                propertySchema.Description,
+                propertySchema.ToJsonDocument());
 
             result.Add(property);
         }

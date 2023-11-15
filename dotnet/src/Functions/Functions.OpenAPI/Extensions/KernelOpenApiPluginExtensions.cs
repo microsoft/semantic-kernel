@@ -327,6 +327,7 @@ public static class KernelOpenApiPluginExtensions
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
                 IsRequired = p.IsRequired,
+                Schema = p.Schema,
             })
             .ToList();
 

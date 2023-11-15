@@ -310,11 +310,12 @@ public sealed class KernelFunctionFromMethod : ISKFunction
         return new MethodDetails
         {
             Function = Function,
-
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new ReturnParameterView(method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? ""),
+            ReturnParameter = new ReturnParameterView(
+                Description: method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+                ParameterType: method.ReturnType),
         };
     }
 
@@ -475,7 +476,8 @@ public sealed class KernelFunctionFromMethod : ISKFunction
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
                 defaultValue?.ToString() ?? string.Empty,
-                IsRequired: !parameter.IsOptional);
+                IsRequired: !parameter.IsOptional,
+                ParameterType: type);
 
             return (parameterFunc, parameterView);
         }

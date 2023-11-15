@@ -40,6 +40,15 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
+    /// <summary>Deserialization options for use with <see cref="ActionPlanResponse"/>.</summary>
+    private static readonly JsonSerializerOptions s_actionPlayResponseOptions = new()
+    {
+        AllowTrailingCommas = true,
+        DictionaryKeyPolicy = null,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        PropertyNameCaseInsensitive = true,
+    };
+
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
 
@@ -261,13 +270,7 @@ Goal: tell me a joke.
             string planJson = $"{{{match.Groups["Close"]}}}";
             try
             {
-                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    DictionaryKeyPolicy = null,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                    PropertyNameCaseInsensitive = true,
-                });
+                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
             }
             catch (Exception e)
             {
