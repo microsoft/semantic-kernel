@@ -39,7 +39,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with the default configuration.
+    /// Creates a new instance of <see cref="DelegatingHandler"/> with the default configuration.
     /// </summary>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>Returns the created handler</returns>
