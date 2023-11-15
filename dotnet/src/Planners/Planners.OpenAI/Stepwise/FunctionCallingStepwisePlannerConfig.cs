@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 #pragma warning disable IDE0130
@@ -19,6 +20,11 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     {
         this.MaxTokens = 4000;
     }
+
+    /// <summary>
+    /// Delegate to get the prompt template string for the step execution phase.
+    /// </summary>
+    public Func<string>? GetStepPromptTemplate { get; set; }
 
     /// <summary>
     /// The maximum number of iterations to allow in a plan.

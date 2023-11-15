@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -24,7 +25,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// <summary>
 /// A planner that uses OpenAI function calling in a stepwise manner to fulfill a user goal or question.
 /// </summary>
-public class FunctionCallingStepwisePlanner
+public sealed class FunctionCallingStepwisePlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="FunctionCallingStepwisePlanner"/> class.
@@ -46,8 +47,8 @@ public class FunctionCallingStepwisePlanner
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
-        this._initialPlanPrompt = EmbeddedResource.Read("Stepwise.InitialPlanPrompt.txt");
-        this._stepPrompt = EmbeddedResource.Read("Stepwise.StepPrompt.txt");
+        this._initialPlanPrompt = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.InitialPlanPrompt.txt");
+        this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
 
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
@@ -59,17 +60,11 @@ public class FunctionCallingStepwisePlanner
     /// <param name="question">The question to answer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result containing the model's response message and chat history.</returns>
-    /// <exception cref="SKException">If no goal found or failed to retrieve function from kernel.</exception>
     public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
         string question,
         CancellationToken cancellationToken = default)
     {
-        string planResponse = string.Empty;
-
-        if (string.IsNullOrEmpty(question))
-        {
-            throw new SKException("Goal not found.");
-        }
+        Verify.NotNullOrWhiteSpace(question);
 
         // Add the final answer function
         this._kernel.ImportFunctions(new UserInteraction(), "UserInteraction");
@@ -79,7 +74,6 @@ public class FunctionCallingStepwisePlanner
         string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* request settings */, cancellationToken).ConfigureAwait(false));
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
-        string resultContent = string.Empty;
 
         for (int i = 0; i < this.Config.MaxIterations; i++)
         {
@@ -94,90 +88,55 @@ public class FunctionCallingStepwisePlanner
             var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.AddAssistantMessage(chatResult);
 
-            OpenAIFunctionResponse? functionResponse = null;
-            try
+            // Check for function response
+            if (!this.TryGetFunctionResponse(chatResult, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
             {
-                functionResponse = chatResult.GetOpenAIFunctionResponse();
-            }
-            catch (JsonException)
-            {
-                var errorMessage = "That function call is invalid. Try something else!";
-                chatHistoryForSteps.AddUserMessage(errorMessage);
+                // No function response found. Either AI returned a chat message, or something went wrong when parsing the function.
+                // Log the error (if applicable), then let the planner continue.
+                if (functionResponseError is not null)
+                {
+                    chatHistoryForSteps.AddUserMessage(functionResponseError);
+                }
                 continue;
             }
 
-            if (functionResponse is null)
+            // Check for final answer in the function response
+            if (this.TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
             {
-                continue;
-            }
-
-            if (functionResponse.PluginName == "UserInteraction" && functionResponse.FunctionName == "SendFinalAnswer")
-            {
-                if (functionResponse.Parameters.Count > 0 && functionResponse.Parameters.TryGetValue("answer", out object valueObj))
+                if (finalAnswerError is not null)
                 {
-                    string resultStr = "";
-                    if (valueObj is string valueStr)
-                    {
-                        resultStr = valueStr;
-                    }
-                    else if (valueObj is JsonElement valueElement)
-                    {
-                        if (valueElement.ValueKind == JsonValueKind.String)
-                        {
-                            resultStr = valueElement.GetString() ?? "";
-                        }
-                        else
-                        {
-                            resultStr = valueElement.ToJsonString();
-                        }
-                    }
-
-                    return new FunctionCallingStepwisePlannerResult
-                    {
-                        FinalAnswer = resultStr.Trim(),
-                        ChatHistory = chatHistoryForSteps,
-                        Iterations = i + 1,
-                    };
+                    // We found a final answer, but failed to parse it properly.
+                    // Log the error message in chat history and let the planner try again.
+                    chatHistoryForSteps.AddUserMessage(finalAnswerError);
+                    continue;
                 }
 
-                var errorMessage = "Returned answer in incorrect format. Try again!";
-                chatHistoryForSteps.AddUserMessage(errorMessage);
-                continue;
+                // Success! We found a final answer, so return the planner result.
+                return new FunctionCallingStepwisePlannerResult
+                {
+                    FinalAnswer = finalAnswer,
+                    ChatHistory = chatHistoryForSteps,
+                    Iterations = i + 1,
+                };
             }
 
-            // Look up SKFunction
-            if (!this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
+            // Look up function in kernel
+            if (this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
             {
-                var errorMessage = $"Function {functionResponse.FullyQualifiedName} does not exist in the kernel. Try something else!";
-                chatHistoryForSteps.AddUserMessage(errorMessage);
-
-                continue;
+                try
+                {
+                    // Execute function and add to result to chat history
+                    var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
+                    chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
+                }
+                catch (SKException)
+                {
+                    chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
+                }
             }
-
-            // Execute function and add to chat history
-            try
+            else
             {
-                var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
-
-                if (result is RestApiOperationResponse apiResponse)
-                {
-                    resultContent = apiResponse.Content as string ?? string.Empty;
-                }
-                else if (result is string str)
-                {
-                    resultContent = str;
-                }
-                else
-                {
-                    resultContent = JsonSerializer.Serialize(result);
-                }
-
-                chatHistoryForSteps.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
-            }
-            catch (SKException)
-            {
-                var errorMessage = $"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!";
-                chatHistoryForSteps.AddUserMessage(errorMessage);
+                chatHistoryForSteps.AddUserMessage($"Function {functionResponse.FullyQualifiedName} does not exist in the kernel. Try something else!");
             }
         }
 
@@ -189,6 +148,8 @@ public class FunctionCallingStepwisePlanner
             Iterations = this.Config.MaxIterations,
         };
     }
+
+    #region private
 
     private async Task<IChatResult> GetCompletionWithFunctionsAsync(
             ChatHistory chatHistory,
@@ -235,7 +196,7 @@ public class FunctionCallingStepwisePlanner
     {
         var chatHistory = this._chatCompletion.CreateNewChat();
 
-        // Add system message with context about outputs of previous functions
+        // Add system message with context about the initial goal/plan
         var systemContext = this._kernel.CreateNewContext();
         systemContext.Variables.Set(GoalKey, goal);
         systemContext.Variables.Set(InitialPlanKey, initialPlan);
@@ -246,7 +207,72 @@ public class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-    #region private
+    private bool TryGetFunctionResponse(IChatResult chatResult, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
+    {
+        functionResponse = null;
+        errorMessage = null;
+        try
+        {
+            functionResponse = chatResult.GetOpenAIFunctionResponse();
+        }
+        catch (JsonException)
+        {
+            errorMessage = "That function call is invalid. Try something else!";
+        }
+
+        return functionResponse is not null;
+    }
+
+    private bool TryFindFinalAnswer(OpenAIFunctionResponse functionResponse, out string finalAnswer, out string? errorMessage)
+    {
+        finalAnswer = string.Empty;
+        errorMessage = null;
+
+        if (functionResponse.PluginName == "UserInteraction" && functionResponse.FunctionName == "SendFinalAnswer")
+        {
+            if (functionResponse.Parameters.Count > 0 && functionResponse.Parameters.TryGetValue("answer", out object valueObj))
+            {
+                finalAnswer = ParseObjectAsString(valueObj);
+            }
+            else
+            {
+                errorMessage = "Returned answer in incorrect format. Try again!";
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static string ParseObjectAsString(object? valueObj)
+    {
+        string resultStr = string.Empty;
+
+        if (valueObj is RestApiOperationResponse apiResponse)
+        {
+            resultStr = apiResponse.Content as string ?? string.Empty;
+        }
+        else if (valueObj is string valueStr)
+        {
+            resultStr = valueStr;
+        }
+        else if (valueObj is JsonElement valueElement)
+        {
+            if (valueElement.ValueKind == JsonValueKind.String)
+            {
+                resultStr = valueElement.GetString() ?? "";
+            }
+            else
+            {
+                resultStr = valueElement.ToJsonString();
+            }
+        }
+        else
+        {
+            resultStr = JsonSerializer.Serialize(valueObj);
+        }
+
+        return resultStr;
+    }
 
     /// <summary>
     /// The configuration for the StepwisePlanner
@@ -291,9 +317,9 @@ public class FunctionCallingStepwisePlanner
     #endregion private
 
     /// <summary>
-    /// Contains helper functions used by the <see cref="FunctionCallingStepwisePlanner"/>
+    /// Plugin used by the <see cref="FunctionCallingStepwisePlanner"/> to interact with the caller.
     /// </summary>
-    public class UserInteraction
+    public sealed class UserInteraction
     {
         /// <summary>
         /// This function is used by the <see cref="FunctionCallingStepwisePlanner"/> to indicate when the final answer has been found.
