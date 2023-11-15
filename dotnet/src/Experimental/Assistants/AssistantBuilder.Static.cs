@@ -20,23 +20,21 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public partial class AssistantBuilder
 {
     /// <summary>
-    /// Create a new assistant from a yaml template.
+    /// Create a new assistant from a yaml formatted string.
     /// </summary>
     /// <param name="apiKey">The OpenAI API key</param>
     /// <param name="model">The LLM name</param>
-    /// <param name="definitionPath">Path to a configuration file.</param>
+    /// <param name="yamlContent">YAML assistant definition.</param>
     /// <param name="functions">Functions to associate with the tool.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
-    public static async Task<IAssistant> FromTemplateAsync(
+    public static async Task<IAssistant> FromDefinitionAsync(
         string apiKey,
         string model,
-        string definitionPath,
+        string yamlContent,
         IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
-        var yamlContent = File.ReadAllText(definitionPath);
-
         var deserializer = new DeserializerBuilder().Build();
 
         var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(yamlContent);
@@ -50,6 +48,27 @@ public partial class AssistantBuilder
                 .WithFunctions(functions ?? Array.Empty<ISKFunction>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a new assistant from a yaml template.
+    /// </summary>
+    /// <param name="apiKey">The OpenAI API key</param>
+    /// <param name="model">The LLM name</param>
+    /// <param name="definitionPath">Path to a configuration file.</param>
+    /// <param name="functions">Functions to associate with the tool.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>The requested <see cref="IAssistant">.</see></returns>
+    public static Task<IAssistant> FromTemplateAsync(
+        string apiKey,
+        string model,
+        string definitionPath,
+        IEnumerable<ISKFunction>? functions = null,
+        CancellationToken cancellationToken = default)
+    {
+        var yamlContent = File.ReadAllText(definitionPath);
+
+        return FromDefinitionAsync(apiKey, model, yamlContent, functions, cancellationToken);
     }
 
     /// <summary>

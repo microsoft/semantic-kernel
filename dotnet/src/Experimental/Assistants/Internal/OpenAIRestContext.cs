@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 /// </summary>
 internal sealed class OpenAIRestContext
 {
+    private static readonly HttpClient s_defaultOpenAIClient = new();
     /// <inheritdoc/>
     public string ApiKey { get; }
 
@@ -23,7 +24,7 @@ internal sealed class OpenAIRestContext
     /// </summary>
     public OpenAIRestContext(string apiKey, Func<HttpClient>? clientFactory = null)
     {
-        this._clientFactory = clientFactory ??= () => new HttpClient();
+        this._clientFactory = clientFactory ??= () => s_defaultOpenAIClient;
 
         this.ApiKey = apiKey;
     }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -57,7 +58,7 @@ internal static class ISKFunctionExtensions
                         Description = function.Description,
                         Parameters =
                         {
-                            Properties = parameters,
+                            Properties = BinaryData.FromObjectAsJson(parameters),
                             Required = required,
                         }
                     },
