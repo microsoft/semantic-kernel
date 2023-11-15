@@ -1,0 +1,130 @@
+{{#message role="system"}}## Instructions
+Explain how to achieve the user's goal with the available helpers with a Handlebars template.
+
+## Example
+If the user wanted you to generate 10 random numbers and use them in another helper, you could answer with the following.{{/message}}
+{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal.
+
+## Goal
+I want you to generate 10 random numbers and send them to another helper.{{/message}}
+{{#message role="assistant"}}Here's the Handlebars template that achieves the goal:
+```handlebars
+{{!-- Step 1: initialize the variables --}}
+\{{set
+  "num1"
+  5
+}}
+\{{set
+  "num2"
+  10
+}}
+\{{set
+  "num3"
+  15
+}}
+{{!-- Step 2: call the Example-AddThreeNumbers helper with the variables and store the result --}}
+\{{set
+  "sum"
+  (Example{{reservedNameDelimiter}}AddThreeNumbers
+    num1=(get
+      "num1"
+    )
+    num2=(get
+      "num2"
+    )
+    num3=(get
+      "num3"
+    )
+  )
+}}
+{{!-- Step 3: output the result using the json helper --}}
+\{{json
+  (get
+    "sum"
+  )
+}}
+```{{/message}}
+{{#message role="system"}}Now let's try the real thing.{{/message}}
+{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
+
+## Goal
+{{goal}}
+
+## Out-of-the-box helpers
+The following helpers are available to you:
+- {{{{raw}}}}`{{#if}}{{/if}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{#unless}}{{/unless}}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{#with}}{{/with}}`{{{{/raw}}}}
+
+## Comparison helpers
+If you need to compare two values, you can use the following helpers:
+- {{{{raw}}}}`{{equal}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{lessThan}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{greaterThan}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{lessThanOrEqual}}`{{{{/raw}}}}
+- {{{{raw}}}}`{{greaterThanOrEqual}}`{{{{/raw}}}}
+
+To use the comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is less than the number `1`, you would use the following helper like so: `\{{#if (lessThan var 1)}}\{{/if}}`.
+
+## Variable helpers
+If you need to create or retrieve a variable, you can use the following helpers:
+- {{{{raw}}}}`{{set}}`{{{{/raw}}}} – Creates a variable with the given name and value. It does not print anything to the template, so you must use `\{{json}}` to print the value.
+- {{{{raw}}}}`{{get}}`{{{{/raw}}}} – Retrieves the value of a variable with the given name.
+- {{{{raw}}}}`{{json}}`{{{{/raw}}}} – Generates a JSON string from the given value; no need to use on strings.
+- {{{{raw}}}}`{{concat}}`{{{{/raw}}}} – Concatenates the given values into a string.
+
+{{#if complexTypeDefinitions}}
+## Complex types
+Before we get to custom helpers, let's learn about complex objects. Some helpers require arguments that are complex objects. The JSON schemas for these complex objects are defined below. If a helper requires a argument with a complex type, use the `set` helper to store the value before using it or one of its properties in another step.
+
+{{#each complexTypeDefinitions}}
+### {{Name}}:
+```json
+{
+{{#each Properties}}
+    "{{Name}}": {{Type.Name}},
+{{/each}}
+}
+```
+
+{{/each}}
+{{/if}}
+
+## Custom helpers
+Lastly, you also have the following Handlebars helpers that you can use to accomplish my goal.
+
+{{#each functions}}
+### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
+Description: {{Description}}
+Inputs:
+  {{#each Parameters}}
+    - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
+  {{/each}}
+{{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} {{../reservedNameDelimiter}} {{ReturnDescription}}--}}
+Output: string - The result of the helper.
+
+{{/each}}
+
+IMPORTANT: You can only use the helpers that are listed above. Do not use any other helpers that are not listed here. For example, do not use `\{{hash}}` or any `\{{Example}}` helpers, as they are not supported.{{/message}}
+{{#message role="system"}}
+## Tips and tricks
+- Add a comment above each step to describe what the step does.
+- Use the `\{{set}}` and `\{{get}}` helpers to save and retrieve the results of another helper so you can use it later in the template without wasting resources.
+- There are no initial variables available to you. You must create them yourself using the `\{{set}}` helper and then access them using `\{{get}}`.
+- Do not make up values. Use the helpers to generate the data you need or extract it from the goal.
+- Keep data well-defined. Each variable should have a unique name. Create and assign each variable only once.
+- Be extremely careful about types. For example, if you pass a boolean to a helper that expects a number, the template will error out.
+- This template has no built-in support for data structures. Do not try to use helpers like `array` because they will cause the template to fail.
+- There is no need to check your results in the template.
+- Do not nest sub-expressions or helpers because it will cause the template to error out.
+- Each step should contain only one helper call.
+
+## Start
+Now take a deep breath and accomplish the task:
+1. Be as efficient as possible while keeping the template readable and well-defined.
+2. Do not use helpers that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
+3. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
+4. The first steps should always be to initialize any variables you need.
+5. The template should use the \{{json}} helper at least once to output the result of the final step.
+6. Don't forget to use the tips and tricks otherwise the template will not work.
+7. Don't close the ``` handlebars block until you're done with all the steps.{{/message}}

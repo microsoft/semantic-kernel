@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Functions;
+namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
@@ -15,9 +14,11 @@ namespace Microsoft.SemanticKernel.Functions;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        if (modelSettings is null || modelSettings.Count == 0)
+        var serviceProvider = context.ServiceProvider;
+        var modelSettings = skfunction.ModelSettings;
+        if (modelSettings is null || !modelSettings.Any())
         {
             var service = serviceProvider.GetService<T>(null);
             if (service is not null)
@@ -33,6 +34,14 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
                 if (!string.IsNullOrEmpty(model.ServiceId))
                 {
                     var service = serviceProvider.GetService<T>(model.ServiceId);
+                    if (service is not null)
+                    {
+                        return (service, model);
+                    }
+                }
+                else if (!string.IsNullOrEmpty(model.ModelId))
+                {
+                    var service = this.GetServiceByModelId<T>(serviceProvider, model.ModelId!);
                     if (service is not null)
                     {
                         return (service, model);
@@ -57,5 +66,20 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
 
         var names = string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray());
         throw new SKException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
+    }
+
+    private T? GetServiceByModelId<T>(IAIServiceProvider serviceProvider, string modelId) where T : IAIService
+    {
+        var services = serviceProvider.GetServices<T>();
+        foreach (var service in services)
+        {
+            string? serviceModelId = service.GetModelId();
+            if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
+            {
+                return service;
+            }
+        }
+
+        return default;
     }
 }
