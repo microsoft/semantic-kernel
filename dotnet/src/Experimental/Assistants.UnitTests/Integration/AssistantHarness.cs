@@ -91,7 +91,7 @@ public sealed class AssistantHarness
     public async Task VerifyAssistantListAsync()
     {
         var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
-        var assistants = await context.ListAssistantsModelsAsync().ConfigureAwait(true);
+        var assistants = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var assistant in assistants)
         {
             this.DumpAssistant(assistant);
@@ -115,7 +115,7 @@ public sealed class AssistantHarness
             };
 
         var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
-        var assistants = await context.ListAssistantsModelsAsync().ConfigureAwait(true);
+        var assistants = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var assistant in assistants)
         {
             if (!string.IsNullOrWhiteSpace(assistant.Name) && names.Contains(assistant.Name))
