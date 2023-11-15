@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using SemanticKernel.UnitTests.XunitHelpers;
@@ -22,7 +21,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
 
-public sealed class BasicPromptTemplateTests
+public sealed class KernelPromptTemplateTests
 {
     private const string DateFormat = "M/d/yyyy";
     private readonly KernelPromptTemplateFactory _factory;
@@ -34,7 +33,7 @@ public sealed class BasicPromptTemplateTests
     private readonly Mock<IAIServiceProvider> _serviceProvider;
     private readonly Mock<IAIServiceSelector> _serviceSelector;
 
-    public BasicPromptTemplateTests(ITestOutputHelper testOutputHelper)
+    public KernelPromptTemplateTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);

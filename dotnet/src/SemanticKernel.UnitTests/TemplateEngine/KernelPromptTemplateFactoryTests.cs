@@ -2,12 +2,11 @@
 
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
-public sealed class BasicPromptTemplateFactoryTests
+public sealed class KernelPromptTemplateFactoryTests
 {
     [Fact]
     public void ItCreatesBasicPromptTemplateByDefault()
