@@ -2,39 +2,42 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants;
+using Resources;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
-/// TODO: @chris
+/// Showcase complex Open AI Assistant interactions using semantic kernel.
 /// </summary>
 public static class Example71_AssistantDelegation
 {
+    private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
+
     /// <summary>
-    /// Show how to combine multiple prompt template factories.
+    /// Show how to combine coordinate multiple assistants.
     /// </summary>
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Example71_AssistantDelegation ========");
 
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 
-        //IKernel kernel = new KernelBuilder()
-        //    .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-        //    .WithAzureOpenAIChatCompletionService(
-        //        deploymentName: chatDeploymentName,
-        //        endpoint: endpoint,
-        //        serviceId: "AzureOpenAIChat",
-        //        apiKey: apiKey)
-        //    .Build();
+        await RunWithDelegationAsync();
+    }
 
-        await Task.Delay(0);
+    private static async Task RunWithDelegationAsync()
+    {
+        Console.WriteLine("======== Example71_AssistantDelegation ========");
+
+        var definition = EmbeddedResource.Read("Assistants.ToolAssistant.yaml");
+        var assistant =
+            await AssistantBuilder.FromTemplateAsync(
+                TestConfiguration.OpenAI.ApiKey,
+                OpenAIFunctionEnabledModel,
+                definition);
     }
 }

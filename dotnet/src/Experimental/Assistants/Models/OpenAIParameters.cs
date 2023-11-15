@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -26,7 +27,7 @@ internal sealed class OpenAIParameters
     /// Set of parameters.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, OpenAIParameter> Properties { get; set; } = new Dictionary<string, OpenAIParameter>();
+    public BinaryData? Properties { get; set; }
 
     /// <summary>
     /// Set of parameters.

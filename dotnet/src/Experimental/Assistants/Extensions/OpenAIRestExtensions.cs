@@ -51,6 +51,7 @@ internal static partial class OpenAIRestExtensions
         object? payload,
         CancellationToken cancellationToken = default)
     {
+        var json = JsonSerializer.Serialize(payload);
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");

@@ -5,11 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Azure;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -94,10 +98,13 @@ internal sealed class Assistant : IAssistant
             functionCollection.AddFunction(function);
         }
 
+        var services = new AIServiceCollection();
+        services.SetService<IChatCompletion>(chatService);
+        services.SetService<ITextCompletion>(chatService);
         this.Kernel =
             new Kernel(
                 functionCollection,
-                aiServiceProvider: null!, // $$$
+                services.Build(),
                 memory: null!,
                 NullHttpHandlerFactory.Instance,
                 loggerFactory: null);
