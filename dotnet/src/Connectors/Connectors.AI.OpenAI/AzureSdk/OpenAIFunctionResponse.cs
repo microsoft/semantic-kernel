@@ -43,31 +43,24 @@ public class OpenAIFunctionResponse
     /// <returns>Instance of <see cref="OpenAIFunctionResponse"/>.</returns>
     public static OpenAIFunctionResponse FromFunctionCall(FunctionCall functionCall)
     {
-        try
+        OpenAIFunctionResponse response = new();
+        if (functionCall.Name.Contains(OpenAIFunction.NameSeparator))
         {
-            OpenAIFunctionResponse response = new();
-            if (functionCall.Name.Contains(OpenAIFunction.NameSeparator))
-            {
-                var parts = functionCall.Name.Split(new string[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
-                response.PluginName = parts[0];
-                response.FunctionName = parts[1];
-            }
-            else
-            {
-                response.FunctionName = functionCall.Name;
-            }
-
-            var parameters = JsonSerializer.Deserialize<Dictionary<string, object>>(functionCall.Arguments);
-            if (parameters is not null)
-            {
-                response.Parameters = parameters;
-            }
-
-            return response;
+            var parts = functionCall.Name.Split(new string[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            response.PluginName = parts[0];
+            response.FunctionName = parts[1];
         }
-        catch (Exception)
+        else
         {
-            throw;
+            response.FunctionName = functionCall.Name;
         }
+
+        var parameters = JsonSerializer.Deserialize<Dictionary<string, object>>(functionCall.Arguments);
+        if (parameters is not null)
+        {
+            response.Parameters = parameters;
+        }
+
+        return response;
     }
 }
