@@ -44,6 +44,7 @@ internal sealed class NativeFunction : ISKFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="schemaGenerator">Option schema generator</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
         MethodInfo method,
@@ -53,7 +54,8 @@ internal sealed class NativeFunction : ISKFunction
         string? description,
         IEnumerable<ParameterView>? parameters,
         ReturnParameterView? returnParameter,
-        ILoggerFactory? loggerFactory)
+        ILoggerFactory? loggerFactory,
+        IJsonSchemaGenerator? schemaGenerator)
     {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
@@ -68,7 +70,7 @@ internal sealed class NativeFunction : ISKFunction
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
 
-        MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger);
+        MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger, schemaGenerator);
         var result = new NativeFunction(
             methodDetails.Function,
             pluginName!,
@@ -236,7 +238,7 @@ internal sealed class NativeFunction : ISKFunction
         this.Description = description;
     }
 
-    private static MethodDetails GetMethodDetails(MethodInfo method, object? target, string pluginName, ILogger logger)
+    private static MethodDetails GetMethodDetails(MethodInfo method, object? target, string pluginName, ILogger logger, IJsonSchemaGenerator? schemaGenerator = null)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -268,7 +270,8 @@ internal sealed class NativeFunction : ISKFunction
         {
             (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam,
+                schemaGenerator);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -338,7 +341,8 @@ internal sealed class NativeFunction : ISKFunction
     /// </summary>
     private static (Func<SKContext, CancellationToken, object?>, ParameterView?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
+        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam,
+        IJsonSchemaGenerator? schemaGenerator = null)
     {
         Type type = parameter.ParameterType;
 
@@ -471,7 +475,7 @@ internal sealed class NativeFunction : ISKFunction
                 defaultValue?.ToString() ?? string.Empty,
                 IsRequired: !parameter.IsOptional,
                 ParameterType: parameter.ParameterType,
-                Schema: JsonSchemaGenerator.GenerateSchema(parameter.ParameterType, description));
+                Schema: schemaGenerator?.GenerateSchema(parameter.ParameterType, description));
 
             return (parameterFunc, parameterView);
         }

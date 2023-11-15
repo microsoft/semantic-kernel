@@ -27,6 +27,7 @@ public static class SKFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="schemaGenerator">The <see cref="IJsonSchemaGenerator"/> to use when generating jSOn schema for parameters. If null, no JSOn schema wull be added.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
         Delegate method,
@@ -35,8 +36,9 @@ public static class SKFunction
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ReturnParameterView? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        Create(method.Method, method.Target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null,
+        IJsonSchemaGenerator? schemaGenerator = null) =>
+        Create(method.Method, method.Target, pluginName, functionName, description, parameters, returnParameter, loggerFactory, schemaGenerator);
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -50,6 +52,7 @@ public static class SKFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="schemaGenerator">The <see cref="IJsonSchemaGenerator"/> to use when generating jSOn schema for parameters. If null, no JSOn schema wull be added.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static ISKFunction Create(
         MethodInfo method,
@@ -59,8 +62,9 @@ public static class SKFunction
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ReturnParameterView? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null,
+        IJsonSchemaGenerator? schemaGenerator = null) =>
+        NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory, schemaGenerator);
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
