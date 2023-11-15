@@ -137,7 +137,7 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
     {
-        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars");
+        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
         var variables = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},

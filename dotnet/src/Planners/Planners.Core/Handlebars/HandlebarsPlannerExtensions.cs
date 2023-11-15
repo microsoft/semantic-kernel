@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
@@ -16,10 +17,11 @@ public static class HandlebarsPlannerExtensions
     /// </summary>
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="fileName">The name of the file to read.</param>
+    /// <param name="additionalNameSpace">The name of the additional namespace.</param>
     /// <returns>The content of the file as a string.</returns>
-    public static string ReadPrompt(this HandlebarsPlanner planner, string fileName)
+    public static string ReadPrompt(this HandlebarsPlanner planner, string fileName, string? additionalNameSpace = "")
     {
-        using var stream = planner.ReadPromptStream(fileName);
+        using var stream = planner.ReadPromptStream(fileName, additionalNameSpace);
         using var reader = new StreamReader(stream);
 
         return reader.ReadToEnd();
@@ -30,11 +32,14 @@ public static class HandlebarsPlannerExtensions
     /// </summary>
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="fileName">The name of the file to read.</param>
+    /// <param name="additionalNamespace">The name of the additional namespace.</param>
     /// <returns>The stream for the given file name.</returns>
-    public static Stream ReadPromptStream(this HandlebarsPlanner planner, string fileName)
+    public static Stream ReadPromptStream(this HandlebarsPlanner planner, string fileName, string? additionalNamespace = "")
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = $"{planner.GetType().Namespace}.{fileName}";
+        var name = planner.GetType().Namespace;
+        var supplementalNamespace = !additionalNamespace.IsNullOrEmpty() ? $".{additionalNamespace}" : string.Empty;
+        var resourceName = $"{name}{supplementalNamespace}.{fileName}";
 
         return assembly.GetManifestResourceStream(resourceName)!;
     }

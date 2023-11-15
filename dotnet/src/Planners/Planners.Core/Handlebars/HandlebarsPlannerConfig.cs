@@ -18,14 +18,21 @@ public sealed class HandlebarsPlannerConfig : PlannerConfigBase
     public string? LastError { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether loops are allowed in the plan.
+    /// </summary>
+    public bool AllowLoops { get; set; } = true;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlannerConfig"/> class.
     /// </summary>
     public HandlebarsPlannerConfig(
         HandlebarsPlan? lastPlan = default,
-        string? lastError = default
+        string? lastError = default,
+        bool allowLoops = true
     )
     {
         this.LastPlan = lastPlan;
         this.LastError = lastError;
+        this.AllowLoops = allowLoops;
     }
 }

@@ -55,6 +55,9 @@
     <EmbeddedResource Include="Handlebars\skPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Handlebars\NoLoops\skPrompt.handlebars">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

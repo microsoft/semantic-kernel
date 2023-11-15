@@ -68,7 +68,10 @@ public static class Example65_HandlebarsPlanner
             kernel.ImportSemanticFunctionsFromDirectory(folder, pluginDirectoryNames);
         }
 
-        var planner = new HandlebarsPlanner(kernel);
+        // The gpt-35-turbo model does not handle loops well in the plans.
+        var allowLoopsInPlan = chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase) ? false : true;
+
+        var planner = new HandlebarsPlanner(kernel, new HandlebarsPlannerConfig() { AllowLoops = allowLoopsInPlan });
         Console.WriteLine($"Goal: {goal}");
 
         // Create the plan
