@@ -33,7 +33,11 @@ public partial class AssistantBuilder
         this._functions = new(12);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Create a <see cref="IAssistant"/> instance.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A new <see cref="IAssistant"/> instance.</returns>
     public async Task<IAssistant> BuildAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(this._model.Model))
@@ -55,7 +59,10 @@ public partial class AssistantBuilder
                 cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the OpenAI chat completion service (required).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
     {
         this._apiKey = apiKey;
@@ -64,7 +71,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Provide an httpclient (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithHttpClient(HttpClient httpClient)
     {
         this._httpClientProvider ??= () => httpClient;
@@ -72,7 +82,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the assistant description (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithDescription(string? description)
     {
         this._model.Description = description;
@@ -80,7 +93,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the assistant instructions (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithInstructions(string instructions)
     {
         this._model.Instructions = instructions;
@@ -88,7 +104,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the assistant metadata (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithMetadata(string key, object value)
     {
         this._model.Metadata[key] = value;
@@ -96,7 +115,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the assistant metdata (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithMetadata(IDictionary<string, object> metadata)
     {
         foreach (var kvp in metadata)
@@ -107,7 +129,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define the assistant name (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithName(string? name)
     {
         this._model.Name = name;
@@ -115,7 +140,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define functions associated with assistant instance (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithFunction(ISKFunction tool)
     {
         this._functions[tool.GetQualifiedName()] = tool;
@@ -123,7 +151,10 @@ public partial class AssistantBuilder
         return this;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Define functions associated with assistant instance (optional).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithFunctions(IEnumerable<ISKFunction> tools)
     {
         foreach (var tool in tools)
