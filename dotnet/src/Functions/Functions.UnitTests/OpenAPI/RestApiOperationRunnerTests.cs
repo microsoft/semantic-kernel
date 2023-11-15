@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1007,6 +1008,77 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
+    }
+
+    public class SchemaTestData : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return new object[] {
+                    "default",
+                    new (string, RestApiOperationResponse)[] {
+                        ("400", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    },
+            };
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationResponse)[] {
+                        ("200", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    },
+            };
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationResponse)[] {
+                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    },
+            };
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationResponse)[] {
+                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    },
+            };
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationResponse)[] {
+                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse2xx\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("200", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse200\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                    },
+            };
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(SchemaTestData))]
+    public async Task ItShouldReturnExpectedSchemaAsync(string expectedStatusCode, params (string, RestApiOperationResponse)[] responses)
+    {
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            null,
+            responses.ToDictionary(item => item.Item1, item => item.Item2)
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, new Dictionary<string, string>());
+
+        Assert.NotNull(result);
+        var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;
+        Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.Schema));
     }
 
     /// <summary>

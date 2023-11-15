@@ -271,7 +271,7 @@ public static class KernelOpenApiPluginExtensions
         RestApiOperationResponse? restOperationResponse = null;
         foreach (var response in operation.Responses)
         {
-            if (response.Key == "200" || response.Key == "default" || restOperationResponse == null)
+            if (response.Key == "200" || response.Key == "2XX" || (response.Key == "default" && restOperationResponse == null))
             {
                 restOperationResponse = response.Value;
 

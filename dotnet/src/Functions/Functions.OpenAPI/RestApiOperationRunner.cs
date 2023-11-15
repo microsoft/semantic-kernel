@@ -178,11 +178,20 @@ internal sealed class RestApiOperationRunner
         if (responses is not null)
         {
             var statusCodeKey = $"{(int)responseMessage.StatusCode}";
+
+            // Exact Match
             var matchingResponse = responses.FirstOrDefault(r => r.Key == statusCodeKey).Value;
 
+            // Wildcard match e.g. 2XX
             if (matchingResponse is null)
             {
-                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value; // todo add tests
+                matchingResponse = responses.FirstOrDefault(r => r.Key.EndsWith("X", StringComparison.InvariantCultureIgnoreCase) && statusCodeKey.StartsWith(r.Key.Substring(0, 1), StringComparison.InvariantCultureIgnoreCase)).Value;
+            }
+
+            // Default
+            if (matchingResponse is null)
+            {
+                matchingResponse = responses.FirstOrDefault(r => r.Key == "default").Value;
             }
 
             if (matchingResponse is not null)

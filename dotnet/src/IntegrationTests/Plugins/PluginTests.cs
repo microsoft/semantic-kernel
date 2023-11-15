@@ -104,7 +104,6 @@ public class PluginTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.IsValid());
         Assert.NotNull(result.Schema);
         Assert.NotNull(result.Content);
         Assert.True(result.IsValid());

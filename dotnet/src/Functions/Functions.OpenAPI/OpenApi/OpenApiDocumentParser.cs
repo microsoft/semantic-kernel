@@ -292,17 +292,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         foreach (var response in responses)
         {
             var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
-            if (mediaType == null)
-            {
-                // TODO -- use text/plain or application/json as default?
-                yield return (response.Key, new RestApiOperationResponse(string.Empty, string.Empty));
-            }
-            else
+            if (mediaType is not null)
             {
                 var matchingSchema = response.Value.Content[mediaType].Schema;
                 var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
 
-                // TODO - Kind of overloading `content` and `contentType` properties here.
                 yield return (response.Key, new RestApiOperationResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
             }
         }
