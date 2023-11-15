@@ -101,7 +101,7 @@ internal sealed class Database
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return dataReader.GetString("collection");
+            yield return dataReader.GetFieldValue<string>("collection");
         }
     }
 
@@ -135,10 +135,10 @@ internal sealed class Database
                 continue;
             }
 
-            string metadata = dataReader.GetFieldValue<string?>("metadata") ?? string.Empty;
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>?>("embedding")?.ToArray()) ?? Array.Empty<float>();
-            string timestamp = dataReader.GetFieldValue<string?>("timestamp") ?? string.Empty;
-            float score = dataReader.GetFieldValue<float?>("score") ?? 0f;
+            string metadata = dataReader.GetFieldValue<string>("metadata");
+            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            string timestamp = dataReader.GetFieldValue<string>("timestamp");
+            float score = dataReader.GetFieldValue<float>("score");
 
             yield return new DatabaseEntry
             {
@@ -167,9 +167,9 @@ internal sealed class Database
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            string metadata = dataReader.GetFieldValue<string?>("metadata") ?? string.Empty;
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>?>("embedding")?.ToArray()) ?? Array.Empty<float>();
-            string timestamp = dataReader.GetFieldValue<string?>("timestamp") ?? string.Empty;
+            string metadata = dataReader.GetFieldValue<string>("metadata");
+            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            string timestamp = dataReader.GetFieldValue<string>("timestamp");
 
             return new DatabaseEntry
             {
