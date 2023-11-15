@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Moq;
 using Xunit;
 

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    private const string BaseThreadUrl = $"{BaseUrl}/threads";
+    internal const string BaseThreadUrl = $"{BaseUrl}/threads";
 
     /// <summary>
     /// Create a new thread.
@@ -62,7 +62,7 @@ internal static partial class OpenAIRestExtensions
         return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
     }
 
-    private static string GetThreadUrl(string threadId)
+    internal static string GetThreadUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}";
     }

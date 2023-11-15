@@ -36,6 +36,6 @@ public sealed class KernelExtensionTests
         kernel.Object.GetAssistantTool(TwoPartToolName);
 
         kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>()), Times.Never());
-        kernel.Verify(x => x.Functions.GetFunction("Fake", "Bogus"), Times.Once());
+        kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Once());
     }
 }

@@ -92,7 +92,7 @@ internal static partial class OpenAIRestExtensions
     public static async Task<IEnumerable<ThreadMessageModel>> GetMessagesAsync(
         this OpenAIRestContext context,
         string threadId,
-        IList<string> messageIds,
+        IEnumerable<string> messageIds,
         CancellationToken cancellationToken = default)
     {
         var tasks =
@@ -107,12 +107,12 @@ internal static partial class OpenAIRestExtensions
         return tasks.Select(t => t.Result).ToArray();
     }
 
-    private static string GetMessagesUrl(string threadId)
+    internal static string GetMessagesUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}/messages";
     }
 
-    private static string GetMessagesUrl(string threadId, string messageId)
+    internal static string GetMessagesUrl(string threadId, string messageId)
     {
         return $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
     }

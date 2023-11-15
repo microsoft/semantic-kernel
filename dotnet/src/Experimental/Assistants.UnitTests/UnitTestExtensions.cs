@@ -10,21 +10,12 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 internal static class UnitTestExtensions
 {
-    public static void VerifyMock(this Mock<HttpMessageHandler> mockHandler, HttpMethod method, Uri uri, int times)
+    public static void VerifyMock(this Mock<HttpMessageHandler> mockHandler, HttpMethod method, int times, string? uri = null)
     {
         mockHandler.Protected().Verify(
             "SendAsync",
-            Times.Exactly(1), // We expectt a single request
-            ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == method
-                    && req.RequestUri == uri
-            ),
-            ItExpr.IsAny<CancellationToken>()
-        );
-    }
-
-    public static void VerifyMock(this Mock<HttpMessageHandler> mockHandler, HttpMethod method, string uri, int times)
-    {
-        mockHandler.VerifyMock(method, new Uri(uri), times);
+            Times.Exactly(times),
+            ItExpr.Is<HttpRequestMessage>(req => req.Method == method && (uri == null || req.RequestUri == new Uri(uri))),
+            ItExpr.IsAny<CancellationToken>());
     }
 }

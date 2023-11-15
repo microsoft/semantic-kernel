@@ -18,7 +18,7 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Unit;
 public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
 {
     private const string BogusApiKey = "bogus";
-    private const string BogusAssistantId = "bogus";
+    private const string TestAssistantId = "assistantId";
 
     private readonly AssistantModel _assistantModel = new();
     private readonly OpenAIRestContext _restContext;
@@ -43,15 +43,15 @@ public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
     {
         await this._restContext.CreateAssistantModelAsync(this._assistantModel).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, OpenAIRestExtensions.BaseAssistantUrl, 1);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseAssistantUrl);
     }
 
     [Fact]
     public async Task GetAssistantModelAsync()
     {
-        await this._restContext.GetAssistantModelAsync("bogus").ConfigureAwait(true);
+        await this._restContext.GetAssistantModelAsync(TestAssistantId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, OpenAIRestExtensions.GetAssistantUrl(BogusAssistantId), 1);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetAssistantUrl(TestAssistantId));
     }
 
     [Fact]
@@ -59,15 +59,15 @@ public sealed class OpenAIRestExtensionsAssistantTests : IDisposable
     {
         await this._restContext.ListAssistantModelsAsync().ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=20&order=desc", 1);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=20&order=desc");
     }
 
     [Fact]
     public async Task DeleteAssistantModelAsync()
     {
-        await this._restContext.DeleteAssistantModelAsync("bogus").ConfigureAwait(true);
+        await this._restContext.DeleteAssistantModelAsync(TestAssistantId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, OpenAIRestExtensions.GetAssistantUrl(BogusAssistantId), 1);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, OpenAIRestExtensions.GetAssistantUrl(TestAssistantId));
     }
 
     public void Dispose()

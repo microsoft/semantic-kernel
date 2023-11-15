@@ -99,7 +99,7 @@ internal static partial class OpenAIRestExtensions
         this OpenAIRestContext context,
         string threadId,
         string runId,
-        IList<ToolResultModel> results,
+        IEnumerable<ToolResultModel> results,
         CancellationToken cancellationToken = default)
     {
         var payload =
@@ -115,22 +115,22 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
-    private static string GetRunUrl(string threadId)
+    internal static string GetRunUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs";
     }
 
-    private static string GetRunUrl(string threadId, string runId)
+    internal static string GetRunUrl(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}";
     }
 
-    private static string GetRunStepsUrl(string threadId, string runId)
+    internal static string GetRunStepsUrl(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}/steps";
     }
 
-    private static string GetRunToolOutput(string threadId, string runId)
+    internal static string GetRunToolOutput(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}/submit_tool_outputs";
     }
