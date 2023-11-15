@@ -140,20 +140,6 @@ public sealed class Kernel
     }
 
     /// <summary>
-    /// Registers a custom function in the internal function collection.
-    /// </summary>
-    /// <param name="customFunction">The custom function to register.</param>
-    /// <returns>A C# function wrapping the function execution logic.</returns>
-    public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
-    {
-        Verify.NotNull(customFunction);
-
-        this.Plugins.Add(new SKPlugin($"plugin{Guid.NewGuid():N}", new[] { customFunction }));
-
-        return customFunction;
-    }
-
-    /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
