@@ -28,7 +28,7 @@ internal static partial class OpenAIRestExtensions
         string threadId,
         string assistantId,
         string? instructions = null,
-        IEnumerable<AssistantModel.ToolModel>? tools = null,
+        IEnumerable<ToolModel>? tools = null,
         CancellationToken cancellationToken = default)
     {
         var payload =

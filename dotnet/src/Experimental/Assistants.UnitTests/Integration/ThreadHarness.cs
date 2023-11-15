@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-//#define DISABLEHOST // Comment line to enable
+#define DISABLEHOST // Comment line to enable
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -14,6 +14,10 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 /// <summary>
 /// Dev harness for manipulating threads.
 /// </summary>
+/// <remarks>
+/// Comment out DISABLEHOST definition to enable tests.
+/// Not enabled by default.
+/// </remarks>
 public sealed class ThreadHarness
 {
 #if DISABLEHOST

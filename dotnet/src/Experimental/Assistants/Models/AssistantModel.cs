@@ -88,48 +88,4 @@ internal sealed record AssistantModel
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
-
-    /// <summary>
-    /// Tool entry
-    /// </summary>
-    public sealed record ToolModel
-    {
-        /// <summary>
-        /// Type of tool to have at assistant's disposition
-        /// </summary>
-        [JsonPropertyName("type")]
-        public string Type { get; init; } = string.Empty;
-
-        /// <summary>
-        /// The function definition for Type = 'function'.
-        /// </summary>
-        [JsonPropertyName("function")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public FunctionModel? Function { get; init; }
-    }
-
-    /// <summary>
-    /// Defines the function when ToolModel.Type == 'function'.
-    /// </summary>
-    public sealed record FunctionModel
-    {
-        /// <summary>
-        /// The function name.
-        /// </summary>
-        [JsonPropertyName("name")]
-        public string Name { get; init; } = string.Empty;
-
-        /// <summary>
-        /// The function description.
-        /// </summary>
-        [JsonPropertyName("description")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? Description { get; init; }
-
-        /// <summary>
-        /// The function description.
-        /// </summary>
-        [JsonPropertyName("parameters")]
-        public OpenAIParameters Parameters { get; init; } = OpenAIParameters.Empty;
-    }
 }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-//#define DISABLEHOST // Comment line to enable
+#define DISABLEHOST // Comment line to enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,6 +16,10 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 /// <summary>
 /// Dev harness for manipulating assistants.
 /// </summary>
+/// <remarks>
+/// Comment out DISABLEHOST definition to enable tests.
+/// Not enabled by default.
+/// </remarks>
 public sealed class AssistantHarness
 {
 #if DISABLEHOST

@@ -24,20 +24,20 @@ public partial class AssistantBuilder
     /// </summary>
     /// <param name="apiKey">The OpenAI API key</param>
     /// <param name="model">The LLM name</param>
-    /// <param name="yamlContent">YAML assistant definition.</param>
+    /// <param name="template">YAML assistant definition.</param>
     /// <param name="functions">Functions to associate with the tool.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
     public static async Task<IAssistant> FromDefinitionAsync(
         string apiKey,
         string model,
-        string yamlContent,
+        string template,
         IEnumerable<ISKFunction>? functions = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
 
-        var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(yamlContent);
+        var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(template);
 
         return
             await new AssistantBuilder()
