@@ -289,18 +289,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
     private static IEnumerable<(string, RestApiOperationResponse)> CreateRestApiOperationResponses(OpenApiResponses responses)
     {
-        if (responses == null)
-        {
-            yield break; // todo add tests
-        }
-
         foreach (var response in responses)
         {
-            if (response.Value == null)
-            {
-                yield break; // todo add tests
-            }
-
             var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
             if (mediaType == null)
             {
@@ -310,9 +300,10 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             else
             {
                 var matchingSchema = response.Value.Content[mediaType].Schema;
+                var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
 
                 // TODO - Kind of overloading `content` and `contentType` properties here.
-                yield return (response.Key, new RestApiOperationResponse(response.Value.Description ?? matchingSchema?.Description ?? string.Empty, mediaType, matchingSchema?.ToJsonDocument()));
+                yield return (response.Key, new RestApiOperationResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
             }
         }
     }
