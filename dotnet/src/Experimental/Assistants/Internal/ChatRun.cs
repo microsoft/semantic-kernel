@@ -143,7 +143,7 @@ internal sealed class ChatRun
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
             var variables = new ContextVariables();
-            if (string.IsNullOrWhiteSpace(functionDetails.Arguments))
+            if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
                 foreach (var argument in arguments)

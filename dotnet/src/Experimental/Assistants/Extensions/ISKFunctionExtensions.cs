@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
@@ -25,11 +24,11 @@ internal static class ISKFunctionExtensions
     /// </summary>
     /// <param name="function">The source function</param>
     /// <returns>An OpenAI tool model</returns>
-    public static AssistantModel.ToolModel ToToolModel(this ISKFunction function)
+    public static ToolModel ToToolModel(this ISKFunction function)
     {
         var view = function.Describe();
         var required = new List<string>(view.Parameters.Count);
-        var parameters =
+        var properties =
             view.Parameters.ToDictionary(
                 p => p.Name,
                 p =>
@@ -42,13 +41,13 @@ internal static class ISKFunctionExtensions
                     return
                         new OpenAIParameter
                         {
-                            Type = p.Type?.Name ?? nameof(System.String),
+                            Type = p.Type?.Name ?? "string", // $$$
                             Description = p.Description,
                         };
                 });
 
         var payload =
-            new AssistantModel.ToolModel
+            new ToolModel
             {
                 Type = "function",
                 Function =
@@ -57,10 +56,11 @@ internal static class ISKFunctionExtensions
                         Name = function.GetQualifiedName(),
                         Description = function.Description,
                         Parameters =
-                        {
-                            Properties = BinaryData.FromObjectAsJson(parameters),
-                            Required = required,
-                        }
+                                new OpenAIParameters
+                                {
+                                    Properties = properties,
+                                    Required = required,
+                                },
                     },
             };
 

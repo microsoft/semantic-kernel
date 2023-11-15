@@ -12,9 +12,9 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Unit;
 [Trait("Category", "Unit Tests")]
 public sealed class OpenAIRestExtensionsThreadTests
 {
-    private const string BogusApiKey = "bogus";
+    //private const string BogusApiKey = "bogus";
 
-    private HttpClient GetTestHttpClient() => new HttpClient();
+    //private HttpClient GetTestHttpClient() => new HttpClient();
 
     [Fact]
     public void Blah()

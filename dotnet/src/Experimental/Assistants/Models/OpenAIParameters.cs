@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -27,13 +26,14 @@ internal sealed class OpenAIParameters
     /// Set of parameters.
     /// </summary>
     [JsonPropertyName("properties")]
-    public BinaryData? Properties { get; set; }
+    public Dictionary<string, OpenAIParameter> Properties { get; set; } = new();
 
     /// <summary>
     /// Set of parameters.
     /// </summary>
     [JsonPropertyName("required")]
-    public List<string> Required { get; set; } = new List<string>();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<string>? Required { get; set; }
 }
 
 /// <summary>
@@ -52,5 +52,5 @@ internal sealed class OpenAIParameter
     /// </summary>
     [JsonPropertyName("description")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Description { get; init; }
+    public string? Description { get; set; }
 }

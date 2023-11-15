@@ -98,16 +98,14 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:AsFunction ========");
 
-        var definition = EmbeddedResource.Read("Assistants.ParrotAssistant.yaml");
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 OpenAIFunctionEnabledModel,
-                definition);
+                EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
         IKernel bootstraper = new KernelBuilder().Build();
-
-        var assistants = bootstraper.ImportFunctions(assistant, "Assistants");
+        var assistants = bootstraper.ImportFunctions(assistant, assistant.Id);
 
         var variables = new ContextVariables
         {
@@ -167,7 +165,7 @@ public static class Example70_Assistant
     private static void DisplayMessage(IChatMessage message)
     {
         Console.WriteLine($"[{message.Id}]");
-        Console.WriteLine($"# {message.Content}");
+        Console.WriteLine($"# {message.Role}: {message.Content}");
     }
 
     private sealed class MenuPlugin

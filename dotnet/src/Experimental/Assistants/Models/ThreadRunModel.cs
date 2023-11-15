@@ -120,18 +120,6 @@ internal sealed class ThreadRunModel
     public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
-    /// Tool entry
-    /// </summary>
-    public sealed class ToolModel
-    {
-        /// <summary>
-        /// Type of tool to have at assistant's disposition
-        /// </summary>
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
-    }
-
-    /// <summary>
     /// Run error information.
     /// </summary>
     public sealed class ErrorModel

@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Resources;
 
@@ -26,18 +29,69 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        await RunWithDelegationAsync();
+        IKernel bootstraper = new KernelBuilder().Build();
+
+        var assistant1 =
+            await AssistantBuilder.FromDefinitionAsync(
+                TestConfiguration.OpenAI.ApiKey,
+                model: OpenAIFunctionEnabledModel,
+                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"));
+
+        var assistant2 =
+            await AssistantBuilder.FromDefinitionAsync(
+                TestConfiguration.OpenAI.ApiKey,
+                model: OpenAIFunctionEnabledModel,
+                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"));
+
+        var helperAssistants = Import(assistant1, assistant2).ToArray();
+
+        var assistant3 =
+            await AssistantBuilder.FromDefinitionAsync(
+                TestConfiguration.OpenAI.ApiKey,
+                model: OpenAIFunctionEnabledModel,
+                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
+                functions: helperAssistants);
+
+        await ChatAsync(
+            assistant3,
+            "What's on the menu?");
+
+        IEnumerable<ISKFunction> Import(params IAssistant[] assistants)
+        {
+            foreach (var assistant in assistants)
+            {
+                var functions = bootstraper.ImportFunctions(assistant, assistant.Id);
+                foreach (var function in functions.Values)
+                {
+                    yield return function;
+                }
+            }
+        }
+    }
+    private static async Task ChatAsync(IAssistant assistant, params string[] messages)
+    {
+        var thread = await assistant.NewThreadAsync();
+        foreach (var message in messages)
+        {
+            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
+            DisplayMessage(messageUser);
+
+            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
+            DisplayMessage(assistantMessages);
+        }
     }
 
-    private static async Task RunWithDelegationAsync()
+    private static void DisplayMessage(IEnumerable<IChatMessage> messages)
     {
-        Console.WriteLine("======== Example71_AssistantDelegation ========");
+        foreach (var message in messages)
+        {
+            DisplayMessage(message);
+        }
+    }
 
-        var definition = EmbeddedResource.Read("Assistants.ToolAssistant.yaml");
-        var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                OpenAIFunctionEnabledModel,
-                definition);
+    private static void DisplayMessage(IChatMessage message)
+    {
+        Console.WriteLine($"[{message.Id}]");
+        Console.WriteLine($"# {message.Role}: {message.Content}");
     }
 }
