@@ -24,6 +24,10 @@ namespace Microsoft.SemanticKernel.Functions.Grpc;
 /// </summary>
 internal sealed class GrpcOperationRunner
 {
+    /// <summary>Serialization options that use a camel casing naming policy.</summary>
+    private static readonly JsonSerializerOptions s_camelCaseOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    /// <summary>Deserialization options that use case-insensitive property names.</summary>
+    private static readonly JsonSerializerOptions s_propertyCaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
@@ -87,7 +91,7 @@ internal sealed class GrpcOperationRunner
     /// <returns>The converted response.</returns>
     private static JsonObject ConvertResponse(object response, Type responseType)
     {
-        var content = JsonSerializer.Serialize(response, responseType, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var content = JsonSerializer.Serialize(response, responseType, s_camelCaseOptions);
 
         //First iteration allowing to associate additional metadata with the returned content.
         var result = new JsonObject();
@@ -159,7 +163,7 @@ internal sealed class GrpcOperationRunner
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var instance = JsonSerializer.Deserialize(payload, type, s_propertyCaseInsensitiveOptions);
         if (instance == null)
         {
             throw new SKException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
