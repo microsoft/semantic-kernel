@@ -11,6 +11,8 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
 {
+    // Used to quickly modify the chat model used by the planner. If null, will use the model defined in the test configuration.
+    // Ensure you are using a model that supports function calling: https://platform.openai.com/docs/guides/function-calling/supported-models
     internal static string? ChatModelOverride = null; //"gpt-35-turbo-0613"
 
     public static async Task RunAsync()
