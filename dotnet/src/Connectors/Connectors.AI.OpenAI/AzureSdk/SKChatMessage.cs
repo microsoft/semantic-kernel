@@ -7,11 +7,11 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
-/// Chat message representation from Semantic Kernel ChatMessageBase Abstraction
+/// Chat message representation from Semantic Kernel ChatMessage Abstraction
 /// </summary>
-public class SKChatMessage : ChatMessageBase
+public class SKChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessage
 {
-    private readonly ChatMessage? _message;
+    private readonly Azure.AI.OpenAI.ChatMessage? _message;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SKChatMessage"/> class.

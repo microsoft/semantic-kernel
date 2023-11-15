@@ -29,12 +29,12 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
         this._choice = choice;
     }
 
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var message = this._choice.Messages
             .FirstOrDefault(message => message.Role.Equals(AuthorRole.Assistant.Label, StringComparison.Ordinal));
 
-        return Task.FromResult<ChatMessageBase>(new SKChatMessage(message.Role, message.Content));
+        return Task.FromResult<ChatMessage>(new SKChatMessage(message.Role, message.Content));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)

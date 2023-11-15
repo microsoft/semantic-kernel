@@ -26,7 +26,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     }
 
     /// <inheritdoc/>
-    public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public async Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
                                                 .LastOrDefaultAsync(cancellationToken)
@@ -41,7 +41,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {

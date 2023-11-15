@@ -55,7 +55,7 @@ public sealed class MyChatCompletionService : IChatCompletion
 
 public class MyChatStreamingResult : IChatStreamingResult
 {
-    private readonly ChatMessageBase _message;
+    private readonly ChatMessage _message;
     private readonly MyRoles _role;
     public ModelResult ModelResult { get; private set; }
 
@@ -65,7 +65,7 @@ public class MyChatStreamingResult : IChatStreamingResult
         this._message = new MyChatMessage(role, content);
         this.ModelResult = new ModelResult(content);
     }
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)
@@ -78,7 +78,7 @@ public class MyChatStreamingResult : IChatStreamingResult
 
 public class MyChatResult : IChatResult
 {
-    private readonly ChatMessageBase _message;
+    private readonly ChatMessage _message;
     private readonly MyRoles _role;
     public ModelResult ModelResult { get; private set; }
 
@@ -89,13 +89,13 @@ public class MyChatResult : IChatResult
         this.ModelResult = new ModelResult(content);
     }
 
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._message);
     }
 }
 
-public class MyChatMessage : ChatMessageBase
+public class MyChatMessage : ChatMessage
 {
     public MyChatMessage(MyRoles role, string content) : base(new AuthorRole(role.ToString()), content)
     {
