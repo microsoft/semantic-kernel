@@ -116,7 +116,7 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
-    /// Define the assistant metdata (optional).
+    /// Define the assistant metadata (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithMetadata(IDictionary<string, object> metadata)
