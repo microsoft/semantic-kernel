@@ -132,7 +132,7 @@ internal sealed class RestApiOperationRunner
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses, cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
 
     #region private
@@ -144,7 +144,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="method">The HTTP request method.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
     /// <param name="payload">HTTP request payload.</param>
-    /// <param name="responses">The dictionary of expected responses.</param>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
@@ -152,7 +152,7 @@ internal sealed class RestApiOperationRunner
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         HttpContent? payload = null,
-        IDictionary<string, RestApiOperationResponse>? responses = null,
+        IDictionary<string, JsonDocument?>? expectedSchemas = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -180,7 +180,7 @@ internal sealed class RestApiOperationRunner
 
         var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
 
-        response.Schema ??= GetExpectedSchema(responses, responseMessage.StatusCode);
+        response.Schema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
         return response;
     }
@@ -323,10 +323,10 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
-    /// <param name="expectedSchemas">The dictionary of expected schemas.</param>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="statusCode">The status code.</param>
     /// <returns>The expected schema for the given status code.</returns>
-    private static JsonDocument? GetExpectedSchema(IDictionary<string, RestApiOperationResponse>? expectedSchemas, HttpStatusCode statusCode)
+    private static JsonDocument? GetExpectedSchema(IDictionary<string, JsonDocument?>? expectedSchemas, HttpStatusCode statusCode)
     {
         if (expectedSchemas is not null)
         {
@@ -349,7 +349,7 @@ internal sealed class RestApiOperationRunner
 
             if (matchingResponse is not null)
             {
-                return matchingResponse.Schema;
+                return matchingResponse;
             }
         }
 
