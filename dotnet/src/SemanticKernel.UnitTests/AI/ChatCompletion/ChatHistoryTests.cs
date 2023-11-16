@@ -50,26 +50,4 @@ public class ChatHistoryTests
             Assert.Equal(chatHistory[i].Content, chatHistoryDeserialised[i].Content);
         }
     }
-
-    //[Fact]
-    //public void ItAddMessageWithNullContent()
-    //{
-    //    // Arrange
-    //    var chatHistory = new ChatHistory();
-
-    //    // Act
-    //    chatHistory.AddMessage(AuthorRole.User, null);
-
-    //    // Assert
-    //}
-
-    //[Fact]
-    //public void ItCreateMessageWithNullContent()
-    //{
-    //    // Arrange
-    //    // Act
-    //    var chatMessage = new ChatMessage(AuthorRole.User, null);
-
-    //    // Assert
-    //}
 }

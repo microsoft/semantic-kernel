@@ -2,8 +2,8 @@
 
 using System;
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
