@@ -32,7 +32,7 @@ public static class FunctionViewExtensions
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType!, parameter.Description ?? string.Empty);
+            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? string.Empty);
             if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
