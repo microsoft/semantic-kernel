@@ -68,7 +68,7 @@ public class FunctionViewTests
     public void ItSupportsValidFunctionName()
     {
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(ValidFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -81,7 +81,7 @@ public class FunctionViewTests
     public void ItSupportsValidFunctionAsyncName()
     {
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
         FunctionView fv = function.Describe();
 
@@ -98,7 +98,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -119,7 +119,7 @@ public class FunctionViewTests
         { }
 
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -141,7 +141,7 @@ public class FunctionViewTests
         static void TestFunctionName(int p1, int p2) { }
 
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -163,7 +163,7 @@ public class FunctionViewTests
         static void TestFunctionName() { }
 
         // Act
-        var function = KernelFunctionFromMethod.Create(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionView fv = function.Describe();
@@ -178,7 +178,7 @@ public class FunctionViewTests
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
-        var function = KernelFunctionFromMethod.Create(Method(ValidFunctionName));
+        var function = SKFunction.FromMethod(Method(ValidFunctionName));
         var context = MockContext("");
         var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
     }

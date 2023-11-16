@@ -29,27 +29,8 @@ namespace Microsoft.SemanticKernel;
 /// Provides factory methods for creating <see cref="ISKFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class KernelFunctionFromMethod : ISKFunction
+internal sealed class SKFunctionFromMethod : ISKFunction
 {
-    /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
-    /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
-    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
-    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction Create(
-        Delegate method,
-        string? functionName = null,
-        string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        Create(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
-
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -77,10 +58,10 @@ public sealed class KernelFunctionFromMethod : ISKFunction
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance;
+        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunctionFromPrompt)) ?? NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
-        var result = new KernelFunctionFromMethod(
+        var result = new SKFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
             description ?? methodDetails.Description,
@@ -119,7 +100,7 @@ public sealed class KernelFunctionFromMethod : ISKFunction
         {
             // Invoke pre hook, and stop if skipping requested.
             this.CallFunctionInvoking(context);
-            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 if (this._logger.IsEnabled(LogLevel.Trace))
                 {
@@ -144,7 +125,7 @@ public sealed class KernelFunctionFromMethod : ISKFunction
             {
                 this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
                     this.Name,
-                    KernelFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                    SKFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
                     result.Value);
             }
 
@@ -221,7 +202,7 @@ public sealed class KernelFunctionFromMethod : ISKFunction
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
 
-    private KernelFunctionFromMethod(
+    private SKFunctionFromMethod(
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
@@ -372,7 +353,7 @@ public sealed class KernelFunctionFromMethod : ISKFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
                 ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory, null);
         }
 

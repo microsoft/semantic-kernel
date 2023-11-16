@@ -40,7 +40,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         ILoggerFactory? loggerFactory = null)
     {
         this._function = function;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedSKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
 
         this._executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: $"SK.Plugin.{this.Name}.ExecutionTime",
@@ -83,12 +83,12 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(KernelFunctionFromPrompt).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunctionFromPrompt).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(KernelFunctionFromPrompt).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunctionFromPrompt).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
