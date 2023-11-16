@@ -11,16 +11,13 @@ namespace Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
 
 internal static class ParameterViewExtensions
 {
-    public static bool isPrimitiveOrString(Type type) => type.IsPrimitive || type == typeof(string);
+    public static bool isPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
 
     /// <summary>
-    /// Converts a type to a data class definition.
-    /// Primitive types will become a primitive type.
+    /// Converts non-primitive types to a data class definition and returns a hash set of complex type view definitions.
     /// Complex types will become a data class.
     /// If there are nested complex types, the nested complex type will also be returned.
     /// Example:
-    /// Primitive type:
-    /// System.String -> string
     /// Complex type:
     /// class ComplexType:
     ///    propertyA: int
@@ -30,38 +27,25 @@ internal static class ParameterViewExtensions
     public static HashSet<HandlebarsParameterTypeView> ToHandlebarsParameterTypeView(this Type type)
     {
         var parameterTypes = new HashSet<HandlebarsParameterTypeView>();
-        if (isPrimitiveOrString(type))
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
         {
-            // Primitive types and string
-            parameterTypes.Add(new HandlebarsParameterTypeView()
-            {
-                Name = type.Name,
-            });
-        }
-        else if (type.IsEnum)
-        {
-            // Enum
-            parameterTypes.Add(new HandlebarsParameterTypeView()
-            {
-                Name = type.Name,
-            });
-        }
-        else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
-        {
+            // Async return type - need to extract the actual return type
             var actualReturnType = type.GenericTypeArguments[0]; // Actual Return Type
             var returnTypeProperties = actualReturnType.GetProperties();
 
-            // Enum
-            parameterTypes.Add(new HandlebarsParameterTypeView()
+            if (!isPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length != 0)
             {
-                Name = actualReturnType.Name,
-                IsComplexType = !isPrimitiveOrString(actualReturnType) && returnTypeProperties.Length != 0,
-                Properties = returnTypeProperties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
-            });
+                parameterTypes.Add(new HandlebarsParameterTypeView()
+                {
+                    Name = actualReturnType.Name,
+                    IsComplexType = true,
+                    Properties = returnTypeProperties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
+                });
 
-            parameterTypes.AddNestedComplexTypes(returnTypeProperties);
+                parameterTypes.AddNestedComplexTypes(returnTypeProperties);
+            }
         }
-        else if (type.IsClass)
+        else if (type.IsClass && type != typeof(string))
         {
             // Class
             var properties = type.GetProperties();
@@ -84,18 +68,11 @@ internal static class ParameterViewExtensions
         // Add nested complex types
         foreach (var property in properties)
         {
-            var propertyParameterTypes = property.PropertyType.ToHandlebarsParameterTypeView();
-            foreach (var propertyParameterType in propertyParameterTypes)
-            {
-                if (propertyParameterType.IsComplexType)
-                {
-                    parameterTypes.Add(propertyParameterType);
-                }
-            }
+            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeView());
         }
     }
 
-    public static bool isPrimitiveOrString(string type) =>
+    public static bool isPrimitiveOrStringType(string type) =>
         type == "string" || type == "number" || type == "integer" || type == "boolean" || type == "null";
 
     private static Type GetTypeFromSchema(string schemaType)
@@ -117,7 +94,7 @@ internal static class ParameterViewExtensions
     {
         var schema = parameter.Schema!;
         var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
-        if (isPrimitiveOrString(type))
+        if (isPrimitiveOrStringType(type))
         {
             return parameter with { ParameterType = GetTypeFromSchema(type), Schema = null };
         }

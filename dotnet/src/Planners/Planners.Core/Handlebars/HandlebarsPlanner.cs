@@ -131,6 +131,7 @@ public sealed class HandlebarsPlanner
     {
         if (parameter.Schema != null)
         {
+            // Parse the schema to filter out any primitive types
             var parsedParameter = parameter.ParseJsonSchema();
             if (parsedParameter.Schema != null)
             {
@@ -141,12 +142,6 @@ public sealed class HandlebarsPlanner
         }
         else if (parameter.ParameterType != null)
         {
-            var type = parameter.ParameterType;
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
-            {
-                parameter = parameter with { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
-            }
-
             this._parameterTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
         }
 

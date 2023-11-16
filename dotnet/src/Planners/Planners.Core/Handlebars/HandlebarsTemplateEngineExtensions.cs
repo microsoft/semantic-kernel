@@ -132,7 +132,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             foreach (var v in variables)
             {
                 var value = v.Value ?? "";
-                var varString = !ParameterViewExtensions.isPrimitiveOrString(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
+                var varString = !ParameterViewExtensions.isPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
                 if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
                 {
                     executionContext.Variables[v.Key] = varString;
