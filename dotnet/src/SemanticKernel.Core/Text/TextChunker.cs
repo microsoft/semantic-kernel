@@ -210,7 +210,7 @@ public static class TextChunker
     {
         var result = new List<string>();
 
-        text = text.NormalizeLineEndings();
+        text = text.Replace("\r\n", "\n"); // normalize line endings
         result.Add(text);
         for (int i = 0; i < splitOptions.Length; i++)
         {

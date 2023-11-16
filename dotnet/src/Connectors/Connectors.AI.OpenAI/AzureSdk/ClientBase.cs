@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Prompt;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -338,7 +337,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            Prompts = { text.NormalizeLineEndings() },
+            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
@@ -392,7 +391,7 @@ public abstract class ClientBase
                 options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
             }
             else if (requestSettings.FunctionCall != OpenAIRequestSettings.FunctionCallNone
-                    && !requestSettings.FunctionCall.IsNullOrEmpty())
+                    && !string.IsNullOrEmpty(requestSettings.FunctionCall))
             {
                 var filteredFunctions = requestSettings.Functions
                     .Where(f => f.FullyQualifiedName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
