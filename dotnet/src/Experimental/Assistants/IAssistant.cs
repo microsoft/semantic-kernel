@@ -65,4 +65,11 @@ public interface IAssistant
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
     Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets an existing assistant chat thread.
+    /// </summary>
+    /// <param name="id">The id of the existing chat thread.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default);
 }
