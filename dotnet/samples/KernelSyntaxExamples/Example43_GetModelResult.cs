@@ -34,8 +34,8 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync("Sci-fi",
-            kernel,
+        var functionResult = await myFunction.InvokeAsync(kernel,
+            "Sci-fi",
             requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(functionResult.GetValue<string>());

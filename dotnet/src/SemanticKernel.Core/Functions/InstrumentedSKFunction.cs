@@ -66,12 +66,13 @@ internal sealed class InstrumentedSKFunction : ISKFunction
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
+            this._function.InvokeAsync(kernel, context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
     #region private ================================================================================

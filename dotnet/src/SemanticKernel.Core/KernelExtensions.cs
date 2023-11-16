@@ -520,7 +520,7 @@ repeat:
             {
                 var functionDetails = skFunction.Describe();
 
-                functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount, logger))
                 {

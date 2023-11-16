@@ -557,7 +557,7 @@ public sealed class PlanTests : IDisposable
         plan.Outputs.Add("EMAIL_RESULT");
 
         //Act
-        var result = await plan.InvokeAsync(input, target);
+        var result = await plan.InvokeAsync(target, input);
 
         // Assert
         Assert.NotNull(result);

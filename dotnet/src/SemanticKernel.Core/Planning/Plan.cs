@@ -278,6 +278,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -296,7 +297,7 @@ public sealed class Plan : ISKFunction
             // Execute the step
             result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, cancellationToken)
+                .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
         }

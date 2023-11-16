@@ -91,6 +91,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
     /// <inheritdoc/>
     async Task<FunctionResult> ISKFunction.InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken)
@@ -115,7 +116,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             }
 
             // Invoke the function.
-            var result = await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            var result = await this._function(null, requestSettings, kernel, context, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post hook.
             result = this.CallFunctionInvoked(result, context);
@@ -188,6 +189,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
         AIRequestSettings? requestSettings,
+        Kernel kernel,
         SKContext context,
         CancellationToken cancellationToken);
 
@@ -251,13 +253,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         var parameters = method.GetParameters();
 
         // Get marshaling funcs for parameters and build up the parameter views.
-        var parameterFuncs = new Func<SKContext, CancellationToken, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
+        var parameterFuncs = new Func<Kernel, SKContext, CancellationToken, object?>[parameters.Length];
+        bool sawFirstParameter = false, hasKernelParam = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+                ref sawFirstParameter, ref hasKernelParam, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -271,13 +273,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         Func<string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, Kernel kernel, SKContext context, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = parameterFuncs[i](context, cancellationToken);
+                args[i] = parameterFuncs[i](kernel, context, cancellationToken);
             }
 
             // Invoke the method.
@@ -325,40 +327,46 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
-    private static (Func<SKContext, CancellationToken, object?>, ParameterView?) GetParameterMarshalerDelegate(
+    private static (Func<Kernel, SKContext, CancellationToken, object?>, ParameterView?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
+        ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
         // Handle special types based on SKContext data. These can each show up at most once in the method signature,
-        // with the SKContext itself or the primary data from it mapped directly into the method's parameter.
+        // with the Kernel or/and the SKContext itself or the primary data from it mapped directly into the method's parameter.
         // They do not get parameter views as they're not supplied from context variables.
+
+        if (type == typeof(Kernel))
+        {
+            TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
+            return (static (Kernel kernel, SKContext context, CancellationToken _) => kernel, null);
+        }
 
         if (type == typeof(SKContext))
         {
             TrackUniqueParameterType(ref hasSKContextParam, method, $"At most one {nameof(SKContext)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context, null);
+            return (static (Kernel kernel, SKContext context, CancellationToken _) => context, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
-                ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
+                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
+                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context.Culture, null);
+            return (static (Kernel kernel, SKContext context, CancellationToken _) => context.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (SKContext _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (Kernel kernel, SKContext _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
         // Handle context variables. These are supplied from the SKContext's Variables dictionary.
@@ -409,7 +417,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            object? parameterFunc(SKContext context, CancellationToken _)
+            object? parameterFunc(Kernel kernel, SKContext context, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
                 if (context.Variables.TryGetValue(name, out string? value))

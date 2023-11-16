@@ -54,7 +54,7 @@ Is it weekend time (weekend/not weekend)?
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new BasicPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(kernel.CreateNewContext());
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function

@@ -23,7 +23,7 @@ public static class Example27_SemanticFunctionsUsingChatGPT
         var func = kernel.CreateFunctionFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter", kernel);
+        var result = await func.InvokeAsync(kernel, "Jupiter");
         Console.WriteLine(result.GetValue<string>());
 
         /*

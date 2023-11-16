@@ -104,7 +104,7 @@ public sealed class ActionPlanner : IActionPlanner
 
         this._context.Variables.Update(goal);
 
-        FunctionResult result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)

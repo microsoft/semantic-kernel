@@ -72,50 +72,56 @@ public class ConversationSummaryPlugin
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<SKContext> SummarizeConversationAsync(
         [Description("A long conversation transcript.")] string input,
+        Kernel kernel,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._summarizeConversationFunction
-            .AggregatePartitionedResultsAsync(paragraphs, context);
+            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
     }
 
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
+    /// <param name="kernel">The kernel.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<SKContext> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
+        Kernel kernel,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._conversationActionItemsFunction
-            .AggregatePartitionedResultsAsync(paragraphs, context);
+            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
     }
 
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
+    /// <param name="kernel">The kernel.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<SKContext> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
+        Kernel kernel,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._conversationTopicsFunction
-            .AggregatePartitionedResultsAsync(paragraphs, context);
+            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
     }
 }

@@ -103,7 +103,7 @@ public sealed class OpenAICompletionTests : IDisposable
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
             new OpenAIRequestSettings());
 
-        var result = await func.InvokeAsync("Jupiter", target);
+        var result = await func.InvokeAsync(target, "Jupiter");
 
         Assert.NotNull(result);
         Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
@@ -270,7 +270,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, string.Join('.', Enumerable.Range(1, 40000))));
     }
 
     [Theory(Skip = "This test is for manual verification.")]

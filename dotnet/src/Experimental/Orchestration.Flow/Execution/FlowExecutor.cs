@@ -535,7 +535,7 @@ internal class FlowExecutor : IFlowExecutor
 
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
         {
-            var actionStep = await this._reActEngine.GetNextStepAsync(context, question, stepsTaken).ConfigureAwait(false);
+            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, context, question, stepsTaken).ConfigureAwait(false);
 
             if (actionStep is null)
             {

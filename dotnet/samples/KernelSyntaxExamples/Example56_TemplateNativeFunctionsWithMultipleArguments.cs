@@ -58,7 +58,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new BasicPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(context);
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, context);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function

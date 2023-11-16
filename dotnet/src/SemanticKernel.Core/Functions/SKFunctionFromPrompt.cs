@@ -138,6 +138,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -146,7 +147,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
             var serviceSelector = context.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
@@ -386,7 +387,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
 
             public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
-            public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default) =>
+            public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
                 Task.FromResult(this._templateText);
         }
     }
