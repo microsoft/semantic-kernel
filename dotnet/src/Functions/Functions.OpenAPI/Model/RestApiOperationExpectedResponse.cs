@@ -10,9 +10,9 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 public sealed class RestApiOperationExpectedResponse
 {
     /// <summary>
-    /// Gets the content of the response.
+    /// Gets the description of the response.
     /// </summary>
-    public object Description { get; }
+    public string Description { get; }
 
     /// <summary>
     /// Gets the media type of the response.

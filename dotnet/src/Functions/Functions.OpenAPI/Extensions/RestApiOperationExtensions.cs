@@ -63,7 +63,7 @@ internal static class RestApiOperationExtensions
         RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Description.ToString(), null, restOperationResponse.Schema) : null;
+            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Description, null, restOperationResponse.Schema) : null;
 
         return returnParameter;
     }
