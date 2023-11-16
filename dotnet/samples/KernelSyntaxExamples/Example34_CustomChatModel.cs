@@ -95,18 +95,11 @@ public class MyChatResult : IChatResult
     }
 }
 
-public class MyChatMessage : ChatMessage
-{
-    public MyChatMessage(MyRoles role, string content) : base(new AuthorRole(role.ToString()), content)
-    {
-    }
-}
-
 public class MyChatHistory : ChatHistory
 {
     public void AddMessage(MyRoles role, string message)
     {
-        this.Add(new MyChatMessage(role, message));
+        this.Add(new ChatMessage(new AuthorRole(role.ToString()), message));
     }
 }
 

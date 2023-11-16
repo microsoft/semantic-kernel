@@ -35,7 +35,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
     {
         var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
 
-        var result = new SKChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
+        var result = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
 
         return await Task.FromResult<ChatMessage>(result).ConfigureAwait(false);
     }

@@ -37,7 +37,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             throw new SKException("Unable to get chat message from stream");
         }
 
-        return new SKChatMessage(chatMessage);
+        return new AzureOpenAIChatMessage(chatMessage);
     }
 
     /// <inheritdoc/>
@@ -47,7 +47,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
         {
             if (message.FunctionCall is not null || message.Content is { Length: > 0 })
             {
-                yield return new SKChatMessage(message);
+                yield return new AzureOpenAIChatMessage(message);
             }
         }
     }

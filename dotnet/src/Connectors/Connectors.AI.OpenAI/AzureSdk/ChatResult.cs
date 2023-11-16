@@ -24,7 +24,7 @@ internal sealed class ChatResult : IChatResult, ITextResult
     public ModelResult ModelResult { get; }
 
     public Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult<SemanticKernel.AI.ChatCompletion.ChatMessage>(new SKChatMessage(this._choice.Message));
+        => Task.FromResult<SemanticKernel.AI.ChatCompletion.ChatMessage>(new AzureOpenAIChatMessage(this._choice.Message));
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
