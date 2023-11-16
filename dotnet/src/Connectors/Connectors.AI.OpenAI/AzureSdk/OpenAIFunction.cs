@@ -8,7 +8,6 @@ using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Extensions;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -95,7 +94,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
+        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
 
     /// <summary>
     /// Description of the function
