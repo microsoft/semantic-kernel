@@ -31,7 +31,10 @@ public static class ChatStreamingResultExtensions
         {
             functionCall ??= message.FunctionCall;
 
-            arguments.Append(message.FunctionCall.Arguments);
+            if (message.FunctionCall?.Arguments is not null)
+            {
+                arguments.Append(message.FunctionCall.Arguments);
+            }
         }
 
         if (functionCall is null)

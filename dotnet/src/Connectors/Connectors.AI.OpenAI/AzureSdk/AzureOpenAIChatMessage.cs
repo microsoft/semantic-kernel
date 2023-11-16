@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -36,6 +35,5 @@ public class AzureOpenAIChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessa
     /// <summary>
     /// Exposes the underlying OpenAI SDK function call chat message representation
     /// </summary>
-    public FunctionCall FunctionCall
-        => this._message?.FunctionCall ?? throw new NotSupportedException("Function call is not supported");
+    public FunctionCall? FunctionCall => this._message?.FunctionCall;
 }
