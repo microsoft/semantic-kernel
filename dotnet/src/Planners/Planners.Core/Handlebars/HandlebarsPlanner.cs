@@ -58,15 +58,17 @@ public sealed class HandlebarsPlanner
     public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         var availableFunctions = this.GetAvailableFunctionsManual(cancellationToken);
-        var handlebarsTemplate = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions);
+        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions);
         var chatCompletion = this._kernel.GetService<IChatCompletion>();
+
+        // Console.WriteLine($"\nTemplate:\n{createPlanPrompt}");
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
-        MatchCollection matches = Regex.Matches(handlebarsTemplate, pattern, RegexOptions.Singleline);
+        MatchCollection matches = Regex.Matches(createPlanPrompt, pattern, RegexOptions.Singleline);
 
         // Add the chat history to the chat
-        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(handlebarsTemplate, chatCompletion);
+        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt, chatCompletion);
 
         // Get the chat completion results
         var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -80,24 +82,24 @@ public sealed class HandlebarsPlanner
             throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{resultContext.Result}");
         }
 
-        // Extract handlebars template from result
+        // Extract the proposed plan as a handlesbar template from result
         Match match = Regex.Match(resultContext.Result, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
         }
 
-        var template = match.Groups[2].Value.Trim();
+        var planTemplate = match.Groups[2].Value.Trim();
 
-        template = template.Replace("compare.equal", "equal");
-        template = template.Replace("compare.lessThan", "lessThan");
-        template = template.Replace("compare.greaterThan", "greaterThan");
-        template = template.Replace("compare.lessThanOrEqual", "lessThanOrEqual");
-        template = template.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
-        template = template.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.equal", "equal");
+        planTemplate = planTemplate.Replace("compare.lessThan", "lessThan");
+        planTemplate = planTemplate.Replace("compare.greaterThan", "greaterThan");
+        planTemplate = planTemplate.Replace("compare.lessThanOrEqual", "lessThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
 
-        template = MinifyHandlebarsTemplate(template);
-        return new HandlebarsPlan(this._kernel, template);
+        planTemplate = MinifyHandlebarsTemplate(planTemplate);
+        return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
     private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
@@ -136,6 +138,13 @@ public sealed class HandlebarsPlanner
         // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
         if (parameter.ParameterType is not null)
         {
+            // Async return type - need to extract the actual return type and override ParameterType property
+            var type = parameter.ParameterType;
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                parameter = parameter with { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
+            }
+
             this._parametersTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
         }
         else if (parameter.Schema is not null)

@@ -18,7 +18,7 @@ public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleCount;
 
-    private const string RemoteComplexDictionaryPluginName = "RemoteComplexDictionaryPlugin";
+    private const string CourseraPluginName = "CourseraPlugin";
 
     /// <summary>
     /// Show how to create a plan with Handlebars and execute it.
@@ -36,6 +36,8 @@ public static class Example65_HandlebarsPlanner
 
         // Using Complex Types as inputs and outputs
         await RunLocalDictionaryWithComplexTypesSampleAsync();
+
+        // TODO (@teresaqhoang): Enable this sample once complex types are supported for remote plugins return type.
         // await RunRemoteDictionaryWithComplexTypesSampleAsync();
     }
 
@@ -73,13 +75,12 @@ public static class Example65_HandlebarsPlanner
         {
             kernel.ImportFunctions(new ComplexDictionaryPlugin(), ComplexDictionaryPlugin.PluginName);
         }
-        else if (pluginDirectoryNames[0] == RemoteComplexDictionaryPluginName)
+        else if (pluginDirectoryNames[0] == CourseraPluginName)
         {
             await kernel.ImportOpenApiPluginFunctionsAsync(
-                RemoteComplexDictionaryPluginName,
-                "./Plugins/DictionaryPlugin/openapi.json",
-                new OpenApiFunctionExecutionParameters()
-            );
+                CourseraPluginName,
+                new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
+                );
         }
         else
         {
@@ -89,8 +90,14 @@ public static class Example65_HandlebarsPlanner
 
         // The gpt-35-turbo model does not handle loops well in the plans.
         var allowLoopsInPlan = !chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase);
+        var planner = new HandlebarsPlanner(
+            kernel,
+            new HandlebarsPlannerConfig()
+            {
+                // Change this if you want to test with loops regardless of model selection.
+                AllowLoops = allowLoopsInPlan
+            });
 
-        var planner = new HandlebarsPlanner(kernel, new HandlebarsPlannerConfig() { AllowLoops = allowLoopsInPlan });
         Console.WriteLine($"Goal: {goal}");
 
         // Create the plan
@@ -148,6 +155,7 @@ public static class Example65_HandlebarsPlanner
 
     private static async Task RunLocalDictionaryWithComplexTypesSampleAsync()
     {
+        // Test with Coursera APIs, which uses complex types as inputs and outputs. 
         WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
         await RunSampleAsync("Teach me two random words and their definition.", ComplexDictionaryPlugin.PluginName);
         /*
@@ -182,17 +190,15 @@ public static class Example65_HandlebarsPlanner
 
     private static async Task RunRemoteDictionaryWithComplexTypesSampleAsync()
     {
-        WriteSampleHeadingToConsole("Complex Types with Remote Dictionary Plugin");
+        WriteSampleHeadingToConsole("Complex Types with Coursera OpenAPI Plugin");
 
         try
         {
-            await RunSampleAsync("Teach me two random words and their definition.", RemoteComplexDictionaryPluginName);
+            await RunSampleAsync("I'd like to learn about prompt engineering. Please recommend some free courses.", CourseraPluginName);
         }
         catch (InvalidOperationException)
         {
-            // TODO (@teresaqhoang): Get a better remote plugin to test with.
-            // Expected `no server-url` error, plugin isn't actually hosted. Was testing to see how complex types render in template. 
-            Console.WriteLine($"======== DONE RunRemoteDictionaryWithComplexTypesSampleAsync ========");
+            Console.WriteLine("======== DONE RunRemoteDictionaryWithComplexTypesSampleAsync ========");
         }
     }
 

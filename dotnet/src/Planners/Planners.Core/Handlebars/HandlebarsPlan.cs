@@ -13,16 +13,19 @@ public sealed class HandlebarsPlan
 {
     private readonly IKernel _kernel;
     private readonly string _template;
+    private readonly string _createPlanPromptTemplate;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="template">The Handlebars template.</param>
-    public HandlebarsPlan(IKernel kernel, string template)
+    /// <param name="kernel">Kernel instance.</param>
+    /// <param name="template">A Handlebars template representing the plan.</param>
+    /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
+    public HandlebarsPlan(IKernel kernel, string template, string createPlanPromptTemplate)
     {
         this._kernel = kernel;
         this._template = template;
+        this._createPlanPromptTemplate = createPlanPromptTemplate;
     }
 
     /// <inheritdoc/>
