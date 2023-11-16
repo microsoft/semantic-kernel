@@ -268,9 +268,12 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
+        var returnParameter = operation.GetDefaultReturnParameter();
+
         var function = SKFunction.Create(
             method: ExecuteAsync,
             parameters: parameters,
+            returnParameter: returnParameter,
             description: operation.Description,
             pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
