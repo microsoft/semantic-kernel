@@ -89,10 +89,10 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        JsonDocument schemaBuilderDelegate(Type type, string description)
+        JsonDocument schemaBuilderDelegate(Type? type, string? description)
         {
             var schema = new JsonSchemaBuilder()
-                .FromType(type)
+                .FromType(type ?? typeof(string))
                 .Description(description ?? string.Empty)
                 .Build()
                 .ToJsonDocument();

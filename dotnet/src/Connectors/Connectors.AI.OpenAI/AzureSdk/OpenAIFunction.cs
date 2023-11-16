@@ -117,18 +117,7 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        JsonDocument schemaBuilderDelegate(Type type, string description)
-        {
-            var schema = new JsonSchemaBuilder()
-                .FromType(type)
-                .Description(description ?? string.Empty)
-                .Build()
-                .ToJsonDocument();
-
-            return schema;
-        }
-
-        JsonSchemaFunctionManual jsonSchemaManual = this.ToFunctionView().ToJsonSchemaManual(schemaBuilderDelegate, false);
+        JsonSchemaFunctionManual jsonSchemaManual = this.ToFunctionView().ToJsonSchemaManual(GetJsonSchemaDocument, false);
 
         return new FunctionDefinition
         {
@@ -136,5 +125,22 @@ public class OpenAIFunction
             Description = this.Description,
             Parameters = BinaryData.FromObjectAsJson(jsonSchemaManual.Parameters),
         };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
+    /// </summary>
+    /// <param name="type">The object Type.</param>
+    /// <param name="description">The object description.</param>
+    /// <returns></returns>
+    internal static JsonDocument GetJsonSchemaDocument(Type? type, string? description)
+    {
+        var schemaDocument = new JsonSchemaBuilder()
+                        .FromType(type ?? typeof(string))
+                        .Description(description ?? string.Empty)
+                        .Build()
+                        .ToJsonDocument();
+
+        return schemaDocument;
     }
 }
