@@ -64,7 +64,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
             }
         }
 
-        var names = string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray());
+        var names = modelSettings is not null ? string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray()) : null;
         throw new SKException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
     }
 
