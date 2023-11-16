@@ -59,6 +59,9 @@
     <None Update="OpenAI\TestData\image_generation_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="OpenAI\TestData\dalle_3_image_generation_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

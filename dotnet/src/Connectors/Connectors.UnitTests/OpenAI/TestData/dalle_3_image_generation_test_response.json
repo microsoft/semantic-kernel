@@ -1,0 +1,12 @@
+﻿{
+  "created": 1698116662,
+  "data": [
+    {
+      "url": "url to the image",
+      "revised_prompt": "the actual prompt that was used"
+    },
+    {
+      "url": "url to the image"
+    }
+  ]
+}
