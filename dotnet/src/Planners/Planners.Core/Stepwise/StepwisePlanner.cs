@@ -535,11 +535,13 @@ public class StepwisePlanner : IStepwisePlanner
             var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
             var resultObject = kernelResult.GetValue<object>();
 
-            var converter = TypeDescriptor.GetConverter(resultObject);
-
-            if (converter.CanConvertTo(typeof(string)))
+            if (resultObject is not null)
             {
-                result = converter.ConvertToString(resultObject);
+                var converter = TypeDescriptor.GetConverter(resultObject);
+                if (converter.CanConvertTo(typeof(string)))
+                {
+                    result = converter.ConvertToString(resultObject);
+                }
             }
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
