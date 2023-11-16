@@ -61,7 +61,7 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name!);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
