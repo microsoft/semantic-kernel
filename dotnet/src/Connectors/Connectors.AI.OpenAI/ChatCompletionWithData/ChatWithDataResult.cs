@@ -29,14 +29,14 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
         this._choice = choice;
     }
 
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var message = this._choice.Messages
             .FirstOrDefault(message => message.Role.Equals(AuthorRole.Assistant.Label, StringComparison.Ordinal));
 
         return message is not null ?
-            Task.FromResult<ChatMessageBase>(new SKChatMessage(message.Role, message.Content)) :
-            Task.FromException<ChatMessageBase>(new SKException("No message found"));
+            Task.FromResult<ChatMessage>(new AzureOpenAIChatMessage(message.Role, message.Content)) :
+            Task.FromException<ChatMessage>(new SKException("No message found"));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
