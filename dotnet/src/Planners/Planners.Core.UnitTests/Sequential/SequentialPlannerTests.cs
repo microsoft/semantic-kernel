@@ -120,16 +120,16 @@ public sealed class SequentialPlannerTests
         {
             new SKPlugin("email", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
             new SKPlugin("WriterPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
             new SKPlugin("SummarizePlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
         };
     }

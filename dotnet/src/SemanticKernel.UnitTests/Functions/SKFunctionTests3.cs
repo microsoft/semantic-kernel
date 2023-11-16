@@ -25,7 +25,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = (from method in methods select KernelFunctionFromMethod.Create(method, pluginInstance, "plugin")).ToArray();
+        ISKFunction[] functions = (from method in methods select SKFunction.FromMethod(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -65,7 +65,7 @@ public sealed class SKFunctionTests3
         {
             try
             {
-                KernelFunctionFromMethod.Create(method, instance, "plugin");
+                SKFunction.FromMethod(method, instance, "plugin");
             }
             catch (SKException)
             {
@@ -95,7 +95,7 @@ public sealed class SKFunctionTests3
         }
 
         // Act
-        ISKFunction function = KernelFunctionFromMethod.Create(
+        ISKFunction function = SKFunction.FromMethod(
             method: ExecuteAsync,
             parameters: null,
             description: "description",
@@ -130,7 +130,7 @@ public sealed class SKFunctionTests3
         }
 
         // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
-        ISKFunction function = KernelFunctionFromMethod.Create(
+        ISKFunction function = SKFunction.FromMethod(
             method: ExecuteAsync,
             description: "description",
             functionName: "functionName");

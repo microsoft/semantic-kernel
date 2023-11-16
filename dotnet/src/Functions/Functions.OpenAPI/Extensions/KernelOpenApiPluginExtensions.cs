@@ -259,7 +259,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
+    /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
     private static ISKFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
@@ -331,7 +331,7 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
-        return KernelFunctionFromMethod.Create(
+        return SKFunction.FromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,

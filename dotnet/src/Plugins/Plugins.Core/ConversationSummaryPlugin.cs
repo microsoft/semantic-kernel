@@ -28,7 +28,7 @@ public class ConversationSummaryPlugin
     /// </summary>
     public ConversationSummaryPlugin()
     {
-        this._summarizeConversationFunction = KernelFunctionFromPrompt.Create(
+        this._summarizeConversationFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             requestSettings: new AIRequestSettings()
@@ -41,7 +41,7 @@ public class ConversationSummaryPlugin
                 }
             });
 
-        this._conversationActionItemsFunction = KernelFunctionFromPrompt.Create(
+        this._conversationActionItemsFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             requestSettings: new AIRequestSettings()
@@ -54,7 +54,7 @@ public class ConversationSummaryPlugin
                 }
             });
 
-        this._conversationTopicsFunction = KernelFunctionFromPrompt.Create(
+        this._conversationTopicsFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             requestSettings: new AIRequestSettings()

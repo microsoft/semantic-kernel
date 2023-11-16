@@ -63,12 +63,12 @@ public class SKPluginCollectionTests
 
         SKPlugin plugin1 = new("name1", new[]
         {
-            KernelFunctionFromMethod.Create(() => { }, "Function1"),
-            KernelFunctionFromMethod.Create(() => { }, "Function2"),
+            SKFunction.FromMethod(() => { }, "Function1"),
+            SKFunction.FromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            KernelFunctionFromMethod.Create(() => { }, "Function3"),
+            SKFunction.FromMethod(() => { }, "Function3"),
         });
 
         c.Add(plugin1);
@@ -141,13 +141,13 @@ public class SKPluginCollectionTests
         {
             new SKPlugin("plugin1", new[]
             {
-                KernelFunctionFromMethod.Create(() => { }, "Function1"),
-                KernelFunctionFromMethod.Create(() => { }, "Function2"),
+                SKFunction.FromMethod(() => { }, "Function1"),
+                SKFunction.FromMethod(() => { }, "Function2"),
             }),
             new SKPlugin("plugin2", new[]
             {
-                KernelFunctionFromMethod.Create(() => { }, "Function2"),
-                KernelFunctionFromMethod.Create(() => { }, "Function3"),
+                SKFunction.FromMethod(() => { }, "Function2"),
+                SKFunction.FromMethod(() => { }, "Function3"),
             })
         };
 
@@ -171,12 +171,12 @@ public class SKPluginCollectionTests
     {
         SKPlugin plugin1 = new("name1", new[]
         {
-            KernelFunctionFromMethod.Create(() => { }, "Function1"),
-            KernelFunctionFromMethod.Create(() => { }, "Function2"),
+            SKFunction.FromMethod(() => { }, "Function1"),
+            SKFunction.FromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            KernelFunctionFromMethod.Create(() => { }, "Function3"),
+            SKFunction.FromMethod(() => { }, "Function3"),
         });
 
         var c = new SKPluginCollection(new[] { plugin1, plugin2 });
