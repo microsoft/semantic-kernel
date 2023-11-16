@@ -117,6 +117,12 @@ internal sealed class Assistant : IAssistant
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
+
     /// <summary>
     /// Marshal thread run through <see cref="ISKFunction"/> interface.
     /// </summary>
