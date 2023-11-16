@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -61,7 +60,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
-        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
@@ -651,7 +650,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
+    private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The prompt config to use for the system step

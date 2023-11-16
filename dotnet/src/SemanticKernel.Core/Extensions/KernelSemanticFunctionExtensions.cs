@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
@@ -25,6 +22,25 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelSemanticFunctionExtensions
 {
+    /// <summary>
+    /// Build and register a function in the internal function collection, in a global generic plugin.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="templateString">Prompt template string.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
+    public static ISKFunction RegisterSemanticFunction(
+        this IKernel kernel,
+        string functionName,
+        string templateString,
+        PromptTemplateConfig promptTemplateConfig)
+    {
+        var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory: kernel.LoggerFactory);
+        var promptTemplate = promptTemplateFactory.Create(templateString, promptTemplateConfig);
+        return kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, promptTemplate);
+    }
+
     /// <summary>
     /// Build and register a function in the internal function collection, in a global generic plugin.
     /// </summary>
@@ -127,7 +143,7 @@ public static class KernelSemanticFunctionExtensions
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
-        var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(kernel);
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
         IPromptTemplate promptTemplateInstance = factory.Create(promptTemplate, promptTemplateConfig);
 
         // TODO: manage overwrites, potentially error out
@@ -247,7 +263,7 @@ public static class KernelSemanticFunctionExtensions
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
-        var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(kernel);
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var functions = new Dictionary<string, ISKFunction>();
 
         ILogger? logger = null;
@@ -312,99 +328,6 @@ public static class KernelSemanticFunctionExtensions
             kernel.LoggerFactory
         );
     }
-
-    private const string BasicTemplateFactoryAssemblyName = "Microsoft.SemanticKernel.TemplateEngine.Basic";
-    private const string BasicTemplateFactoryTypeName = "BasicPromptTemplateFactory";
-    private static bool s_promptTemplateFactoryInitialized = false;
-    private static Type? s_promptTemplateFactoryType = null;
-
-    /// <summary>
-    /// Create a default prompt template factory.
-    ///
-    /// This is a temporary solution to avoid breaking existing clients.
-    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
-    ///
-    /// </summary>
-    /// <param name="kernel">Kernel instance</param>
-    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    private static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(IKernel kernel)
-    {
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (kernel.PromptTemplateEngine is not null)
-        {
-            return new PromptTemplateFactory(kernel.PromptTemplateEngine);
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        if (!s_promptTemplateFactoryInitialized)
-        {
-            s_promptTemplateFactoryType = GetPromptTemplateFactoryType();
-            s_promptTemplateFactoryInitialized = true;
-        }
-
-        if (s_promptTemplateFactoryType is not null)
-        {
-            var constructor = s_promptTemplateFactoryType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
-            if (constructor is not null)
-            {
-#pragma warning disable CS8601 // Null logger factory is OK
-                var factory = (IPromptTemplateFactory)constructor.Invoke(new object[] { kernel.LoggerFactory });
-                if (factory is not null)
-                {
-                    return factory;
-                }
-#pragma warning restore CS8601
-            }
-        }
-
-        return new NullPromptTemplateFactory();
-    }
-
-    /// <summary>
-    /// Get the prompt template engine type if available
-    /// </summary>
-    /// <returns>The type for the prompt template engine if available</returns>
-    private static Type? GetPromptTemplateFactoryType()
-    {
-        try
-        {
-            var assembly = Assembly.Load(BasicTemplateFactoryAssemblyName);
-
-            return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals(BasicTemplateFactoryTypeName, StringComparison.Ordinal) &&
-                type.GetInterface(nameof(IPromptTemplateFactory)) is not null);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            return null;
-        }
-    }
-
-    private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
-    {
-        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
-        {
-            return new NullPromptTemplate(templateString);
-        }
-    }
-
-    private sealed class NullPromptTemplate : IPromptTemplate
-    {
-        private readonly string _templateText;
-
-        public NullPromptTemplate(string templateText)
-        {
-            this._templateText = templateText;
-        }
-
-        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
-
-        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(this._templateText);
-        }
-    }
-
     #endregion
 
     #region Obsolete
