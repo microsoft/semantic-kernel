@@ -90,7 +90,7 @@ public sealed class Kernel
         CultureInfo? culture = null)
     {
         return new SKContext(
-            new FunctionRunner(this),
+            this,
             this._aiServiceProvider,
             this._aiServiceSelector,
             variables,

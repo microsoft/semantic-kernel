@@ -469,6 +469,29 @@ public static class KernelExtensions
     }
 
     /// <summary>
+    /// Run a plugin function.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="pluginName">The name of the plugin containing the function to run.</param>
+    /// <param name="functionName">The name of the function to run.</param>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function run.</returns>
+    public static Task<KernelResult> RunAsync(
+        this Kernel kernel,
+        string pluginName,
+        string functionName,
+        ContextVariables? variables = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        var function = kernel.Plugins.GetFunction(pluginName, functionName);
+
+        return kernel.RunAsync(function, variables, cancellationToken);
+    }
+
+    /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="kernel">The kernel.</param>

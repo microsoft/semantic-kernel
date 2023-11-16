@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.Planners.UnitTests;
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
     private static PlannerConfigBase InitializeConfig(Type t)
     {
         PlannerConfigBase? config = Activator.CreateInstance(t) as PlannerConfigBase;
@@ -55,12 +57,11 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(this._kernel, serviceProvider.Object, serviceSelector.Object, variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -135,12 +136,11 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, plugins);
+        var context = new SKContext(this._kernel, serviceProvider.Object, serviceSelector.Object, variables, plugins);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -205,12 +205,11 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables, plugins);
+        var context = new SKContext(this._kernel, serviceProvider.Object, serviceSelector.Object, variables, plugins);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -243,7 +242,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync(Type t)
     {
         // Arrange
-        var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
@@ -270,7 +268,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(this._kernel, serviceProvider.Object, serviceSelector.Object, variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";

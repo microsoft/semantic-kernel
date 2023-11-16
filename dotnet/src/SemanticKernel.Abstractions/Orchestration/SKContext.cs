@@ -49,7 +49,7 @@ public sealed class SKContext
     /// <summary>
     /// Executes functions using the current resources loaded in the context
     /// </summary>
-    public IFunctionRunner Runner { get; }
+    public Kernel Runner { get; }
 
     /// <summary>
     /// AI service provider
@@ -74,7 +74,7 @@ public sealed class SKContext
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="functionRunner">Function runner reference</param>
+    /// <param name="kernel">Kernel reference</param>
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
@@ -84,7 +84,7 @@ public sealed class SKContext
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IFunctionRunner functionRunner,
+        Kernel kernel,
         IAIServiceProvider serviceProvider,
         IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
@@ -94,9 +94,9 @@ public sealed class SKContext
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
-        Verify.NotNull(functionRunner, nameof(functionRunner));
+        Verify.NotNull(kernel, nameof(kernel));
 
-        this.Runner = functionRunner;
+        this.Runner = kernel;
         this.ServiceProvider = serviceProvider;
         this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();

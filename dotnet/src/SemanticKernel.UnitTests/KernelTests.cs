@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -551,6 +552,28 @@ public class KernelTests
             Assert.Equal($"Result{functionCancelIndex}", kernelResult.GetValue<string>());
         }
         Assert.Equal(expectedInvocations, numberOfInvocations);
+    }
+
+    [Fact]
+    public async Task ItCanFindAndRunFunctionAsync()
+    {
+        //Arrange
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+
+        var context = new SKContext(new Kernel(serviceProvider.Object), serviceProvider.Object, serviceSelector.Object, new ContextVariables());
+
+        var function = KernelFunctionFromMethod.Create(() => "fake result", "function");
+
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+
+        //Act
+        var result = await kernel.RunAsync("plugin", "function");
+
+        //Assert
+        Assert.NotNull(result);
+        Assert.Equal("fake result", result.GetValue<string>());
     }
 
     public class MyPlugin
