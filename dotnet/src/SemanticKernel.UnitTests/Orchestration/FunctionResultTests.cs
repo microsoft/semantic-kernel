@@ -14,13 +14,12 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IFunctionRunner> _functionRunner = new();
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
 
     private SKContext CreateContext()
     {
-        return new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        return new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
     }
 
     [Fact]

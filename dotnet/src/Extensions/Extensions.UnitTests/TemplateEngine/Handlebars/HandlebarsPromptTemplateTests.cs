@@ -23,7 +23,6 @@ public sealed class HandlebarsPromptTemplateTests
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySKPluginCollection> _functions;
     private readonly ITestOutputHelper _logger;
-    private readonly Mock<IFunctionRunner> _functionRunner;
     private readonly Mock<IAIServiceProvider> _serviceProvider;
     private readonly Mock<IAIServiceSelector> _serviceSelector;
 
@@ -35,7 +34,6 @@ public sealed class HandlebarsPromptTemplateTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
 
         this._functions = new Mock<IReadOnlySKPluginCollection>();
-        this._functionRunner = new Mock<IFunctionRunner>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
         this._serviceSelector = new Mock<IAIServiceSelector>();
     }

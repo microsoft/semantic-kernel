@@ -386,13 +386,14 @@ public sealed class Plan : ISKFunction
             // Execute the step
             var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
-            if (result is null)
+            var stepResult = result.FunctionResults.FirstOrDefault();
+            if (stepResult is null)
             {
                 // Step was cancelled
                 return null;
             }
 
-            var resultValue = result.Context.Result.Trim();
+            var resultValue = stepResult.Context.Result.Trim();
 
             #region Update State
 
@@ -415,7 +416,7 @@ public sealed class Plan : ISKFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Context.Variables.TryGetValue(item, out string? val))
+                if (stepResult.Context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -429,7 +430,7 @@ public sealed class Plan : ISKFunction
 
             this.NextStepIndex++;
 
-            return result;
+            return stepResult;
         }
 
         throw new InvalidOperationException("There isn't a next step");
