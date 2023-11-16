@@ -260,7 +260,7 @@ public static class KernelOpenApiPluginExtensions
         var parameters = restOperationParameters
             .Select(p => new ParameterView(p.AlternativeName ?? p.Name)
             {
-                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
+                Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
                 IsRequired = p.IsRequired,

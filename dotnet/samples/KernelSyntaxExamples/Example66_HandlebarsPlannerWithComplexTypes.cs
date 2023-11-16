@@ -88,39 +88,49 @@ public static class Example66_HandlebarsPlannerWithComplexTypes
         WriteSampleHeadingToConsole("Local Dictionary");
         await RunSampleAsync("Teach me two random words and their definition.");
         /*
-            Original plan:
-            {{!-- Step 1: Get a random word --}}
-            {{set "randomWord" (DictionaryPlugin-GetRandomWord)}}
+            Original Plan:
+            {{!-- Step 1: Get two random dictionary entries --}}
+            {{set "entry1" (DictionaryPlugin-GetRandomEntry)}}
+            {{set "entry2" (DictionaryPlugin-GetRandomEntry)}}
 
-            {{!-- Step 2: Get the definition of the random word --}}
-            {{set "definition" (DictionaryPlugin-GetDefinition word=(get "randomWord"))}}
+            {{!-- Step 2: Extract words from the entries --}}
+            {{set "word1" (DictionaryPlugin-GetWord entry=(get "entry1"))}}
+            {{set "word2" (DictionaryPlugin-GetWord entry=(get "entry2"))}}
 
-            {{!-- Step 3: Output the random word and its definition --}}
-            {{json (array (get "randomWord") (get "definition"))}}
+            {{!-- Step 3: Extract definitions for the words --}}
+            {{set "definition1" (DictionaryPlugin-GetDefinition word=(get "word1"))}}
+            {{set "definition2" (DictionaryPlugin-GetDefinition word=(get "word2"))}}
+
+            {{!-- Step 4: Display the words and their definitions --}}
+            Word 1: {{json (get "word1")}}
+            Definition: {{json (get "definition1")}}
+
+            Word 2: {{json (get "word2")}}
+            Definition: {{json (get "definition2")}}
 
             Result:
-            ["book","a set of printed or written pages bound together along one edge"]
+            Word 1: apple
+            Definition 1: a round fruit with red, green, or yellow skin and a white flesh
+
+            Word 2: dog
+            Definition 2: a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship
         */
     }
 
     private static async Task RunRemoteDictionarySampleAsync()
     {
         WriteSampleHeadingToConsole("Remote Dictionary");
-        await RunSampleAsync("Teach me two random words and their definition.", false);
-        /*
-            Original plan:
-            {{!-- Step 1: Get a random word --}}
-            {{set "randomWord" (DictionaryPlugin-GetRandomWord)}}
 
-            {{!-- Step 2: Get the definition of the random word --}}
-            {{set "definition" (DictionaryPlugin-GetDefinition word=(get "randomWord"))}}
-
-            {{!-- Step 3: Output the random word and its definition --}}
-            {{json (array (get "randomWord") (get "definition"))}}
-
-            Result:
-            ["book","a set of printed or written pages bound together along one edge"]
-        */
+        try
+        {
+            await RunSampleAsync("Teach me two random words and their definition.", false);
+        }
+        catch (InvalidOperationException)
+        {
+            // TODO (@teresaqhoang): Get a better remote plugin to test with.
+            // Expected `no server-url` error, plugin isn't actually hosted. Was testing to see how complex types render in template. 
+            Console.WriteLine($"======== DONE {nameof(Example66_HandlebarsPlannerWithComplexTypes)} ========");
+        }
     }
 
     /// <summary>

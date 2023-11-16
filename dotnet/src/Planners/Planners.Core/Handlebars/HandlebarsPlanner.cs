@@ -185,12 +185,13 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
     {
-        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
+        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
+                { "allowLoops", this._config.AllowLoops },
                 { "complexTypeDefinitions", this._parameterTypeView.Count > 0 && this._parameterTypeView.Any(p => p.IsComplexType) ? this._parameterTypeView.Where(p => p.IsComplexType) : null},
                 { "complexSchemaDefinitions", this._parameterSchemaView.Count > 0 ? this._parameterSchemaView : null},
                 { "lastPlan", this._config.LastPlan },

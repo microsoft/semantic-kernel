@@ -111,7 +111,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
                         foreach (var arg in arguments)
                         {
                             var param = functionView.Parameters[argIndex];
-                            if (IsExpectedParameterType(param.Type.ToString() ?? "", arg.GetType().Name, arg))
+                            if (param.Type == null || arg.GetType() == typeof(object) || IsExpectedParameterType(param.Type.ToString(), arg.GetType().Name, arg))
                             {
                                 variables[param.Name] = arguments[argIndex];
                                 argIndex++;
