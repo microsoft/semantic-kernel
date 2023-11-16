@@ -282,7 +282,6 @@ public static class KernelOpenApiPluginExtensions
         return kernel.RegisterCustomFunction(function);
     }
 
-
     /// <summary>
     /// Converts operation id to valid SK Function name.
     /// A function name can contain only ASCII letters, digits, and underscores.

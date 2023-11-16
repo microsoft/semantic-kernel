@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -79,9 +78,9 @@ internal static class RestApiOperationExtensions
     {
         foreach (var code in preferredResponses)
         {
-            if (responses.ContainsKey(code))
+            if (responses.TryGetValue(code, out var response))
             {
-                return responses[code];
+                return response;
             }
         }
 
