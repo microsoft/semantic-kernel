@@ -31,11 +31,6 @@ public static class ChatStreamingResultExtensions
         {
             functionCall ??= message.InnerChatMessage?.FunctionCall;
 
-            if (functionCall is null && message.InnerChatMessage?.Name is not null)
-            {
-                functionCall = new FunctionCall(message.InnerChatMessage.Name, null);
-            }
-
             if (message.InnerChatMessage?.FunctionCall?.Arguments is not null)
             {
                 arguments.Append(message.InnerChatMessage?.FunctionCall.Arguments);
