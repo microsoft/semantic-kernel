@@ -161,7 +161,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
-        return await this._kernel.Functions.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
+        return await this._kernel.Functions.GetJsonSchemaFunctionsViewAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
     private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()

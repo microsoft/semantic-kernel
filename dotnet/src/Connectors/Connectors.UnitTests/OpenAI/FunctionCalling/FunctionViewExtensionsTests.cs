@@ -96,6 +96,7 @@ public sealed class FunctionViewExtensionsTests
             Name: "param1",
             Description: "This is param1",
             Type: null,
+            ParameterType: null,
             IsRequired: false);
 
         var sut = new FunctionView(

@@ -117,13 +117,13 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        JsonSchemaFunctionManual jsonSchemaManual = this.ToFunctionView().ToJsonSchemaManual(GetJsonSchemaDocument, false);
+        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchemaDocument, false);
 
         return new FunctionDefinition
         {
             Name = this.FullyQualifiedName,
             Description = this.Description,
-            Parameters = BinaryData.FromObjectAsJson(jsonSchemaManual.Parameters),
+            Parameters = BinaryData.FromObjectAsJson(jsonSchemaView.Parameters),
         };
     }
 
@@ -133,8 +133,13 @@ public class OpenAIFunction
     /// <param name="type">The object Type.</param>
     /// <param name="description">The object description.</param>
     /// <returns></returns>
-    internal static JsonDocument GetJsonSchemaDocument(Type? type, string? description)
+    internal static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
     {
+        if (type is null)
+        {
+            return null;
+        }
+
         var schemaDocument = new JsonSchemaBuilder()
                         .FromType(type ?? typeof(string))
                         .Description(description ?? string.Empty)
