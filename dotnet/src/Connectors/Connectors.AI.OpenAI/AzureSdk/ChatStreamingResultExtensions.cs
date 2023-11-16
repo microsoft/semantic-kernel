@@ -27,7 +27,7 @@ public static class ChatStreamingResultExtensions
 
         StringBuilder arguments = new();
         FunctionCall? functionCall = null;
-        await foreach (SKChatMessage message in chatStreamingResult.GetStreamingChatMessageAsync())
+        await foreach (AzureOpenAIChatMessage message in chatStreamingResult.GetStreamingChatMessageAsync())
         {
             functionCall ??= message.FunctionCall;
 

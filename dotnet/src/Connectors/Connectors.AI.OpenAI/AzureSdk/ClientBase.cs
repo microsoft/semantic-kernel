@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Prompt;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -61,7 +60,7 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name!);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
@@ -234,7 +233,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<ChatMessageBase> chat,
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -338,7 +337,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            Prompts = { text.NormalizeLineEndings() },
+            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
@@ -367,7 +366,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -392,7 +391,7 @@ public abstract class ClientBase
                 options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
             }
             else if (requestSettings.FunctionCall != OpenAIRequestSettings.FunctionCallNone
-                    && !requestSettings.FunctionCall.IsNullOrEmpty())
+                    && !string.IsNullOrEmpty(requestSettings.FunctionCall))
             {
                 var filteredFunctions = requestSettings.Functions
                     .Where(f => f.FullyQualifiedName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
@@ -422,7 +421,7 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
+            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
             if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
             {

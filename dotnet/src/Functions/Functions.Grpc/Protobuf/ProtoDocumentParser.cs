@@ -126,15 +126,16 @@ internal sealed class ProtoDocumentParser
     private static string GetProtobufDataTypeName(FieldDescriptorProto.Type type)
     {
         var fieldInfo = typeof(FieldDescriptorProto.Type).GetField(type.ToString());
-
-        //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
-        var attribute = (ProtoEnumAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
-
-        if (attribute == null)
+        if (fieldInfo != null)
         {
-            throw new SKException($"Impossible to find protobuf type name corresponding to '{type}' type.");
+            //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
+            var attribute = (ProtoEnumAttribute?)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
+            if (attribute != null)
+            {
+                return attribute.Name;
+            }
         }
 
-        return attribute.Name;
+        throw new SKException($"Impossible to find protobuf type name corresponding to '{type}' type.");
     }
 }

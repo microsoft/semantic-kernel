@@ -25,7 +25,7 @@ public static class FunctionViewExtensions
     {
         var functionManual = new JsonSchemaFunctionManual
         {
-            Name = function.Name,
+            Name = $"{function.PluginName}_{function.Name}",
             Description = function.Description,
         };
 

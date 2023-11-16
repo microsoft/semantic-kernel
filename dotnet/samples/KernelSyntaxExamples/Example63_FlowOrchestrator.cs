@@ -270,7 +270,7 @@ Do not expose the regex unless asked.
             ChatHistory? chatHistory = context.GetChatHistory();
             if (chatHistory?.Any() ?? false)
             {
-                chat.Messages.AddRange(chatHistory);
+                chat.AddRange(chatHistory);
             }
 
             if (!string.IsNullOrEmpty(email) && IsValidEmail(email))

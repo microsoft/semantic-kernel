@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
@@ -38,7 +37,7 @@ public static class HandlebarsPlannerExtensions
     {
         var assembly = Assembly.GetExecutingAssembly();
         var name = planner.GetType().Namespace;
-        var supplementalNamespace = !additionalNamespace.IsNullOrEmpty() ? $".{additionalNamespace}" : string.Empty;
+        var supplementalNamespace = !string.IsNullOrEmpty(additionalNamespace) ? $".{additionalNamespace}" : string.Empty;
         var resourceName = $"{name}{supplementalNamespace}.{fileName}";
 
         return assembly.GetManifestResourceStream(resourceName)!;
