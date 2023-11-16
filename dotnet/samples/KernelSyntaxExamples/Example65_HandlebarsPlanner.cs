@@ -2,13 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Planners.Handlebars;
+using Plugins.DictionaryPlugin;
 using RepoUtils;
 
 /**
@@ -18,6 +18,8 @@ public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleCount;
 
+    private const string RemoteComplexDictionaryPluginName = "RemoteComplexDictionaryPlugin";
+
     /// <summary>
     /// Show how to create a plan with Handlebars and execute it.
     /// </summary>
@@ -26,10 +28,15 @@ public static class Example65_HandlebarsPlanner
         s_sampleCount = 0;
         Console.WriteLine($"======== {nameof(Example65_HandlebarsPlanner)} ========");
 
+        // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
-        await RunDictionarySampleAsync();
+        await RunDictionaryWithBasicTypesSampleAsync();
         await RunPoetrySampleAsync();
         await RunBookSampleAsync();
+
+        // Using Complex Types as inputs and outputs
+        await RunLocalDictionaryWithComplexTypesSampleAsync();
+        // await RunRemoteDictionaryWithComplexTypesSampleAsync();
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -58,9 +65,21 @@ public static class Example65_HandlebarsPlanner
                 apiKey: apiKey)
             .Build();
 
-        if (pluginDirectoryNames[0] == DictionaryPlugin.PluginName)
+        if (pluginDirectoryNames[0] == BasicDictionaryPlugin.PluginName)
         {
-            kernel.ImportFunctions(new DictionaryPlugin(), DictionaryPlugin.PluginName);
+            kernel.ImportFunctions(new BasicDictionaryPlugin(), BasicDictionaryPlugin.PluginName);
+        }
+        else if (pluginDirectoryNames[0] == ComplexDictionaryPlugin.PluginName)
+        {
+            kernel.ImportFunctions(new ComplexDictionaryPlugin(), ComplexDictionaryPlugin.PluginName);
+        }
+        else if (pluginDirectoryNames[0] == RemoteComplexDictionaryPluginName)
+        {
+            await kernel.ImportOpenApiPluginFunctionsAsync(
+                RemoteComplexDictionaryPluginName,
+                "./Plugins/DictionaryPlugin/openapi.json",
+                new OpenApiFunctionExecutionParameters()
+            );
         }
         else
         {
@@ -69,7 +88,7 @@ public static class Example65_HandlebarsPlanner
         }
 
         // The gpt-35-turbo model does not handle loops well in the plans.
-        var allowLoopsInPlan = chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase) ? false : true;
+        var allowLoopsInPlan = !chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase);
 
         var planner = new HandlebarsPlanner(kernel, new HandlebarsPlannerConfig() { AllowLoops = allowLoopsInPlan });
         Console.WriteLine($"Goal: {goal}");
@@ -107,10 +126,10 @@ public static class Example65_HandlebarsPlanner
         }
     }
 
-    private static async Task RunDictionarySampleAsync()
+    private static async Task RunDictionaryWithBasicTypesSampleAsync()
     {
         WriteSampleHeadingToConsole("Dictionary");
-        await RunSampleAsync("Get a random word and its definition.", DictionaryPlugin.PluginName);
+        await RunSampleAsync("Get a random word and its definition.", BasicDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -125,6 +144,56 @@ public static class Example65_HandlebarsPlanner
             Result:
             ["book","a set of printed or written pages bound together along one edge"]
         */
+    }
+
+    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync()
+    {
+        WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
+        await RunSampleAsync("Teach me two random words and their definition.", ComplexDictionaryPlugin.PluginName);
+        /*
+            Original Plan:
+            {{!-- Step 1: Get two random dictionary entries --}}
+            {{set "entry1" (DictionaryPlugin-GetRandomEntry)}}
+            {{set "entry2" (DictionaryPlugin-GetRandomEntry)}}
+
+            {{!-- Step 2: Extract words from the entries --}}
+            {{set "word1" (DictionaryPlugin-GetWord entry=(get "entry1"))}}
+            {{set "word2" (DictionaryPlugin-GetWord entry=(get "entry2"))}}
+
+            {{!-- Step 3: Extract definitions for the words --}}
+            {{set "definition1" (DictionaryPlugin-GetDefinition word=(get "word1"))}}
+            {{set "definition2" (DictionaryPlugin-GetDefinition word=(get "word2"))}}
+
+            {{!-- Step 4: Display the words and their definitions --}}
+            Word 1: {{json (get "word1")}}
+            Definition: {{json (get "definition1")}}
+
+            Word 2: {{json (get "word2")}}
+            Definition: {{json (get "definition2")}}
+
+            Result:
+            Word 1: apple
+            Definition 1: a round fruit with red, green, or yellow skin and a white flesh
+
+            Word 2: dog
+            Definition 2: a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship
+        */
+    }
+
+    private static async Task RunRemoteDictionaryWithComplexTypesSampleAsync()
+    {
+        WriteSampleHeadingToConsole("Complex Types with Remote Dictionary Plugin");
+
+        try
+        {
+            await RunSampleAsync("Teach me two random words and their definition.", RemoteComplexDictionaryPluginName);
+        }
+        catch (InvalidOperationException)
+        {
+            // TODO (@teresaqhoang): Get a better remote plugin to test with.
+            // Expected `no server-url` error, plugin isn't actually hosted. Was testing to see how complex types render in template. 
+            Console.WriteLine($"======== DONE {nameof(Example67_HandlebarsPlannerWithComplexTypes)} ========");
+        }
     }
 
     private static async Task RunPoetrySampleAsync()
@@ -180,40 +249,5 @@ public static class Example65_HandlebarsPlanner
                 {{json (get "chapterContent")}}
             {{/each}}
         */
-    }
-
-    /// <summary>
-    /// Plugin example with two native functions, where one function gets a random word and the other returns a definition for a given word.
-    /// </summary>
-    private sealed class DictionaryPlugin
-    {
-        public const string PluginName = nameof(DictionaryPlugin);
-
-        private readonly Dictionary<string, string> _dictionary = new()
-        {
-            {"apple", "a round fruit with red, green, or yellow skin and a white flesh"},
-            {"book", "a set of printed or written pages bound together along one edge"},
-            {"cat", "a small furry animal with whiskers and a long tail that is often kept as a pet"},
-            {"dog", "a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship"},
-            {"elephant", "a large gray mammal with a long trunk, tusks, and ears that lives in Africa and Asia"}
-        };
-
-        [SKFunction, SKName("GetRandomWord"), System.ComponentModel.Description("Gets a random word from a dictionary of common words and their definitions.")]
-        public string GetRandomWord()
-        {
-            // Get random number
-            var index = RandomNumberGenerator.GetInt32(0, this._dictionary.Count - 1);
-
-            // Return the word at the random index
-            return this._dictionary.ElementAt(index).Key;
-        }
-
-        [SKFunction, SKName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
-        public string GetDefinition([System.ComponentModel.Description("Word to get definition for.")] string word)
-        {
-            return this._dictionary.TryGetValue(word, out var definition)
-                ? definition
-                : "Word not found";
-        }
     }
 }

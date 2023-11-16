@@ -73,7 +73,7 @@ public sealed class HandlebarsPlanner
         var resultContext = this._kernel.CreateNewContext();
         resultContext.Variables.Update(completionResults);
 
-        // Check if plan could not be creted with available helpers
+        // Check if plan could not be created with available helpers
         if (resultContext.Result.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
