@@ -11,7 +11,6 @@ using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
@@ -367,7 +366,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
     private static bool IsNumericType(string typeStr)
     {
-        Type? type = typeStr.IsNullOrEmpty() ? Type.GetType(typeStr) : null;
+        Type? type = string.IsNullOrEmpty(typeStr) ? Type.GetType(typeStr) : null;
 
         if (type == null)
         {

@@ -34,4 +34,8 @@
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
+  </ItemGroup>
+
 </Project>
