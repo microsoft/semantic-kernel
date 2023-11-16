@@ -444,7 +444,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = KernelFunctionFromMethod.Create((string input) => input + input, "functionName");
+        var mockFunction = SKFunction.FromMethod((string input) => input + input, "functionName");
         plugins.Add(new SKPlugin("test", new[] { mockFunction }));
 
         plan.AddSteps(new Plan("Step1", mockFunction), mockFunction);

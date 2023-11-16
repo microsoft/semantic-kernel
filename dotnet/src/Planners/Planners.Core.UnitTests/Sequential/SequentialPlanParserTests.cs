@@ -30,16 +30,16 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("email", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
             }),
             new SKPlugin("SummarizePlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
             }),
             new SKPlugin("WriterPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
             })
         };
 
@@ -119,7 +119,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -147,7 +147,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -176,7 +176,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("Global", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -212,7 +212,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -268,7 +268,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -296,7 +296,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("CodeSearch", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
             }),
         };
 
@@ -327,7 +327,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                KernelFunctionFromMethod.Create(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 

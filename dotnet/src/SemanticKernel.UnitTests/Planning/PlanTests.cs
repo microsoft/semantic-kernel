@@ -838,11 +838,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         [SKName("WritePoem")]
         static string Function2() => "Poem";
-        functions.Add(KernelFunctionFromMethod.Create(Method(Function2)));
+        functions.Add(SKFunction.FromMethod(Method(Function2)));
 
         [SKName("SendEmail")]
         static string Function3() => "Sent Email";
-        functions.Add(KernelFunctionFromMethod.Create(Method(Function3)));
+        functions.Add(SKFunction.FromMethod(Method(Function3)));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);

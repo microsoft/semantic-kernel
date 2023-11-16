@@ -303,7 +303,7 @@ public sealed class Plan : ISKFunction
         else
         {
             this.CallFunctionInvoking(context);
-            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 return new FunctionResult(this.Name, context);
             }
@@ -333,7 +333,7 @@ public sealed class Plan : ISKFunction
             }
 
             this.CallFunctionInvoked(result, context);
-            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
+            if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
                 return new FunctionResult(this.Name, context, result.Value);
             }

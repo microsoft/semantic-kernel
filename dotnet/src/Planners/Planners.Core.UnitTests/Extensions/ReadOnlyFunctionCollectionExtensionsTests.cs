@@ -111,8 +111,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         {
             new SKPlugin("pluginName", new[]
             {
-                KernelFunctionFromMethod.Create(() => { }, "functionName", "description"),
-                KernelFunctionFromMethod.Create(() => { }, "nativeFunctionName", "description"),
+                SKFunction.FromMethod(() => { }, "functionName", "description"),
+                SKFunction.FromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
         var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };
@@ -181,8 +181,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         {
             new SKPlugin("pluginName", new[]
             {
-                KernelFunctionFromMethod.Create(() => { }, "functionName", "description"),
-                KernelFunctionFromMethod.Create(() => { }, "nativeFunctionName", "description"),
+                SKFunction.FromMethod(() => { }, "functionName", "description"),
+                SKFunction.FromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
         var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };

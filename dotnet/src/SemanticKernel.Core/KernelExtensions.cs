@@ -41,7 +41,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFromMethod.Create(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
@@ -94,7 +94,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFromPrompt.Create(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
+        return SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -146,14 +146,14 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
         Verify.NotNull(kernel);
 
-        return SKPluginFromObject.Create<T>(pluginName, kernel.LoggerFactory);
+        return SKPlugin.FromObject<T>(pluginName, kernel.LoggerFactory);
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
@@ -163,13 +163,13 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
-        return SKPluginFromObject.Create(target, pluginName, kernel.LoggerFactory);
+        return SKPlugin.FromObject(target, pluginName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -181,7 +181,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
@@ -198,7 +198,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -252,7 +252,7 @@ public static class KernelExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
         Verify.DirectoryExists(pluginDirectory);
 
-        var factory = promptTemplateFactory ?? KernelFunctionFromPrompt.CreateDefaultPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = promptTemplateFactory ?? SKFunctionFromPrompt.CreateDefaultPromptTemplateFactory(kernel.LoggerFactory);
 
         SKPlugin plugin = new(pluginName);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
@@ -357,7 +357,7 @@ public static class KernelExtensions
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.RunAsync(KernelFunctionFromPrompt.Create(
+        kernel.RunAsync((ISKFunction)SKFunction.FromPrompt(
             promptTemplate,
             requestSettings,
             functionName,
@@ -539,13 +539,13 @@ repeat:
     /// <returns></returns>
     private static bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
     {
-        if (KernelFunctionFromPrompt.IsInvokingCancelRequested(context))
+        if (SKFunctionFromPrompt.IsInvokingCancelRequested(context))
         {
             logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
 
-        if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
+        if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
         {
             logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
@@ -564,7 +564,7 @@ repeat:
     /// <returns></returns>
     private static bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
     {
-        if (KernelFunctionFromPrompt.IsInvokingSkipRequested(context))
+        if (SKFunctionFromPrompt.IsInvokingSkipRequested(context))
         {
             logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;

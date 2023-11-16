@@ -20,7 +20,7 @@ public class OrderedIAIServiceConfigurationProviderTests
     {
         // Arrange
         var context = new KernelBuilder().Build().CreateNewContext();
-        var skfunction = KernelFunctionFromPrompt.Create("Hello AI");
+        var skfunction = SKFunction.FromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
