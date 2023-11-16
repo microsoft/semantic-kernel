@@ -219,12 +219,12 @@ internal sealed class GrpcOperationRunner
             propertyBuilder.SetSetMethod(setterBuilder);
 
             //Add ProtoMember attribute to the data contract with tag/number
-            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) }), new object[] { field.Number });
+            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) })!, new object[] { field.Number });
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }
 
         //Add ProtoContract attribute to the data contract
-        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes), Array.Empty<object>());
+        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
         var type = typeBuilder.CreateTypeInfo();

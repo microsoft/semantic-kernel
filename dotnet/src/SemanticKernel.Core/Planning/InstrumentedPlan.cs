@@ -69,7 +69,7 @@ internal sealed class InstrumentedPlan : ISKFunction
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(Plan).FullName);
+    private static readonly Meter s_meter = new(typeof(Plan).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of plan execution.

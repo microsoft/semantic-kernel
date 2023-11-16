@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -80,7 +81,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
     /// <inheritdoc/>

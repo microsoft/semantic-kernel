@@ -23,6 +23,12 @@ internal sealed class EmailPlugin
         // Sensitive data, logging as trace, disabled by default
         logger?.LogTrace("Returning hard coded email for {0}", input);
 
-        return "johndoe1234@example.com";
+        return input switch
+        {
+            "Jane" => "janedoe4321@example.com",
+            "Paul" => "paulsmith5678@example.com",
+            "Mary" => "maryjones8765@example.com",
+            _ => "johndoe1234@example.com",
+        };
     }
 }
