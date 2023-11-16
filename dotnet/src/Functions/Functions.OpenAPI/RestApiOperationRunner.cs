@@ -183,7 +183,11 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType.MediaType;
+        var mediaType = contentType?.MediaType;
+        if (mediaType is null)
+        {
+            throw new SKException("No media type available.");
+        }
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)  
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
@@ -207,7 +211,7 @@ internal sealed class RestApiOperationRunner
         // Serialize response content and return it  
         var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
 
-        return new RestApiOperationResponse(serializedContent, contentType.ToString());
+        return new RestApiOperationResponse(serializedContent, contentType!.ToString());
     }
 
     /// <summary>

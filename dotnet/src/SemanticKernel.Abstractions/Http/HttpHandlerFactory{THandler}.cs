@@ -19,6 +19,6 @@ public abstract class HttpHandlerFactory<THandler> : IDelegatingHandlerFactory w
     /// <returns></returns>
     public virtual DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
-        return (DelegatingHandler)Activator.CreateInstance(typeof(THandler), loggerFactory);
+        return (DelegatingHandler)Activator.CreateInstance(typeof(THandler), loggerFactory)!;
     }
 }

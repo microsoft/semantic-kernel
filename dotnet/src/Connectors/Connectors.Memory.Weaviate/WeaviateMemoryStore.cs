@@ -314,7 +314,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         DateTimeOffset? timestamp = weaviateObject.Properties == null
             ? null
-            : weaviateObject.Properties.TryGetValue("sk_timestamp", out object value)
+            : weaviateObject.Properties.TryGetValue("sk_timestamp", out object? value)
                 ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture)
                 : null;
 
@@ -521,7 +521,7 @@ public class WeaviateMemoryStore : IMemoryStore
         var apiVersion = !string.IsNullOrWhiteSpace(this._apiVersion) ? this._apiVersion : DefaultApiVersion;
         var baseAddress = this._endpoint ?? this._httpClient.BaseAddress;
 
-        request.RequestUri = new Uri(baseAddress, $"{apiVersion}/{request.RequestUri}");
+        request.RequestUri = new Uri(baseAddress!, $"{apiVersion}/{request.RequestUri}");
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {
@@ -557,10 +557,10 @@ public class WeaviateMemoryStore : IMemoryStore
         return new(
             false,
             string.Empty,
-            weaviateObject.Properties["sk_id"].ToString(),
-            weaviateObject.Properties["sk_description"].ToString(),
-            weaviateObject.Properties["sk_text"].ToString(),
-            weaviateObject.Properties["sk_additional_metadata"].ToString()
+            weaviateObject.Properties["sk_id"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_description"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_text"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_additional_metadata"].ToString() ?? string.Empty
         );
     }
 }

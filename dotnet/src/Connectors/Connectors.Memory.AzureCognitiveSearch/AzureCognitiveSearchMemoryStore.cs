@@ -399,7 +399,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     private SearchClient GetSearchClient(string indexName)
     {
         // Search an available client from the local cache
-        if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient client))
+        if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient? client))
         {
             client = this._adminClient.GetSearchClient(indexName);
             this._clientsByIndex[indexName] = client;

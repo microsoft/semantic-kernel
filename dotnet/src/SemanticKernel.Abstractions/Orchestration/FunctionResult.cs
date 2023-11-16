@@ -105,5 +105,5 @@ public sealed class FunctionResult
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Value?.ToString() ?? base.ToString();
+    public override string ToString() => this.Value?.ToString() ?? base.ToString()!;
 }
