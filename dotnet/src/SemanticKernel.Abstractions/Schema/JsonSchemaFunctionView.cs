@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class JsonSchemaFunctionView
 {
     /// <summary>
-    /// he function name.
+    /// The function name.
     /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;

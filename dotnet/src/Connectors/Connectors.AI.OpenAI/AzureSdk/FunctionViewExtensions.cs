@@ -34,7 +34,7 @@ public static class FunctionViewExtensions
         var returnParameter = new OpenAIFunctionReturnParameter
         {
             Description = functionView.ReturnParameter.Description ?? string.Empty,
-            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType!, functionView.ReturnParameter.Description),
+            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
         };
 
         return new OpenAIFunction

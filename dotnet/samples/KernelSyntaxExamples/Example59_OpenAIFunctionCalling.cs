@@ -52,6 +52,7 @@ public static class Example59_OpenAIFunctionCalling
         // This sample relies on the AI picking the correct color from an enum
         requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
         await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, requestSettings);
+
         requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
         await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, requestSettings);
     }

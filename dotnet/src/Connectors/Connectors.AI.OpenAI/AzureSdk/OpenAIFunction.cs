@@ -132,7 +132,7 @@ public class OpenAIFunction
     /// </summary>
     /// <param name="type">The object Type.</param>
     /// <param name="description">The object description.</param>
-    /// <returns></returns>
+    /// <returns>Return JSON schema document or null if the type is null</returns>
     internal static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
     {
         if (type is null)
