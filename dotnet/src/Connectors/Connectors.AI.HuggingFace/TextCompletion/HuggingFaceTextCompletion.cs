@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,13 +73,16 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    async IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        throw new NotSupportedException("Streaming capability is not supported");
+        IReadOnlyList<TextCompletionResult> results = await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
+        foreach (TextCompletionResult result in results)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc/>
@@ -92,7 +96,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {
