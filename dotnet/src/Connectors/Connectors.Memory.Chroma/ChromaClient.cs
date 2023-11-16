@@ -31,6 +31,8 @@ public class ChromaClient : IChromaClient
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public ChromaClient(string endpoint, ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(endpoint);
+
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
@@ -166,10 +168,10 @@ public class ChromaClient : IChromaClient
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        string endpoint = this._endpoint ?? this._httpClient.BaseAddress.ToString();
+        string endpoint = this._endpoint ?? this._httpClient.BaseAddress!.ToString();
         endpoint = this.SanitizeEndpoint(endpoint);
 
-        string operationName = request.RequestUri.ToString();
+        string operationName = request.RequestUri!.ToString();
 
         request.RequestUri = new Uri(new Uri(endpoint), operationName);
 

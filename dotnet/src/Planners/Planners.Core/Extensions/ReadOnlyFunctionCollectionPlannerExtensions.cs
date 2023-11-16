@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -67,7 +66,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -101,7 +100,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
             return schema;
         }
 
-        IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaManual(schemaBuilderDelegate, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
@@ -115,7 +114,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetFunctionsAsync(
+    public static async Task<IEnumerable<FunctionView>> GetFunctionsAsync(
         this IReadOnlyFunctionCollection functions,
         PlannerConfigBase config,
         string? semanticQuery,
@@ -137,7 +136,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
+    public static async Task<IEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this IReadOnlyFunctionCollection functions,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -196,7 +195,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new ConcurrentBag<FunctionView>();
+        var relevantFunctions = new List<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);

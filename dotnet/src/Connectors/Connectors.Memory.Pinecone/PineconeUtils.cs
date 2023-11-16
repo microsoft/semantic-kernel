@@ -86,7 +86,7 @@ public static class PineconeUtils
                 continue;
             }
 
-            if (!document.Metadata.TryGetValue("text", out object value))
+            if (!document.Metadata.TryGetValue("text", out object? value))
             {
                 yield return document;
 
@@ -159,7 +159,7 @@ public static class PineconeUtils
             currentBatch = new List<PineconeDocument>(batchSize);
         }
 
-        if (currentBatch.Count <= 0)
+        if (currentBatch.Count == 0)
         {
             yield break;
         }
@@ -175,13 +175,6 @@ public static class PineconeUtils
         JsonSerializer.Serialize(writer, metadata);
 
         return (int)stream.Length;
-    }
-
-    private static int GetEntrySize(KeyValuePair<string, object> entry)
-    {
-        Dictionary<string, object> temp = new() { { entry.Key, entry.Value } };
-
-        return GetMetadataSize(temp);
     }
 
     /// <summary>
