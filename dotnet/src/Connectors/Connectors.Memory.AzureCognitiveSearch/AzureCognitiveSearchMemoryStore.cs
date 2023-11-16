@@ -283,13 +283,13 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             Fields = new List<SearchField>
             {
                 new SimpleField(AzureCognitiveSearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
-                new SearchField(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                new(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
                     VectorSearchProfile = ProfileName
                 },
-                new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },

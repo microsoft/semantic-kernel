@@ -8,8 +8,8 @@
     <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
-    <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait" -->
-    <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591</NoWarn>
+    <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
+    <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591;SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />

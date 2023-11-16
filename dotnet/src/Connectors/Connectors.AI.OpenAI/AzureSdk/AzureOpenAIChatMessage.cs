@@ -7,28 +7,28 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
-/// Chat message representation from Semantic Kernel ChatMessageBase Abstraction
+/// Chat message representation fir Azure OpenAI
 /// </summary>
-public class SKChatMessage : ChatMessageBase
+public class AzureOpenAIChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessage
 {
-    private readonly ChatMessage? _message;
+    private readonly Azure.AI.OpenAI.ChatMessage? _message;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SKChatMessage"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatMessage"/> class.
     /// </summary>
     /// <param name="message">OpenAI SDK chat message representation</param>
-    public SKChatMessage(Azure.AI.OpenAI.ChatMessage message)
+    public AzureOpenAIChatMessage(Azure.AI.OpenAI.ChatMessage message)
         : base(new AuthorRole(message.Role.ToString()), message.Content)
     {
         this._message = message;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SKChatMessage"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatMessage"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message.</param>
     /// <param name="content">Content of the message.</param>
-    public SKChatMessage(string role, string content)
+    public AzureOpenAIChatMessage(string role, string content)
         : base(new AuthorRole(role), content)
     {
     }
