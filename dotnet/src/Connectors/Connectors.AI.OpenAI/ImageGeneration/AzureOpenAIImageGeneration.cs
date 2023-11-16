@@ -21,19 +21,19 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
-    /// Generation Image Operation path
+    /// Image Generation Model DALL-E 2
     /// </summary>
-    private const string GenerationImageOperation = "openai/images/generations:submit";
+    private const string DALLE2 = "dall-e-2";
 
     /// <summary>
-    /// Get Image Operation path
+    /// Image Generation Model DALL-E 3
     /// </summary>
-    private const string GetImageOperation = "openai/operations/images";
+    private const string DALLE3 = "dall-e-3";
 
     /// <summary>
-    /// Azure OpenAI REST API endpoint
+    /// Azure OpenAI DALL-E-3 Deployment
     /// </summary>
-    private readonly string _endpoint;
+    private readonly string? _deploymentName;
 
     /// <summary>
     /// Azure OpenAI API key
@@ -46,12 +46,17 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private readonly int _maxRetryCount;
 
     /// <summary>
-    /// Azure OpenAI Endpoint ApiVersion
+    /// Azure OpenAI Image Generation Model
     /// </summary>
-    private readonly string _apiVersion;
+    private readonly string _model;
 
     /// <summary>
-    /// Create a new instance of Azure OpenAI image generation service
+    /// Azure OpenAI DALL-E 3 Image Generation Options
+    /// </summary>
+    private readonly DALLE3GenerationOptions? _imageGenerationOptions;
+
+    /// <summary>
+    /// Create a new instance of Azure OpenAI DALL-E 2 image generation service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -59,21 +64,21 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
+    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-08-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
-        this._apiVersion = apiVersion;
+        this._model = DALLE2;
         this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
     /// <summary>
-    /// Create a new instance of Azure OpenAI image generation service
+    /// Create a new instance of Azure OpenAI DALL-E 2 image generation service
     /// </summary>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -81,7 +86,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
+    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-08-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -94,10 +99,40 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
-        this._apiVersion = apiVersion;
+        this._model = DALLE2;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
+    }
+
+    /// <summary>
+    /// Create a new instance of Azure OpenAI DALL-E 3 image generation service
+    /// </summary>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="options">DALL-E 3 image generation options</param>
+    /// <param name="client">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
+    public AzureOpenAIImageGeneration(string deploymentName,
+        string endpoint,
+        string apiKey,
+        DALLE3GenerationOptions? options,
+        HttpClient? client,
+        ILoggerFactory? loggerFactory = null,
+        string apiVersion = "2023-12-01-preview") : base(client, loggerFactory)
+    {
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+
+        this._deploymentName = deploymentName;
+        this._apiKey = apiKey;
+        this._imageGenerationOptions = options;
+        this._model = DALLE3;
         this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
         this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
@@ -107,6 +142,44 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    {
+        if (this._model == DALLE2)
+        {
+            return await this.GenerateImageForDALLE2Async(description, width, height, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (this._model == DALLE3)
+        {
+            return await this.GenerateImageForDALLE3Async(description, width, height, cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new SKException($"Azure OpenAI Image Generation Model {this._model} not supported");
+    }
+
+    #region DALL-E 3
+    private async Task<string> GenerateImageForDALLE3Async(string description, int width, int height, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(description);
+
+        ImageGenerationVerify.DALL3ImageSize(width, height);
+
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
+        {
+            Prompt = description,
+            Size = $"{width}x{height}",
+            Count = 1,
+            Quality = this._imageGenerationOptions?.Quality,
+            Style = this._imageGenerationOptions?.Style
+        });
+
+        var operation = this.GetUri($"openai/{this._deploymentName}/images/generations");
+        var list = await this.ExecuteImageGenerationRequestAsync(operation, requestBody, x => x.Url, cancellationToken).ConfigureAwait(false);
+        return list[0];
+    }
+    #endregion
+
+    #region DALL-E 2
+    private async Task<string> GenerateImageForDALLE2Async(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
@@ -135,10 +208,8 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-        if (width != height || (width != 256 && width != 512 && width != 1024))
-        {
-            throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
-        }
+
+        ImageGenerationVerify.DALLE2ImageSize(width, height);
 
         var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
@@ -147,7 +218,8 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Count = 1
         });
 
-        var uri = this.GetUri(GenerationImageOperation);
+        var uri = this.GetUri("openai/images/generations:submit");
+
         var result = await this.ExecutePostRequestAsync<AzureOpenAIImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
@@ -166,7 +238,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <returns></returns>
     private async Task<AzureOpenAIImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
-        var operationLocation = this.GetUri(GetImageOperation, operationId);
+        var operationLocation = this.GetUri("openai/operations/images", operationId);
 
         var retryCount = 0;
 
@@ -199,17 +271,18 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             retryCount++;
         }
     }
+    #endregion
 
     private string GetUri(string operation, params string[] parameters)
     {
         var uri = new Azure.Core.RequestUriBuilder();
-        uri.Reset(new Uri(this._endpoint));
+        uri.Reset(new Uri(this.GetAttribute(IAIServiceExtensions.EndpointKey)));
         uri.AppendPath(operation, false);
         foreach (var parameter in parameters)
         {
             uri.AppendPath("/" + parameter, false);
         }
-        uri.AppendQuery("api-version", this._apiVersion);
+        uri.AppendQuery("api-version", this.GetAttribute(IAIServiceExtensions.ApiVersionKey)!);
         return uri.ToString();
     }
 

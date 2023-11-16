@@ -499,27 +499,30 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="options">DALL-E 3 image generation options. If not null, the DALL-E 3 model will be used.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithOpenAIImageGenerationService(this KernelBuilder builder,
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
         bool setAsDefault = false,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        DALLE3GenerationOptions? options = null)
     {
         builder.WithAIService<IImageGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
-                loggerFactory),
+                loggerFactory,
+                options),
             setAsDefault);
 
         return builder;
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// Add the  Azure OpenAI DALL-E 2 image generation service to the list
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -549,6 +552,39 @@ public static class OpenAIKernelBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Add the  Azure OpenAI DALL-E 3 image generation service to the list
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="options">DALL-E 3 image generation options</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureOpenAIImageGenerationService(this KernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        DALLE3GenerationOptions? options = null,
+        string? serviceId = null,
+        bool setAsDefault = false,
+        HttpClient? httpClient = null)
+    {
+        builder.WithAIService<IImageGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
+            new AzureOpenAIImageGeneration(
+                deploymentName,
+                endpoint,
+                apiKey,
+                options,
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                loggerFactory),
+            setAsDefault);
+
+        return builder;
+    }
     #endregion
 
     private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient)

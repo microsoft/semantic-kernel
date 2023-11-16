@@ -28,6 +28,12 @@ public class ImageGenerationResponse
         /// </summary>
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The prompt that was used to generate the image, if there was any revision to the prompt.
+        /// </summary>
+        [JsonPropertyName("revised_prompt")]
+        public string RevisedPrompt { get; set; } = string.Empty;
     }
 
     /// <summary>

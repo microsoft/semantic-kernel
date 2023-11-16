@@ -33,23 +33,30 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private readonly string _authorizationHeaderValue;
 
     /// <summary>
+    /// OpenAI DALL-E 3 Image Generation Options
+    /// </summary>
+    private readonly DALLE3GenerationOptions? _imageGenerationOptions;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIImageGeneration"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="options">DALL-E 3 image generation options. If not null, the DALL-E 3 model will be used.</param>
     public OpenAIImageGeneration(
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
+        ILoggerFactory? loggerFactory = null,
+        DALLE3GenerationOptions? options = null
     ) : base(httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
-
+        this._imageGenerationOptions = options;
         this.AddAttribute(OrganizationKey, organization!);
     }
 
@@ -72,9 +79,14 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     public Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-        if (width != height || (width != 256 && width != 512 && width != 1024))
+
+        if (this._imageGenerationOptions is not null)
         {
-            throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
+            ImageGenerationVerify.DALL3ImageSize(width, height);
+        }
+        else
+        {
+            ImageGenerationVerify.DALLE2ImageSize(width, height);
         }
 
         return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
@@ -86,17 +98,20 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         string format, Func<ImageGenerationResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
-        Debug.Assert(width == height);
-        Debug.Assert(width is 256 or 512 or 1024);
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
+        var model = this._imageGenerationOptions is not null ? "dall-e-3" : "dall-e-2";
+
         var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
+            Model = model,
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1,
             Format = format,
+            Quality = this._imageGenerationOptions?.Quality,
+            Style = this._imageGenerationOptions?.Style
         });
 
         var list = await this.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
