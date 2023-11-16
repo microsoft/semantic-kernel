@@ -12,11 +12,6 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public class ChatHistory : List<ChatMessage>
 {
     /// <summary>
-    /// List of messages in the chat
-    /// </summary>
-    public List<ChatMessage> Messages => this;
-
-    /// <summary>
     /// Add a message to the chat history
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>

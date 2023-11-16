@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Xunit;
 
@@ -18,7 +16,6 @@ public class ChatHistoryTests
     {
         // Arrange
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new AuthorRoleConverter());
         var chatHistory = new ChatHistory();
         chatHistory.AddMessage(AuthorRole.User, "Hello");
         chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
@@ -36,7 +33,6 @@ public class ChatHistoryTests
     {
         // Arrange
         var options = new JsonSerializerOptions();
-        //options.Converters.Add(new AuthorRoleConverter());
         var chatHistory = new ChatHistory();
         chatHistory.AddMessage(AuthorRole.User, "Hello");
         chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
@@ -55,19 +51,25 @@ public class ChatHistoryTests
         }
     }
 
-    public class AuthorRoleConverter : JsonConverter<AuthorRole>
-    {
-        public override AuthorRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            // Assume the JSON is a string representing the label
-            var label = reader.GetString();
-            return new AuthorRole(label!);
-        }
+    //[Fact]
+    //public void ItAddMessageWithNullContent()
+    //{
+    //    // Arrange
+    //    var chatHistory = new ChatHistory();
 
-        public override void Write(Utf8JsonWriter writer, AuthorRole value, JsonSerializerOptions options)
-        {
-            // Write the label as a string
-            writer.WriteStringValue(value.Label);
-        }
-    }
+    //    // Act
+    //    chatHistory.AddMessage(AuthorRole.User, null);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public void ItCreateMessageWithNullContent()
+    //{
+    //    // Arrange
+    //    // Act
+    //    var chatMessage = new ChatMessage(AuthorRole.User, null);
+
+    //    // Assert
+    //}
 }
