@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
-using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,7 +38,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [RetryTheory(maxRetries: 3)]
+    [Theory(Skip = "Requires model deployment that supports function calling.")]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
     [InlineData("What is the weather in Seattle?", "Seattle")]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer)
