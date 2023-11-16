@@ -10,11 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public sealed class ImageGenerationRequest
 {
     /// <summary>
-    /// The model to use for image generation,Defaults to dall-e-2
-    /// </summary>
-    public string Model { get; set; } = "dall-e-2";
-
-    /// <summary>
     /// Image prompt
     /// </summary>
     [JsonPropertyName("prompt")]
@@ -55,4 +50,11 @@ public sealed class ImageGenerationRequest
     [JsonPropertyName("style")]
     [JsonPropertyOrder(6)]
     public string? Style { get; set; }
+
+    /// <summary>
+    /// The model to use for image generation,Defaults to dall-e-2
+    /// </summary>
+    [JsonPropertyName("model")]
+    [JsonPropertyOrder(7)]
+    public string? Model { get; set; }
 }

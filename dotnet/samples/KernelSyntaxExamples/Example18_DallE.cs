@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using RepoUtils;
 
 /**
@@ -17,11 +18,13 @@ public static class Example18_DallE
 {
     public static async Task RunAsync()
     {
-        await OpenAIDallEAsync();
-        await AzureOpenAIDallEAsync();
+        await OpenAIDallE2Async();
+        await OpenAIDallE3Async();
+        await AzureOpenAIDallE2Async();
+        await AzureOpenAIDallE3Async();
     }
 
-    private static async Task OpenAIDallEAsync()
+    private static async Task OpenAIDallE2Async()
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
@@ -89,8 +92,34 @@ public static class Example18_DallE
 
         */
     }
+    private static async Task OpenAIDallE3Async()
+    {
+        Console.WriteLine("======== OpenAI Dall-E 3 Image Generation ========");
 
-    public static async Task AzureOpenAIDallEAsync()
+        IKernel kernel = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            // Add your image generation service
+            .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey, options: new DALLE3GenerationOptions())
+            // Add your chat completion service 
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+
+        var imageDescription = "A cute baby sea otter";
+        var image = await dallE.GenerateImageAsync(imageDescription, 1024, 1024);
+
+        Console.WriteLine(imageDescription);
+        Console.WriteLine("Image URL: " + image);
+
+        /* Output:
+
+        A cute baby sea otter
+        Image URL: https://oaidalleapiprodscus.blob.core.windows.net/private/....
+
+        */
+    }
+    public static async Task AzureOpenAIDallE2Async()
     {
         Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
 
@@ -156,5 +185,24 @@ public static class Example18_DallE
         Img description: [An image of a map zooming in on the pin location, revealing a small island with a palm tree on it]
 
         */
+    }
+    public static async Task AzureOpenAIDallE3Async()
+    {
+        Console.WriteLine("========Azure OpenAI Dall-E 3 Image Generation ========");
+
+        IKernel kernel = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            // Add your image generation service
+            .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.DALLE3DeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey, new DALLE3GenerationOptions())
+            // Add your chat completion service
+            .WithAzureOpenAIChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+        var imageDescription = "A cute baby sea otter";
+        var image = await dallE.GenerateImageAsync(imageDescription, 1024, 1024);
+
+        Console.WriteLine(imageDescription);
+        Console.WriteLine("Image URL: " + image);
     }
 }

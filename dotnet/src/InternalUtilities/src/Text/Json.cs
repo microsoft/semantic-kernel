@@ -25,6 +25,7 @@ internal static class Json
             AllowTrailingCommas = true,
             PropertyNameCaseInsensitive = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
         options.Converters.Add(new ReadOnlyMemoryConverter());

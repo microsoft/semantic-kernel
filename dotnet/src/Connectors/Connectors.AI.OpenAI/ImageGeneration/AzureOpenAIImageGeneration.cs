@@ -172,7 +172,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Style = this._imageGenerationOptions?.Style
         });
 
-        var operation = this.GetUri($"openai/{this._deploymentName}/images/generations");
+        var operation = this.GetUri($"openai/deployments/{this._deploymentName}/images/generations");
         var list = await this.ExecuteImageGenerationRequestAsync(operation, requestBody, x => x.Url, cancellationToken).ConfigureAwait(false);
         return list[0];
     }

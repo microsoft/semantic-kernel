@@ -568,7 +568,7 @@ public static class OpenAIKernelBuilderExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        DALLE3GenerationOptions? options = null,
+        DALLE3GenerationOptions options,
         string? serviceId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
