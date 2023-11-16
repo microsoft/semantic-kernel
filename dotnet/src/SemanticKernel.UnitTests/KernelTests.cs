@@ -563,18 +563,17 @@ public class KernelTests
 
         var context = new SKContext(new Kernel(serviceProvider.Object), serviceProvider.Object, serviceSelector.Object, new ContextVariables());
 
-        var function = new Mock<ISKFunction>();
-        function.Setup(f => f.Name).Returns("function");
-        function.Setup(f => f.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new FunctionResult("function", context));
+        var function = KernelFunctionFromMethod.Create(() => "fake result", "function");
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
-        kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         //Act
-        await kernel.RunAsync("plugin", "function");
+        var result = await kernel.RunAsync("plugin", "function");
 
         //Assert
-        function.Verify(f => f.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.NotNull(result);
+        Assert.Equal("fake result", result.GetValue<string>());
     }
 
     public class MyPlugin
