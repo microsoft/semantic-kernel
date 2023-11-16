@@ -77,7 +77,7 @@ public class OpenAIFunction
     /// <summary>
     /// Separator between the plugin name and the function name
     /// </summary>
-    public const string NameSeparator = "-";
+    public const string NameSeparator = "_";
 
     /// <summary>
     /// Name of the function
