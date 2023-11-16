@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// Instrumented planner that creates a Stepwise plan using Mrkl systems.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public class InstrumentedStepwisePlanner : IStepwisePlanner
+internal class InstrumentedStepwisePlanner : IStepwisePlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedStepwisePlanner"/> class.
@@ -80,12 +80,12 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.

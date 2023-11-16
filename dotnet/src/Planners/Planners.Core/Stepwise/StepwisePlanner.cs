@@ -16,8 +16,8 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
@@ -61,7 +61,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
-        this._promptRenderer = new BasicPromptTemplateEngine(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
@@ -350,14 +350,15 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var descriptions = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
-        return await this._promptRenderer.RenderAsync(this._manualTemplate, context, cancellationToken).ConfigureAwait(false);
+        var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
+        return await promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
     }
 
     private Task<string> GetUserQuestionAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptRenderer.RenderAsync(this._questionTemplate, context, cancellationToken);
+        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(context, cancellationToken);
 
     private Task<string> GetSystemMessageAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptRenderer.RenderAsync(this._promptTemplate, context, cancellationToken);
+        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(context, cancellationToken);
 
     #endregion setup helpers
 
@@ -534,11 +535,13 @@ public class StepwisePlanner : IStepwisePlanner
             var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
             var resultObject = kernelResult.GetValue<object>();
 
-            var converter = TypeDescriptor.GetConverter(resultObject);
-
-            if (converter.CanConvertTo(typeof(string)))
+            if (resultObject is not null)
             {
-                result = converter.ConvertToString(resultObject);
+                var converter = TypeDescriptor.GetConverter(resultObject);
+                if (converter.CanConvertTo(typeof(string)))
+                {
+                    result = converter.ConvertToString(resultObject);
+                }
             }
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
@@ -648,7 +651,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateEngine _promptRenderer;
+    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The prompt config to use for the system step

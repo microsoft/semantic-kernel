@@ -29,7 +29,6 @@ public sealed class CustomAuthenticationProvider
     /// Applies the header and value to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <returns></returns>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         var header = await this._header().ConfigureAwait(false);

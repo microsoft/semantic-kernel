@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
@@ -26,13 +27,13 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: deploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -55,12 +56,13 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new BasicPromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, context);
+        var promptTemplateFactory = new BasicPromptTemplateFactory();
+        var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
+        var renderedPrompt = await promptTemplate.RenderAsync(context);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
+        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

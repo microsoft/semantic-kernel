@@ -10,9 +10,6 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
-
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /**
@@ -44,7 +41,7 @@ public static class Example40_DIContainer
         //Registering Kernel
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
-            return Kernel.Builder
+            return new KernelBuilder()
             .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
             .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -82,7 +79,6 @@ public static class Example40_DIContainer
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
         collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
         collection.AddTransient<IFunctionCollection, FunctionCollection>();
-        collection.AddTransient<IPromptTemplateEngine, BasicPromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 

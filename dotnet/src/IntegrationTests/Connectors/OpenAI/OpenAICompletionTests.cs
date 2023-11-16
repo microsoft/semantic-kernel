@@ -11,7 +11,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -99,7 +100,8 @@ public sealed class OpenAICompletionTests : IDisposable
         IKernel target = builder.Build();
 
         var func = target.CreateSemanticFunction(
-            "List the two planets after '{{$input}}', excluding moons, using bullet points.");
+            "List the two planets after '{{$input}}', excluding moons, using bullet points.",
+            new OpenAIRequestSettings());
 
         var result = await func.InvokeAsync("Jupiter", target);
 
@@ -310,7 +312,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -338,6 +340,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        var promptTemplateFactory = new BasicPromptTemplateFactory();
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
@@ -356,14 +359,12 @@ public sealed class OpenAICompletionTests : IDisposable
 
         var defaultFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket1",
-            new SemanticFunctionConfig(
-                defaultConfig,
-                new PromptTemplate(prompt, defaultConfig, target.PromptTemplateEngine)));
+            defaultConfig,
+            promptTemplateFactory.Create(prompt, defaultConfig));
         var azureFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket2",
-            new SemanticFunctionConfig(
-                azureConfig,
-                new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine)));
+            azureConfig,
+            promptTemplateFactory.Create(prompt, defaultConfig));
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
@@ -460,7 +461,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureChatCompletionService(
+        kernelBuilder.WithAzureOpenAIChatCompletionService(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,

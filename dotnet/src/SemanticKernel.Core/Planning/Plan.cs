@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -22,7 +23,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : IPlan
+public sealed class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -77,8 +78,8 @@ public sealed class Plan : IPlan
     public string Description { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonIgnore]
-    public AIRequestSettings? RequestSettings { get; private set; }
+    [JsonPropertyName("model_settings")]
+    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
 
     #endregion ISKFunction implementation
 
@@ -166,7 +167,7 @@ public sealed class Plan : IPlan
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, s_includeFieldsOptions) ?? new Plan(string.Empty);
 
         if (functions != null)
         {
@@ -183,7 +184,9 @@ public sealed class Plan : IPlan
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return indented ?
+            JsonSerializer.Serialize(this, s_writeIndentedOptions) :
+            JsonSerializer.Serialize(this);
     }
 
     /// <summary>
@@ -240,6 +243,143 @@ public sealed class Plan : IPlan
     {
         if (this.HasNextStep)
         {
+            await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+        }
+
+        return this;
+    }
+
+    #region ISKFunction implementation
+
+    /// <inheritdoc/>
+    public FunctionView Describe()
+    {
+        if (this.Function is not null)
+        {
+            return this.Function.Describe();
+        }
+
+        // The parameter mapping definitions from Plan -> Function
+        var stepParameters = this.Steps.SelectMany(s => s.Parameters);
+
+        // The parameter descriptions from the Function
+        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+
+        // The parameters for the Plan
+        var parameters = this.Parameters.Select(p =>
+        {
+            var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
+            var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
+
+            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired, stepDescription?.ParameterType, stepDescription?.Schema);
+        }
+        ).ToList();
+
+        return new(this.Name, this.PluginName, this.Description, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<FunctionResult> InvokeAsync(
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new FunctionResult(this.Name, this.PluginName, context);
+
+        if (this.Function is not null)
+        {
+            // Merge state with the current context variables.
+            // Then filter the variables to only those needed for the next step.
+            // This is done to prevent the function from having access to variables that it shouldn't.
+            AddVariablesToContext(this.State, context);
+            var functionVariables = this.GetNextStepVariables(context.Variables, this);
+            var functionContext = context.Clone(functionVariables, context.Functions);
+
+            // Execute the step
+            result = await this.Function
+                .WithInstrumentation(context.LoggerFactory)
+                .InvokeAsync(functionContext, requestSettings, cancellationToken)
+                .ConfigureAwait(false);
+            this.UpdateFunctionResultWithOutputs(result);
+        }
+        else
+        {
+            this.CallFunctionInvoking(context);
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context);
+            }
+
+            // loop through steps and execute until completion
+            while (this.HasNextStep)
+            {
+                AddVariablesToContext(this.State, context);
+                var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+
+                // If a step was cancelled before invocation
+                // Return the last result state of the plan.
+                if (stepResult is null)
+                {
+                    if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
+                    {
+                        continue;
+                    }
+
+                    return result;
+                }
+
+                this.UpdateContextWithOutputs(context);
+
+                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                this.UpdateFunctionResultWithOutputs(result);
+            }
+
+            this.CallFunctionInvoked(result, context);
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
+            }
+        }
+
+        return result;
+    }
+
+    #endregion ISKFunction implementation
+
+    /// <summary>
+    /// Expand variables in the input string.
+    /// </summary>
+    /// <param name="variables">Variables to use for expansion.</param>
+    /// <param name="input">Input string to expand.</param>
+    /// <returns>Expanded string.</returns>
+    internal string ExpandFromVariables(ContextVariables variables, string input)
+    {
+        var result = input;
+        var matches = s_variablesRegex.Matches(input);
+        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
+
+        foreach (var varName in orderedMatches)
+        {
+            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
+            {
+                result = result.Replace($"${varName}", value);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Invoke the next step of the plan
+    /// </summary>
+    /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Next step result</returns>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    {
+        if (this.HasNextStep)
+        {
             var step = this.Steps[this.NextStepIndex];
 
             // Merge the state with the current context variables for step execution
@@ -247,6 +387,12 @@ public sealed class Plan : IPlan
 
             // Execute the step
             var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+
+            if (result is null)
+            {
+                // Step was cancelled
+                return null;
+            }
 
             var resultValue = result.Context.Result.Trim();
 
@@ -284,122 +430,41 @@ public sealed class Plan : IPlan
             #endregion Update State
 
             this.NextStepIndex++;
+
+            return result;
         }
 
-        return this;
+        throw new InvalidOperationException("There isn't a next step");
     }
 
-    #region ISKFunction implementation
-
-    /// <inheritdoc/>
-    public FunctionView Describe()
+    private void CallFunctionInvoking(SKContext context)
     {
-        if (this.Function is not null)
+        var eventWrapper = context.FunctionInvokingHandler;
+        if (eventWrapper?.Handler is null)
         {
-            return this.Function.Describe();
+            return;
         }
 
-        // The parameter mapping definitions from Plan -> Function
-        var stepParameters = this.Steps.SelectMany(s => s.Parameters);
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
 
-        // The parameter descriptions from the Function
-        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+    private void CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
 
-        // The parameters for the Plan
-        var parameters = this.Parameters.Select(p =>
+        // Not handlers registered, return the result as is
+        if (eventWrapper?.Handler is null)
         {
-            var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
-            var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
-
-            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired);
-        }
-        ).ToList();
-
-        return new(this.Name, this.PluginName, this.Description, parameters);
-    }
-
-    /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
-        SKContext context,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        var result = new FunctionResult(this.Name, this.PluginName, context);
-
-        if (this.Function is not null)
-        {
-            // Merge state with the current context variables.
-            // Then filter the variables to only those needed for the next step.
-            // This is done to prevent the function from having access to variables that it shouldn't.
-            AddVariablesToContext(this.State, context);
-            var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables, context.Functions);
-
-            // Execute the step
-            result = await this.Function
-                .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, cancellationToken)
-                .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result);
-        }
-        else
-        {
-            // loop through steps and execute until completion
-            while (this.HasNextStep)
-            {
-                AddVariablesToContext(this.State, context);
-                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
-                this.UpdateContextWithOutputs(context);
-
-                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
-                this.UpdateFunctionResultWithOutputs(result);
-            }
+            return;
         }
 
-        return result;
-    }
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        return this.Function is not null ? this.Function.SetDefaultFunctionCollection(functions) : this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
-    }
-
-    #endregion ISKFunction implementation
-
-    /// <summary>
-    /// Expand variables in the input string.
-    /// </summary>
-    /// <param name="variables">Variables to use for expansion.</param>
-    /// <param name="input">Input string to expand.</param>
-    /// <returns>Expanded string.</returns>
-    internal string ExpandFromVariables(ContextVariables variables, string input)
-    {
-        var result = input;
-        var matches = s_variablesRegex.Matches(input);
-        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
-
-        foreach (var varName in orderedMatches)
-        {
-            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
-            {
-                result = result.Replace($"${varName}", value);
-            }
-        }
-
-        return result;
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventWrapper.EventArgs.Metadata;
     }
 
     /// <summary>
@@ -481,8 +546,13 @@ public sealed class Plan : IPlan
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
     {
+        if (functionResult is null)
+        {
+            return null;
+        }
+
         foreach (var output in this.Outputs)
         {
             if (this.State.TryGetValue(output, out var value))
@@ -603,14 +673,19 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.PluginName = function.PluginName;
         this.Description = function.Description;
-        this.RequestSettings = function.RequestSettings;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+        this.RequestSettings = function.RequestSettings;
         this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Deserialization options for including fields.</summary>
+    private static readonly JsonSerializerOptions s_includeFieldsOptions = new() { IncludeFields = true };
+    /// <summary>Serialization options for writing indented.</summary>
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
 
     private ISKFunction? Function { get; set; }
 
@@ -644,6 +719,24 @@ public sealed class Plan : IPlan
     #region Obsolete
 
     /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; private set; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
+    }
+
+    /// <inheritdoc/>
     [JsonIgnore]
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -656,9 +749,14 @@ public sealed class Plan : IPlan
     public bool IsSemantic { get; private set; }
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

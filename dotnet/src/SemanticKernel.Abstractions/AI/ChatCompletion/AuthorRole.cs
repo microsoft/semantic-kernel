@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -14,22 +15,27 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// The role that instructs or sets the behavior of the assistant.
     /// </summary>
-    public static readonly AuthorRole System = new("system");
+    public static AuthorRole System { get; } = new("system");
 
     /// <summary>
     /// The role that provides responses to system-instructed, user-prompted input.
     /// </summary>
-    public static readonly AuthorRole Assistant = new("assistant");
+    public static AuthorRole Assistant { get; } = new("assistant");
 
     /// <summary>
     /// The role that provides input for chat completions.
     /// </summary>
-    public static readonly AuthorRole User = new("user");
+    public static AuthorRole User { get; } = new("user");
 
     /// <summary>
     /// The role that provides additional information and references for chat completions.
     /// </summary>
-    public static readonly AuthorRole Tool = new("tool");
+    public static AuthorRole Tool { get; } = new("tool");
+
+    /// <summary>
+    /// The role that provides information about a function call result.
+    /// </summary>
+    public static AuthorRole Function { get; } = new("function");
 
     /// <summary>
     /// Gets the label associated with this AuthorRole.
@@ -73,7 +79,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
     /// <inheritdoc/>

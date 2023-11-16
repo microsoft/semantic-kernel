@@ -54,14 +54,14 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
         request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().ToString());
         this.LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
         HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        this.LogHttpMessage(response.Headers, response.RequestMessage.RequestUri, "RESPONSE");
+        this.LogHttpMessage(response.Headers, response.RequestMessage?.RequestUri, "RESPONSE");
         return response;
     }
 
     /// <summary>
     /// Log the headers and URI of an HTTP message.
     /// </summary>
-    private void LogHttpMessage(HttpHeaders headers, Uri uri, string prefix)
+    private void LogHttpMessage(HttpHeaders headers, Uri? uri, string prefix)
     {
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
@@ -69,7 +69,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
             message.AppendLine($"{prefix} {uri}");
             foreach (string headerName in this._headerNamesToLog)
             {
-                if (headers.TryGetValues(headerName, out IEnumerable<string> values))
+                if (headers.TryGetValues(headerName, out IEnumerable<string>? values))
                 {
                     message.AppendLine($"{headerName}: {string.Join(", ", values)}");
                 }

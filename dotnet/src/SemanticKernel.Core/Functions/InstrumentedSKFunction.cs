@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Standard Semantic Kernel callable function with instrumentation.
 /// </summary>
-public sealed class InstrumentedSKFunction : ISKFunction
+internal sealed class InstrumentedSKFunction : ISKFunction
 {
     /// <inheritdoc/>
     public string Name => this._function.Name;
@@ -32,7 +33,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public string Description => this._function.Description;
 
     /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+    public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -78,18 +79,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._function.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._function.SetAIService(serviceFactory);
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
-        this._function.SetDefaultFunctionCollection(functions);
-
     #region private ================================================================================
 
     private readonly ISKFunction _function;
@@ -98,12 +87,12 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
@@ -179,6 +168,20 @@ public sealed class InstrumentedSKFunction : ISKFunction
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._function.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._function.SetAIService(serviceFactory);
+
+    /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string SkillName => this._function.PluginName;
@@ -189,9 +192,14 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._function.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

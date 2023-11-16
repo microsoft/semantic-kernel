@@ -11,6 +11,7 @@ from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 from semantic_kernel.utils.null_logger import NullLogger
@@ -92,7 +93,7 @@ class RestApiOperation:
 
         url = urljoin(self.server_url, path)
 
-        processed_query_params, processed_headers = {}, {}
+        processed_query_params, processed_headers = {}, headers
         for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
@@ -126,6 +127,10 @@ class RestApiOperation:
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
             processed_payload = request_body
+
+        processed_headers["User-Agent"] = " ".join(
+            (HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))
+        ).rstrip()
 
         req = PreparedRestApiRequest(
             method=self.method,
@@ -285,17 +290,17 @@ def register_openapi_skill(
             name="request_body", description="A dictionary of the request body"
         )
         async def run_openapi_operation(sk_context: SKContext) -> str:
-            has_path_params, path_params = sk_context.variables.get("path_params")
-            has_query_params, query_params = sk_context.variables.get("query_params")
-            has_headers, headers = sk_context.variables.get("headers")
-            has_request_body, request_body = sk_context.variables.get("request_body")
+            path_params = sk_context.variables.get("path_params")
+            query_params = sk_context.variables.get("query_params")
+            headers = sk_context.variables.get("headers")
+            request_body = sk_context.variables.get("request_body")
 
             response = await runner.run_operation(
                 operation,
-                path_params=json.loads(path_params) if has_path_params else None,
-                query_params=json.loads(query_params) if has_query_params else None,
-                headers=json.loads(headers) if has_headers else None,
-                request_body=json.loads(request_body) if has_request_body else None,
+                path_params=json.loads(path_params) if path_params else None,
+                query_params=json.loads(query_params) if query_params else None,
+                headers=json.loads(headers) if headers else None,
+                request_body=json.loads(request_body) if request_body else None,
             )
             return response
 

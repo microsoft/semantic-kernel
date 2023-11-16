@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -18,13 +19,13 @@ internal sealed class NullReadOnlyFunctionCollection : IReadOnlyFunctionCollecti
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName)
     {
-        return ThrowFunctionNotAvailable(functionName);
+        throw new SKException($"Function not available: {functionName}");
     }
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
     {
-        return ThrowFunctionNotAvailable(pluginName, functionName);
+        throw new SKException($"Function not available: {pluginName}.{functionName}");
     }
 
     /// <inheritdoc/>
@@ -44,22 +45,10 @@ internal sealed class NullReadOnlyFunctionCollection : IReadOnlyFunctionCollecti
     /// <inheritdoc/>
     public IReadOnlyList<FunctionView> GetFunctionViews()
     {
-        return new List<FunctionView>();
+        return Array.Empty<FunctionView>();
     }
 
     private NullReadOnlyFunctionCollection()
     {
-    }
-
-    [DoesNotReturn]
-    private static ISKFunction ThrowFunctionNotAvailable(string pluginName, string functionName)
-    {
-        throw new SKException($"Function not available: {pluginName}.{functionName}");
-    }
-
-    [DoesNotReturn]
-    private static ISKFunction ThrowFunctionNotAvailable(string functionName)
-    {
-        throw new SKException($"Function not available: {functionName}");
     }
 }

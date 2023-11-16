@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV2_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />
@@ -45,7 +46,6 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
-    <ProjectReference Include="..\Functions.Semantic\Functions.Semantic.csproj" />
   </ItemGroup>
 
 </Project>

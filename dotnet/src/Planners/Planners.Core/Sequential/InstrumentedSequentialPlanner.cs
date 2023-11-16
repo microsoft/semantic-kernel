@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// Instrumented planner that uses semantic function to create a sequential plan.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
+internal sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
@@ -87,12 +87,12 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
+    private static readonly Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.

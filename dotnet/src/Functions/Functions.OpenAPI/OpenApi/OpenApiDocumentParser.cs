@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -37,17 +38,21 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
+    public async Task<IList<RestApiOperation>> ParseAsync(
+        Stream stream,
+        bool ignoreNonCompliantErrors = false,
+        IList<string>? operationsToExclude = null,
+        CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
+        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument);
+        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude);
     }
 
     #region private
@@ -91,13 +96,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
-        if (jsonObject == null)
-        {
-            // The document is malformed.
-            throw new SKException("Parsing of OpenAPI document failed.");
-        }
-
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new SKException("Parsing of OpenAPI document failed.");
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
             // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
@@ -147,8 +146,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Parses an OpenApi document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenApi document.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <returns>List of Rest operations.</returns>
-    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude = null)
     {
         var result = new List<RestApiOperation>();
 
@@ -156,7 +156,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value);
+            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude);
 
             result.AddRange(operations);
         }
@@ -170,8 +170,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="serverUrl">The server url.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <returns>Rest operation.</returns>
-    private static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem)
+    private static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude = null)
     {
         var operations = new List<RestApiOperation>();
 
@@ -180,6 +181,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             var method = operationPair.Key.ToString();
 
             var operationItem = operationPair.Value;
+
+            if (operationsToExclude != null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
@@ -225,11 +231,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Schema.Type,
                 parameter.Required,
                 parameter.Explode,
-                (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()),
-                (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
+                (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()!),
+                (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()!),
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
-                parameter.Description
+                parameter.Description,
+                parameter.Schema.ToJsonDocument()
             );
 
             result.Add(restParameter);
@@ -261,17 +268,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt));
-        if (mediaType == null)
-        {
-            throw new SKException($"Neither of the media types of {operationId} is supported.");
-        }
-
+        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt)) ?? throw new SKException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
     }
 
     /// <summary>
@@ -308,7 +310,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description);
+                propertySchema.Description,
+                propertySchema.ToJsonDocument());
 
             result.Add(property);
         }
