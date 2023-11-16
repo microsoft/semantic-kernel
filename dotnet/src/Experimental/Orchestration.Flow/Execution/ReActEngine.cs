@@ -130,7 +130,7 @@ internal sealed class ReActEngine
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
     }
 
-    internal async Task<ReActStep?> GetNextStepAsync(SKContext context, string question, List<ReActStep> previousSteps)
+    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, SKContext context, string question, List<ReActStep> previousSteps)
     {
         context.Variables.Set("question", question);
         var scratchPad = this.CreateScratchPad(previousSteps);
@@ -158,7 +158,7 @@ internal sealed class ReActEngine
         this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
+        var llmResponse = await this._reActFunction.InvokeAsync(kernel, context).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
@@ -205,7 +205,7 @@ internal sealed class ReActEngine
 
         try
         {
-            var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
+            var result = await function.InvokeAsync(kernel, actionContext).ConfigureAwait(false);
 
             foreach (var variable in actionContext.Variables)
             {

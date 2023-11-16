@@ -110,7 +110,7 @@ public class StepwisePlanner : IStepwisePlanner
             return context;
         }
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context, cancellationToken).ConfigureAwait(false);
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context, cancellationToken).ConfigureAwait(false);
 
         if (aiService is null)
         {
@@ -311,16 +311,16 @@ public class StepwisePlanner : IStepwisePlanner
 
     #region setup helpers
 
-    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
     {
-        string userManual = await this.GetUserManualAsync(question, context, cancellationToken).ConfigureAwait(false);
-        string userQuestion = await this.GetUserQuestionAsync(context, cancellationToken).ConfigureAwait(false);
+        string userManual = await this.GetUserManualAsync(kernel, question, context, cancellationToken).ConfigureAwait(false);
+        string userQuestion = await this.GetUserQuestionAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
         var systemContext = this._kernel.CreateNewContext();
 
         systemContext.Variables.Set("suffix", this.Config.Suffix);
         systemContext.Variables.Set("functionDescriptions", userManual);
-        string systemMessage = await this.GetSystemMessageAsync(systemContext, cancellationToken).ConfigureAwait(false);
+        string systemMessage = await this.GetSystemMessageAsync(kernel, systemContext, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(userQuestion);
@@ -346,19 +346,19 @@ public class StepwisePlanner : IStepwisePlanner
         return chatHistory;
     }
 
-    private async Task<string> GetUserManualAsync(string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<string> GetUserManualAsync(Kernel kernel, string question, SKContext context, CancellationToken cancellationToken)
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
         var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
-        return await promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+        return await promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task<string> GetUserQuestionAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(context, cancellationToken);
+    private Task<string> GetUserQuestionAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
 
-    private Task<string> GetSystemMessageAsync(SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(context, cancellationToken);
+    private Task<string> GetSystemMessageAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
 
     #endregion setup helpers
 

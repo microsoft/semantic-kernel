@@ -154,7 +154,7 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel.CreateNewContext());
+            var information = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);

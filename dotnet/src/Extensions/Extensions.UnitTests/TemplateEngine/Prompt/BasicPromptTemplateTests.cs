@@ -29,6 +29,7 @@ public sealed class BasicPromptTemplateTests
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IAIServiceProvider> _serviceProvider;
     private readonly Mock<IAIServiceSelector> _serviceSelector;
+    private readonly Kernel _kernel;
 
     public BasicPromptTemplateTests(ITestOutputHelper testOutputHelper)
     {
@@ -38,6 +39,7 @@ public sealed class BasicPromptTemplateTests
         this._functions = new Mock<IReadOnlySKPluginCollection>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
         this._serviceSelector = new Mock<IAIServiceSelector>();
+        this._kernel = KernelBuilder.Create();
     }
 
     [Fact]
@@ -163,7 +165,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await target.RenderAsync(context);
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -190,7 +192,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await target.RenderAsync(context);
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -223,7 +225,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await target.RenderAsync(context);
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -254,7 +256,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(context));
+        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, context));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -286,7 +288,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await target.RenderAsync(context);
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -329,7 +331,7 @@ public sealed class BasicPromptTemplateTests
         };
 
         // Act
-        var result = await target.RenderAsync(this.MockContext(functions.ToArray()));
+        var result = await target.RenderAsync(this._kernel, this.MockContext(functions.ToArray()));
 
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
@@ -356,7 +358,7 @@ public sealed class BasicPromptTemplateTests
         var context = this.MockContext(func);
 
         // Act
-        var result = await target.RenderAsync(context);
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);

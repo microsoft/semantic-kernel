@@ -76,13 +76,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(kernel, requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,6 +156,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     private async Task<FunctionResult> RunPromptAsync(
+        Kernel kernel,
         AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken = default)
@@ -163,7 +165,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
             var serviceSelector = context.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);

@@ -191,7 +191,7 @@ public static class KernelFunctionFromPrompt
 
         public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
-        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default) =>
+        public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
             Task.FromResult(this._templateText);
     }
 }

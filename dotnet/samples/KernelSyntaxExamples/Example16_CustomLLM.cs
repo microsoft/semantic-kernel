@@ -118,7 +118,7 @@ public static class Example16_CustomLLM
 
         var textValidationFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
-        var result = await textValidationFunction.InvokeAsync("I mised the training session this morning", kernel);
+        var result = await textValidationFunction.InvokeAsync(kernel, "I mised the training session this morning");
         Console.WriteLine(result.GetValue<string>());
 
         // Details of the my custom model response

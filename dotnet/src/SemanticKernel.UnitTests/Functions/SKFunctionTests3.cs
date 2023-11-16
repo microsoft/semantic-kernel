@@ -9,12 +9,16 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class SKFunctionTests3
 {
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
     {
@@ -101,7 +105,7 @@ public sealed class SKFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("YES", context.Variables["canary"]);
@@ -135,7 +139,7 @@ public sealed class SKFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("YES", result.Context.Variables["canary"]);

@@ -48,7 +48,7 @@ public sealed class HandlebarsPromptTemplateTests
         var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(context);
+        var prompt = await target.RenderAsync(this._kernel, context);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -64,7 +64,7 @@ public sealed class HandlebarsPromptTemplateTests
         var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(context);
+        var prompt = await target.RenderAsync(this._kernel, context);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -80,7 +80,7 @@ public sealed class HandlebarsPromptTemplateTests
         var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(context);
+        var prompt = await target.RenderAsync(this._kernel, context);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
@@ -141,7 +141,7 @@ public sealed class HandlebarsPromptTemplateTests
         var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(context);
+        var prompt = await target.RenderAsync(this._kernel, context);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);

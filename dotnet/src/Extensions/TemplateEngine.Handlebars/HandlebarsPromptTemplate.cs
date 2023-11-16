@@ -32,7 +32,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
@@ -42,7 +42,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{skfunction.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
+                    var result = skfunction.InvokeAsync(kernel, executionContext).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.GetValue<string>());
                 });
             }

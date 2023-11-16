@@ -180,7 +180,7 @@ public class FunctionViewTests
     {
         var function = KernelFunctionFromMethod.Create(Method(ValidFunctionName));
         var context = MockContext("");
-        var result = await function.InvokeAsync(context);
+        var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
     }
 
     private static MethodInfo Method(Delegate method)

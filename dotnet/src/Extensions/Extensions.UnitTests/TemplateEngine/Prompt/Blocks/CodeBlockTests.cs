@@ -44,6 +44,7 @@ public class CodeBlockTests
         function.Setup(x => x.Name).Returns("function");
         function
             .Setup(x => x.InvokeAsync(
+                It.IsAny<Kernel>(),
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
                 It.IsAny<CancellationToken>()))
@@ -206,32 +207,19 @@ public class CodeBlockTests
         var canary1 = string.Empty;
         var canary2 = string.Empty;
 
-        var function = new Mock<ISKFunction>();
-        function.Setup(x => x.Name).Returns("function");
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary0 = context!.Variables["input"];
-                canary1 = context.Variables["var1"];
-                canary2 = context.Variables["var2"];
+        var function = KernelFunctionFromMethod.Create((SKContext context) =>
+        {
+            canary0 = context!.Variables["input"];
+            canary1 = context.Variables["var1"];
+            canary2 = context.Variables["var2"];
 
-                context.Variables["input"] = "overridden";
-                context.Variables["var1"] = "overridden";
-                context.Variables["var2"] = "overridden";
-            })
-            .ReturnsAsync((
-                SKContext inputContext,
-                object _,
-                CancellationToken _) => new FunctionResult("function", inputContext));
+            context.Variables["input"] = "overridden";
+            context.Variables["var1"] = "overridden";
+            context.Variables["var2"] = "overridden";
+        },
+        "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
@@ -261,26 +249,14 @@ public class CodeBlockTests
         var varBlock = new VarBlock($"${Var}");
 
         var canary = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function.Setup(x => x.Name).Returns("function");
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult("function", inputcontext));
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        var function = KernelFunctionFromMethod.Create((SKContext context) =>
+        {
+            canary = context!.Variables["input"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
@@ -303,26 +279,13 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = new Mock<ISKFunction>();
-        function.Setup(x => x.Name).Returns("function");
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult("function", inputcontext));
+        var function = KernelFunctionFromMethod.Create((SKContext context) =>
+        {
+            canary = context!.Variables["input"];
+        },
+        "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
@@ -351,27 +314,15 @@ public class CodeBlockTests
 
         var foo = string.Empty;
         var baz = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function.Setup(x => x.Name).Returns("function");
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                foo = context!.Variables["foo"];
-                baz = context!.Variables["baz"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult("function", inputcontext));
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        var function = KernelFunctionFromMethod.Create((SKContext context) =>
+        {
+            foo = context!.Variables["foo"];
+            baz = context!.Variables["baz"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);

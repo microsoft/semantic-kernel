@@ -83,19 +83,14 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var stepOutput = "Output: The input was: ";
-        var expectedSteps = "\"steps\":[{";
         var plan = new Plan(goal);
 
         // Arrange Mocks
         var returnContext = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var function = KernelFunctionFromMethod.Create(() => { }, "function");
 
-        plan.AddSteps(new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(function));
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -104,7 +99,12 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
         Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
+
+        var deserializedPlan = Plan.FromJson(serializedPlan);
+
+        Assert.NotNull(deserializedPlan);
+        Assert.Single(deserializedPlan.Steps);
+        Assert.Equal("function", deserializedPlan.Steps[0].Name);
     }
 
     [Fact]
@@ -113,7 +113,6 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var stepOutput = "Output: The input was: ";
-        var expectedSteps = "\"steps\":[{";
         var plan = new Plan(goal);
 
         // Arrange
@@ -122,13 +121,9 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var function = KernelFunctionFromMethod.Create(() => { }, "function");
 
-        plan.AddSteps(mockFunction.Object);
+        plan.AddSteps(function);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -137,16 +132,20 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
         Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
+
+        var deserializedPlan = Plan.FromJson(serializedPlan);
+
+        Assert.NotNull(deserializedPlan);
+        Assert.Single(deserializedPlan.Steps);
+        Assert.Equal("function", deserializedPlan.Steps[0].Name);
     }
 
     [Fact]
     public void CanSerializePlanWithFunctionSteps()
     {
-        // Arrange
+        // Arrange// Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var stepOutput = "Output: The input was: ";
-        var expectedSteps = "\"steps\":[{";
         var plan = new Plan(goal);
 
         // Arrange
@@ -155,13 +154,11 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var function1 = KernelFunctionFromMethod.Create(() => { }, "function1");
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        var function2 = KernelFunctionFromMethod.Create(() => { }, "function2");
+
+        plan.AddSteps(function1, function2);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -170,7 +167,13 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
         Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
+
+        var deserializedPlan = Plan.FromJson(serializedPlan);
+
+        Assert.NotNull(deserializedPlan);
+        Assert.Equal(2, deserializedPlan.Steps.Count);
+        Assert.Equal("function1", deserializedPlan.Steps[0].Name);
+        Assert.Equal("function2", deserializedPlan.Steps[1].Name);
     }
 
     [Fact]
@@ -179,7 +182,6 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var stepOutput = "Output: The input was: ";
-        var expectedSteps = "\"steps\":[{";
         var plan = new Plan(goal);
 
         // Arrange
@@ -188,13 +190,11 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var function1 = KernelFunctionFromMethod.Create(() => { }, "function1");
 
-        plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
+        var function2 = KernelFunctionFromMethod.Create(() => { }, "function2");
+
+        plan.AddSteps(new Plan(function1), function2);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -203,7 +203,13 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
         Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
+
+        var deserializedPlan = Plan.FromJson(serializedPlan);
+
+        Assert.NotNull(deserializedPlan);
+        Assert.Equal(2, deserializedPlan.Steps.Count);
+        Assert.Equal("function1", deserializedPlan.Steps[0].Name);
+        Assert.Equal("function2", deserializedPlan.Steps[1].Name);
     }
 
     [Fact]
@@ -220,13 +226,11 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var function1 = KernelFunctionFromMethod.Create(() => { }, "function1");
 
-        plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
+        var function2 = KernelFunctionFromMethod.Create(() => { }, "function2");
+
+        plan.AddSteps(new Plan(function1), new Plan(function2));
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -242,19 +246,9 @@ public sealed class PlanSerializationTests
         // Arrange
         var plan = new Plan("Write a poem or joke and send it in an e-mail to Kai.");
 
-        // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var function = KernelFunctionFromMethod.Create(() => { }, "function");
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
-            {
-                return Task.FromResult(new FunctionResult("functionName", context));
-            });
-        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
-
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(function, function);
 
         var serializedPlan1 = plan.ToJson();
 
@@ -263,7 +257,7 @@ public sealed class PlanSerializationTests
         Assert.NotEmpty(serializedPlan1);
         Assert.Contains("\"next_step_index\":0", serializedPlan1, StringComparison.OrdinalIgnoreCase);
 
-        var result = await kernel.StepAsync("Some input", plan);
+        var result = await this._kernel.StepAsync("Some input", plan);
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -274,7 +268,7 @@ public sealed class PlanSerializationTests
         Assert.NotEqual(serializedPlan1, serializedPlan2);
         Assert.Contains("\"next_step_index\":1", serializedPlan2, StringComparison.OrdinalIgnoreCase);
 
-        result = await kernel.StepAsync(result);
+        result = await this._kernel.StepAsync(result);
         var serializedPlan3 = plan.ToJson();
 
         // Assert
@@ -295,16 +289,14 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
-
         var returnContext = new SKContext(
             this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -323,7 +315,7 @@ public sealed class PlanSerializationTests
 
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.StepAsync(cv, plan);
+        plan = await this._kernel.StepAsync(cv, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -336,7 +328,7 @@ public sealed class PlanSerializationTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
-        plan = await kernel.StepAsync(cv, plan);
+        plan = await this._kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -363,7 +355,6 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var plugins = new SKPluginCollection();
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
         var returnContext = new SKContext(
             this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
@@ -373,8 +364,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.Name).Returns("functionName");
         mockFunction
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
+            .Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -390,7 +381,7 @@ public sealed class PlanSerializationTests
 
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.StepAsync(cv, plan);
+        plan = await this._kernel.StepAsync(cv, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -410,7 +401,7 @@ public sealed class PlanSerializationTests
             new ContextVariables()
         );
         plan = Plan.FromJson(serializedPlan1, plugins);
-        plan = await kernel.StepAsync(cv, plan);
+        plan = await this._kernel.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -445,6 +436,7 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = KernelFunctionFromMethod.Create((string input) => input + input, "functionName");
+
         plugins.Add(new SKPlugin("test", new[] { mockFunction }));
 
         plan.AddSteps(new Plan("Step1", mockFunction), mockFunction);
@@ -486,14 +478,12 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
-        mockFunction.Setup(x => x.Name).Returns("functionName");
+        var function = KernelFunctionFromMethod.Create((SKContext context) =>
+        {
+            returnContext.Variables.Update(returnContext.Variables.Input + context.Variables.Input);
+        }, "function");
 
-        plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
+        plan.AddSteps(new Plan("Step1", function), function);
 
         var serializedPlan = plan.ToJson();
 

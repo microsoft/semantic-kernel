@@ -73,7 +73,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
         public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
-        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._templateString);
         }
@@ -105,7 +105,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
         public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
 
-        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._templateString);
         }
