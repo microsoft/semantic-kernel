@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -41,7 +40,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
         // Initialize prompt renderer
-        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
@@ -297,7 +296,7 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
+    private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

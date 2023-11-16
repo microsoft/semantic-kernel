@@ -2,26 +2,25 @@
 
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
-public sealed class BasicPromptTemplateFactoryTests
+public sealed class KernelPromptTemplateFactoryTests
 {
     [Fact]
     public void ItCreatesBasicPromptTemplateByDefault()
     {
         // Arrange
         var templateString = "{{$input}}";
-        var target = new BasicPromptTemplateFactory();
+        var target = new KernelPromptTemplateFactory();
 
         // Act
         var result = target.Create(templateString, new PromptTemplateConfig());
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result is BasicPromptTemplate);
+        Assert.True(result is KernelPromptTemplate);
     }
 
     [Fact]
@@ -29,14 +28,14 @@ public sealed class BasicPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
-        var target = new BasicPromptTemplateFactory();
+        var target = new KernelPromptTemplateFactory();
 
         // Act
         var result = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "semantic-kernel" });
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result is BasicPromptTemplate);
+        Assert.True(result is KernelPromptTemplate);
     }
 
     [Fact]
@@ -44,7 +43,7 @@ public sealed class BasicPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
-        var target = new BasicPromptTemplateFactory();
+        var target = new KernelPromptTemplateFactory();
 
         // Act
         // Assert

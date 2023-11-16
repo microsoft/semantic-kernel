@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal enum BlockTypes
 {

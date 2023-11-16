@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
