@@ -16,6 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
     private readonly StreamingChatChoice _choice;
+    private readonly List<SemanticKernel.AI.ChatCompletion.ChatMessage> _chatMessages = new();
+
     public ModelResult ModelResult { get; }
 
     public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice)
@@ -43,12 +45,22 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     /// <inheritdoc/>
     public async IAsyncEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
+        if (this._chatMessages.Count > 0)
         {
-            if (message.FunctionCall is not null || message.Content is { Length: > 0 })
+            foreach(var skAzureOpenAIChatMessage in this._chatMessages)
             {
-                yield return new AzureOpenAIChatMessage(message);
+                yield return skAzureOpenAIChatMessage;
             }
+
+            yield break;
+        }
+
+        var chatMessages = new List<SemanticKernel.AI.ChatCompletion.ChatMessage>();
+        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            var skAzureOpenAIChatMessage = new AzureOpenAIChatMessage(message);
+            chatMessages.Add(skAzureOpenAIChatMessage);
+            yield return skAzureOpenAIChatMessage;
         }
     }
 

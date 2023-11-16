@@ -29,11 +29,16 @@ public static class ChatStreamingResultExtensions
         FunctionCall? functionCall = null;
         await foreach (AzureOpenAIChatMessage message in chatStreamingResult.GetStreamingChatMessageAsync())
         {
-            functionCall ??= message.FunctionCall;
+            functionCall ??= message.InnerChatMessage?.FunctionCall;
 
-            if (message.FunctionCall?.Arguments is not null)
+            if (functionCall is null && message.InnerChatMessage?.Name is not null)
             {
-                arguments.Append(message.FunctionCall.Arguments);
+                functionCall = new FunctionCall(message.InnerChatMessage.Name, null);
+            }
+
+            if (message.InnerChatMessage?.FunctionCall?.Arguments is not null)
+            {
+                arguments.Append(message.InnerChatMessage?.FunctionCall.Arguments);
             }
         }
 
