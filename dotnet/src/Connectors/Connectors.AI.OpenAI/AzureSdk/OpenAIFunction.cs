@@ -77,7 +77,7 @@ public class OpenAIFunction
     /// <summary>
     /// Separator between the plugin name and the function name
     /// </summary>
-    public const string NameSeparator = "-";
+    public const string NameSeparator = "_";
 
     /// <summary>
     /// Name of the function
@@ -95,7 +95,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(NameSeparator, this.PluginName, this.FunctionName);
+        this.PluginName.IsNullOrEmpty() ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
 
     /// <summary>
     /// Description of the function
