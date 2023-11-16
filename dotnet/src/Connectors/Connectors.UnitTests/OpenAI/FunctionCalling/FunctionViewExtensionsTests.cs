@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -95,6 +96,7 @@ public sealed class FunctionViewExtensionsTests
             Name: "param1",
             Description: "This is param1",
             Type: null,
+            ParameterType: null,
             IsRequired: false);
 
         var sut = new FunctionView(
@@ -144,5 +146,45 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItCanCreateValidOpenAIFunctionManual()
+    {
+        // Arrange
+        var kernel = new KernelBuilder().Build();
+        var functions = kernel.ImportFunctions(new MyPlugin(), "MyPlugin");
+        var function = functions.First().Value;
+        var functionView = function.Describe();
+        var sut = functionView.ToOpenAIFunction();
+
+        // Act
+        var result = sut.ToFunctionDefinition();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\",\"parameter3\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"},\"parameter3\":{\"type\":\"string\",\"format\":\"date-time\",\"description\":\"DateTime parameter\"}}}",
+            result.Parameters.ToString()
+        );
+    }
+
+    private enum MyEnum
+    {
+        Value1,
+        Value2
+    }
+
+    private sealed class MyPlugin
+    {
+        [SKFunction, SKName("MyFunction"), System.ComponentModel.Description("My sample function.")]
+        public string MyFunction(
+            [System.ComponentModel.Description("String parameter")] string parameter1,
+            [System.ComponentModel.Description("Enum parameter")] MyEnum parameter2,
+            [System.ComponentModel.Description("DateTime parameter")] DateTime parameter3
+            )
+        {
+            return "return";
+        }
     }
 }

@@ -28,6 +28,5 @@
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
   </ItemGroup>
 </Project>
