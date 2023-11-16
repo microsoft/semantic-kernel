@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -153,7 +152,7 @@ public static class Example59_OpenAIFunctionCalling
         await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
         {
             StringBuilder chatContent = new();
-            Console.Write($"Assistant response: ");
+            Console.Write("Assistant response: ");
             await foreach (var message in chatResult.GetStreamingChatMessageAsync())
             {
                 if (message.Content is not null)
