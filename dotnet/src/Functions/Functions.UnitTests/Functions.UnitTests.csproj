@@ -29,6 +29,10 @@
     <EmbeddedResource Include="OpenAPI\TestResponses\ValidProductContent.json" />
     <EmbeddedResource Include="OpenAPI\TestResponses\InvalidProductContent.json" />
     <EmbeddedResource Include="OpenAPI\TestResponses\NotProductContent.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\2XXFakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\200FakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\FakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\DefaultResponseSchema.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
