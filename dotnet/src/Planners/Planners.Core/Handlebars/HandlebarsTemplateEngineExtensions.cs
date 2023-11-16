@@ -152,10 +152,17 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
             var returnType = function.Describe().ReturnParameter.ParameterType;
             var resultAsObject = result.GetValue<object?>();
-            var serializedResult = JsonSerializer.Serialize(result.GetValue<object?>());
+
+            // If return type is complex, serialize the object so it can be deserialized with appropriate type to capture expected class properties.
+            // i.e., class properties can be different if JsonPropertyName = 'name' and class property is 'Name'
+            if (returnType != null && !ParameterViewExtensions.isPrimitiveOrStringType(returnType))
+            {
+                var serializedResult = JsonSerializer.Serialize(resultAsObject);
+                resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
+            }
 
             // Write the result to the template
-            return returnType != null && !(returnType.IsPrimitive || returnType == typeof(string)) ? JsonSerializer.Deserialize(serializedResult, returnType) : resultAsObject;
+            return resultAsObject;
         });
     }
 

@@ -32,9 +32,9 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPlannerConfig _config;
 
-    private readonly HashSet<HandlebarsParameterTypeView> _parameterTypeView = new();
+    private readonly HashSet<HandlebarsParameterTypeView> _parametersTypeView = new();
 
-    private readonly Dictionary<string, string> _parameterSchemaView = new();
+    private readonly Dictionary<string, string> _parametersSchemaView = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -110,6 +110,7 @@ public sealed class HandlebarsPlanner
         var functionsView = new List<FunctionView>();
         foreach (var skFunction in availableFunctions)
         {
+            // Extract any complex schemas for isolated render in prompt template
             var parametersView = new List<ParameterView>();
             foreach (var parameter in skFunction.Parameters)
             {
@@ -120,6 +121,7 @@ public sealed class HandlebarsPlanner
             var returnParameter = skFunction.ReturnParameter.ToParameterView(skFunction.Name);
             returnParameter = this.SetComplexTypeDefinition(returnParameter);
 
+            // Need to override function view in case parameter views changed (e.g., converted primitive types from schema objects)
             var functionView = new FunctionView(skFunction.Name, skFunction.PluginName, skFunction.Description, parametersView, returnParameter.ToReturnParameterView());
             functionsView.Add(functionView);
         }
@@ -127,22 +129,24 @@ public sealed class HandlebarsPlanner
         return functionsView;
     }
 
+    // Extract any complex schemas for isolated render in prompt template
     private ParameterView SetComplexTypeDefinition(ParameterView parameter)
     {
-        if (parameter.Schema != null)
+        // TODO (@teresaqhoang): handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
+        if (parameter.ParameterType != null)
         {
-            // Parse the schema to filter out any primitive types
+            this._parametersTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
+        }
+        else if (parameter.Schema != null)
+        {
+            // Parse the schema to filter any primitive types and set in ParameterType property instead
             var parsedParameter = parameter.ParseJsonSchema();
             if (parsedParameter.Schema != null)
             {
-                this._parameterSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+                this._parametersSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
             }
 
             parameter = parsedParameter;
-        }
-        else if (parameter.ParameterType != null)
-        {
-            this._parameterTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
         }
 
         return parameter;
@@ -187,8 +191,8 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
                 { "allowLoops", this._config.AllowLoops },
-                { "complexTypeDefinitions", this._parameterTypeView.Count > 0 && this._parameterTypeView.Any(p => p.IsComplexType) ? this._parameterTypeView.Where(p => p.IsComplexType) : null},
-                { "complexSchemaDefinitions", this._parameterSchemaView.Count > 0 ? this._parameterSchemaView : null},
+                { "complexTypeDefinitions", this._parametersTypeView.Count > 0 && this._parametersTypeView.Any(p => p.IsComplexType) ? this._parametersTypeView.Where(p => p.IsComplexType) : null},
+                { "complexSchemaDefinitions", this._parametersSchemaView.Count > 0 ? this._parametersSchemaView : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };
