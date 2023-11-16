@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class StreamingTextResultUpdate : StreamingResultUpdate
+public class StreamingTextResultUpdate : StreamingResultChunk
 {
     /// <inheritdoc/>
     public override string Type => "huggingface_text_update";

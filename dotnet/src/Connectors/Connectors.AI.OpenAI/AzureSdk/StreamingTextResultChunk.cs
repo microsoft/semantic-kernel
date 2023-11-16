@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class StreamingTextResultUpdate : StreamingResultUpdate
+public class StreamingTextResultChunk : StreamingResultChunk
 {
     /// <inheritdoc/>
     public override string Type => "openai_text_update";
@@ -22,11 +22,11 @@ public class StreamingTextResultUpdate : StreamingResultUpdate
     public string Content { get; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingTextResultUpdate"/> class.
+    /// Create a new instance of the <see cref="StreamingTextResultChunk"/> class.
     /// </summary>
     /// <param name="text">Text update</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingTextResultUpdate(string text, int resultIndex)
+    public StreamingTextResultChunk(string text, int resultIndex)
     {
         this.ResultIndex = resultIndex;
         this.Content = text;

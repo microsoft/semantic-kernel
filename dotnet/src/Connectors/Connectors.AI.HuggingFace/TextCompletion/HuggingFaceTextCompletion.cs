@@ -92,7 +92,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(
+    public async IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(
         string input,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -112,7 +112,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToString();
         }
@@ -121,7 +121,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToByteArray();
         }

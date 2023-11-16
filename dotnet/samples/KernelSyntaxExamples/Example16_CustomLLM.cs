@@ -52,15 +52,15 @@ public class MyTextCompletionService : ITextCompletion
 
     public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken))
         {
             yield return update.ToByteArray();
         }
     }
 
-    public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        var list = new List<StreamingResultUpdate>()
+        var list = new List<StreamingResultChunk>()
         {
             new MyStreamingResultUpdate("llm content update 1"),
             new MyStreamingResultUpdate("llm content update 2")
@@ -71,14 +71,14 @@ public class MyTextCompletionService : ITextCompletion
 
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken))
         {
             yield return update.ToString();
         }
     }
 }
 
-public class MyStreamingResultUpdate : StreamingResultUpdate
+public class MyStreamingResultUpdate : StreamingResultChunk
 {
     public override string Type => "my_text_type";
 

@@ -80,7 +80,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+    public IAsyncEnumerable<StreamingResultChunk> StreamingInvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -175,7 +175,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeWithInstrumentationAsync(Func<IAsyncEnumerable<StreamingResultUpdate>> func)
+    private async IAsyncEnumerable<StreamingResultChunk> StreamingInvokeWithInstrumentationAsync(Func<IAsyncEnumerable<StreamingResultChunk>> func)
     {
         using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 

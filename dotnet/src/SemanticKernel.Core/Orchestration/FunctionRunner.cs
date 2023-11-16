@@ -38,12 +38,12 @@ internal class FunctionRunner : IFunctionRunner
         return this.RunAsync(function, variables, cancellationToken);
     }
 
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingResultChunk> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
         return this._kernel.StreamingRunAsync(skFunction, variables, cancellationToken);
     }
 
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingResultChunk> StreamingRunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();
     }

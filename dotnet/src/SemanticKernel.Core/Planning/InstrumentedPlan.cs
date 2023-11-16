@@ -62,7 +62,7 @@ internal sealed class InstrumentedPlan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(SKContext context,
+    public IAsyncEnumerable<StreamingResultChunk> StreamingInvokeAsync(SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {

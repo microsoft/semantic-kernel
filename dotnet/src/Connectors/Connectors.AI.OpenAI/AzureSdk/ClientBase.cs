@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Prompt;
+using ChatMessage = Azure.AI.OpenAI.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -151,8 +152,16 @@ public abstract class ClientBase
         }
     }
 
-    private protected async IAsyncEnumerable<StreamingTextResultUpdate> InternalGetTextStreamingUpdatesAsync(
+    private protected IAsyncEnumerable<StreamingTextResultChunk> InternalGetTextStreamingUpdatesAsync(
     string prompt,
+    AIRequestSettings? requestSettings,
+    CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetTextStreamingUpdatesAsync<StreamingTextResultChunk>(prompt, requestSettings, cancellationToken);
+    }
+
+    private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
+        string prompt,
     AIRequestSettings? requestSettings,
     [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -172,7 +181,21 @@ public abstract class ClientBase
         {
             await foreach (string textUpdate in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
             {
-                yield return new StreamingTextResultUpdate(textUpdate, choiceIndex);
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)textUpdate;
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingResultChunk interface works
+                if (typeof(T) == typeof(StreamingTextResultChunk) ||
+                    typeof(T) == typeof(StreamingResultChunk))
+                {
+                    yield return (T)(object)new StreamingTextResultChunk(textUpdate, choiceIndex);
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
             }
             choiceIndex++;
         }
@@ -287,8 +310,8 @@ public abstract class ClientBase
         }
     }
 
-    private protected async IAsyncEnumerable<StreamingChatResultUpdate> InternalGetChatStreamingUpdatesAsync(
-        IEnumerable<ChatMessageBase> chat,
+    private protected async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -309,15 +332,38 @@ public abstract class ClientBase
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
+
         int choiceIndex = 0;
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
             await foreach (ChatMessage chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
             {
-                yield return new StreamingChatResultUpdate(chatMessage, choiceIndex);
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)chatMessage.Content;
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingResultChunk interface works
+                if (typeof(T) == typeof(StreamingChatResultChunk) ||
+                    typeof(T) == typeof(StreamingResultChunk))
+                {
+                    yield return (T)(object)new StreamingChatResultChunk(chatMessage, choiceIndex);
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
             }
             choiceIndex++;
         }
+    }
+
+    private protected IAsyncEnumerable<StreamingChatResultChunk> InternalGetChatStreamingUpdatesAsync(
+    IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+    AIRequestSettings? requestSettings,
+    CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetChatStreamingUpdatesAsync<StreamingChatResultChunk>(chat, requestSettings, cancellationToken);
     }
 
     /// <summary>

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI;
 /// <summary>
 /// Represents a single update to a streaming result.
 /// </summary>
-public abstract class StreamingResultUpdate
+public abstract class StreamingResultChunk
 {
     /// <summary>
     /// Type of the update.

@@ -98,7 +98,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+    public IAsyncEnumerable<StreamingResultChunk> StreamingInvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
-    private async IAsyncEnumerable<StreamingResultUpdate> RunStreamingPromptAsync(
+    private async IAsyncEnumerable<StreamingResultChunk> RunStreamingPromptAsync(
         AIRequestSettings? requestSettings,
         SKContext context,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -201,7 +201,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
 
         StringBuilder fullCompletion = new();
-        await foreach (StreamingResultUpdate update in textCompletion.GetStreamingUpdatesAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (StreamingResultChunk update in textCompletion.GetStreamingChunksAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
         {
             fullCompletion.Append(update);
 

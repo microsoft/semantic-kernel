@@ -63,7 +63,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetTextStreamingUpdatesAsync(input, requestSettings, cancellationToken);
     }
@@ -71,7 +71,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToString();
         }
@@ -80,9 +80,15 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToByteArray();
         }
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetTextStreamingUpdatesAsync<T>(input, requestSettings, cancellationToken);
     }
 }

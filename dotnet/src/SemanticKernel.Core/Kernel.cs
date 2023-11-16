@@ -177,7 +177,7 @@ repeat:
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
-    public async IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = this.CreateNewContext(variables);
 
@@ -188,7 +188,7 @@ repeat:
             repeatRequested = false;
 
             var functionDetails = skFunction.Describe();
-            await foreach (StreamingResultUpdate update in skFunction.StreamingInvokeAsync(context, null, cancellationToken).ConfigureAwait(false))
+            await foreach (StreamingResultChunk update in skFunction.StreamingInvokeAsync(context, null, cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

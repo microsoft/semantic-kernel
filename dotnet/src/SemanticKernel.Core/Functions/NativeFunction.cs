@@ -154,7 +154,7 @@ internal sealed class NativeFunction : ISKFunction
         }
     }
 
-    public async IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(SKContext context,
+    public async IAsyncEnumerable<StreamingResultChunk> StreamingInvokeAsync(SKContext context,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

@@ -87,7 +87,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

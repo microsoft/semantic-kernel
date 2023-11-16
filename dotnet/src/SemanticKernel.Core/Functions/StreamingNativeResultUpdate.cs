@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Native function streaming result update.
 /// </summary>
-public sealed class StreamingNativeResultUpdate : StreamingResultUpdate
+public sealed class StreamingNativeResultUpdate : StreamingResultChunk
 {
     /// <inheritdoc/>
     public override string Type => "native_result_update";

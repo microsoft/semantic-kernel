@@ -31,15 +31,15 @@ Needs to be clear for the sk developer when he is attempting to get streaming da
 //(providing the type at as generic parameter)
 
 // Getting a Raw Streaming data from Kernel
-await foreach(string update in kernel.StreamingRunAsync<byte[]>(function, variables))
+await foreach(string update in kernel.RunStreamingAsync<byte[]>(function, variables))
 
 // Getting a String as Streaming data from Kernel
-await foreach(string update in kernel.StreamingRunAsync<string>(function, variables))
+await foreach(string update in kernel.RunStreamingAsync<string>(function, variables))
 
 // Getting a StreamingResultChunk as Streaming data from Kernel
-await foreach(StreamingResultChunk update in kernel.StreamingRunAsync<StreamingResultChunk>(variables, function))
+await foreach(StreamingResultChunk update in kernel.RunStreamingAsync<StreamingResultChunk>(variables, function))
 // OR
-await foreach(StreamingResultChunk update in kernel.StreamingRunAsync(function, variables)) // defaults to Generic above)
+await foreach(StreamingResultChunk update in kernel.RunStreamingAsync(function, variables)) // defaults to Generic above)
 {
     Console.WriteLine(update);
 }
@@ -61,7 +61,7 @@ This approach also exposes dedicated interfaces in the kernel and functions to u
 
 `ITextCompletion` and `IChatCompletion` will have new APIs to get `byte[]` and `string` streaming data directly as well as the specialized `StreamingResultChunk` return.
 
-The sk developer will be able to specify a generic type to the `Kernel.StreamingRunAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultChunk.
+The sk developer will be able to specify a generic type to the `Kernel.RunStreamingAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultChunk.
 
 If the type is not specified or if the string representation cannot be cast, an exception will be thrown.
 
@@ -105,24 +105,27 @@ public class ChatMessageChunk : StreamingResultChunk
 
 interface ITextCompletion + IChatCompletion
 {
-    IAsyncEnumerable<StreamingResultChunk> GetStreamingUpdatesAsync();
-    //IAsyncEnumerable<string> GetStringStreamingUpdatesAsync();
-    //IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync();
+    IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync();
+    // Garanteed abstraction to be used by the ISKFunction.RunStreamingAsync()
 
-    // OR
-    IAsyncEnumerable<T> GetStreamingUpdatesAsync<T>() where T : StreamingResultChunk or string or byte[];
+    IAsyncEnumerable<T> GetStreamingChunksAsync<T>();
     // Throw exception if T is not supported
+    // Initially connectors
 }
 
 interface IKernel
 {
     // When the developer provides a T, the Kernel will try to get the streaming data as T
-    IAsyncEnumerable<StreamingResultChunk> StreamingRunAsync(ContextVariables variables, ISKFunction function);
+    IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(ContextVariables variables, ISKFunction function);
 
     // Extension generic method to get from type <T>
     IAsyncEnumerable<T> RunStreamingAsync<T>(ContextVariables variables, ISKFunction function);
 }
 
+public class StreamingFunctionResult : IAsyncEnumerable<StreamingResultChunk>
+{
+
+}
 
 interface ISKFunction
 {
@@ -175,7 +178,7 @@ Look into Hugging Face Streaming APIs
 Create a second option after talkin with Stephen.
 
 Run by Matthew
-StreamingAsync vs StreamingRunAsync vs RunStreamingAsync vs StreamAsync
+StreamingAsync vs RunStreamingAsync vs RunStreamingAsync vs StreamAsync
 First thing should be a verb
 
 Add more examples of the API usage for streaming with chunks, for complex scenarios like multiple modals.

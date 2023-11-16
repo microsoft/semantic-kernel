@@ -63,7 +63,7 @@ public interface IKernel
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(ISKFunction skFunction, ContextVariables? variables, CancellationToken cancellationToken);
+    public IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(ISKFunction skFunction, ContextVariables? variables, CancellationToken cancellationToken);
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.

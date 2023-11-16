@@ -119,7 +119,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultUpdate> GetStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
@@ -130,7 +130,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         {
             await foreach (var message in result.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return new StreamingChatResultUpdate((SKChatMessage)message, resultIndex);
+                yield return new StreamingChatResultChunk((AzureOpenAIChatMessage)message, resultIndex);
             }
             resultIndex++;
         }
@@ -139,7 +139,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToString();
         }
@@ -148,7 +148,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in this.GetStreamingUpdatesAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             yield return update.ToByteArray();
         }

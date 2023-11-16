@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
-public class StreamingChatResultUpdate : StreamingResultUpdate
+public class StreamingChatResultChunk : StreamingResultChunk
 {
     /// <inheritdoc/>
     public override string Type => "openai_chat_message_update";
@@ -40,25 +40,25 @@ public class StreamingChatResultUpdate : StreamingResultUpdate
     public string? Name { get; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatResultUpdate"/> class.
+    /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
     /// </summary>
     /// <param name="chatMessage">Original Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultUpdate(ChatMessage chatMessage, int resultIndex)
+    public StreamingChatResultChunk(AzureOpenAIChatMessage chatMessage, int resultIndex)
     {
         this.ResultIndex = resultIndex;
-        this.FunctionCall = chatMessage.FunctionCall;
+        this.FunctionCall = chatMessage.InnerChatMessage?.FunctionCall;
         this.Content = chatMessage.Content;
         this.Role = new AuthorRole(chatMessage.Role.ToString());
-        this.Name = chatMessage.Name;
+        this.Name = chatMessage.InnerChatMessage?.Name;
     }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatResultUpdate"/> class.
+    /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
     /// </summary>
     /// <param name="chatMessage">Original Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultUpdate(SKChatMessage chatMessage, int resultIndex)
+    public StreamingChatResultChunk(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex)
     {
         this.ResultIndex = resultIndex;
         this.FunctionCall = chatMessage.FunctionCall;

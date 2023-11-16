@@ -345,7 +345,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultUpdate> StreamingInvokeAsync(
+    public IAsyncEnumerable<StreamingResultChunk> StreamingInvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)

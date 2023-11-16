@@ -54,7 +54,7 @@ public interface IFunctionRunner
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function composition</returns>
-    IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(
+    IAsyncEnumerable<StreamingResultChunk> StreamingRunAsync(
         ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
@@ -70,7 +70,7 @@ public interface IFunctionRunner
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function composition</returns>
-    IAsyncEnumerable<StreamingResultUpdate> StreamingRunAsync(
+    IAsyncEnumerable<StreamingResultChunk> StreamingRunAsync(
         string pluginName,
         string functionName,
         ContextVariables? variables = null,
