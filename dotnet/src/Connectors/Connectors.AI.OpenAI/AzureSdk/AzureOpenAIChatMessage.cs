@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -11,7 +9,10 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// </summary>
 public class AzureOpenAIChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessage
 {
-    private readonly Azure.AI.OpenAI.ChatMessage? _message;
+    /// <summary>
+    /// Exposes the underlying OpenAI SDK chat message representation
+    /// </summary>
+    public Azure.AI.OpenAI.ChatMessage? InnerChatMessage { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatMessage"/> class.
@@ -20,7 +21,7 @@ public class AzureOpenAIChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessa
     public AzureOpenAIChatMessage(Azure.AI.OpenAI.ChatMessage message)
         : base(new AuthorRole(message.Role.ToString()), message.Content)
     {
-        this._message = message;
+        this.InnerChatMessage = message;
     }
 
     /// <summary>
@@ -32,10 +33,4 @@ public class AzureOpenAIChatMessage : SemanticKernel.AI.ChatCompletion.ChatMessa
         : base(new AuthorRole(role), content)
     {
     }
-
-    /// <summary>
-    /// Exposes the underlying OpenAI SDK function call chat message representation
-    /// </summary>
-    public FunctionCall FunctionCall
-        => this._message?.FunctionCall ?? throw new NotSupportedException("Function call is not supported");
 }
