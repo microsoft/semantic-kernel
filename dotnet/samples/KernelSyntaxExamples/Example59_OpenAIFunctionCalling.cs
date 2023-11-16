@@ -152,8 +152,8 @@ public static class Example59_OpenAIFunctionCalling
         // Send request
         await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
         {
-            Console.WriteLine($"Assistant response: ");
             StringBuilder chatContent = new();
+            Console.Write($"Assistant response: ");
             await foreach (var message in chatResult.GetStreamingChatMessageAsync())
             {
                 if (message.Content is not null)
