@@ -192,7 +192,7 @@ public static class Example65_HandlebarsPlanner
         {
             // TODO (@teresaqhoang): Get a better remote plugin to test with.
             // Expected `no server-url` error, plugin isn't actually hosted. Was testing to see how complex types render in template. 
-            Console.WriteLine($"======== DONE {nameof(Example65_HandlebarsPlanner)} ========");
+            Console.WriteLine($"======== DONE RunRemoteDictionaryWithComplexTypesSampleAsync ========");
         }
     }
 
