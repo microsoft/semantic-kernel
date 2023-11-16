@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
+using Microsoft.SemanticKernel.Planners.Handlebars.Models;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
@@ -68,25 +69,25 @@ public sealed class HandlebarsPlanner
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(handlebarsTemplate, chatCompletion);
 
         // Get the chat completion results
-        var completionResults = await chatCompletion.GetChatCompletionsAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var completionMessage = await completionResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
+        var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
         var resultContext = this._kernel.CreateNewContext();
-        resultContext.Variables.Update(completionMessage.Content);
+        resultContext.Variables.Update(completionResults);
 
+        // Check if plan could not be creted with available helpers
         if (resultContext.Result.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
             throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{resultContext.Result}");
         }
 
+        // Extract handlebars template from result
         Match match = Regex.Match(resultContext.Result, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
         }
 
-        var template = match.Groups[2].Value.Trim(); // match.Success ? match.Groups[2].Value.Trim() : resultContext.Result;
+        var template = match.Groups[2].Value.Trim();
 
         template = template.Replace("compare.equal", "equal");
         template = template.Replace("compare.lessThan", "lessThan");
@@ -132,16 +133,16 @@ public sealed class HandlebarsPlanner
     // Extract any complex schemas for isolated render in prompt template
     private ParameterView SetComplexTypeDefinition(ParameterView parameter)
     {
-        // TODO (@teresaqhoang): handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
-        if (parameter.ParameterType != null)
+        // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
+        if (parameter.ParameterType is not null)
         {
             this._parametersTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
         }
-        else if (parameter.Schema != null)
+        else if (parameter.Schema is not null)
         {
             // Parse the schema to filter any primitive types and set in ParameterType property instead
             var parsedParameter = parameter.ParseJsonSchema();
-            if (parsedParameter.Schema != null)
+            if (parsedParameter.Schema is not null)
             {
                 this._parametersSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
             }
@@ -184,7 +185,7 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
     {
-        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars");
+        var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},

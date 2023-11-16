@@ -88,9 +88,9 @@ internal sealed class HandlebarsTemplateEngineExtensions
                     foreach (var param in functionView.Parameters)
                     {
                         var fullyQualifiedParamName = functionView.Name + ReservedNameDelimiter + param.Name;
-                        var value = handlebarArgs != null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
+                        var value = handlebarArgs is not null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
 
-                        if (value != null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
+                        if (value is not null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
                         {
                             variables[param.Name] = value;
                         }
@@ -154,7 +154,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
             // If return type is complex, serialize the object so it can be deserialized with appropriate type to capture expected class properties.
             // i.e., class properties can be different if JsonPropertyName = 'name' and class property is 'Name'
-            if (returnType != null && !ParameterViewExtensions.isPrimitiveOrStringType(returnType))
+            if (returnType is not null && !ParameterViewExtensions.isPrimitiveOrStringType(returnType))
             {
                 var serializedResult = JsonSerializer.Serialize(resultAsObject);
                 resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
@@ -172,16 +172,16 @@ internal sealed class HandlebarsTemplateEngineExtensions
     {
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var atLeastOneTruthy = false;
+            var isAtLeastOneTruthy = false;
             foreach (var arg in arguments)
             {
-                if (arg != null)
+                if (arg is not null)
                 {
-                    atLeastOneTruthy = true;
+                    isAtLeastOneTruthy = true;
                 }
             }
 
-            return atLeastOneTruthy;
+            return isAtLeastOneTruthy;
         });
 
         handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -252,7 +252,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             object? left = arguments[0];
             object? right = arguments[1];
 
-            return left == right || (left != null && left.Equals(right));
+            return left == right || (left is not null && left.Equals(right));
         });
 
         handlebarsInstance.RegisterHelper("lessThan", (in HelperOptions options, in Context context, in Arguments arguments) =>

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
+namespace Microsoft.SemanticKernel.Planners.Handlebars.Models;
 
 internal class HandlebarsParameterTypeView
 {

@@ -21,7 +21,7 @@ public static class Program
         using CancellationTokenSource cancellationTokenSource = new();
         CancellationToken cancelToken = cancellationTokenSource.ConsoleCancellationToken();
 
-        string? defaultFilter = null; // Modify to filter examples
+        string? defaultFilter = "Example67"; // Modify to filter examples
 
         // Check if args[0] is provided
         string? filter = args.Length > 0 ? args[0] : defaultFilter;

@@ -17,7 +17,7 @@ using RepoUtils;
 /**
  * This example shows how to use the Handlebars sequential planner with complex types.
  */
-public static class Example66_HandlebarsPlannerWithComplexTypes
+public static class Example67_HandlebarsPlannerWithComplexTypes
 {
     private static int s_sampleCount;
 
@@ -27,7 +27,7 @@ public static class Example66_HandlebarsPlannerWithComplexTypes
     public static async Task RunAsync()
     {
         s_sampleCount = 0;
-        Console.WriteLine($"======== {nameof(Example66_HandlebarsPlannerWithComplexTypes)} ========");
+        Console.WriteLine($"======== {nameof(Example67_HandlebarsPlannerWithComplexTypes)} ========");
         await RunLocalDictionarySampleAsync();
         await RunRemoteDictionarySampleAsync();
     }
@@ -129,7 +129,7 @@ public static class Example66_HandlebarsPlannerWithComplexTypes
         {
             // TODO (@teresaqhoang): Get a better remote plugin to test with.
             // Expected `no server-url` error, plugin isn't actually hosted. Was testing to see how complex types render in template. 
-            Console.WriteLine($"======== DONE {nameof(Example66_HandlebarsPlannerWithComplexTypes)} ========");
+            Console.WriteLine($"======== DONE {nameof(Example67_HandlebarsPlannerWithComplexTypes)} ========");
         }
     }
 

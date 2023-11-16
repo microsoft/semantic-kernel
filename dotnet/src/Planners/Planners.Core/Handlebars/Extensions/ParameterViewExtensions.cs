@@ -6,11 +6,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Planners.Handlebars.Models;
 
 namespace Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
 
 internal static class ParameterViewExtensions
 {
+    /// <summary>
+    /// Checks if type is primitive or string
+    /// </summary>
     public static bool isPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
 
     /// <summary>
@@ -33,7 +37,7 @@ internal static class ParameterViewExtensions
             var actualReturnType = type.GenericTypeArguments[0]; // Actual Return Type
             var returnTypeProperties = actualReturnType.GetProperties();
 
-            if (!isPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length != 0)
+            if (!isPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
             {
                 parameterTypes.Add(new HandlebarsParameterTypeView()
                 {
@@ -53,7 +57,7 @@ internal static class ParameterViewExtensions
             parameterTypes.Add(new HandlebarsParameterTypeView()
             {
                 Name = type.Name,
-                IsComplexType = properties.Length != 0,
+                IsComplexType = properties.Length is not 0,
                 Properties = properties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
             });
 
@@ -114,7 +118,7 @@ internal static class ParameterViewExtensions
 
     public static string GetSchemaTypeName(this ParameterView parameter)
     {
-        var schemaType = parameter.Schema != null && parameter.Schema.RootElement.TryGetProperty("type", out var typeElement) ? typeElement.ToString() : "object";
+        var schemaType = parameter.Schema is not null && parameter.Schema.RootElement.TryGetProperty("type", out var typeElement) ? typeElement.ToString() : "object";
         return $"{parameter.Name}-{schemaType}";
     }
 
