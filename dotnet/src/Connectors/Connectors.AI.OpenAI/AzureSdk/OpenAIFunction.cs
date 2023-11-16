@@ -141,7 +141,7 @@ public class OpenAIFunction
         }
 
         var schemaDocument = new JsonSchemaBuilder()
-                        .FromType(type ?? typeof(string))
+                        .FromType(type)
                         .Description(description ?? string.Empty)
                         .Build()
                         .ToJsonDocument();
