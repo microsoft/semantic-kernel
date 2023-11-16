@@ -41,7 +41,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
                 https://ollama.ai/library
         """
         self._model_id = model_id
-        self._api_version = api_version or "0.1.3"
+        self._api_version = api_version or "0.1.9"
         self._base_url = base_url or "http://127.0.0.1:11434"
         self._logger = logger if logger is not None else NullLogger()
 
