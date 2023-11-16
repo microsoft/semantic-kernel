@@ -32,19 +32,22 @@ public static class Example59_OpenAIFunctionCalling
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
             Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
-            FunctionCall = "TimePlugin-Date",
+            FunctionCall = "TimePlugin_Date",
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
-        // Uncomment the samples and run them one at a time
-        //await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        // Before each invocation I need to specify the function call I want to use.
+        requestSettings.FunctionCall = "TimePlugin_Date";
+        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        //await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
-        //await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+
+        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
     private static async Task<IKernel> InitializeKernelAsync()
@@ -65,6 +68,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
     {
+        Console.WriteLine($"\n\n======== Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -140,6 +144,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
     {
+        Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -147,6 +152,7 @@ public static class Example59_OpenAIFunctionCalling
         await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
         {
             StringBuilder chatContent = new();
+            Console.Write("Assistant response: ");
             await foreach (var message in chatResult.GetStreamingChatMessageAsync())
             {
                 if (message.Content is not null)

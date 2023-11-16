@@ -45,10 +45,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            if (message.FunctionCall is not null || message.Content is { Length: > 0 })
-            {
-                yield return new AzureOpenAIChatMessage(message);
-            }
+            yield return new AzureOpenAIChatMessage(message);
         }
     }
 
