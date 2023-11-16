@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Text.Json;
-using Json.Schema;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -23,48 +22,20 @@ public sealed class RestApiOperationResponse
     public string ContentType { get; }
 
     /// <summary>
-    /// The schema of the response.
+    /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
-    public JsonDocument? Schema { get; set; }
+    public JsonDocument? ExpectedSchema { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
     /// <param name="content">The content of the response.</param>
     /// <param name="contentType">The content type of the response.</param>
-    /// <param name="schema">The schema against which the response body should be validated.</param>
-    public RestApiOperationResponse(object content, string contentType, JsonDocument? schema = null)
+    /// <param name="expectedSchema">The schema against which the response body should be validated.</param>
+    public RestApiOperationResponse(object content, string contentType, JsonDocument? expectedSchema = null)
     {
         this.Content = content;
         this.ContentType = contentType;
-        this.Schema = schema;
-    }
-
-    /// <summary>
-    /// Validates the response content against the schema.
-    /// </summary>
-    /// <returns>True if the response is valid, false otherwise.</returns>
-    /// <remarks>
-    /// If the schema is not specified, the response is considered valid.
-    /// </remarks>
-    public bool IsValid()
-    {
-        if (this.Schema is null)
-        {
-            return true;
-        }
-
-        var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(this.Schema));
-
-        try
-        {
-            var contentDoc = JsonDocument.Parse(this.Content.ToString());
-            var result = jsonSchema.Evaluate(contentDoc);
-            return result.IsValid;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
+        this.ExpectedSchema = expectedSchema;
     }
 }

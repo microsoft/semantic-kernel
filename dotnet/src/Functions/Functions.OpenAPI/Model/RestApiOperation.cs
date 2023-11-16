@@ -62,7 +62,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IDictionary<string, RestApiOperationResponse> Responses { get; }
+    public IDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
 
     /// <summary>
     /// The operation payload.
@@ -90,7 +90,7 @@ public sealed class RestApiOperation
         IList<RestApiOperationParameter> parameters,
         IDictionary<string, string> headers,
         RestApiOperationPayload? payload = null,
-        IDictionary<string, RestApiOperationResponse>? responses = null)
+        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -100,7 +100,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
-        this.Responses = responses ?? new Dictionary<string, RestApiOperationResponse>();
+        this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
 
     /// <summary>

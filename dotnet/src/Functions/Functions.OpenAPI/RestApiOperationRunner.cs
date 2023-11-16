@@ -180,7 +180,7 @@ internal sealed class RestApiOperationRunner
 
         var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
 
-        response.Schema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
         return response;
     }

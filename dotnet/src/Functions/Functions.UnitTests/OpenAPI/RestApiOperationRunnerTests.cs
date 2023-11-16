@@ -1016,38 +1016,38 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         {
             yield return new object[] {
                     "default",
-                    new (string, RestApiOperationResponse)[] {
-                        ("400", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
-                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
                     },
             };
             yield return new object[] {
                     "200",
-                    new (string, RestApiOperationResponse)[] {
-                        ("200", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
-                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
                     },
             };
             yield return new object[] {
                     "2XX",
-                    new (string, RestApiOperationResponse)[] {
-                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
-                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
                     },
             };
             yield return new object[] {
                     "2XX",
-                    new (string, RestApiOperationResponse)[] {
-                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
-                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
                     },
             };
             yield return new object[] {
                     "200",
-                    new (string, RestApiOperationResponse)[] {
-                        ("default", new RestApiOperationResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
-                        ("2XX", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse2xx\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
-                        ("200", new RestApiOperationResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse200\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse("{\"title\":\"DefaultResponse\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"}}}"))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse2xx\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse("{\"title\":\"FakeResponse200\",\"type\":\"object\",\"properties\":{\"fakeItems\":{\"type\":\"array\",\"items\":{\"title\":\"Item\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"itemName\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"}}}}}}"))),
                     },
             };
         }
@@ -1057,7 +1057,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
     [Theory]
     [ClassData(typeof(SchemaTestData))]
-    public async Task ItShouldReturnExpectedSchemaAsync(string expectedStatusCode, params (string, RestApiOperationResponse)[] responses)
+    public async Task ItShouldReturnExpectedSchemaAsync(string expectedStatusCode, params (string, RestApiOperationExpectedResponse)[] responses)
     {
         var operation = new RestApiOperation(
             "fake-id",
@@ -1078,7 +1078,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.NotNull(result);
         var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;
-        Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.Schema));
+        Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
     /// <summary>

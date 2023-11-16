@@ -201,7 +201,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
 
             operations.Add(operation);
@@ -287,7 +287,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
     }
 
-    private static IEnumerable<(string, RestApiOperationResponse)> CreateRestApiOperationResponses(OpenApiResponses responses)
+    private static IEnumerable<(string, RestApiOperationExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
     {
         foreach (var response in responses)
         {
@@ -297,7 +297,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 var matchingSchema = response.Value.Content[mediaType].Schema;
                 var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
 
-                yield return (response.Key, new RestApiOperationResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
+                yield return (response.Key, new RestApiOperationExpectedResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
             }
         }
     }
