@@ -20,11 +20,8 @@ def test_ollama_text_completion_init() -> None:
     logger = Logger("test_logger")
 
     # Test successful initialization
-    azure_text_completion = AzureTextCompletion(
-        deployment_name=deployment_name,
-        endpoint=endpoint,
-        api_key=api_key,
-        api_version=api_version,
+    azure_text_completion = OllamaTextCompletion(
+        'fake mocked'
         logger=logger,
     )
 
