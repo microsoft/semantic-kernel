@@ -87,12 +87,12 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.

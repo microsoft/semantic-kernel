@@ -108,7 +108,7 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
         object? enumValue = Enum
             .GetValues(typeToConvert)
             .Cast<object?>()
-            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString())[0]
+            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString()!)[0]
                 .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
 
         if (enumValue != null)

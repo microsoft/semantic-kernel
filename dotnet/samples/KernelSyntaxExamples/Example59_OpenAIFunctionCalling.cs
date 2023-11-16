@@ -32,10 +32,10 @@ public static class Example59_OpenAIFunctionCalling
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
             Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+            FunctionCall = "TimePlugin-Date",
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
-        requestSettings.FunctionCall = "TimePlugin-Date";
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Uncomment the samples and run them one at a time
