@@ -2,7 +2,6 @@
 
 #pragma warning disable IDE0130
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 #pragma warning restore IDE0130
@@ -32,7 +31,7 @@ public static class ChatHistoryExtensions
     {
         var chatMessage = chatResult.ModelResult.GetOpenAIChatResult().Choice.Message;
 
-        if (!chatMessage.Content.IsNullOrEmpty())
+        if (!string.IsNullOrEmpty(chatMessage.Content))
         {
             chatHistory.AddAssistantMessage(chatMessage.Content);
         }

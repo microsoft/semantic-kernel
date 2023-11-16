@@ -98,7 +98,7 @@ public static class Example17_ChatGPT
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
