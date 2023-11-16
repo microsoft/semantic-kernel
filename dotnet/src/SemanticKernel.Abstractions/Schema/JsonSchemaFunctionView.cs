@@ -11,10 +11,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A class to describe an SKFunction in a Json Schema friendly way.
 /// </summary>
-public sealed class JsonSchemaFunctionManual
+public sealed class JsonSchemaFunctionView
 {
     /// <summary>
-    /// he function name.
+    /// The function name.
     /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
