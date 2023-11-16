@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;
@@ -68,12 +69,14 @@ public class RestApiOperationResponseTests
     }
 
     [Theory]
-    [InlineData("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}]}", "application/json", "{\"type\": \"object\"}")]
-    [InlineData("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}]}", "application/json", "{\"title\":\"ProductResponse\",\"type\":\"object\",\"properties\":{\"products\":{\"type\":\"array\",\"items\":{\"title\":\"Product\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"}}}}}}")]
-    public void IsValidShouldBeTrue(object content, string contentType, string schemaJson)
+    [InlineData("ValidProductContent.json", "application/json", "ObjectResponseSchema.json")]
+    [InlineData("ValidProductContent.json", "application/json", "ProductResponseSchema.json")]
+    public void IsValidShouldBeTrue(string contentFileName, string contentType, string schemaJsonFilename)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
+        var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
+        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
 
         //Act
         var result = response.IsValid();
@@ -83,12 +86,14 @@ public class RestApiOperationResponseTests
     }
 
     [Theory]
-    [InlineData("{\"p\": [{\"id\": \"1234\", \"name\": \"Laptop\"}", "application/json", "{\"title\":\"ProductResponse\",\"type\":\"object\",\"properties\":{\"products\":{\"type\":\"array\",\"items\":{\"title\":\"Product\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"}}}}}}")]
-    [InlineData("{\"products\": [{\"id\": \"1234\", \"name\": \"Laptop\"}", "application/json", "{\"title\":\"ProductResponse\",\"type\":\"object\",\"properties\":{\"products\":{\"type\":\"array\",\"items\":{\"title\":\"Product\",\"type\":\"object\",\"properties\":{\"attributes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"}}}}}}")]
-    public void IsValidShouldBeFalse(object content, string contentType, string schemaJson)
+    [InlineData("NotProductContent.json", "application/json", "ProductResponseSchema.json")]
+    [InlineData("InvalidProductContent.json", "application/json", "ProductResponseSchema.json")]
+    public void IsValidShouldBeFalse(string contentFileName, string contentType, string schemaJsonFilename)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
+        var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
+        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
 
         //Act
         var result = response.IsValid();
