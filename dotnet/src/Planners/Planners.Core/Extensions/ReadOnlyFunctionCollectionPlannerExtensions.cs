@@ -81,7 +81,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
-    public static async Task<string> GetJsonSchemaFunctionsManualAsync(
+    public static async Task<string> GetJsonSchemaFunctionsViewAsync(
         this IReadOnlyFunctionCollection functions,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -89,8 +89,13 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        JsonDocument schemaBuilderDelegate(Type type, string description)
+        JsonDocument? schemaBuilderDelegate(Type? type, string? description)
         {
+            if (type is null)
+            {
+                return null;
+            }
+
             var schema = new JsonSchemaBuilder()
                 .FromType(type)
                 .Description(description ?? string.Empty)
@@ -101,7 +106,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         }
 
         IEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaManual(schemaBuilderDelegate, includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(schemaBuilderDelegate, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 

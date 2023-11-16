@@ -48,6 +48,13 @@ public static class Example59_OpenAIFunctionCalling
 
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
         await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+
+        // This sample relies on the AI picking the correct color from an enum
+        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, requestSettings);
+
+        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
     private static async Task<IKernel> InitializeKernelAsync()
@@ -61,6 +68,7 @@ public static class Example59_OpenAIFunctionCalling
 
         // Load functions to kernel
         kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
+        kernel.ImportFunctions(new WidgetPlugin(), "WidgetPlugin");
         await kernel.ImportOpenAIPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters());
 
         return kernel;
@@ -102,6 +110,7 @@ public static class Example59_OpenAIFunctionCalling
                 {
                     // Add the function result to chat history
                     chatHistory.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
+                    Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
                     requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
@@ -207,6 +216,25 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
                 }
             }
+        }
+    }
+
+    private enum WidgetColor
+    {
+        Red,
+        Green,
+        Blue
+    }
+
+    private sealed class WidgetPlugin
+    {
+        [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        public string CreateWidget(
+            [System.ComponentModel.Description("Widget name")] string name,
+            [System.ComponentModel.Description("Widget color")] WidgetColor color
+            )
+        {
+            return $"Created a {color} widget named {name}";
         }
     }
 }
