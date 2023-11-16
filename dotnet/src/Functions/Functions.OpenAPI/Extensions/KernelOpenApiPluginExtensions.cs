@@ -268,22 +268,7 @@ public static class KernelOpenApiPluginExtensions
             })
             .ToList();
 
-        RestApiOperationExpectedResponse? restOperationResponse = null;
-        foreach (var response in operation.Responses)
-        {
-            if (response.Key == "200" || response.Key == "2XX" || (response.Key == "default" && restOperationResponse == null))
-            {
-                restOperationResponse = response.Value;
-
-                if (response.Key == "200") // If it's a 200 response, no need to look further.
-                {
-                    break;
-                }
-            }
-        }
-
-        var returnParameter =
-            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Description.ToString(), null, restOperationResponse.Schema) : null;
+        var returnParameter = operation.GetDefaultReturnParameter();
 
         var function = SKFunction.Create(
             method: ExecuteAsync,
@@ -296,6 +281,7 @@ public static class KernelOpenApiPluginExtensions
 
         return kernel.RegisterCustomFunction(function);
     }
+
 
     /// <summary>
     /// Converts operation id to valid SK Function name.
