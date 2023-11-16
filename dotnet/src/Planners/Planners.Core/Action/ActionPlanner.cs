@@ -134,9 +134,9 @@ public sealed class ActionPlanner : IActionPlanner
         {
             foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
             {
-                if (p.Value != null)
+                if (p.Value?.ToString() is string value)
                 {
-                    plan.Steps[0].Parameters[p.Key] = p.Value.ToString();
+                    plan.Steps[0].Parameters[p.Key] = value;
                 }
             }
         }
@@ -263,24 +263,25 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(FunctionResult plannerResult)
     {
-        Match match = s_planRegex.Match(plannerResult.GetValue<string>());
+        if (plannerResult.GetValue<string>() is string result)
+        {
+            Match match = s_planRegex.Match(result);
 
-        if (match.Success && match.Groups["Close"].Length > 0)
-        {
-            string planJson = $"{{{match.Groups["Close"]}}}";
-            try
+            if (match.Success && match.Groups["Close"] is { Length: > 0 } close)
             {
-                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
-            }
-            catch (Exception e)
-            {
-                throw new SKException("Plan parsing error, invalid JSON", e);
+                string planJson = $"{{{close}}}";
+                try
+                {
+                    return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
+                }
+                catch (Exception e)
+                {
+                    throw new SKException("Plan parsing error, invalid JSON", e);
+                }
             }
         }
-        else
-        {
-            throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
-        }
+
+        throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
     private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)

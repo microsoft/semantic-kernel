@@ -96,7 +96,7 @@ public class PromptTemplateConfig
     /// </summary>
     public AIRequestSettings GetDefaultRequestSettings()
     {
-        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
+        return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
 
     #region Obsolete
