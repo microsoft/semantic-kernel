@@ -19,7 +19,6 @@ using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
@@ -46,7 +45,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
+        using var memoryStream = new MemoryStream(Text.Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
@@ -195,7 +194,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
-                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
+                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
 
             operations.Add(operation);
@@ -274,6 +274,21 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
+    }
+
+    private static IEnumerable<(string, RestApiOperationExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
+    {
+        foreach (var response in responses)
+        {
+            var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
+            if (mediaType is not null)
+            {
+                var matchingSchema = response.Value.Content[mediaType].Schema;
+                var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
+
+                yield return (response.Key, new RestApiOperationExpectedResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
+            }
+        }
     }
 
     /// <summary>
