@@ -22,18 +22,18 @@ public sealed class BingConnector : IWebSearchEngineConnector
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
-    private readonly string? _uri;
+    private readonly Uri? _uri = null;
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search?q";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
-    /// <param name="uri">The URI of the Bing Search instance.</param>
+    /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
         Justification = "A constant Uri cannot be defined, as required by this class")]
-    public BingConnector(string apiKey, string uri = DefaultUri, ILoggerFactory? loggerFactory = null) :
+    public BingConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
         this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, loggerFactory)
     {
     }
@@ -43,11 +43,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
-    /// <param name="uri">The URI of the Bing Search instance.</param>
+    /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
-        Justification = "A constant Uri cannot be defined, as required by this class")]
-    public BingConnector(string apiKey, HttpClient httpClient, string uri = DefaultUri, ILoggerFactory? loggerFactory = null)
+    public BingConnector(string apiKey, HttpClient httpClient, Uri? uri = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
@@ -55,7 +53,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
-        this._uri = string.IsNullOrEmpty(uri) ? BingConnector.DefaultUri : uri;
+        this._uri = uri ?? new Uri(DefaultUri);
     }
 
     /// <inheritdoc/>

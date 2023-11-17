@@ -46,7 +46,7 @@ public sealed class WebPluginTests : IDisposable
         IKernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
-        BingConnector connector = new(this._bingApiKey, "https://api.bing.microsoft.com/v7.0/search?q");
+        BingConnector connector = new(this._bingApiKey, new Uri("https://api.bing.microsoft.com/v7.0/search?q"));
         Assert.NotEmpty(this._bingApiKey);
 
         WebSearchEnginePlugin plugin = new(connector);
