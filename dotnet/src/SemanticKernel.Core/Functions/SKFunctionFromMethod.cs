@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -147,7 +148,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         if (eventWrapper?.Handler is EventHandler<FunctionInvokingEventArgs> handler)
         {
             eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
-            handler.Invoke(this, eventWrapper.EventArgs);
+            handler(this, eventWrapper.EventArgs);
         }
     }
 
@@ -157,7 +158,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
         {
             eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
-            handler.Invoke(this, eventWrapper.EventArgs);
+            handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
             result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
@@ -195,6 +196,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
+    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<ParameterView> _parameters;
     private readonly ReturnParameterView _returnParameter;
@@ -283,7 +285,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             }
 
             // Invoke the method.
-            object? result = method.Invoke(target, args);
+            object? result = Invoke(method, target, args);
 
             // Extract and return the result.
             return returnFunc(functionName!, result, context);
@@ -598,7 +600,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                var taskResult = taskResultGetter.Invoke(result, Array.Empty<object>());
+                var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
                 context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, context, taskResult);
@@ -614,10 +616,10 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             return async (functionName, result, context) =>
             {
-                Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>())!;
+                Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
                 await task.ConfigureAwait(false);
 
-                var taskResult = asTaskResultGetter.Invoke(task, Array.Empty<object>());
+                var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
                 context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, context, taskResult);
@@ -637,7 +639,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             {
                 return (functionName, result, context) =>
                 {
-                    var asyncEnumerator = getAsyncEnumeratorMethod.Invoke(result, new object[] { default(CancellationToken) });
+                    var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
                     if (asyncEnumerator is not null)
                     {
@@ -656,6 +658,26 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         static object ThrowIfNullResult(object? result) =>
             result ??
             throw new SKException("Function returned null unexpectedly.");
+    }
+
+    /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
+    private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
+    {
+        object? result = null;
+        try
+        {
+            const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
+            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments, culture: null);
+        }
+        catch (TargetInvocationException e) when (e.InnerException is not null)
+        {
+            // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
+            // is ignored, the original exception will be wrapped in a TargetInvocationException.
+            // Unwrap it and throw that original exception, maintaining its stack information.
+            ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+        }
+
+        return result;
     }
 
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
