@@ -15,15 +15,15 @@ public static class FunctionViewExtensions
     private const string SuccessfulResponseDescription = "Success";
 
     /// <summary>
-    /// Creates a <see cref="JsonSchemaFunctionManual"/> for a function.
+    /// Creates a <see cref="JsonSchemaFunctionView"/> for a function.
     /// </summary>
     /// <param name="function">The function.</param>
     /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
-    /// <returns>An instance of <see cref="JsonSchemaFunctionManual"/></returns>
-    public static JsonSchemaFunctionManual ToJsonSchemaManual(this FunctionView function, Func<Type, string, JsonDocument> jsonSchemaDelegate, bool includeOutputSchema = true)
+    /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this FunctionView function, Func<Type?, string?, JsonDocument?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
-        var functionManual = new JsonSchemaFunctionManual
+        var functionView = new JsonSchemaFunctionView
         {
             Name = $"{function.PluginName}_{function.Name}",
             Description = function.Description,
@@ -32,21 +32,14 @@ public static class FunctionViewExtensions
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            if (parameter.ParameterType != null)
+            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? string.Empty);
+            if (schema is not null)
             {
-                functionManual.Parameters.Properties.Add(parameter.Name, jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? ""));
-                if (parameter.IsRequired ?? false)
-                {
-                    requiredProperties.Add(parameter.Name);
-                }
+                functionView.Parameters.Properties.Add(parameter.Name, schema);
             }
-            else if (parameter.Schema != null)
+            if (parameter.IsRequired ?? false)
             {
-                functionManual.Parameters.Properties.Add(parameter.Name, parameter.Schema);
-                if (parameter.IsRequired ?? false)
-                {
-                    requiredProperties.Add(parameter.Name);
-                }
+                requiredProperties.Add(parameter.Name);
             }
         }
 
@@ -55,19 +48,13 @@ public static class FunctionViewExtensions
             var functionResponse = new JsonSchemaFunctionResponse();
             functionResponse.Description = SuccessfulResponseDescription;
 
-            if (function.ReturnParameter?.ParameterType != null)
-            {
-                functionResponse.Content.JsonResponse.Schema = jsonSchemaDelegate(function.ReturnParameter.ParameterType, function.ReturnParameter.Description ?? "");
-            }
-            else if (function.ReturnParameter?.Schema != null)
-            {
-                functionResponse.Content.JsonResponse.Schema = function.ReturnParameter.Schema;
-            }
+            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType!, SuccessfulResponseDescription);
+            functionResponse.Content.JsonResponse.Schema = schema;
 
-            functionManual.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);
+            functionView.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);
         }
 
-        functionManual.Parameters.Required = requiredProperties;
-        return functionManual;
+        functionView.Parameters.Required = requiredProperties;
+        return functionView;
     }
 }

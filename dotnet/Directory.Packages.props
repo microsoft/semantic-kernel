@@ -48,8 +48,8 @@
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.13" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.1" />
-    <PackageVersion Include="DuckDB.NET.Data" Version="0.9.1" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
+    <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
     <PackageVersion Include="MongoDB.Driver" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
