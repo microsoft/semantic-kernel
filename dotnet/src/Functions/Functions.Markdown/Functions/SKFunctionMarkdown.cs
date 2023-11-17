@@ -73,7 +73,7 @@ public static class SKFunctionMarkdown
     #region Private methods
     internal static PromptFunctionModel CreateFromPromptMarkdown(string text, string functionName)
     {
-        var config = new PromptFunctionModel()
+        var promptFunctionModel = new PromptFunctionModel()
         {
             Name = functionName
         };
@@ -85,7 +85,7 @@ public static class SKFunctionMarkdown
             {
                 if (codeBlock.Info == "sk.prompt")
                 {
-                    config.Template = codeBlock.Lines.ToString();
+                    promptFunctionModel.Template = codeBlock.Lines.ToString();
                 }
                 else if (codeBlock.Info == "sk.model_settings")
                 {
@@ -93,13 +93,13 @@ public static class SKFunctionMarkdown
                     var requestSettings = JsonSerializer.Deserialize<AIRequestSettings>(modelSettings);
                     if (requestSettings is not null)
                     {
-                        config.ModelSettings.Add(requestSettings);
+                        promptFunctionModel.ModelSettings.Add(requestSettings);
                     }
                 }
             }
         }
 
-        return config;
+        return promptFunctionModel;
     }
     #endregion
 }

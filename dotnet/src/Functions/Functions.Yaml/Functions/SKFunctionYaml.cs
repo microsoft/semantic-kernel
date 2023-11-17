@@ -61,10 +61,10 @@ public static class SKFunctionYaml
             .WithNodeDeserializer(new AIRequestSettingsNodeDeserializer())
             .Build();
 
-        var semanticFunctionConfig = deserializer.Deserialize<PromptFunctionModel>(text);
+        var promptFunctionModel = deserializer.Deserialize<PromptFunctionModel>(text);
 
         return SKFunction.Create(
-            semanticFunctionConfig,
+            promptFunctionModel,
             pluginName,
             promptTemplateFactory,
             loggerFactory);
