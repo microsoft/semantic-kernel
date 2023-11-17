@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Models;
 
@@ -21,7 +22,7 @@ public sealed class PromptFunctionModel
     /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
     /// </summary>
     [JsonPropertyName("template_format")]
-    public string TemplateFormat { get; set; } = Microsoft.SemanticKernel.TemplateEngine.PromptTemplateConfig.SemanticKernelTemplateFormat;
+    public string TemplateFormat { get; set; } = PromptTemplateConfig.SemanticKernelTemplateFormat;
 
     /// <summary>
     /// The prompt template
