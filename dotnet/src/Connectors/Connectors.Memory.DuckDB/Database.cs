@@ -53,7 +53,7 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
                 INSERT INTO {TableName} VALUES ($collectionName, $key, $metadata, [], $timestamp ); ";
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter("key", string.Empty));
         cmd.Parameters.Add(new DuckDBParameter("metadata", string.Empty));
         cmd.Parameters.Add(new DuckDBParameter("timestamp", string.Empty));
