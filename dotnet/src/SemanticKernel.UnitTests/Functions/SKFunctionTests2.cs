@@ -1037,6 +1037,21 @@ public sealed class SKFunctionTests2
         Assert.True(assertResult.SequenceEqual(new List<int> { 1, 2, 3 }));
     }
 
+    [Fact]
+    public async Task ItPropagatesOriginalExceptionTypeAsync()
+    {
+        // Arrange
+        var context = this.MockContext("");
+        Exception expected = new FormatException("expected");
+        ISKFunction func = SKFunction.Create(() => { throw expected; });
+
+        // Act
+        Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(context));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
