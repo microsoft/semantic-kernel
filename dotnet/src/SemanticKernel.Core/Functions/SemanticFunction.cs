@@ -305,7 +305,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         else
         {
-            this._serviceSelector = new DelegatingAIServiceSelector { ServiceFactory = serviceFactory };
+            this._serviceSelector = new DelegatingAIServiceSelector 
+            { 
+                ServiceFactory = serviceFactory 
+            };
         }
         return this;
     }
