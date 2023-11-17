@@ -152,8 +152,8 @@ internal sealed class HandlebarsTemplateEngineExtensions
             var returnType = function.Describe().ReturnParameter.ParameterType;
             var resultAsObject = result.GetValue<object?>();
 
-            // If return type is complex, serialize the object so it can be deserialized with appropriate type to capture expected class properties.
-            // i.e., class properties can be different if JsonPropertyName = 'name' and class property is 'Name'
+            // If return type is complex, serialize the object so it can be deserialized with appropriate keys to capture expected class properties.
+            // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
             if (returnType is not null && !ParameterViewExtensions.isPrimitiveOrStringType(returnType))
             {
                 var serializedResult = JsonSerializer.Serialize(resultAsObject);
@@ -170,6 +170,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Dictionary<string, object?> variables
     )
     {
+        // Not exposed as a helper to the model, used for initial prompt rendering only.
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var isAtLeastOneTruthy = false;

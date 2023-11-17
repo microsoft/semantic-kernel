@@ -113,7 +113,7 @@ public sealed class HandlebarsPlanner
         var functionsView = new List<FunctionView>();
         foreach (var skFunction in availableFunctions)
         {
-            // Extract any complex schemas for isolated render in prompt template
+            // Extract any complex parameter types for isolated render in prompt template
             var parametersView = new List<ParameterView>();
             foreach (var parameter in skFunction.Parameters)
             {
@@ -132,7 +132,7 @@ public sealed class HandlebarsPlanner
         return functionsView;
     }
 
-    // Extract any complex schemas for isolated render in prompt template
+    // Extract any complex types or schemas for isolated render in prompt template
     private ParameterView SetComplexTypeDefinition(ParameterView parameter)
     {
         // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
@@ -149,7 +149,7 @@ public sealed class HandlebarsPlanner
         }
         else if (parameter.Schema is not null)
         {
-            // Parse the schema to filter any primitive types and set in ParameterType property instead
+            // Parse the schema to extract any primitive types and set in ParameterType property instead
             var parsedParameter = parameter.ParseJsonSchema();
             if (parsedParameter.Schema is not null)
             {
