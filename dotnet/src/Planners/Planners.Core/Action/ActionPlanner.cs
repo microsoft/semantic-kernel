@@ -40,6 +40,15 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
+    /// <summary>Deserialization options for use with <see cref="ActionPlanResponse"/>.</summary>
+    private static readonly JsonSerializerOptions s_actionPlayResponseOptions = new()
+    {
+        AllowTrailingCommas = true,
+        DictionaryKeyPolicy = null,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        PropertyNameCaseInsensitive = true,
+    };
+
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
 
@@ -125,9 +134,9 @@ public sealed class ActionPlanner : IActionPlanner
         {
             foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
             {
-                if (p.Value != null)
+                if (p.Value?.ToString() is string value)
                 {
-                    plan.Steps[0].Parameters[p.Key] = p.Value.ToString();
+                    plan.Steps[0].Parameters[p.Key] = value;
                 }
             }
         }
@@ -254,30 +263,25 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(FunctionResult plannerResult)
     {
-        Match match = s_planRegex.Match(plannerResult.GetValue<string>());
+        if (plannerResult.GetValue<string>() is string result)
+        {
+            Match match = s_planRegex.Match(result);
 
-        if (match.Success && match.Groups["Close"].Length > 0)
-        {
-            string planJson = $"{{{match.Groups["Close"]}}}";
-            try
+            if (match.Success && match.Groups["Close"] is { Length: > 0 } close)
             {
-                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
+                string planJson = $"{{{close}}}";
+                try
                 {
-                    AllowTrailingCommas = true,
-                    DictionaryKeyPolicy = null,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                    PropertyNameCaseInsensitive = true,
-                });
-            }
-            catch (Exception e)
-            {
-                throw new SKException("Plan parsing error, invalid JSON", e);
+                    return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
+                }
+                catch (Exception e)
+                {
+                    throw new SKException("Plan parsing error, invalid JSON", e);
+                }
             }
         }
-        else
-        {
-            throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
-        }
+
+        throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
     private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)

@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -235,7 +234,7 @@ internal sealed class ReActEngine
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
         return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);

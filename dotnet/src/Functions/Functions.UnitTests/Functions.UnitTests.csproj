@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Functions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Functions.UnitTests</RootNamespace>
@@ -11,9 +10,7 @@
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
-
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
-
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
     <None Remove="Monikers.imagemanifest" />
@@ -21,7 +18,6 @@
     <None Remove="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenAPI\TestPlugins\openapi.json" />
   </ItemGroup>
-
   <ItemGroup>
     <content Include="Monikers.imagemanifest">
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -35,8 +31,16 @@
     <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\ObjectResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\ProductResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\ValidProductContent.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\InvalidProductContent.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\NotProductContent.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\2XXFakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\200FakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\FakeResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestResponses\DefaultResponseSchema.json" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
@@ -45,9 +49,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
@@ -57,5 +64,4 @@
     <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\Functions.Yaml\Functions.Yaml.csproj" />
   </ItemGroup>
-
 </Project>

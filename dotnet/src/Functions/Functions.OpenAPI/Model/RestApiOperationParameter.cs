@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 /// <summary>
@@ -58,6 +60,11 @@ public sealed class RestApiOperationParameter
     public bool Expand { get; }
 
     /// <summary>
+    /// The schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; }
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
     /// </summary>
     /// <param name="name">The parameter name.</param>
@@ -69,6 +76,7 @@ public sealed class RestApiOperationParameter
     /// <param name="arrayItemType">Type of array item for parameters of "array" type.</param>
     /// <param name="defaultValue">The parameter default value.</param>
     /// <param name="description">The parameter description.</param>
+    /// <param name="schema">The parameter schema.</param>
     public RestApiOperationParameter(
         string name,
         string type,
@@ -78,7 +86,8 @@ public sealed class RestApiOperationParameter
         RestApiOperationParameterStyle? style = null,
         string? arrayItemType = null,
         string? defaultValue = null,
-        string? description = null)
+        string? description = null,
+        JsonDocument? schema = null)
     {
         this.Name = name;
         this.Type = type;
@@ -89,5 +98,6 @@ public sealed class RestApiOperationParameter
         this.ArrayItemType = arrayItemType;
         this.DefaultValue = defaultValue;
         this.Description = description;
+        this.Schema = schema;
     }
 }

@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
@@ -64,6 +65,9 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("string", valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
+        Assert.NotNull(valueProperty.Schema);
+        Assert.Equal("string", valueProperty.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("The value of the secret.", valueProperty.Schema.RootElement.GetProperty("description").GetString());
 
         var attributesProperty = properties.FirstOrDefault(p => p.Name == "attributes");
         Assert.NotNull(attributesProperty);
@@ -72,6 +76,9 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("object", attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
+        Assert.NotNull(attributesProperty.Schema);
+        Assert.Equal("object", attributesProperty.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("attributes", attributesProperty.Schema.RootElement.GetProperty("description").GetString());
 
         var enabledProperty = attributesProperty.Properties.FirstOrDefault(p => p.Name == "enabled");
         Assert.NotNull(enabledProperty);
@@ -79,6 +86,9 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
         Assert.Equal("boolean", enabledProperty.Type);
         Assert.False(enabledProperty.Properties?.Any());
+        Assert.NotNull(enabledProperty.Schema);
+        Assert.Equal("boolean", enabledProperty.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("Determines whether the object is enabled.", enabledProperty.Schema.RootElement.GetProperty("description").GetString());
     }
 
     [Fact]
@@ -106,23 +116,31 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(pathParameter.IsRequired);
         Assert.Equal(RestApiOperationParameterLocation.Path, pathParameter.Location);
         Assert.Null(pathParameter.DefaultValue);
+        Assert.NotNull(pathParameter.Schema);
+        Assert.Equal("string", pathParameter.Schema.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = parameters.Single(p => p.Name == "api-version"); //'api-version' query string parameter.
         Assert.True(apiVersionParameter.IsRequired);
         Assert.Equal(RestApiOperationParameterLocation.Query, apiVersionParameter.Location);
         Assert.Equal("7.0", apiVersionParameter.DefaultValue);
+        Assert.NotNull(apiVersionParameter.Schema);
+        Assert.Equal("string", apiVersionParameter.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("7.0", apiVersionParameter.Schema.RootElement.GetProperty("default").GetString());
 
         var payloadParameter = parameters.Single(p => p.Name == "payload"); //'payload' artificial parameter.
         Assert.True(payloadParameter.IsRequired);
         Assert.Equal(RestApiOperationParameterLocation.Body, payloadParameter.Location);
         Assert.Null(payloadParameter.DefaultValue);
         Assert.Equal("REST API request body.", payloadParameter.Description);
+        Assert.NotNull(payloadParameter.Schema);
+        Assert.Equal("object", payloadParameter.Schema.RootElement.GetProperty("type").GetString());
 
         var contentTypeParameter = parameters.Single(p => p.Name == "content-type"); //'content-type' artificial parameter.
         Assert.False(contentTypeParameter.IsRequired);
         Assert.Equal(RestApiOperationParameterLocation.Body, contentTypeParameter.Location);
         Assert.Null(contentTypeParameter.DefaultValue);
         Assert.Equal("Content type of REST API request body.", contentTypeParameter.Description);
+        Assert.Null(contentTypeParameter.Schema);
     }
 
     [Fact]
@@ -225,6 +243,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(payload);
         Assert.Equal("text/plain", payload.MediaType);
         Assert.Equal("excuse event", payload.Description);
+        Assert.NotNull(payload.Schema);
 
         var properties = payload.Properties;
         Assert.NotNull(properties);
@@ -295,6 +314,30 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var explodeFormParam = operation.Parameters.Single(p => p.Name == "nonExplodeFormParam");
 
         Assert.False(explodeFormParam.Expand);
+    }
+
+    [Fact]
+    public async Task ItCanParseResponsesSuccessfullyAsync()
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+
+        operation.Responses.TryGetValue("200", out var response);
+        Assert.NotNull(response);
+        Assert.Equal("text/plain", response.MediaType);
+        Assert.Equal("The OK response", response.Description);
+        Assert.NotNull(response.Schema);
+        Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal(
+            JsonSerializer.Serialize(JsonDocument.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(response.Schema));
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)

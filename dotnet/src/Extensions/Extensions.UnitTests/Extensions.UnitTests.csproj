@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
   </ItemGroup>
