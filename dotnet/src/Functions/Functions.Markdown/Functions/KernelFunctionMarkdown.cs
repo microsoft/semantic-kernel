@@ -25,7 +25,7 @@ public static class KernelFunctionMarkdown
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptMarkdownResource(
+    public static ISKFunction FromPromptMarkdownResource(
         string resourceName,
         string functionName,
         string? pluginName = null,
@@ -39,7 +39,7 @@ public static class KernelFunctionMarkdown
         using StreamReader reader = new(stream);
         var text = reader.ReadToEnd();
 
-        return CreateFromPromptMarkdown(
+        return FromPromptMarkdown(
             text,
             functionName,
             pluginName,
@@ -56,7 +56,7 @@ public static class KernelFunctionMarkdown
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptMarkdown(
+    public static ISKFunction FromPromptMarkdown(
         string text,
         string functionName,
         string? pluginName = null,

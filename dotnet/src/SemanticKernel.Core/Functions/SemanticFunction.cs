@@ -156,7 +156,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.NotNull(semanticFunctionConfig.Name);
         Verify.NotNull(semanticFunctionConfig.Template);
 
-        var factory = promptTemplateFactory ?? KernelSemanticFunctionExtensions.CreateDefaultPromptTemplateFactory();
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory();
         var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(semanticFunctionConfig);
         var promptTemplate = factory.Create(semanticFunctionConfig.Template, promptTemplateConfig);
 

@@ -22,7 +22,7 @@ public static class KernelFunctionYaml
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptYamlResource(
+    public static ISKFunction FromPromptYamlResource(
         string resourceName,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
@@ -35,7 +35,7 @@ public static class KernelFunctionYaml
         using StreamReader reader = new(stream);
         var text = reader.ReadToEnd();
 
-        return CreateFromPromptYaml(
+        return FromPromptYaml(
             text,
             pluginName,
             promptTemplateFactory,
@@ -50,7 +50,7 @@ public static class KernelFunctionYaml
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptYaml(
+    public static ISKFunction FromPromptYaml(
         string text,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,

@@ -22,7 +22,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromMarkdownResource(
+    public static ISKFunction FromMarkdownResource(
         this IKernel kernel,
         string resourceName,
         string? functionName = null,
@@ -30,7 +30,7 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
-        return KernelFunctionMarkdown.CreateFromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory"></param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromMarkdown(
+    public static ISKFunction FromMarkdown(
         this IKernel kernel,
         string text,
         string functionName,
@@ -51,6 +51,6 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return KernelFunctionMarkdown.CreateFromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

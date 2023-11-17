@@ -12,7 +12,7 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yamlNoModelSettings);
+        var skfunction = KernelFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
 
         // Assert
         Assert.NotNull(skfunction);
@@ -27,7 +27,7 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yaml);
+        var skfunction = KernelFunctionYaml.FromPromptYaml(this._yaml);
 
         // Assert
         Assert.NotNull(skfunction);
@@ -40,7 +40,7 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = KernelFunctionYaml.CreateFromPromptYaml(this._yamlWithCustomSettings);
+        var skfunction = KernelFunctionYaml.FromPromptYaml(this._yamlWithCustomSettings);
 
         // Assert
         Assert.NotNull(skfunction);

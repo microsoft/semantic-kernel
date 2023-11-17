@@ -22,13 +22,13 @@ public static class KernelFunctionsPromptYamlExtensions
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction CreateFromPromptYamlResource(
+    public static ISKFunction FromPromptYamlResource(
         this IKernel kernel,
         string resourceName,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.CreateFromPromptYamlResource(resourceName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYamlResource(resourceName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -45,6 +45,6 @@ public static class KernelFunctionsPromptYamlExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.CreateFromPromptYaml(text, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYaml(text, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }
