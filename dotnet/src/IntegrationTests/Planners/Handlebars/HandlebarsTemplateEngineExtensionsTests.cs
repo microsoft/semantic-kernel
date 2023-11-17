@@ -15,7 +15,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.HandlebarsPlanner;
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
 public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
 {

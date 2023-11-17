@@ -88,7 +88,9 @@ internal static class ParameterViewExtensions
                 {"number", typeof(double)},
                 {"boolean", typeof(bool)},
                 {"object", typeof(object)},
-                {"array", typeof(object[])}
+                {"array", typeof(object[])},
+                // If type is null, default to object
+                {"null", typeof(object)}
             };
 
         return typeMap[schemaType];

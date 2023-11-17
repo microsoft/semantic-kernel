@@ -13,7 +13,12 @@ public sealed class HandlebarsPlan
 {
     private readonly IKernel _kernel;
     private readonly string _template;
-    private readonly string _createPlanPromptTemplate;
+
+    /// <summary>
+    /// Gets the prompt template used to generate the plan.
+    /// </summary>
+    /// <returns>The prompt template.</returns>
+    public string Prompt { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
@@ -25,7 +30,7 @@ public sealed class HandlebarsPlan
     {
         this._kernel = kernel;
         this._template = template;
-        this._createPlanPromptTemplate = createPlanPromptTemplate;
+        this.Prompt = createPlanPromptTemplate;
     }
 
     /// <inheritdoc/>

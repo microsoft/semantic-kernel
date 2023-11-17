@@ -16,7 +16,7 @@ using RepoUtils;
  */
 public static class Example65_HandlebarsPlanner
 {
-    private static int s_sampleCount;
+    private static int s_sampleIndex;
 
     private const string CourseraPluginName = "CourseraPlugin";
 
@@ -25,8 +25,8 @@ public static class Example65_HandlebarsPlanner
     /// </summary>
     public static async Task RunAsync()
     {
-        s_sampleCount = 0;
-        Console.WriteLine($"======== {nameof(Example65_HandlebarsPlanner)} ========");
+        s_sampleIndex = 1;
+        bool shouldPrintPrompt = true;
 
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
@@ -35,7 +35,7 @@ public static class Example65_HandlebarsPlanner
         await RunBookSampleAsync();
 
         // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync();
+        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
 
         // TODO (@teresaqhoang): Enable this sample once complex types are supported for remote plugins return type.
         // await RunRemoteDictionaryWithComplexTypesSampleAsync();
@@ -43,10 +43,10 @@ public static class Example65_HandlebarsPlanner
 
     private static void WriteSampleHeadingToConsole(string name)
     {
-        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleCount++} - Create and Execute {name} Plan ========");
+        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute {name} Plan ========");
     }
 
-    private static async Task RunSampleAsync(string goal, params string[] pluginDirectoryNames)
+    private static async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -102,6 +102,13 @@ public static class Example65_HandlebarsPlanner
 
         // Create the plan
         var plan = await planner.CreatePlanAsync(goal);
+
+        if (shouldPrintPrompt)
+        {
+            // Print the prompt template
+            Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
+        }
+
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
@@ -109,14 +116,14 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
     }
 
-    private static async Task PlanNotPossibleSampleAsync()
+    private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Plan Not Possible");
 
         try
         {
             // Load additional plugins to enable planner but not enough for the given goal.
-            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", "SummarizePlugin");
+            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
         catch (SKException e)
         {
@@ -133,10 +140,10 @@ public static class Example65_HandlebarsPlanner
         }
     }
 
-    private static async Task RunDictionaryWithBasicTypesSampleAsync()
+    private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Dictionary");
-        await RunSampleAsync("Get a random word and its definition.", BasicDictionaryPlugin.PluginName);
+        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, BasicDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -153,11 +160,11 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync()
+    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         // Test with Coursera APIs, which uses complex types as inputs and outputs. 
         WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
-        await RunSampleAsync("Teach me two random words and their definition.", ComplexDictionaryPlugin.PluginName);
+        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -188,13 +195,13 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunRemoteDictionaryWithComplexTypesSampleAsync()
+    private static async Task RunRemoteDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Complex Types with Coursera OpenAPI Plugin");
 
         try
         {
-            await RunSampleAsync("I'd like to learn about prompt engineering. Please recommend some free courses.", CourseraPluginName);
+            await RunSampleAsync("I'd like to learn about prompt engineering. Please recommend some free courses.", shouldPrintPrompt, CourseraPluginName);
         }
         catch (InvalidOperationException)
         {
@@ -202,10 +209,10 @@ public static class Example65_HandlebarsPlanner
         }
     }
 
-    private static async Task RunPoetrySampleAsync()
+    private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Poetry");
-        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", "SummarizePlugin", "WriterPlugin");
+        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -229,10 +236,10 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunBookSampleAsync()
+    private static async Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Book Creation");
-        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", "WriterPlugin", "MiscPlugin");
+        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}

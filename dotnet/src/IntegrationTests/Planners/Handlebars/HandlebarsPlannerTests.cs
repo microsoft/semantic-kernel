@@ -13,7 +13,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.HandlebarsPlanner;
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
 public sealed class HandlebarsPlannerTests : IDisposable
 {
@@ -41,7 +41,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         kernel.ImportFunctions(new EmailPluginFake());
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -62,7 +62,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
