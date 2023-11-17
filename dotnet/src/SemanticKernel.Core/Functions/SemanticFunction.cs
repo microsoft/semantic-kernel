@@ -141,30 +141,30 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
-    /// <param name="semanticFunctionConfig"></param>
+    /// <param name="promptFunctionModel"></param>
     /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="semanticFunctionConfig"/>.</returns>
+    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="promptFunctionModel"/>.</returns>
     public static ISKFunction Create(
-        PromptModel semanticFunctionConfig,
+        PromptFunctionModel promptFunctionModel,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory ? loggerFactory = null)
     {
-        Verify.NotNull(semanticFunctionConfig);
-        Verify.NotNull(semanticFunctionConfig.Name);
-        Verify.NotNull(semanticFunctionConfig.Template);
+        Verify.NotNull(promptFunctionModel);
+        Verify.NotNull(promptFunctionModel.Name);
+        Verify.NotNull(promptFunctionModel.Template);
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory();
-        var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(semanticFunctionConfig);
-        var promptTemplate = factory.Create(semanticFunctionConfig.Template, promptTemplateConfig);
+        var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(promptFunctionModel);
+        var promptTemplate = factory.Create(promptFunctionModel.Template, promptTemplateConfig);
 
         return new SemanticFunction(
             template: promptTemplate,
             promptTemplateConfig: promptTemplateConfig,
             pluginName: pluginName ??= FunctionCollection.GlobalFunctionsPluginName,
-            functionName: semanticFunctionConfig.Name,
+            functionName: promptFunctionModel.Name,
             loggerFactory: loggerFactory
         );
     }

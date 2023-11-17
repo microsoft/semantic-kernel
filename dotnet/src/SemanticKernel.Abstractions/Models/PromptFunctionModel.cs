@@ -9,10 +9,10 @@ namespace Microsoft.SemanticKernel.Models;
 /// <summary>
 /// Prompt model files.
 /// </summary>
-public sealed class PromptModel
+public sealed class PromptFunctionModel
 {
     /// <summary>
-    /// Name of the semantic function.
+    /// Name of the kernel function.
     /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;

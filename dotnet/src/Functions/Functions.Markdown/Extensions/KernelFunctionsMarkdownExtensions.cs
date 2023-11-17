@@ -17,7 +17,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="functionName">The function name</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -37,7 +37,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="text">YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="text">YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="functionName">The function name</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>

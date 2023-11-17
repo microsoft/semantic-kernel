@@ -19,7 +19,7 @@ public static class KernelFunctionMarkdown
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown resource.
     /// </summary>
-    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -50,7 +50,7 @@ public static class KernelFunctionMarkdown
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="text">Markdown representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="text">Markdown representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this function.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -71,9 +71,9 @@ public static class KernelFunctionMarkdown
     }
 
     #region Private methods
-    internal static PromptModel CreateFromPromptMarkdown(string text, string functionName)
+    internal static PromptFunctionModel CreateFromPromptMarkdown(string text, string functionName)
     {
-        var config = new PromptModel()
+        var config = new PromptFunctionModel()
         {
             Name = functionName
         };

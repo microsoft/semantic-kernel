@@ -155,7 +155,7 @@ public class PromptTemplateConfig
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 
-    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptModel semanticFunctionConfig)
+    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
     {
         return new PromptTemplateConfig()
         {

@@ -17,7 +17,7 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -45,7 +45,7 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="text">YAML representation of the <see cref="PromptModel"/> to use to create the semantic function</param>
+    /// <param name="text">YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -61,7 +61,7 @@ public static class KernelFunctionYaml
             .WithNodeDeserializer(new AIRequestSettingsNodeDeserializer())
             .Build();
 
-        var semanticFunctionConfig = deserializer.Deserialize<PromptModel>(text);
+        var semanticFunctionConfig = deserializer.Deserialize<PromptFunctionModel>(text);
 
         return SKFunction.Create(
             semanticFunctionConfig,
