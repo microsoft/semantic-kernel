@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
@@ -70,6 +71,42 @@ public class PluginTests
 
         // Act
         await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+    }
+
+    [Theory]
+    [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
+    public async Task QueryKlarnaOpenApiPluginRunAsync(
+        string pluginEndpoint,
+        string name,
+        string functionName,
+        string query,
+        int size,
+        int budget,
+        string countryCode)
+    {
+        // Arrange
+        var kernel = new KernelBuilder().Build();
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+            name,
+            new Uri(pluginEndpoint),
+            new OpenApiFunctionExecutionParameters(httpClient));
+
+        var contextVariables = new ContextVariables();
+        contextVariables["q"] = query;
+        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["countryCode"] = countryCode;
+
+        // Act
+        var result = (await kernel.RunAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.ExpectedSchema);
+        Assert.NotNull(result.Content);
+        Assert.True(result.IsValid());
     }
 
     [Theory]
