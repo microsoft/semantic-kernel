@@ -75,10 +75,10 @@ internal sealed class Database
         var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"INSERT INTO {TableName} VALUES($collectionName, $key, $metadata, {embeddingArrayString}, $timestamp)";
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collection));
-        cmd.Parameters.Add(new DuckDBParameter("key", key));
-        cmd.Parameters.Add(new DuckDBParameter("metadata", metadata ?? string.Empty));
-        cmd.Parameters.Add(new DuckDBParameter("timestamp", timestamp ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(metadata), metadata ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(timestamp), timestamp ?? string.Empty));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
