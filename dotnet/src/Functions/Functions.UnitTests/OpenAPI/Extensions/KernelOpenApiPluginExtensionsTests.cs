@@ -221,6 +221,52 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 
+    [Fact]
+    public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
+    {
+        //Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var executionParameters = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = httpClient
+        };
+
+        var fakePlugin = new FakePlugin();
+
+        using var registerCancellationToken = new System.Threading.CancellationTokenSource();
+        using var executeCancellationToken = new System.Threading.CancellationTokenSource();
+
+        var openApiPlugins = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
+
+        var kernel = KernelBuilder.Create();
+
+        var arguments = new ContextVariables
+        {
+            { "secret-name", "fake-secret-name" },
+            { "api-version", "fake-api-version" }
+        };
+
+        //Act
+        registerCancellationToken.Cancel();
+        var res = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+
+        //Assert
+        Assert.NotNull(res);
+
+        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
+        Assert.NotNull(openApiPluginResult);
+
+        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
+
+        //Check original response
+        Assert.NotNull(result);
+        Assert.Equal("fake-content", result.Content);
+    }
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
