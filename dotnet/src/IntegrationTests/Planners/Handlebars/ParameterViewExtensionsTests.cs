@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
-using Microsoft.SemanticKernel.Planners.Handlebars.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
+using Microsoft.SemanticKernel.Planners.Handlebars.Models;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;

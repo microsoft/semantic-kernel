@@ -61,10 +61,10 @@ What's the sum of 5+10+15?
   "num3"
   15
 }}
-\{{!-- Step 2: Call the Example-AddThreeNumbers helper with the variables and store the result --}}
+\{{!-- Step 2: Call the Example-AddNums helper with the variables and store the result --}}
 \{{set
   "sum"
-  (Example{{reservedNameDelimiter}}AddThreeNumbers
+  (Example{{reservedNameDelimiter}}AddNums
     num1=(get
       "num1"
     )
@@ -93,8 +93,8 @@ What's the sum of 5+10+15?
 ## Out-of-the-box helpers
 The following helpers are available to you:
 - `\{{#if}}\{{/if}}`
-- `\{{#unless}}\{{/unless}}`
-{{#if allowLoops}}- `\{{#each}}\{{/each}}`{{/if}}
+- `\{{#unless}}\{{/unless}}`{{#if allowLoops}}
+- `\{{#each}}\{{/each}}`{{/if}}
 - `\{{#with}}\{{/with}}`
 
 {{#if allowLoops}}
