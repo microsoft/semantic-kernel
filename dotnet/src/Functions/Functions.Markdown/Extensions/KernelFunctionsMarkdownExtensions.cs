@@ -22,7 +22,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction FromMarkdownResource(
+    public static ISKFunction FunctionFromMarkdownResource(
         this IKernel kernel,
         string resourceName,
         string? functionName = null,
@@ -43,7 +43,7 @@ public static class KernelFunctionsMarkdownExtensions
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory"></param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
-    public static ISKFunction FromMarkdown(
+    public static ISKFunction FunctionFromMarkdown(
         this IKernel kernel,
         string text,
         string functionName,
@@ -52,5 +52,27 @@ public static class KernelFunctionsMarkdownExtensions
         ILoggerFactory? loggerFactory = null)
     {
         return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
+    /// </summary>
+    /// <param name="kernel">Kernel instance</param>
+    /// <param name="text">YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
+    /// <param name="functionName">The function name</param>
+    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
+    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
+    /// <param name="loggerFactory"></param>
+    /// <returns>The created <see cref="ISKFunction"/>.</returns>
+    public static ISKFunction ImportFunctionFromMarkdown(
+        this IKernel kernel,
+        string text,
+        string functionName,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        var kernelFunction = KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return kernel.RegisterCustomFunction(kernelFunction);
     }
 }
