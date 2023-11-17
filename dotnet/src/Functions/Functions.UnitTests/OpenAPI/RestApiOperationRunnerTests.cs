@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;
@@ -1007,6 +1009,77 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
+    }
+
+    public class SchemaTestData : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return new object[] {
+                    "default",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
+            };
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
+            };
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
+            };
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
+            };
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("2XXFakeResponseSchema.json")))),
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("200FakeResponseSchema.json")))),
+                    },
+            };
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(SchemaTestData))]
+    public async Task ItShouldReturnExpectedSchemaAsync(string expectedStatusCode, params (string, RestApiOperationExpectedResponse)[] responses)
+    {
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            null,
+            responses.ToDictionary(item => item.Item1, item => item.Item2)
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, new Dictionary<string, string>());
+
+        Assert.NotNull(result);
+        var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;
+        Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
     /// <summary>
