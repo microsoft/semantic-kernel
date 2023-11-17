@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,9 @@ internal sealed class RestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";
+
+    private const string DefaultResponseKey = "default";
+    private const string WildcardResponseKeyFormat = "{0}XX";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -127,7 +132,7 @@ internal sealed class RestApiOperationRunner
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
 
     #region private
@@ -139,6 +144,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="method">The HTTP request method.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
     /// <param name="payload">HTTP request payload.</param>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
@@ -146,6 +152,7 @@ internal sealed class RestApiOperationRunner
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         HttpContent? payload = null,
+        IDictionary<string, JsonDocument?>? expectedSchemas = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -171,7 +178,11 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        return await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+        var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+
+        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+
+        return response;
     }
 
     /// <summary>
@@ -189,10 +200,10 @@ internal sealed class RestApiOperationRunner
             throw new SKException("No media type available.");
         }
 
-        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)  
+        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
         {
-            // Split the media type into a primary-type and a sub-type  
+            // Split the media type into a primary-type and a sub-type
             var mediaTypeParts = mediaType.Split('/');
             if (mediaTypeParts.Length != 2)
             {
@@ -201,14 +212,14 @@ internal sealed class RestApiOperationRunner
 
             var primaryMediaType = mediaTypeParts.First();
 
-            // Try to obtain the content serializer by the primary type (e.g., text, application, image)  
+            // Try to obtain the content serializer by the primary type (e.g., text, application, image)
             if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
             {
                 throw new SKException($"The content type `{mediaType}` is not supported.");
             }
         }
 
-        // Serialize response content and return it  
+        // Serialize response content and return it
         var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString());
@@ -311,6 +322,42 @@ internal sealed class RestApiOperationRunner
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets the expected schema for the specified status code.
+    /// </summary>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <returns>The expected schema for the given status code.</returns>
+    private static JsonDocument? GetExpectedSchema(IDictionary<string, JsonDocument?>? expectedSchemas, HttpStatusCode statusCode)
+    {
+        if (expectedSchemas is not null)
+        {
+            var statusCodeKey = $"{(int)statusCode}";
+
+            // Exact Match
+            var matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
+
+            // Wildcard match e.g. 2XX
+            if (matchingResponse is null)
+            {
+                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
+            }
+
+            // Default
+            if (matchingResponse is null)
+            {
+                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;
+            }
+
+            if (matchingResponse is not null)
+            {
+                return matchingResponse;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
