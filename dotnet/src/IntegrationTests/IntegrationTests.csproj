@@ -39,8 +39,8 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
+    <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />

@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +23,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public PromptTemplateEngineTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new BasicPromptTemplateEngine();
+        this._target = new KernelPromptTemplateEngine();
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     #region internals
 
     private readonly RedirectOutput _logger;
-    private readonly BasicPromptTemplateEngine _target;
+    private readonly KernelPromptTemplateEngine _target;
 
     private static IEnumerable<string[]> GetTestData(string file)
     {
