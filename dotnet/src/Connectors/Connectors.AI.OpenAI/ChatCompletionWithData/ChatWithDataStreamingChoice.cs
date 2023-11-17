@@ -13,4 +13,7 @@ internal sealed class ChatWithDataStreamingChoice
 {
     [JsonPropertyName("messages")]
     public IList<ChatWithDataStreamingMessage> Messages { get; set; } = Array.Empty<ChatWithDataStreamingMessage>();
+
+    [JsonPropertyName("index")]
+    public int Index { get; set; } = 0;
 }

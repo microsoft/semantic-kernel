@@ -154,6 +154,25 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(
+        string input,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        var chat = this.PrepareChatHistory(input, chatRequestSettings);
+
+        using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in this.GetChatStreamingUpdatesAsync<T>(response))
+        {
+            yield return result;
+        }
+    }
+
     #region private ================================================================================
 
     private const string DefaultApiVersion = "2023-06-01-preview";
@@ -258,6 +277,69 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             foreach (var choice in chatWithDataResponse.Choices)
             {
                 yield return new ChatWithDataStreamingResult(chatWithDataResponse, choice);
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<T> GetChatStreamingUpdatesAsync<T>(HttpResponseMessage response)
+    {
+        const string ServerEventPayloadPrefix = "data:";
+
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                continue;
+            }
+
+            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
+            {
+                body = body.Substring(ServerEventPayloadPrefix.Length);
+            }
+
+            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
+
+            // If the provided T is the response type, return the response as is (Breaking Glass) option 1
+            if (typeof(T) == chatWithDataResponse.GetType())
+            {
+                yield return (T)(object)chatWithDataResponse;
+                continue;
+            }
+
+            foreach (var choice in chatWithDataResponse.Choices)
+            {
+                // If the provided T is an specialized class of StreamingResultChunk interface
+                if (typeof(T) == typeof(StreamingChatResultChunk) ||
+                    typeof(T) == typeof(StreamingResultChunk))
+                {
+                    yield return (T)(object)new StreamingChatWithDataResultChunk(choice, choice.Index);
+                    continue;
+                }
+
+                if (typeof(T) == choice.GetType())
+                {
+                    yield return (T)(object)choice;
+                    continue;
+                }
+
+                var result = new ChatWithDataStreamingResult(chatWithDataResponse, choice);
+                if (typeof(T) == typeof(string))
+                {
+                    await foreach (SemanticKernel.AI.ChatCompletion.ChatMessage message in result.GetStreamingChatMessageAsync().ConfigureAwait(false))
+                    {
+                        yield return (T)(object)message.Content;
+                    }
+                }
+
+                if (typeof(T) == typeof(ChatWithDataStreamingResult))
+                {
+                    yield return (T)(object)result;
+                }
             }
         }
     }

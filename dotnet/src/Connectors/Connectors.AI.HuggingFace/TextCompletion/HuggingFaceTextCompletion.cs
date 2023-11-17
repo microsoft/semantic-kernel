@@ -92,38 +92,43 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(
+    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(
+        string input,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.GetStreamingChunksAsync<StreamingResultChunk>(input, requestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(
         string input,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var resultIndex = 0;
+        var choiceIndex = 0;
         foreach (var result in await this.ExecuteGetCompletionsAsync(input, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var completion = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-            yield return new StreamingTextResultUpdate(completion, resultIndex);
 
-            resultIndex++;
-        }
-    }
+            // If the provided T is a string, return the completion as is
+            if (typeof(T) == typeof(string))
+            {
+                yield return (T)(object)completion;
+                continue;
+            }
 
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToString();
-        }
-    }
+            // If the provided T is an specialized class of StreamingResultChunk interface
+            if (typeof(T) == typeof(StreamingTextResultChunk) ||
+                typeof(T) == typeof(StreamingResultChunk))
+            {
+                yield return (T)(object)new StreamingTextResultChunk(completion, choiceIndex);
+                continue;
+            }
 
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToByteArray();
+            choiceIndex++;
         }
     }
 

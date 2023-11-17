@@ -179,19 +179,20 @@ public abstract class ClientBase
         int choiceIndex = 0;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
-            await foreach (string textUpdate in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            await foreach (string update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
             {
+                // If the provided T is a string, return the completion as is
                 if (typeof(T) == typeof(string))
                 {
-                    yield return (T)(object)textUpdate;
+                    yield return (T)(object)update;
                     continue;
                 }
 
-                // If the provided T is an specialized class of StreamingResultChunk interface works
+                // If the provided T is an specialized class of StreamingResultChunk interface
                 if (typeof(T) == typeof(StreamingTextResultChunk) ||
                     typeof(T) == typeof(StreamingResultChunk))
                 {
-                    yield return (T)(object)new StreamingTextResultChunk(textUpdate, choiceIndex);
+                    yield return (T)(object)new StreamingTextResultChunk(update, choiceIndex, update);
                     continue;
                 }
 
@@ -344,7 +345,7 @@ public abstract class ClientBase
                     continue;
                 }
 
-                // If the provided T is an specialized class of StreamingResultChunk interface works
+                // If the provided T is an specialized class of StreamingResultChunk interface
                 if (typeof(T) == typeof(StreamingChatResultChunk) ||
                     typeof(T) == typeof(StreamingResultChunk))
                 {

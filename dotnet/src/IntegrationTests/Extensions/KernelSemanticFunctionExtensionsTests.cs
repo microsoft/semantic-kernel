@@ -96,6 +96,11 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         {
             throw new NotImplementedException();
         }
+
+        public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal sealed class RedirectTextCompletionResult : ITextResult

@@ -14,7 +14,7 @@ public class StreamingTextResultChunk : StreamingResultChunk
     public override string Type => "openai_text_update";
 
     /// <inheritdoc/>
-    public override int ResultIndex { get; }
+    public override int ChoiceIndex { get; }
 
     /// <summary>
     /// Text associated to the update
@@ -26,9 +26,10 @@ public class StreamingTextResultChunk : StreamingResultChunk
     /// </summary>
     /// <param name="text">Text update</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingTextResultChunk(string text, int resultIndex)
+    /// <param name="innerChunkObject">Inner chunk object</param>
+    public StreamingTextResultChunk(string text, int resultIndex, object? innerChunkObject = null) : base(innerChunkObject)
     {
-        this.ResultIndex = resultIndex;
+        this.ChoiceIndex = resultIndex;
         this.Content = text;
     }
 

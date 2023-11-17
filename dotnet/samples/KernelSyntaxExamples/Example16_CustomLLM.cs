@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -60,13 +59,7 @@ public class MyTextCompletionService : ITextCompletion
 
     public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        var list = new List<StreamingResultChunk>()
-        {
-            new MyStreamingResultUpdate("llm content update 1"),
-            new MyStreamingResultUpdate("llm content update 2")
-        };
-
-        return list.ToAsyncEnumerable();
+        return this.GetStreamingChunksAsync<StreamingResultChunk>(input, requestSettings, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -76,17 +69,26 @@ public class MyTextCompletionService : ITextCompletion
             yield return update.ToString();
         }
     }
+
+    public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (typeof(T) == typeof(MyStreamingResultChunk))
+        {
+            yield return (T)(object)new MyStreamingResultChunk("llm content update 1");
+            yield return (T)(object)new MyStreamingResultChunk("llm content update 2");
+        }
+    }
 }
 
-public class MyStreamingResultUpdate : StreamingResultChunk
+public class MyStreamingResultChunk : StreamingResultChunk
 {
     public override string Type => "my_text_type";
 
-    public override int ResultIndex => 0;
+    public override int ChoiceIndex => 0;
 
     public string Content { get; }
 
-    public MyStreamingResultUpdate(string content)
+    public MyStreamingResultChunk(string content)
     {
         this.Content = content;
     }

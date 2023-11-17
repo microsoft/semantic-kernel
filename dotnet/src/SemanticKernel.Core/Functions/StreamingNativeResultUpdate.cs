@@ -17,7 +17,7 @@ public sealed class StreamingNativeResultUpdate : StreamingResultChunk
     public override string Type => "native_result_update";
 
     /// <inheritdoc/>
-    public override int ResultIndex => 0;
+    public override int ChoiceIndex => 0;
 
     /// <summary>
     /// Native object value that represents the update

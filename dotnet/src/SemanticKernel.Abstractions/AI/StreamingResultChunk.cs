@@ -18,7 +18,7 @@ public abstract class StreamingResultChunk
     /// <summary>
     /// In a scenario of multiple results, this represents zero-based index of the result in the streaming sequence
     /// </summary>
-    public abstract int ResultIndex { get; }
+    public abstract int ChoiceIndex { get; }
 
     /// <summary>
     /// Converts the update class to string.
@@ -33,8 +33,26 @@ public abstract class StreamingResultChunk
     public abstract byte[] ToByteArray();
 
     /// <summary>
+    /// Internal chunk object reference. (Breaking glass).
+    /// Each connector will have its own internal object representing the result chunk.
+    /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
+    public object? InnerResultChunk { get; }
+
+    /// <summary>
     /// The current context associated the function call.
     /// </summary>
     [JsonIgnore]
     internal SKContext? Context { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingResultChunk"/> class.
+    /// </summary>
+    /// <param name="innerResultChunk">Inner result chunk object reference</param>
+    protected StreamingResultChunk(object? innerResultChunk = null)
+    {
+        this.InnerResultChunk = innerResultChunk;
+    }
 }

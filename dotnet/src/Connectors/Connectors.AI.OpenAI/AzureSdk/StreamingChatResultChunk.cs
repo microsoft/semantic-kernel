@@ -17,7 +17,7 @@ public class StreamingChatResultChunk : StreamingResultChunk
     public override string Type => "openai_chat_message_update";
 
     /// <inheritdoc/>
-    public override int ResultIndex { get; }
+    public override int ChoiceIndex { get; }
 
     /// <summary>
     /// Function call associated to the message payload
@@ -42,11 +42,11 @@ public class StreamingChatResultChunk : StreamingResultChunk
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
     /// </summary>
-    /// <param name="chatMessage">Original Azure SDK Message update representation</param>
+    /// <param name="chatMessage">Original Connector Azure Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultChunk(AzureOpenAIChatMessage chatMessage, int resultIndex)
+    public StreamingChatResultChunk(AzureOpenAIChatMessage chatMessage, int resultIndex) : base(chatMessage)
     {
-        this.ResultIndex = resultIndex;
+        this.ChoiceIndex = resultIndex;
         this.FunctionCall = chatMessage.InnerChatMessage?.FunctionCall;
         this.Content = chatMessage.Content;
         this.Role = new AuthorRole(chatMessage.Role.ToString());
@@ -56,11 +56,11 @@ public class StreamingChatResultChunk : StreamingResultChunk
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
     /// </summary>
-    /// <param name="chatMessage">Original Azure SDK Message update representation</param>
+    /// <param name="chatMessage">Internal Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultChunk(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex)
+    public StreamingChatResultChunk(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex) : base(chatMessage)
     {
-        this.ResultIndex = resultIndex;
+        this.ChoiceIndex = resultIndex;
         this.FunctionCall = chatMessage.FunctionCall;
         this.Content = chatMessage.Content;
         this.Role = new AuthorRole(chatMessage.Role.ToString());
