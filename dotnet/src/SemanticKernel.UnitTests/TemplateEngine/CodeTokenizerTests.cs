@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class CodeTokenizerTests
 {
