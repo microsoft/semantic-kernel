@@ -167,9 +167,7 @@ To learn more and get started:
 
 ## Contributor Wall of Fame
 
-<a href="https://github.com/microsoft/semantic-kernel/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=microsoft/semantic-kernel" />
-</a>
+[![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
 
 ## Code of Conduct
 
