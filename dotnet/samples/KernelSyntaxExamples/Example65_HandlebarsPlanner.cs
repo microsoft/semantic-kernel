@@ -88,7 +88,8 @@ public static class Example65_HandlebarsPlanner
             kernel.ImportSemanticFunctionsFromDirectory(folder, pluginDirectoryNames);
         }
 
-        // The gpt-35-turbo model does not handle loops well in the plans.
+        // Use gpt-4 or newer models if you want to test with loops. 
+        // Older models like gpt-35-turbo are able hande loops but is more prone to syntax errors.
         var allowLoopsInPlan = !chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
             kernel,

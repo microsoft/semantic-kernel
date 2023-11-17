@@ -108,7 +108,7 @@ public sealed class HandlebarsPlanner
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
-                .ToList();
+            .ToList();
 
         var functionsView = new List<FunctionView>();
         foreach (var skFunction in availableFunctions)
