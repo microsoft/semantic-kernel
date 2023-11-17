@@ -340,8 +340,8 @@ public class KernelTests
 
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+        var function1 = SKFunction.Create(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.Create(Method(Function2), pluginName: PluginName);
 
         // Act
         var kernelResult = await kernel.RunAsync(function1, function2);
@@ -363,7 +363,7 @@ public class KernelTests
         // Arrange
         [SKName("Function1")]
         static string Function1() => "Result1";
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+        var function1 = SKFunction.Create(Method(Function1), pluginName: "MyPlugin");
         const string ExpectedValue = "new result";
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
@@ -389,7 +389,7 @@ public class KernelTests
 
         [SKName("Function1")]
         static string Function1(SKContext context) => context.Variables["injected variable"];
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+        var function1 = SKFunction.Create(Method(Function1), pluginName: "MyPlugin");
         const string ExpectedValue = "injected value";
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
@@ -417,11 +417,11 @@ public class KernelTests
 
         [SKName("Function1")]
         static string Function1(SKContext context) => "Result1";
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+        var function1 = SKFunction.Create(Method(Function1), pluginName: "MyPlugin");
 
         [SKName("Function2")]
         static string Function2(SKContext context) => "Result2";
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: "MyPlugin");
+        var function2 = SKFunction.Create(Method(Function2), pluginName: "MyPlugin");
 
         int numberOfInvocations = 0;
         int repeatCount = 0;
@@ -466,9 +466,9 @@ public class KernelTests
 
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
-        var function3 = SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName);
+        var function1 = SKFunction.Create(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.Create(Method(Function2), pluginName: PluginName);
+        var function3 = SKFunction.Create(Method(Function3), pluginName: PluginName);
 
         const int ExpectedInvocations = 2;
 
@@ -494,6 +494,8 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(expectedResult, kernelResult.GetValue<string>()!.Trim());
         Assert.Equal(ExpectedInvocations, numberOfInvocations);
+
+        // ExpectedInvocations
         Assert.Equal(ExpectedInvocations, kernelResult.FunctionResults.Count);
     }
 
@@ -502,7 +504,7 @@ public class KernelTests
     [InlineData(2, 0, 0)]
     [InlineData(2, 1, 1)]
     [InlineData(5, 2, 2)]
-    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int expectedInvocations)
+    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int invokedHandlerInvocations)
     {
         List<ISKFunction> functions = new();
         const string PluginName = "MyPlugin";
@@ -510,23 +512,23 @@ public class KernelTests
         // Arrange
         [SKName("Function1")]
         static string Function1() => "Result1";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function1), pluginName: PluginName));
 
         [SKName("Function2")]
         static string Function2() => "Result2";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function2), pluginName: PluginName));
 
         [SKName("Function3")]
         static string Function3() => "Result3";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function3), pluginName: PluginName));
 
         [SKName("Function4")]
         static string Function4() => "Result4";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function4), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function4), pluginName: PluginName));
 
         [SKName("Function5")]
         static string Function5() => "Result5";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function5), pluginName: PluginName));
 
         var kernel = new KernelBuilder().Build();
 
@@ -552,8 +554,10 @@ public class KernelTests
         Assert.NotNull(kernelResult);
 
         // Kernel result is the same as the last invoked function
-        Assert.Equal(expectedInvocations, numberOfInvocations);
-        Assert.Equal(expectedInvocations, kernelResult.FunctionResults.Count);
+        Assert.Equal(invokedHandlerInvocations, numberOfInvocations);
+
+        // Number of invocations
+        Assert.Equal(numberOfInvocations, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
@@ -569,23 +573,23 @@ public class KernelTests
         // Arrange
         [SKName("Function1")]
         static string Function1() => "Result1";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function1), pluginName: PluginName));
 
         [SKName("Function2")]
         static string Function2() => "Result2";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function2), pluginName: PluginName));
 
         [SKName("Function3")]
         static string Function3() => "Result3";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function3), pluginName: PluginName));
 
         [SKName("Function4")]
         static string Function4() => "Result4";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function4), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function4), pluginName: PluginName));
 
         [SKName("Function5")]
         static string Function5() => "Result5";
-        functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
+        functions.Add(SKFunction.Create(Method(Function5), pluginName: PluginName));
 
         var kernel = new KernelBuilder().Build();
 
@@ -606,8 +610,16 @@ public class KernelTests
         // Assert
         Assert.NotNull(kernelResult);
 
-        // Kernel result is the same as the last invoked function
-        Assert.Equal($"Result{functionCancelIndex + 1}", kernelResult.GetValue<string>());
+        if (functionCancelIndex == 0)
+        {
+            // If the first function was cancelled, the result should be null
+            Assert.Null(kernelResult.GetValue<string>());
+        }
+        else
+        {
+            // Else result should be of the last invoked function
+            Assert.Equal($"Result{functionCancelIndex}", kernelResult.GetValue<string>());
+        }
         Assert.Equal(expectedInvocations, numberOfInvocations);
     }
 

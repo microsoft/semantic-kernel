@@ -196,7 +196,8 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var sut = new KernelBuilder().Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -241,7 +242,8 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = new KernelBuilder().Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
 
@@ -393,8 +395,8 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
 
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+        var function1 = SKFunction.Create(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.Create(Method(Function2), pluginName: PluginName);
 
         var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
 

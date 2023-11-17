@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
@@ -68,6 +69,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -96,7 +98,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
@@ -106,12 +113,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result.Result is null)
         {
-            throw new SKException("Azure Image Generation null response");
+            throw new SKException("Azure OpenAI Image Generation null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new SKException("Azure Image Generation result not found");
+            throw new SKException("Azure OpenAI Image Generation result not found");
         }
 
         return result.Result.Images.First().Url;
@@ -133,7 +140,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
@@ -141,7 +148,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         });
 
         var uri = this.GetUri(GenerationImageOperation);
-        var result = await this.ExecutePostRequestAsync<AzureImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync<AzureOpenAIImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
@@ -157,7 +164,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="operationId">The operationId that identifies the original image generation request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    private async Task<AzureImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
+    private async Task<AzureOpenAIImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
         var operationLocation = this.GetUri(GetImageOperation, operationId);
 
@@ -172,9 +179,9 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
             using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
             var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-            var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
+            var result = this.JsonDeserialize<AzureOpenAIImageGenerationResponse>(responseJson);
 
-            if (result.Status.Equals(AzureImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
+            if (result.Status.Equals(AzureOpenAIImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
             {
                 return result;
             }
@@ -208,9 +215,9 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
     private bool IsFailedOrCancelled(string status)
     {
-        return status.Equals(AzureImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
-            || status.Equals(AzureImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
-            || status.Equals(AzureImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
+        return status.Equals(AzureOpenAIImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
+            || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+            || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>

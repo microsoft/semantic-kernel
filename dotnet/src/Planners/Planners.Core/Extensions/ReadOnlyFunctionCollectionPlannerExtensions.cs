@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Json.More;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Extensions;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
@@ -62,9 +66,48 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IOrderedEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
+    }
+
+    /// <summary>
+    /// Returns a string containing the manual for all available functions in a JSON Schema format.
+    /// </summary>
+    /// <param name="functions">The function provider.</param>
+    /// <param name="config">The planner config.</param>
+    /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
+    /// <param name="logger">The logger to use for logging.</param>
+    /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A string containing the manual for all available functions.</returns>
+    public static async Task<string> GetJsonSchemaFunctionsViewAsync(
+        this IReadOnlyFunctionCollection functions,
+        PlannerConfigBase config,
+        string? semanticQuery = null,
+        ILogger? logger = null,
+        bool includeOutputSchema = true,
+        CancellationToken cancellationToken = default)
+    {
+        JsonDocument? schemaBuilderDelegate(Type? type, string? description)
+        {
+            if (type is null)
+            {
+                return null;
+            }
+
+            var schema = new JsonSchemaBuilder()
+                .FromType(type)
+                .Description(description ?? string.Empty)
+                .Build()
+                .ToJsonDocument();
+
+            return schema;
+        }
+
+        IEnumerable<FunctionView> availableFunctions = await functions.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(schemaBuilderDelegate, includeOutputSchema));
+        return JsonSerializer.Serialize(manuals);
     }
 
     /// <summary>
@@ -76,7 +119,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetFunctionsAsync(
+    public static async Task<IEnumerable<FunctionView>> GetFunctionsAsync(
         this IReadOnlyFunctionCollection functions,
         PlannerConfigBase config,
         string? semanticQuery,
@@ -98,7 +141,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
+    public static async Task<IEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this IReadOnlyFunctionCollection functions,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -157,7 +200,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new ConcurrentBag<FunctionView>();
+        var relevantFunctions = new List<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);

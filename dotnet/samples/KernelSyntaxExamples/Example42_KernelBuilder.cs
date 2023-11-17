@@ -72,8 +72,8 @@ public static class Example42_KernelBuilder
         // Manually setup all the dependencies to be used by the kernel
         var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
-        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
-            modelId: azureOpenAIEmbeddingDeployment,
+        var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
+            deploymentName: azureOpenAIEmbeddingDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
@@ -87,12 +87,12 @@ public static class Example42_KernelBuilder
         using var httpHandler = httpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
-        ITextCompletion Factory() => new AzureChatCompletion(
-            modelId: azureOpenAIChatCompletionDeployment,
+        ITextCompletion Factory() => new AzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
-            httpClient,
-            loggerFactory);
+            httpClient: httpClient,
+            loggerFactory: loggerFactory);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
@@ -107,7 +107,7 @@ public static class Example42_KernelBuilder
         // The AI services are defined with the builder
 
         var kernel7 = new KernelBuilder()
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
                 apiKey: azureOpenAIKey,

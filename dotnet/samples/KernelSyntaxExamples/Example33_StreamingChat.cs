@@ -31,12 +31,12 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
-        AzureChatCompletion azureChatCompletion = new(
+        AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
            TestConfiguration.AzureOpenAI.ChatDeploymentName,
            TestConfiguration.AzureOpenAI.Endpoint,
            TestConfiguration.AzureOpenAI.ApiKey);
 
-        await StartStreamingChatAsync(azureChatCompletion);
+        await StartStreamingChatAsync(azureOpenAIChatCompletion);
     }
 
     private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
@@ -82,7 +82,7 @@ public static class Example33_StreamingChat
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");

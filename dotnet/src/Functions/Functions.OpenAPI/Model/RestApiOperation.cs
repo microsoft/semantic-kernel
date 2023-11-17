@@ -15,11 +15,6 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 public sealed class RestApiOperation
 {
     /// <summary>
-    /// An artificial parameter that is added to be able to override REST API operation server url.
-    /// </summary>
-    public const string ServerUrlArgumentName = "server-url";
-
-    /// <summary>
     /// An artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
     public const string PayloadArgumentName = "payload";
@@ -65,6 +60,11 @@ public sealed class RestApiOperation
     public IList<RestApiOperationParameter> Parameters { get; }
 
     /// <summary>
+    /// The list of possible operation responses.
+    /// </summary>
+    public IDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
+
+    /// <summary>
     /// The operation payload.
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
@@ -80,6 +80,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
+    /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
         string id,
         Uri? serverUrl,
@@ -88,7 +89,8 @@ public sealed class RestApiOperation
         string description,
         IList<RestApiOperationParameter> parameters,
         IDictionary<string, string> headers,
-        RestApiOperationPayload? payload = null)
+        RestApiOperationPayload? payload = null,
+        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -98,6 +100,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
+        this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
 
     /// <summary>
@@ -109,7 +112,7 @@ public sealed class RestApiOperation
     /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
-        var serverUrl = this.GetServerUrl(arguments, serverUrlOverride, apiHostUrl);
+        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
 
         var path = this.ReplacePathParameters(this.Path, arguments);
 
@@ -203,22 +206,16 @@ public sealed class RestApiOperation
     /// <summary>
     /// Returns operation server Url.
     /// </summary>
-    /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation server url.</returns>
-    private Uri GetServerUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride, Uri? apiHostUrl)
+    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl)
     {
         string serverUrlString;
 
         if (serverUrlOverride is not null)
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
-        }
-        else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
-        {
-            // Override defined server url - https://api.example.com/v1 by the one from arguments.
-            serverUrlString = serverUrlFromArgument;
         }
         else
         {

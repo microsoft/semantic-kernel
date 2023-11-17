@@ -38,10 +38,9 @@ public static class SKFunctionTextExtensions
         foreach (var partition in partitionedInput)
         {
             context.Variables.Update(partition);
-
             var result = await func.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
 
-            context = result.Context;
+            context = result!.Context;
 
             results.Add(context.Variables.ToString());
         }

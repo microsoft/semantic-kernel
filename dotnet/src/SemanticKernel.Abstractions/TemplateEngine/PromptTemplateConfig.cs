@@ -85,7 +85,6 @@ public class PromptTemplateConfig
 
     /// <summary>
     /// Model request settings.
-    /// Initially only a single model request settings is supported.
     /// </summary>
     [JsonPropertyName("models")]
     [JsonPropertyOrder(4)]
@@ -97,7 +96,7 @@ public class PromptTemplateConfig
     /// </summary>
     public AIRequestSettings GetDefaultRequestSettings()
     {
-        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
+        return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
 
     #region Obsolete
