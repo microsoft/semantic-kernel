@@ -263,7 +263,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         record.Key = record.Metadata.Id;
 
         await this._dbConnector.UpdateOrInsertAsync(conn: connection,
-            collection: collectionName,
+            collectionName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
             embedding: record.Embedding.ToArray(),

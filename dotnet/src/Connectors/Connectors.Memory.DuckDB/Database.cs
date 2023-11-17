@@ -69,12 +69,12 @@ internal sealed class Database
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method serializing array of float and numbers")]
     public async Task UpdateOrInsertAsync(DuckDBConnection conn,
-        string collection, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
+        string collectionName, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
-        await this.DeleteAsync(conn, collection, key, cancellationToken).ConfigureAwait(true);
+        await this.DeleteAsync(conn, collectionName, key, cancellationToken).ConfigureAwait(true);
         var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = $"INSERT INTO {TableName} VALUES($collectionName, $key, $metadata, {embeddingArrayString}, $timestamp)";
+        cmd.CommandText = $"INSERT INTO {TableName} VALUES(${nameof(collectionName)}, ${nameof(key)}, ${nameof(metadata)}, {embeddingArrayString}, ${nameof(timestamp)})";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
         cmd.Parameters.Add(new DuckDBParameter(nameof(metadata), metadata ?? string.Empty));
@@ -119,12 +119,12 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
             SELECT key, metadata, timestamp, embedding, (embedding <=> {embeddingArrayString}) as score FROM {TableName}
-            WHERE collection=$collectionName AND len(embedding) > 0 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
+            WHERE collection=${nameof(collectionName)} AND len(embedding) > 0 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
             ORDER BY score DESC
-            LIMIT $resultLimit;";
+            LIMIT ${nameof(limit)};";
 
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collectionName));
-        cmd.Parameters.Add(new DuckDBParameter("resultLimit", limit));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(limit), limit));
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -159,10 +159,10 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              SELECT metadata, timestamp, embedding FROM {TableName}
-             WHERE collection=$collectionName
-                AND key=$vectorKey; ";
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collectionName));
-        cmd.Parameters.Add(new DuckDBParameter("vectorKey", key));
+             WHERE collection=${nameof(collectionName)}
+                AND key=${nameof(key)}; ";
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -188,8 +188,8 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
-             WHERE collection=$collectionName;";
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collectionName));
+             WHERE collection=${nameof(collectionName)};";
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -198,10 +198,10 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
-             WHERE collection=$collectionName
-                AND key=$vectorKey; ";
-        cmd.Parameters.Add(new DuckDBParameter("collectionName", collectionName));
-        cmd.Parameters.Add(new DuckDBParameter("vectorKey", key));
+             WHERE collection=${nameof(collectionName)}
+                AND key=${nameof(key)}; ";
+        cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }
