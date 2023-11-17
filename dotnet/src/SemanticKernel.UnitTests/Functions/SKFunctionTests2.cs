@@ -1069,10 +1069,10 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = this.MockContext("");
         Exception expected = new FormatException("expected");
-        ISKFunction func = SKFunction.Create(() => { throw expected; });
+        ISKFunction func = SKFunction.FromMethod(() => { throw expected; });
 
         // Act
-        Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(context));
+        Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, context));
 
         // Assert
         Assert.Same(expected, actual);
