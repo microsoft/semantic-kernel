@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
@@ -39,6 +40,9 @@ public sealed class HuggingFaceTextCompletion : HuggingFaceClientBase, ITextComp
     public HuggingFaceTextCompletion(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null) : base(model, apiKey, httpClient, endpoint)
     {
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]

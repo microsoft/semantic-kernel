@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -59,7 +60,16 @@ public sealed class HuggingFaceTextEmbeddingGeneration : HuggingFaceClientBase, 
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
+
+        this._model = model;
+        this._endpoint = endpoint;
+        this._httpClient = httpClient;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)

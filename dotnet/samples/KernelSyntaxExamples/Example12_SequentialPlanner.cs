@@ -300,7 +300,7 @@ internal static class Example12_SequentialPlanner
         var memoryStorage = new VolatileMemoryStore();
 
         var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 

@@ -480,7 +480,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         //Apply endpoint override if it's specified.
         if (this._endpointOverride != null)
         {
-            request.RequestUri = new Uri(this._endpointOverride, request.RequestUri);
+            request.RequestUri = new Uri(this._endpointOverride, request.RequestUri!);
         }
 
         HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
