@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class NamedArgBlockTests
 {
