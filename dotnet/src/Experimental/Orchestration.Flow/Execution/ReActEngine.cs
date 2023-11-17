@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -236,7 +235,7 @@ internal sealed class ReActEngine
 
     private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
         SKPlugin p = kernel.Plugins[RestrictedPluginName] as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");

@@ -375,14 +375,14 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
             SKNameAttribute? nameAttr = parameter.GetCustomAttribute<SKNameAttribute>(inherit: true);
-            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name);
+            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
             // or an override from an applied SKParameter attribute. Note that a default value may be null.
-            DefaultValueAttribute defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
+            DefaultValueAttribute? defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
             bool hasDefaultValue = defaultValueAttribute is not null;
             object? defaultValue = defaultValueAttribute?.Value;
             if (!hasDefaultValue && parameter.HasDefaultValue)
@@ -598,7 +598,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                var taskResult = taskResultGetter.Invoke(result!, Array.Empty<object>());
+                var taskResult = taskResultGetter.Invoke(result, Array.Empty<object>());
 
                 context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, context, taskResult);
@@ -614,10 +614,10 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             return async (functionName, result, context) =>
             {
-                Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
+                Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>())!;
                 await task.ConfigureAwait(false);
 
-                var taskResult = asTaskResultGetter.Invoke(task!, Array.Empty<object>());
+                var taskResult = asTaskResultGetter.Invoke(task, Array.Empty<object>());
 
                 context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, context, taskResult);
@@ -629,7 +629,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             Type elementType = returnType.GetGenericArguments()[0];
 
-            MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
                 .MakeGenericType(elementType)
                 .GetMethod("GetAsyncEnumerator");
 
@@ -704,7 +704,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType);
+                targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
             // For enums, delegate to Enum.Parse, special-casing null if it was actually Nullable<EnumType>.
@@ -762,7 +762,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType);
+                targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
             // For enums, just ToString() and allow the object override to do the right thing.
@@ -843,10 +843,10 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
     private FunctionView? _view;
 

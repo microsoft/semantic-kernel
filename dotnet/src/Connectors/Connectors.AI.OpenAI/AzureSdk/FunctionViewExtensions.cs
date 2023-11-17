@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using Json.More;
-using Json.Schema;
-using Json.Schema.Generation;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -31,14 +26,15 @@ public static class FunctionViewExtensions
                     + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
                 Type = param.Type?.Name ?? "string",
                 IsRequired = param.IsRequired ?? false,
-                Schema = param.Schema ?? GetJsonSchemaDocument(param.ParameterType, param.Description),
+                ParameterType = param.ParameterType,
+                Schema = param.Schema ?? OpenAIFunction.GetJsonSchemaDocument(param.ParameterType!, param.Description),
             });
         }
 
         var returnParameter = new OpenAIFunctionReturnParameter
         {
             Description = functionView.ReturnParameter.Description ?? string.Empty,
-            Schema = functionView.ReturnParameter.Schema ?? GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
+            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
         };
 
         return new OpenAIFunction
@@ -49,27 +45,5 @@ public static class FunctionViewExtensions
             Parameters = openAIParams,
             ReturnParameter = returnParameter
         };
-    }
-
-    /// <summary>
-    /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
-    /// </summary>
-    /// <param name="type">The object Type.</param>
-    /// <param name="description">The object description.</param>
-    /// <returns></returns>
-    private static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
-    {
-        if (type == null)
-        {
-            return null;
-        }
-
-        var schemaDocument = new JsonSchemaBuilder()
-                        .FromType(type)
-                        .Description(description ?? string.Empty)
-                        .Build()
-                        .ToJsonDocument();
-
-        return schemaDocument;
     }
 }
