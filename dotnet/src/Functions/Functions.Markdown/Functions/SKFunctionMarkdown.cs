@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 /// <summary>
 /// Factory methods for creating <seealso cref="ISKFunction"/> instances.
 /// </summary>
-public static class KernelFunctionMarkdown
+public static class SKFunctionMarkdown
 {
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown resource.

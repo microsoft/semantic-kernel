@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
 /// <summary>
 /// Factory methods for creating <seealso cref="ISKFunction"/> instances.
 /// </summary>
-public static class KernelFunctionYaml
+public static class SKFunctionYaml
 {
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
