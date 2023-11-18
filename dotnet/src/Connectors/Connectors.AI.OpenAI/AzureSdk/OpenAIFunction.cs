@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Json.Schema;
 using Json.Schema.Generation;
-using Microsoft.SemanticKernel.Extensions;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -73,6 +73,15 @@ public class OpenAIFunctionReturnParameter
 public class OpenAIFunction
 {
     /// <summary>
+    /// Cached <see cref="BinaryData"/> storing the JSON for a function with no parameters.
+    /// </summary>
+    /// <remarks>
+    /// This is an optimization to avoid serializing the same JSON schema over and over again
+    /// for this relatively common case.
+    /// </remarks>
+    private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");
+
+    /// <summary>
     /// Separator between the plugin name and the function name
     /// </summary>
     public const string NameSeparator = "_";
@@ -116,13 +125,43 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchema, false);
+        BinaryData resultParameters = s_zeroFunctionParametersSchema;
+
+        var parameters = this.Parameters;
+        if (parameters.Count > 0)
+        {
+            var properties = new Dictionary<string, SKJsonSchema>();
+            var required = new List<string>();
+
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                var parameter = parameters[i];
+
+                SKJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
+                if (schema is not null)
+                {
+                    properties.Add(parameter.Name, schema);
+
+                    if (parameter.IsRequired)
+                    {
+                        required.Add(parameter.Name);
+                    }
+                }
+            }
+
+            resultParameters = BinaryData.FromObjectAsJson(new
+            {
+                type = "object",
+                required = required,
+                properties = properties,
+            });
+        }
 
         return new FunctionDefinition
         {
             Name = this.FullyQualifiedName,
             Description = this.Description,
-            Parameters = BinaryData.FromObjectAsJson(jsonSchemaView.Parameters),
+            Parameters = resultParameters,
         };
     }
 
@@ -132,6 +171,7 @@ public class OpenAIFunction
     /// <param name="type">The object Type.</param>
     /// <param name="description">The object description.</param>
     /// <returns>Return JSON Schema document or null if the type is null</returns>
+    [return: NotNullIfNotNull("type")]
     internal static SKJsonSchema? GetJsonSchema(Type? type, string? description)
     {
         SKJsonSchema? schema = null;

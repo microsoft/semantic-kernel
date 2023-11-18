@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A class to describe an SKFunction in a JSON Schema friendly way.
 /// </summary>
-public sealed class JsonSchemaFunctionView
+internal sealed class JsonSchemaFunctionView
 {
     /// <summary>
     /// The function name.

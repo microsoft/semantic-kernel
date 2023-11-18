@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A class for describing the reponse/return type of an SKFunction in a JSON Schema friendly way.
 /// </summary>
-public sealed class JsonSchemaFunctionResponse
+internal sealed class JsonSchemaFunctionResponse
 {
     /// <summary>
     /// The response description.

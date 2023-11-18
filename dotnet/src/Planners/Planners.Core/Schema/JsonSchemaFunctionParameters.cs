@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130
@@ -12,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A class to describe the parameters of an SKFunction in a JSON Schema friendly way.
 /// </summary>
-public sealed class JsonSchemaFunctionParameters
+internal sealed class JsonSchemaFunctionParameters
 {
     /// <summary>
     /// The type of schema which is always "object" when describing function parameters.

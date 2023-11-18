@@ -2,14 +2,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Extensions;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Extensions for functions views.
 /// </summary>
-public static class FunctionViewExtensions
+internal static class FunctionViewExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
@@ -48,7 +49,7 @@ public static class FunctionViewExtensions
             var functionResponse = new JsonSchemaFunctionResponse();
             functionResponse.Description = SuccessfulResponseDescription;
 
-            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType!, SuccessfulResponseDescription);
+            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType, SuccessfulResponseDescription);
             functionResponse.Content.JsonResponse.Schema = schema;
 
             functionView.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);
