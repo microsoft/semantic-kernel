@@ -27,7 +27,7 @@ public sealed class PineconeKernelBuilderExtensionsTests : IDisposable
     public async Task PineconeMemoryStoreShouldBeProperlyInitializedAsync()
     {
         //Arrange
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("[\"fake-index1\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("""["fake-index1"]""", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new KernelBuilder();
 #pragma warning disable CS0618 // This will be removed in a future release.

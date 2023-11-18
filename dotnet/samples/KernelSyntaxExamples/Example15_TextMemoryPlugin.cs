@@ -171,16 +171,24 @@ public static class Example15_TextMemoryPlugin
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         Console.WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
 
-        Console.WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
+        Console.WriteLine("""
+            Saving memory with key 'info1': "My name is Andrea"
+            """);
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea", cancellationToken: cancellationToken);
 
-        Console.WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
+        Console.WriteLine("""
+            Saving memory with key 'info2': "I work as a tourist operator"
+            """);
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator", cancellationToken: cancellationToken);
 
-        Console.WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
+        Console.WriteLine("""
+            Saving memory with key 'info3': "I've been living in Seattle since 2005"
+            """);
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005", cancellationToken: cancellationToken);
 
-        Console.WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
+        Console.WriteLine("""
+            Saving memory with key 'info4': "I visited France and Italy five times since 2015"
+            """);
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015", cancellationToken: cancellationToken);
 
         // Retrieve a memory
@@ -202,7 +210,9 @@ public static class Example15_TextMemoryPlugin
         var memoryFunctions = kernel.ImportFunctions(memoryPlugin);
 
         // Save a memory with the Kernel
-        Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+        Console.WriteLine("""
+            Saving memory with key 'info5': "My family is from New York"
+            """);
         await kernel.RunAsync(memoryFunctions["Save"], new()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,

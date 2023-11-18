@@ -53,7 +53,7 @@ public sealed class OpenAIFunctionResponseTests
     public void ItCanConvertFromFunctionCallWithParameters()
     {
         // Arrange
-        var sut = new FunctionCall("foo", "{ \"param1\": \"bar\", \"param2\": 5 }");
+        var sut = new FunctionCall("foo", """{ "param1": "bar", "param2": 5 }""");
 
         // Act
         var result = OpenAIFunctionResponse.FromFunctionCall(sut);

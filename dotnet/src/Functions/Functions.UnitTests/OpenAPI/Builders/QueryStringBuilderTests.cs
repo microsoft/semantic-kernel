@@ -193,7 +193,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -234,7 +234,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -315,7 +315,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -356,7 +356,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -397,7 +397,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -438,7 +438,7 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p1", """["a","b","c"]""" },
             { "p2", "[1,2,3]" }
         };
 
@@ -483,13 +483,13 @@ public class QueryStringBuilderTests
 
         var arguments = new Dictionary<string, string>
         {
-            { "p1", "[\"a\",\"b\"]" },
+            { "p1", """["a","b"]""" },
             { "p2", "false" },
             { "p3", "[1,2]" },
             { "p4", "[3,4]" },
-            { "p5", "[\"c\",\"d\"]" },
+            { "p5", """["c","d"]""" },
             { "p6", "[5,6]" },
-            { "p7", "[\"e\",\"f\"]" }
+            { "p7", """["e","f"]""" }
         };
 
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());

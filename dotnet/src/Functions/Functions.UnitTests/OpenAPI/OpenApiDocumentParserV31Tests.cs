@@ -336,7 +336,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(response.Schema);
         Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal(
-            JsonSerializer.Serialize(JsonDocument.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(JsonDocument.Parse("""{"type": "string"}""")),
             JsonSerializer.Serialize(response.Schema));
     }
 

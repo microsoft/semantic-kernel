@@ -137,7 +137,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItHandlesNamedArgsAsync()
     {
         // Arrange
-        string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
+        string template = """Output: {{my.sayAge name="Mario" birthdate=$birthdate exclamation='Wow, that\'s surprising'}}""";
         var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();

@@ -103,7 +103,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{concat \"Hello\" \" \" \"World\" \"!\"}}";
+        var template = """{{concat "Hello" " " "World" "!"}}""";
         var variables = new Dictionary<string, object?>();
 
         // Act
@@ -129,7 +129,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
 
         // Assert
-        Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
+        Assert.Equal("""{"name":"Alice","age":25}""", result);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{set name=\"x\" value=10}}{{get name=\"x\"}}";
+        var template = """{{set name="x" value=10}}{{get name="x"}}""";
         var variables = new Dictionary<string, object?>();
 
         // Act
@@ -221,7 +221,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
+        var template = """{{Foo-Combine x="Bar" y="Baz"}}"""; // Use positional arguments instead of hashed arguments
         var variables = new Dictionary<string, object?>();
         kernel.ImportFunctions(new Foo(), "Foo");
 
@@ -238,7 +238,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{Foo-Combine x=\"Bar\"}}";
+        var template = """{{Foo-Combine x="Bar"}}""";
         var variables = new Dictionary<string, object?>();
         kernel.ImportFunctions(new Foo(), "Foo");
 
@@ -252,7 +252,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{Foo-StringifyInt x=\"twelve\"}}";
+        var template = """{{Foo-StringifyInt x="twelve"}}""";
         var variables = new Dictionary<string, object?>();
         kernel.ImportFunctions(new Foo(), "Foo");
 
@@ -266,7 +266,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Arrange
         var kernel = this.InitializeKernel();
         var executionContext = kernel.CreateNewContext();
-        var template = "{{Foo-Random x=\"random\"}}";
+        var template = """{{Foo-Random x="random"}}""";
         var variables = new Dictionary<string, object?>();
         kernel.ImportFunctions(new Foo(), "Foo");
 

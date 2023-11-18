@@ -311,7 +311,7 @@ public static class KernelOpenApiPluginExtensions
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
+        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
 
         return result;
     }

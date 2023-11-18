@@ -100,7 +100,7 @@ public static class Example24_OpenApiPlugin_Jira
             // Set Properties for the AddComment operation in the openAPI.swagger.json
             // Make sure the issue exists in your Jira instance or it will return a 404
             contextVariables.Set("issueKey", "TEST-2");
-            contextVariables.Set(RestApiOperation.PayloadArgumentName, "{\"body\": \"Here is a rad comment\"}");
+            contextVariables.Set(RestApiOperation.PayloadArgumentName, """{"body": "Here is a rad comment"}""");
 
             // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);

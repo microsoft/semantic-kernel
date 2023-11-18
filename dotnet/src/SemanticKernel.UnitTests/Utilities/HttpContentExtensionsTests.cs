@@ -49,14 +49,14 @@ public sealed class HttpContentExtensionsTests : IDisposable
         //Assert
         Assert.False(string.IsNullOrEmpty(result));
 
-        Assert.Equal("{\"details\": \"fake-response-content\"}", result);
+        Assert.Equal("""{"details": "fake-response-content"}""", result);
     }
 
     [Fact]
     public async Task ShouldReturnHttpContentAsStreamAsync()
     {
         //Arrange
-        using var expectedStream = new MemoryStream(Encoding.Default.GetBytes("{\"details\": \"fake-response-content\"}"));
+        using var expectedStream = new MemoryStream("""{"details": "fake-response-content"}"""u8.ToArray());
 
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StreamContent(expectedStream);
 
@@ -72,7 +72,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         using var streamReader = new StreamReader(actualStream);
         var content = await streamReader.ReadToEndAsync();
-        Assert.Equal("{\"details\": \"fake-response-content\"}", content);
+        Assert.Equal("""{"details": "fake-response-content"}""", content);
     }
 
     [Fact]

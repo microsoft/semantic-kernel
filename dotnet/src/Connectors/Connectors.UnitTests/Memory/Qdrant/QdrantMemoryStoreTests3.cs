@@ -238,17 +238,19 @@ public class QdrantMemoryStoreTests3
         var metadataId = "metadataId";
         var expectedId = 100;
 
-        var scoredPointJsonWithIntegerId =
-            "{" +
-                "\"result\": " +
-                "   [{" +
-                        "\"id\": " + expectedId + "," +
-                        "\"version\": 0," +
-                        "\"score\": null," +
-                        "\"payload\": {}," +
-                        "\"vector\": null " +
-                    "}]" +
-            "}";
+        var scoredPointJsonWithIntegerId = $$"""
+            {
+                "result": [
+                    {
+                        "id": {{expectedId}},
+                        "version": 0,
+                        "score": null,
+                        "payload": {},
+                        "vector": null
+                    }
+                ]
+            }
+            """;
 
         using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
         {

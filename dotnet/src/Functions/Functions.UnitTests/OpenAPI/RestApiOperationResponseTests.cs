@@ -36,9 +36,9 @@ public class RestApiOperationResponseTests
     }
 
     [Theory]
-    [InlineData("fake-content", "application/json", "{\"type\": \"string\"}")]
-    [InlineData("{\"fake\": \"content\"}", "text/plain", "{\"type\": \"string\"}")]
-    [InlineData("{\"fake\": \"content\"}", "application/json", "{\"type\": \"string\"}")]
+    [InlineData("fake-content", "application/json", """{"type": "string"}""")]
+    [InlineData("{\"fake\": \"content\"}", "text/plain", """{"type": "string"}""")]
+    [InlineData("{\"fake\": \"content\"}", "application/json", """{"type": "string"}""")]
     public void ItShouldFailValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
@@ -52,10 +52,10 @@ public class RestApiOperationResponseTests
     }
 
     [Theory]
-    [InlineData("\"fake-content\"", "application/json", "{\"type\": \"string\"}")]
-    [InlineData("fake-content", "text/plain", "{\"type\": \"string\"}")]
-    [InlineData("fake-content", "application/xml", "{\"type\": \"string\"}")]
-    [InlineData("fake-content", "image", "{\"type\": \"string\"}")]
+    [InlineData("\"fake-content\"", "application/json", """{"type": "string"}""")]
+    [InlineData("fake-content", "text/plain", """{"type": "string"}""")]
+    [InlineData("fake-content", "application/xml", """{"type": "string"}""")]
+    [InlineData("fake-content", "image", """{"type": "string"}""")]
     public void ItShouldPassValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange

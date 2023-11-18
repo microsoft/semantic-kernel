@@ -177,7 +177,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetNearestMatchAsync()
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"default\" } }";
+        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 1, "numCandidates" : 10, "index" : "default" } }""";
 
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var memoryRecord = CreateRecord("id");
@@ -198,7 +198,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetNearestMatchesAsync()
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 100, \"numCandidates\" : 1000, \"index\" : \"default\" } }";
+        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 100, "numCandidates" : 1000, "index" : "default" } }""";
 
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var (memoryRecords, keys) = CreateRecords(10);

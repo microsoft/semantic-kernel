@@ -113,7 +113,7 @@ public class PluginTests
     [InlineData("https://raw.githubusercontent.com/sisbell/chatgpt-plugin-store/main/manifests/instacart.com.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partnerName": "OpenAI" }"""
         )]
     public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
@@ -142,7 +142,7 @@ public class PluginTests
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partnerName": "OpenAI" }"""
         )]
     public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
@@ -174,7 +174,7 @@ public class PluginTests
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partnerName": "OpenAI" }"""
         )]
     public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,

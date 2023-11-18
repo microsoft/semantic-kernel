@@ -33,7 +33,7 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
         var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
 
         this._httpClient.BaseAddress = new Uri("https://fake-random-qdrant-host");
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{\"result\":{\"collections\":[]}}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("""{"result":{"collections":[]}}""", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
         builder.WithQdrantMemoryStore(this._httpClient, 123);
