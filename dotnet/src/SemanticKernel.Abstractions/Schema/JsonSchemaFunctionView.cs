@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A class to describe an SKFunction in a Json Schema friendly way.
+/// A class to describe an SKFunction in a JSON Schema friendly way.
 /// </summary>
 public sealed class JsonSchemaFunctionView
 {

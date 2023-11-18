@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
@@ -360,7 +361,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.NotNull(response.Schema);
         Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal(
-            JsonSerializer.Serialize(JsonDocument.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(SKJsonSchema.Parse("{\"type\": \"string\"}")),
             JsonSerializer.Serialize(response.Schema));
     }
 

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.AI.OpenAI;
-using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Extensions;
@@ -37,9 +36,9 @@ public class OpenAIFunctionParameter
     public bool IsRequired { get; set; } = false;
 
     /// <summary>
-    /// The Json Schema of the parameter.
+    /// The JSON Schema of the parameter.
     /// </summary>
-    public JsonDocument? Schema { get; set; } = null;
+    public SKJsonSchema? Schema { get; set; } = null;
 
     /// <summary>
     /// The parameter Type.
@@ -58,9 +57,9 @@ public class OpenAIFunctionReturnParameter
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// The Json Schema of the parameter.
+    /// The JSON Schema of the parameter.
     /// </summary>
-    public JsonDocument? Schema { get; set; } = null;
+    public SKJsonSchema? Schema { get; set; } = null;
 
     /// <summary>
     /// The <see cref="Type"/> of the return parameter.
@@ -117,7 +116,7 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchemaDocument, false);
+        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchema, false);
 
         return new FunctionDefinition
         {
@@ -128,24 +127,23 @@ public class OpenAIFunction
     }
 
     /// <summary>
-    /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
+    /// Creates an <see cref="SKJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
     /// </summary>
     /// <param name="type">The object Type.</param>
     /// <param name="description">The object description.</param>
-    /// <returns>Return JSON schema document or null if the type is null</returns>
-    internal static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
+    /// <returns>Return JSON Schema document or null if the type is null</returns>
+    internal static SKJsonSchema? GetJsonSchema(Type? type, string? description)
     {
-        if (type is null)
+        SKJsonSchema? schema = null;
+        if (type is not null)
         {
-            return null;
+            schema = SKJsonSchema.Parse(JsonSerializer.Serialize(
+                new JsonSchemaBuilder()
+                .FromType(type)
+                .Description(description ?? string.Empty)
+                .Build()));
         }
 
-        var schemaDocument = new JsonSchemaBuilder()
-                        .FromType(type)
-                        .Description(description ?? string.Empty)
-                        .Build()
-                        .ToJsonDocument();
-
-        return schemaDocument;
+        return schema;
     }
 }

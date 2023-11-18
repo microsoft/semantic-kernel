@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A class to describe the parameters of an SKFunction in a Json Schema friendly way.
+/// A class to describe the parameters of an SKFunction in a JSON Schema friendly way.
 /// </summary>
 public sealed class JsonSchemaFunctionParameters
 {
@@ -27,8 +27,8 @@ public sealed class JsonSchemaFunctionParameters
     public List<string> Required { get; set; } = new List<string>();
 
     /// <summary>
-    /// A dictionary of properties name => Json Schema.
+    /// A dictionary of properties name => JSON Schema.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, JsonDocument> Properties { get; set; } = new Dictionary<string, JsonDocument>();
+    public Dictionary<string, SKJsonSchema> Properties { get; set; } = new Dictionary<string, SKJsonSchema>();
 }

@@ -78,20 +78,18 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        JsonDocument? schemaBuilderDelegate(Type? type, string? description)
+        SKJsonSchema? schemaBuilderDelegate(Type? type, string? description)
         {
             if (type is null)
             {
                 return null;
             }
 
-            var schema = new JsonSchemaBuilder()
+            return SKJsonSchema.Parse(JsonSerializer.Serialize(
+                new JsonSchemaBuilder()
                 .FromType(type)
                 .Description(description ?? string.Empty)
-                .Build()
-                .ToJsonDocument();
-
-            return schema;
+                .Build()));
         }
 
         IEnumerable<FunctionView> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);

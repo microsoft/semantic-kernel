@@ -18,10 +18,10 @@ public static class FunctionViewExtensions
     /// Creates a <see cref="JsonSchemaFunctionView"/> for a function.
     /// </summary>
     /// <param name="function">The function.</param>
-    /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
+    /// <param name="jsonSchemaDelegate">A delegate that creates a JSON Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this FunctionView function, Func<Type?, string?, JsonDocument?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this FunctionView function, Func<Type?, string?, SKJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionView = new JsonSchemaFunctionView
         {

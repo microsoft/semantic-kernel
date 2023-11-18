@@ -19,7 +19,7 @@ public sealed class FunctionViewExtensionsTests
             Name: "foo",
             PluginName: "bar",
             Description: "baz",
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: JsonDocument.Parse("\"schema\"")));
+            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -30,7 +30,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class FunctionViewExtensionsTests
             Name: "foo",
             PluginName: string.Empty,
             Description: "baz",
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: JsonDocument.Parse("\"schema\"")));
+            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -52,7 +52,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class FunctionViewExtensionsTests
             PluginName: "bar",
             Description: "baz",
             Parameters: new List<ParameterView> { param1 },
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: JsonDocument.Parse("\"schema\"")));
+            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -85,7 +85,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class FunctionViewExtensionsTests
             PluginName: "bar",
             Description: "baz",
             Parameters: new List<ParameterView> { param1 },
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: JsonDocument.Parse("\"schema\"")));
+            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -115,7 +115,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]

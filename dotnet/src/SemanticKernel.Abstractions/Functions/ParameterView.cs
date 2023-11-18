@@ -25,4 +25,4 @@ public sealed record ParameterView(
     ParameterViewType? Type = null,
     bool? IsRequired = null,
     Type? ParameterType = null,
-    JsonDocument? Schema = null);
+    SKJsonSchema? Schema = null);

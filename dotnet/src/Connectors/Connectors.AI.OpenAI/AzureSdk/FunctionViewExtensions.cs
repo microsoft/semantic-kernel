@@ -27,14 +27,14 @@ public static class FunctionViewExtensions
                 Type = param.Type?.Name ?? "string",
                 IsRequired = param.IsRequired ?? false,
                 ParameterType = param.ParameterType,
-                Schema = param.Schema ?? OpenAIFunction.GetJsonSchemaDocument(param.ParameterType!, param.Description),
+                Schema = param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType!, param.Description),
             });
         }
 
         var returnParameter = new OpenAIFunctionReturnParameter
         {
             Description = functionView.ReturnParameter.Description ?? string.Empty,
-            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
+            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
         };
 
         return new OpenAIFunction

@@ -17,4 +17,4 @@ namespace Microsoft.SemanticKernel;
 public sealed record ReturnParameterView(
     string? Description = null,
     Type? ParameterType = null,
-    JsonDocument? Schema = null);
+    SKJsonSchema? Schema = null);
