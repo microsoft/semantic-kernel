@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -35,6 +36,9 @@ public sealed class HuggingFaceImageGeneration : HuggingFaceClientBase, IImageGe
     public HuggingFaceImageGeneration(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null) : base(model, apiKey, httpClient, endpoint)
     {
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.ClientAttributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)

@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace;
 
@@ -17,6 +19,11 @@ public abstract class HuggingFaceClientBase
     /// Default HuggingFace API to use.
     /// </summary>
     protected string? HuggingFaceApiEndpoint { get; set; } = "https://api-inference.huggingface.co/models";
+
+    /// <summary>
+    /// Attributes to be sent to the HuggingFace API.
+    /// </summary>
+    protected Dictionary<string, string> ClientAttributes { get; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceClientBase"/> class.
@@ -33,6 +40,9 @@ public abstract class HuggingFaceClientBase
         this._model = model;
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+
+        this.ClientAttributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this.ClientAttributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
     }
 
     /// <summary>
@@ -48,10 +58,18 @@ public abstract class HuggingFaceClientBase
     {
         Verify.NotNullOrWhiteSpace(model);
 
+        if (string.IsNullOrEmpty(endpoint) && (httpClient == null || httpClient.BaseAddress == null))
+        {
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+        }
+
         this._model = model;
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
+
+        this.ClientAttributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this.ClientAttributes.Add(IAIServiceExtensions.EndpointKey, endpoint ?? httpClient!.BaseAddress!.ToString());
     }
 
     /// <summary>

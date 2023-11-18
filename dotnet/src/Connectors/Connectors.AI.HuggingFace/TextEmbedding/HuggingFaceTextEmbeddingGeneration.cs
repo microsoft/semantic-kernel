@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -51,25 +50,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : HuggingFaceClientBase, 
     /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
     public HuggingFaceTextEmbeddingGeneration(string model, HttpClient httpClient, string? endpoint = null) : base(model, httpClient: httpClient, endpoint: endpoint)
     {
-        Verify.NotNullOrWhiteSpace(model);
-        Verify.NotNull(httpClient);
-
-        this.HuggingFaceApiEndpoint = null;
-
-        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
-        {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
-        }
-
-        this._model = model;
-        this._endpoint = endpoint;
-        this._httpClient = httpClient;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.ClientAttributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
