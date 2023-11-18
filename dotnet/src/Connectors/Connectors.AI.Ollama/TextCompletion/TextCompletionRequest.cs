@@ -35,7 +35,7 @@ public sealed class TextCompletionRequest
     /// Additional model parameters listed in the documentation for the Modelfile such as temperature
     /// </summary>
     [JsonPropertyName("options")]
-    public Dictionary<string, object>? Options { get; set; };
+    public Dictionary<string, object>? Options { get; set; }
 
     /// <summary>
     /// System prompt to (overrides what is defined in the Modelfile)

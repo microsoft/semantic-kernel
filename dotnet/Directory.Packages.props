@@ -8,7 +8,9 @@
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.8" />
     <PackageVersion Include="Azure.Identity" Version="1.10.3" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
+    <PackageVersion Include="Markdig" Version="0.33.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
@@ -35,7 +37,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
     <!-- Test -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="7.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="7.0.0" />
@@ -47,9 +49,9 @@
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.13" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.1" />
-    <PackageVersion Include="DuckDB.NET.Data" Version="0.9.1" />
-    <PackageVersion Include="MongoDB.Driver"  Version="2.22.0" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
+    <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />

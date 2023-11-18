@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
@@ -25,6 +26,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+    private readonly Dictionary<string, string> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -37,8 +39,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
+        this._endpoint = endpoint.AbsoluteUri;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
@@ -60,7 +64,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
