@@ -2,7 +2,6 @@
 
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
