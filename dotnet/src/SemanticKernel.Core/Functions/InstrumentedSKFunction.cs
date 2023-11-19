@@ -16,11 +16,38 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// Standard Semantic Kernel callable function with instrumentation.
-/// </summary>
+/// <summary>Instrumented function that surrounds the invocation of another function with logging and metrics.</summary>
 internal sealed class InstrumentedSKFunction : ISKFunction
 {
+    /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
+    private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
+
+    /// <summary><see cref="Meter"/> for function-related metrics.</summary>
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+
+    /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
+    private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
+        name: "sk.function.duration",
+        unit: "s",
+        description: "Measures the duration of a function’s execution");
+
+    /// <summary>Wrapped function instance.</summary>
+    private readonly ISKFunction _function;
+
+    /// <summary>Logger to use for logging activities.</summary>
+    private readonly ILogger _logger;
+
+    /// <summary>
+    /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
+    /// </summary>
+    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public InstrumentedSKFunction(ISKFunction function, ILoggerFactory? loggerFactory = null)
+    {
+        this._function = function;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(function.Name) : NullLogger.Instance;
+    }
+
     /// <inheritdoc/>
     public string Name => this._function.Name;
 
@@ -30,134 +57,45 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
 
-    /// <summary>
-    /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
-    /// </summary>
-    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public InstrumentedSKFunction(
-        ISKFunction function,
-        ILoggerFactory? loggerFactory = null)
-    {
-        this._function = function;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
-
-        this._executionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: $"SK.Plugin.{this.Name}.ExecutionTime",
-            unit: "ms",
-            description: "Duration of function execution");
-
-        this._executionTotalCounter = s_meter.CreateCounter<int>(
-            name: $"SK.Plugin.{this.Name}.ExecutionTotal",
-            description: "Total number of function executions");
-
-        this._executionSuccessCounter = s_meter.CreateCounter<int>(
-            name: $"SK.Plugin.{this.Name}.ExecutionSuccess",
-            description: "Number of successful function executions");
-
-        this._executionFailureCounter = s_meter.CreateCounter<int>(
-            name: $"SK.Plugin.{this.Name}.ExecutionFailure",
-            description: "Number of failed function executions");
-    }
-
     /// <inheritdoc/>
     public SKFunctionMetadata GetMetadata() =>
         this._function.GetMetadata();
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
-        Kernel kernel,
-        SKContext context,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+    async Task<FunctionResult> ISKFunction.InvokeAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
     {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(kernel, context, requestSettings, cancellationToken)).ConfigureAwait(false);
-    }
+        using var activity = s_activitySource.StartActivity(this.Name);
 
-    #region private ================================================================================
+        this._logger.LogInformation("Function invoking");
+        TagList tags = new() { { "sk.function.name", this.Name } };
 
-    private readonly ISKFunction _function;
-    private readonly ILogger _logger;
-
-    /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for function-related activities.
-    /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(SKFunctionFromPrompt).FullName);
-
-    /// <summary>
-    /// Instance of <see cref="Meter"/> for function-related metrics.
-    /// </summary>
-    private static readonly Meter s_meter = new(typeof(SKFunctionFromPrompt).FullName);
-
-    /// <summary>
-    /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
-    /// </summary>
-    private readonly Histogram<double> _executionTimeHistogram;
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of function executions.
-    /// </summary>
-    private readonly Counter<int> _executionTotalCounter;
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful function executions.
-    /// </summary>
-    private readonly Counter<int> _executionSuccessCounter;
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed function executions.
-    /// </summary>
-    private readonly Counter<int> _executionFailureCounter;
-
-    /// <summary>
-    /// Wrapper for instrumentation to be used in multiple invocation places.
-    /// </summary>
-    /// <param name="func">Delegate to instrument.</param>
-    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
-    {
-        using var activity = s_activitySource.StartActivity($"Plugin.{this.Name}");
-
-        this._logger.LogInformation("{FunctionName}: Function execution started.", this.Name);
-
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-
-        FunctionResult result;
-
+        long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            result = await func().ConfigureAwait(false);
+            var result = await this._function.InvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Function succeeded: {Result}", result.GetValue<object>()); // Sensitive data, logging as trace, disabled by default
+            }
+            else if (this._logger.IsEnabled(LogLevel.Information))
+            {
+                this._logger.LogInformation("Function succeeded.");
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            this._logger.LogWarning("{FunctionName}: Function execution status: {Status}",
-                this.Name, "Failed");
-
-            this._logger.LogError(ex, "{FunctionName}: Function execution exception details: {Message}",
-                this.Name, ex.Message);
-
-            this._executionFailureCounter.Add(1);
-
+            this._logger.LogError(ex, "Function invocation failed: {Message}", ex.Message);
+            tags.Add("error.type", ex.GetType().FullName);
             throw;
         }
         finally
         {
-            stopwatch.Stop();
-            this._executionTotalCounter.Add(1);
-            this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+            this._logger.LogInformation("Function invocation duration: {Duration}ms", duration.TotalMilliseconds);
+            s_invocationDuration.Record(duration.TotalSeconds, in tags);
         }
-
-        this._logger.LogInformation("{FunctionName}: Function execution status: {Status}",
-                this.Name, "Success");
-
-        this._logger.LogInformation("{FunctionName}: Function execution finished in {ExecutionTime}ms",
-            this.Name, stopwatch.ElapsedMilliseconds);
-
-        this._executionSuccessCounter.Add(1);
-
-        return result;
     }
-
-    #endregion
 }
