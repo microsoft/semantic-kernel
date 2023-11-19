@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
@@ -152,5 +153,24 @@ public class PromptTemplateConfig
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
+    }
+
+    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
+    {
+        return new PromptTemplateConfig()
+        {
+            TemplateFormat = semanticFunctionConfig.TemplateFormat,
+            Description = semanticFunctionConfig.Description,
+            Input = new InputConfig()
+            {
+                Parameters = semanticFunctionConfig.InputParameters.Select(p => new InputParameter()
+                {
+                    Name = p.Name,
+                    Description = p.Description,
+                    DefaultValue = p.DefaultValue
+                }).ToList()
+            },
+            ModelSettings = semanticFunctionConfig.ModelSettings
+        };
     }
 }
