@@ -28,7 +28,7 @@ async def test_azure_e2e_chat_completion_with_skill(
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key=api_key),
     )
 
     # Create the semantic function
@@ -67,7 +67,7 @@ async def test_oai_chat_stream_service_with_skills(
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key=api_key),
     )
 
     # Create the semantic function
