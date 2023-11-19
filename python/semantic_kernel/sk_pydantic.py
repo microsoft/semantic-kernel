@@ -10,6 +10,9 @@ from pydantic.parse import Protocol
 from pydantic.types import StrBytes
 
 
+class HttpsUrl(pdt.HttpUrl):
+    allowed_schemes = {'https'}
+
 class PydanticField(abc.ABC):
     """Subclass this class to make your class a valid pydantic field type.
 
@@ -88,3 +91,7 @@ class SKGenericModel(GenericModel):
 
         json_encoders = _JSON_ENCODERS
         arbitrary_types_allowed = True
+
+
+class HttpsUrl(pdt.HttpUrl):
+    allowed_schemes = {"https"}

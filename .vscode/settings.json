@@ -71,6 +71,7 @@
     "**/Thumbs.db": true
   },
   "cSpell.words": [
+    "autogen",
     "Partitioner"
   ],
   "[java]": {
