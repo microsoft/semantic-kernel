@@ -7,10 +7,26 @@
     "editor.formatOnType": true,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
+    "python.formatting.provider": "black",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=160"
+    ],
     "notebook.output.textLineLimit": 500,
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
+    "cSpell.words": [
+        "aeiou",
+        "nopep",
+        "OPENAI",
+        "skfunction"
+    ],
     "python.testing.pytestArgs": [
         "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "pythonTestExplorer.testFramework": "pytest",
+    "pythonTestExplorer.pytestPath": "poetry",
+    "pythonTestExplorer.pytestArguments": [
+        "run",
+        "pytest"
     ],
 }
