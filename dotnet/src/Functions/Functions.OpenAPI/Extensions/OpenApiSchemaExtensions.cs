@@ -6,7 +6,6 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-
 internal static class OpenApiSchemaExtensions
 {
     /// <summary>

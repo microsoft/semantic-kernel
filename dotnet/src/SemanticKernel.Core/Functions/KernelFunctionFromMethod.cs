@@ -9,7 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
 using System.Runtime.CompilerServices;
+=======
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -108,15 +111,28 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var functionResult = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
         if (functionResult.Value is T)
         {
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
             yield return (T)functionResult.Value;
             yield break;
+=======
+            eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+            handler(this, eventWrapper.EventArgs);
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
         }
 
         // Supports the following provided T types for Method streaming
         if (typeof(T) == typeof(StreamingContent) ||
             typeof(T) == typeof(StreamingMethodContent))
         {
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
             if (functionResult.Value is not null)
+=======
+            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+            handler(this, eventWrapper.EventArgs);
+
+            // Apply any changes from the event handlers to final result.
+            result = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
             {
                 yield return (T)(object)new StreamingMethodContent(functionResult.Value);
             }
@@ -143,6 +159,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         ContextVariables variables,
         CancellationToken cancellationToken);
 
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
+=======
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<KernelParameterMetadata> _parameters;
@@ -242,11 +263,17 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
             ReturnParameter = new KernelReturnParameterMetadata()
             {
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 ParameterType = method.ReturnType,
             }
+=======
+            ReturnParameter = new ReturnParameterView(
+                Description: method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+                ParameterType: method.ReturnType),
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
         };
     }
 
@@ -322,7 +349,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
             KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
+=======
+            SKNameAttribute? nameAttr = parameter.GetCustomAttribute<SKNameAttribute>(inherit: true);
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
             string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
@@ -409,6 +440,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             sawFirstParameter = true;
 
+<<<<<<< HEAD:dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs
             var parameterView = new KernelParameterMetadata(name)
             {
                 Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
@@ -416,6 +448,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 IsRequired = !parameter.IsOptional,
                 ParameterType = type
             };
+=======
+            var parameterView = new ParameterView(
+                name,
+                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
+                defaultValue?.ToString() ?? string.Empty,
+                IsRequired: !parameter.IsOptional,
+                ParameterType: type);
+>>>>>>> b5e22903 (Python: Make SK compatible with OpenAI 1.0 (#3470)):dotnet/src/SemanticKernel.Core/Functions/NativeFunction.cs
 
             return (parameterFunc, parameterView);
         }
@@ -576,6 +616,26 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         static object ThrowIfNullResult(object? result) =>
             result ??
             throw new KernelException("Function returned null unexpectedly.");
+    }
+
+    /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
+    private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
+    {
+        object? result = null;
+        try
+        {
+            const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
+            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments, culture: null);
+        }
+        catch (TargetInvocationException e) when (e.InnerException is not null)
+        {
+            // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
+            // is ignored, the original exception will be wrapped in a TargetInvocationException.
+            // Unwrap it and throw that original exception, maintaining its stack information.
+            ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+        }
+
+        return result;
     }
 
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>

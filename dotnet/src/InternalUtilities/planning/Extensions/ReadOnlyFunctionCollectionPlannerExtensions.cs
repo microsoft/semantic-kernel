@@ -10,6 +10,7 @@ using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Extensions;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
