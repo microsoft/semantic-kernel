@@ -31,34 +31,32 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         {
             Functions = new List<OpenAIFunction>()
             {
-                new OpenAIFunction
-                {
+                new() {
                     FunctionName = "Date",
                     PluginName = "TimePlugin",
                     Description = "TimePlugin.Date",
                     Parameters = new List<OpenAIFunctionParameter>()
                     {
-                        new OpenAIFunctionParameter
-                        {
+                        new() {
                             Name = "Format",
                             Description = "Date format",
                             Type = "string",
+                            ParameterType = typeof(string),
                             IsRequired = false,
                         }
                     }
                 },
-                new OpenAIFunction
-                {
+                new() {
                     FunctionName = "Now",
                     PluginName = "TimePlugin",
                     Description = "TimePlugin.Now",
                     Parameters = new List<OpenAIFunctionParameter>()
                     {
-                        new OpenAIFunctionParameter
-                        {
+                        new() {
                             Name = "Format",
                             Description = "Date format",
                             Type = "string",
+                            ParameterType = typeof(string),
                             IsRequired = false,
                         }
                     }
@@ -84,8 +82,8 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("functions").GetArrayLength());
-        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("functions")[0].GetProperty("name").GetString());
-        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("functions")[1].GetProperty("name").GetString());
+        Assert.Equal("TimePlugin_Date", optionsJson.GetProperty("functions")[0].GetProperty("name").GetString());
+        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("functions")[1].GetProperty("name").GetString());
     }
 
     [Fact]
@@ -95,7 +93,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._requestSettings.FunctionCall = "TimePlugin-Now";
+        this._requestSettings.FunctionCall = "TimePlugin_Now";
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._requestSettings);
@@ -105,7 +103,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("functions").GetArrayLength());
-        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("functions")[0].GetProperty("name").GetString());
+        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("functions")[0].GetProperty("name").GetString());
     }
 
     [Fact]
@@ -189,7 +187,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         ""role"": ""assistant"",
         ""content"": null,
         ""function_call"": {
-          ""name"": ""TimePlugin-Date"",
+          ""name"": ""TimePlugin_Date"",
           ""arguments"": ""{}""
         }
       },

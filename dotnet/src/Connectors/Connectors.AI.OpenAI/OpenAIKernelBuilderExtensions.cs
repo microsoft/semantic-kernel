@@ -473,7 +473,7 @@ public static class OpenAIKernelBuilderExtensions
         OpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
         {
             return new(deploymentName, openAIClient, loggerFactory);
-        };
+        }
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -567,10 +567,12 @@ public static class OpenAIKernelBuilderExtensions
 
     private static OpenAIClientOptions CreateOpenAIClientOptions(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, HttpClient? httpClient)
     {
-        OpenAIClientOptions options = new();
+        OpenAIClientOptions options = new()
+        {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory));
-        options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
+            Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory)),
+            RetryPolicy = new RetryPolicy(maxRetries: 0) //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
+        };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         return options;

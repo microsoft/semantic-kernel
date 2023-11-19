@@ -551,7 +551,7 @@ public sealed class PineconeClient : IPineconeClient
 
     private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        if (this._indexHostMapping.TryGetValue(indexName, out string? indexHost))
         {
             return indexHost;
         }

@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -158,7 +159,7 @@ internal sealed class NativeFunction : ISKFunction
         if (eventWrapper?.Handler is EventHandler<FunctionInvokingEventArgs> handler)
         {
             eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
-            handler.Invoke(this, eventWrapper.EventArgs);
+            handler(this, eventWrapper.EventArgs);
         }
     }
 
@@ -168,7 +169,7 @@ internal sealed class NativeFunction : ISKFunction
         if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
         {
             eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
-            handler.Invoke(this, eventWrapper.EventArgs);
+            handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
             result = new FunctionResult(this.Name, this.PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
@@ -205,6 +206,7 @@ internal sealed class NativeFunction : ISKFunction
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
+    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<ParameterView> _parameters;
     private readonly ReturnParameterView _returnParameter;
@@ -292,7 +294,7 @@ internal sealed class NativeFunction : ISKFunction
             }
 
             // Invoke the method.
-            object? result = method.Invoke(target, args);
+            object? result = Invoke(method, target, args);
 
             // Extract and return the result.
             return returnFunc(functionName!, pluginName, result, context);
@@ -302,11 +304,12 @@ internal sealed class NativeFunction : ISKFunction
         return new MethodDetails
         {
             Function = Function,
-
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new ReturnParameterView(method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? ""),
+            ReturnParameter = new ReturnParameterView(
+                Description: method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+                ParameterType: method.ReturnType),
         };
     }
 
@@ -377,14 +380,14 @@ internal sealed class NativeFunction : ISKFunction
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
             SKNameAttribute? nameAttr = parameter.GetCustomAttribute<SKNameAttribute>(inherit: true);
-            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name);
+            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
             // or an override from an applied SKParameter attribute. Note that a default value may be null.
-            DefaultValueAttribute defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
+            DefaultValueAttribute? defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
             bool hasDefaultValue = defaultValueAttribute is not null;
             object? defaultValue = defaultValueAttribute?.Value;
             if (!hasDefaultValue && parameter.HasDefaultValue)
@@ -467,7 +470,8 @@ internal sealed class NativeFunction : ISKFunction
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
                 defaultValue?.ToString() ?? string.Empty,
-                IsRequired: !parameter.IsOptional);
+                IsRequired: !parameter.IsOptional,
+                ParameterType: type);
 
             return (parameterFunc, parameterView);
         }
@@ -599,7 +603,7 @@ internal sealed class NativeFunction : ISKFunction
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                var taskResult = taskResultGetter.Invoke(result!, Array.Empty<object>());
+                var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
                 context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, pluginName, context, taskResult);
@@ -615,10 +619,10 @@ internal sealed class NativeFunction : ISKFunction
         {
             return async (functionName, pluginName, result, context) =>
             {
-                Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
+                Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
                 await task.ConfigureAwait(false);
 
-                var taskResult = asTaskResultGetter.Invoke(task!, Array.Empty<object>());
+                var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
                 context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
                 return new FunctionResult(functionName, pluginName, context, taskResult);
@@ -630,7 +634,7 @@ internal sealed class NativeFunction : ISKFunction
         {
             Type elementType = returnType.GetGenericArguments()[0];
 
-            MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
                 .MakeGenericType(elementType)
                 .GetMethod("GetAsyncEnumerator");
 
@@ -638,7 +642,7 @@ internal sealed class NativeFunction : ISKFunction
             {
                 return (functionName, pluginName, result, context) =>
                 {
-                    var asyncEnumerator = getAsyncEnumeratorMethod.Invoke(result, new object[] { default(CancellationToken) });
+                    var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
                     if (asyncEnumerator is not null)
                     {
@@ -657,6 +661,26 @@ internal sealed class NativeFunction : ISKFunction
         static object ThrowIfNullResult(object? result) =>
             result ??
             throw new SKException("Function returned null unexpectedly.");
+    }
+
+    /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
+    private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
+    {
+        object? result = null;
+        try
+        {
+            const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
+            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments, culture: null);
+        }
+        catch (TargetInvocationException e) when (e.InnerException is not null)
+        {
+            // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
+            // is ignored, the original exception will be wrapped in a TargetInvocationException.
+            // Unwrap it and throw that original exception, maintaining its stack information.
+            ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+        }
+
+        return result;
     }
 
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
@@ -705,7 +729,7 @@ internal sealed class NativeFunction : ISKFunction
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType);
+                targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
             // For enums, delegate to Enum.Parse, special-casing null if it was actually Nullable<EnumType>.
@@ -763,7 +787,7 @@ internal sealed class NativeFunction : ISKFunction
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType);
+                targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
             // For enums, just ToString() and allow the object override to do the right thing.
@@ -844,10 +868,10 @@ internal sealed class NativeFunction : ISKFunction
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
     private FunctionView? _view;
 

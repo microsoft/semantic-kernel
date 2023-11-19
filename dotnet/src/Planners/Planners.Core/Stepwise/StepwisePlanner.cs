@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -54,14 +53,14 @@ public class StepwisePlanner : IStepwisePlanner
         this._manualTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderFunctionManual.skprompt.txt");
         this._questionTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderQuestion.skprompt.txt");
 
-        // Load or use default PromptConfig
+        // Load or use default PromptFunctionModel
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
-        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
@@ -535,11 +534,13 @@ public class StepwisePlanner : IStepwisePlanner
             var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
             var resultObject = kernelResult.GetValue<object>();
 
-            var converter = TypeDescriptor.GetConverter(resultObject);
-
-            if (converter.CanConvertTo(typeof(string)))
+            if (resultObject is not null)
             {
-                result = converter.ConvertToString(resultObject);
+                var converter = TypeDescriptor.GetConverter(resultObject);
+                if (converter.CanConvertTo(typeof(string)))
+                {
+                    result = converter.ConvertToString(resultObject);
+                }
             }
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
@@ -649,7 +650,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
+    private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The prompt config to use for the system step
