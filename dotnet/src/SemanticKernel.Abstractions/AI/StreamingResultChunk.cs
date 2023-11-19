@@ -11,25 +11,31 @@ namespace Microsoft.SemanticKernel.AI;
 public abstract class StreamingResultChunk
 {
     /// <summary>
-    /// Type of the update.
+    /// Type of the chunk.
     /// </summary>
     public abstract string Type { get; }
 
     /// <summary>
-    /// In a scenario of multiple results, this represents zero-based index of the result in the streaming sequence
+    /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
     /// </summary>
     public abstract int ChoiceIndex { get; }
 
     /// <summary>
-    /// Converts the update class to string.
+    /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
     /// </summary>
-    /// <returns>String representation of the update</returns>
+    /// <remarks>
+    /// Depending on the nature of the underlying type, this method may be more efficient than <see cref="ToByteArray"/>.
+    /// </remarks>
+    /// <returns>String representation of the chunk</returns>
     public abstract override string ToString();
 
     /// <summary>
-    /// Converts the update class to byte array.
+    /// Abstract byte[] representation of the chunk in a way it could be composed/appended with previous chunks.
     /// </summary>
-    /// <returns>Byte array representation of the update</returns>
+    /// <remarks>
+    /// Depending on the nature of the underlying type, this method may be more efficient than <see cref="ToString"/>.
+    /// </remarks>
+    /// <returns>Byte array representation of the chunk</returns>
     public abstract byte[] ToByteArray();
 
     /// <summary>
