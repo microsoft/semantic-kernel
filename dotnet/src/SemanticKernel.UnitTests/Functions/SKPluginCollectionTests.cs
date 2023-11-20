@@ -234,14 +234,14 @@ public class SKPluginCollectionTests
         Assert.Null(array[2]);
         Assert.Null(array[3]);
 
-        Array.Clear(array);
+        Array.Clear(array, 0, array.Length);
         c.CopyTo(array, 1);
         Assert.Same(plugin1, array[1]);
         Assert.Same(plugin2, array[2]);
         Assert.Null(array[0]);
         Assert.Null(array[3]);
 
-        Array.Clear(array);
+        Array.Clear(array, 0, array.Length);
         c.CopyTo(array, 2);
         Assert.Same(plugin1, array[2]);
         Assert.Same(plugin2, array[3]);

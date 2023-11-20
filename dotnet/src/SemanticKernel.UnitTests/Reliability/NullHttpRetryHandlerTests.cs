@@ -19,7 +19,7 @@ public class NullHttpRetryHandlerTests
     {
         // Arrange
         using var retry = new NullHttpRetryHandler();
-        using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        using var mockResponse = new HttpResponseMessage((HttpStatusCode)429);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
         retry.InnerHandler = mockHandler.Object;
@@ -31,7 +31,7 @@ public class NullHttpRetryHandlerTests
         // Assert
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
-        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+        Assert.Equal((HttpStatusCode)429, response.StatusCode);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class NullHttpRetryHandlerTests
     {
         // Arrange
         using var retry = new NullHttpRetryHandler();
-        using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        using var mockResponse = new HttpResponseMessage((HttpStatusCode)429);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
         retry.InnerHandler = mockHandler.Object;
@@ -68,7 +68,7 @@ public class NullHttpRetryHandlerTests
         cancellationTokenSource.Cancel();
 
         // Act
-        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, cancellationTokenSource.Token));
 
         // Assert
@@ -81,7 +81,7 @@ public class NullHttpRetryHandlerTests
     {
         // Arrange
         using var retry = new NullHttpRetryHandler();
-        using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        using var mockResponse = new HttpResponseMessage((HttpStatusCode)429);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
         retry.InnerHandler = mockHandler.Object;
@@ -93,7 +93,7 @@ public class NullHttpRetryHandlerTests
         // Assert
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
-        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+        Assert.Equal((HttpStatusCode)429, response.StatusCode);
     }
 
     private static Mock<HttpMessageHandler> GetHttpMessageHandlerMock(HttpResponseMessage mockResponse)
@@ -101,6 +101,7 @@ public class NullHttpRetryHandlerTests
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((m, ct) => ct.ThrowIfCancellationRequested()) // .NET Framework doesn't include a pre-check for cancellation
             .ReturnsAsync(mockResponse);
         return mockHandler;
     }

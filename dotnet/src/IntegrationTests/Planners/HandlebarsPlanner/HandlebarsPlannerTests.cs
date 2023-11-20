@@ -6,14 +6,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners.Handlebars;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.HandlebarsPlanner;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+#pragma warning restore IDE0130
 
 public sealed class HandlebarsPlannerTests : IDisposable
 {
@@ -41,7 +43,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -62,7 +64,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
