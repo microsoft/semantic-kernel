@@ -3,7 +3,6 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Polly;
 
 namespace Microsoft.SemanticKernel.Reliability.Polly;

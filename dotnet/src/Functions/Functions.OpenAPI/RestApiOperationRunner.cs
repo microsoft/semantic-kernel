@@ -11,10 +11,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
@@ -91,7 +91,7 @@ internal sealed class RestApiOperationRunner
         bool enablePayloadNamespacing = false)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
+        this._userAgent = userAgent ?? HttpHeaderValues.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
 
@@ -166,7 +166,7 @@ internal sealed class RestApiOperationRunner
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
-            : Telemetry.HttpUserAgent);
+            : HttpHeaderValues.UserAgent);
 
         if (headers != null)
         {

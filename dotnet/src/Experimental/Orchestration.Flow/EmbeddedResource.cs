@@ -2,7 +2,6 @@
 
 using System.IO;
 using System.Reflection;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 

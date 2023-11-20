@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable IDE0130
 

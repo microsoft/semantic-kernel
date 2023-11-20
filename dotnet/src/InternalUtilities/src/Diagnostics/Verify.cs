@@ -8,7 +8,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
+namespace Microsoft.SemanticKernel;
 
 internal static class Verify
 {
@@ -33,6 +33,23 @@ internal static class Verify
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowArgumentWhiteSpaceException(paramName);
+        }
+    }
+
+    internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression("list")] string? paramName = null)
+    {
+        NotNull(list, paramName);
+        if (list.Count == 0)
+        {
+            throw new ArgumentException("The value cannot be empty.", paramName);
+        }
+    }
+
+    public static void True(bool condition, string message, [CallerArgumentExpression("condition")] string? paramName = null)
+    {
+        if (!condition)
+        {
+            throw new ArgumentException(message, paramName);
         }
     }
 
@@ -62,6 +79,26 @@ internal static class Verify
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(name))
         {
             ThrowInvalidName(kind, name);
+        }
+    }
+
+    public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression("url")] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(url, paramName);
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || string.IsNullOrEmpty(uri.Host))
+        {
+            throw new ArgumentException($"The `{url}` is not valid.", paramName);
+        }
+
+        if (!allowQuery && !string.IsNullOrEmpty(uri.Query))
+        {
+            throw new ArgumentException($"The `{url}` is not valid: it cannot contain query parameters.", paramName);
+        }
+
+        if (!string.IsNullOrEmpty(uri.Fragment))
+        {
+            throw new ArgumentException($"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
         }
     }
 

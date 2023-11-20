@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130

@@ -7,8 +7,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
