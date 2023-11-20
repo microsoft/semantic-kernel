@@ -15,23 +15,23 @@ using Microsoft.SemanticKernel.TemplateEngine;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides factory methods for creating commonly-used implementations of <see cref="ISKFunction"/>, such as
+/// Provides factory methods for creating commonly-used implementations of <see cref="SKFunction"/>, such as
 /// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
 public static class SKFunctionHelper
 {
     #region FromMethod
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
+    /// Creates an <see cref="SKFunction"/> instance for a method, specified via a delegate.
     /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="SKFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction FromMethod(
+    /// <returns>The created <see cref="SKFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static SKFunction FromMethod(
         Delegate method,
         string? functionName = null,
         string? description = null,
@@ -41,18 +41,18 @@ public static class SKFunctionHelper
         FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates an <see cref="SKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="SKFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction FromMethod(
+    /// <returns>The created <see cref="SKFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static SKFunction FromMethod(
         MethodInfo method,
         object? target = null,
         string? functionName = null,
@@ -77,7 +77,7 @@ public static class SKFunctionHelper
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction FromPrompt(
+    public static SKFunction FromPrompt(
         string promptTemplate,
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
@@ -94,7 +94,7 @@ public static class SKFunctionHelper
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction FromPrompt(
+    public static SKFunction FromPrompt(
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -110,7 +110,7 @@ public static class SKFunctionHelper
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction FromPrompt(
+    public static SKFunction FromPrompt(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -125,7 +125,7 @@ public static class SKFunctionHelper
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction FromPrompt(
+    public static SKFunction FromPrompt(
         PromptFunctionModel promptFunctionModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)

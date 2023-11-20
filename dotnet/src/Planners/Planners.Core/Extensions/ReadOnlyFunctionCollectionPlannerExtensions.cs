@@ -30,7 +30,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <returns>A function callback that can be used to retrieve a function from the function provider.</returns>
-    public static Func<string, string, ISKFunction?> GetFunctionCallback(this IReadOnlySKPluginCollection plugins)
+    public static Func<string, string, SKFunction?> GetFunctionCallback(this IReadOnlySKPluginCollection plugins)
     {
         return (pluginName, functionName) =>
         {

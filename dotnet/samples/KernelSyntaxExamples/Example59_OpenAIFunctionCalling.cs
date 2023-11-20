@@ -92,7 +92,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // If the function returned by OpenAI is an SKFunctionHelper registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out SKFunction? func, out ContextVariables? context))
             {
                 var result = (await kernel.RunAsync(func, context)).GetValue<object>();
 
@@ -187,7 +187,7 @@ public static class Example59_OpenAIFunctionCalling
 
                 // If the function returned by OpenAI is an SKFunctionHelper registered with the kernel,
                 // you can invoke it using the following code.
-                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out SKFunction? func, out ContextVariables? context))
                 {
                     var kernelResult = await kernel.RunAsync(func, context);
 

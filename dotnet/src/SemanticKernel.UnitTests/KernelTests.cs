@@ -115,7 +115,7 @@ public class KernelTests
         {
             invoked++;
         };
-        List<ISKFunction> pipeline = new();
+        List<SKFunction> pipeline = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             pipeline.Add(functions["SayHello"]);
@@ -255,7 +255,7 @@ public class KernelTests
             invoked++;
         };
 
-        List<ISKFunction> pipeline = new();
+        List<SKFunction> pipeline = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             pipeline.Add(functions["GetAnyValue"]);
@@ -468,7 +468,7 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        List<ISKFunction> functions = new()
+        List<SKFunction> functions = new()
         {
             kernel.CreateFunctionFromMethod(() => "Result1", "Function1"),
             kernel.CreateFunctionFromMethod(() => "Result2", "Function2"),
@@ -515,7 +515,7 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        List<ISKFunction> functions = new()
+        List<SKFunction> functions = new()
         {
             kernel.CreateFunctionFromMethod(() => "Result1", "Function1"),
             kernel.CreateFunctionFromMethod(() => "Result2", "Function2"),

@@ -38,7 +38,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (ISKPlugin plugin in executionContext.Plugins)
         {
-            foreach (ISKFunction skfunction in plugin)
+            foreach (SKFunction skfunction in plugin)
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{skfunction.Name}", (writer, hcontext, parameters) =>
                 {

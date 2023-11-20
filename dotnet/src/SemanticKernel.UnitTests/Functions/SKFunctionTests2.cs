@@ -899,7 +899,7 @@ public sealed class SKFunctionTests2
     {
         // Arrange
         var context = this.MockContext("");
-        ISKFunction func = SKFunctionHelper.FromMethod((double input) => input * 2, functionName: "Test");
+        SKFunction func = SKFunctionHelper.FromMethod((double input) => input * 2, functionName: "Test");
         FunctionResult result;
 
         // Act/Assert
@@ -1069,7 +1069,7 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = this.MockContext("");
         Exception expected = new FormatException("expected");
-        ISKFunction func = SKFunctionHelper.FromMethod(() => { throw expected; });
+        SKFunction func = SKFunctionHelper.FromMethod(() => { throw expected; });
 
         // Act
         Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, context));

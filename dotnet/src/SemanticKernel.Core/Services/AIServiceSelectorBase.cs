@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 public abstract class AIServiceSelectorBase : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, SKFunction skfunction) where T : IAIService
     {
         var services = context.ServiceProvider.GetServices<T>();
         foreach (var service in services)
@@ -36,8 +36,8 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="context"><see cref="SKContext"/></param>
-    /// <param name="skfunction"><see cref="ISKFunction"/></param>
+    /// <param name="skfunction"><see cref="SKFunction"/></param>
     /// <param name="service">Instance of <see cref="IAIService"/></param>
     /// <returns></returns>
-    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, ISKFunction skfunction, T service) where T : IAIService;
+    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, SKFunction skfunction, T service) where T : IAIService;
 }

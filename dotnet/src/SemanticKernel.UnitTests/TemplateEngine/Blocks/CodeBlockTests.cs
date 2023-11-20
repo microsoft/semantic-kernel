@@ -40,7 +40,7 @@ public class CodeBlockTests
         // Arrange
         var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, plugins: this._kernel.Plugins);
 
-        var function = new Mock<ISKFunction>();
+        var function = new Mock<SKFunction>();
         function.Setup(x => x.Name).Returns("function");
         function
             .Setup(x => x.InvokeAsync(

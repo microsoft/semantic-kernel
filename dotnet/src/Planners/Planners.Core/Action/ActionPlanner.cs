@@ -50,7 +50,7 @@ public sealed class ActionPlanner : IActionPlanner
     };
 
     // Planner semantic function
-    private readonly ISKFunction _plannerFunction;
+    private readonly SKFunction _plannerFunction;
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;

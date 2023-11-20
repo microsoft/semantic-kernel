@@ -28,7 +28,7 @@ public static class SKFunctionTextExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Aggregated results.</returns>
     public static async Task<SKContext> AggregatePartitionedResultsAsync(
-        this ISKFunction func,
+        this SKFunction func,
         Kernel kernel,
         List<string> partitionedInput,
         SKContext context,

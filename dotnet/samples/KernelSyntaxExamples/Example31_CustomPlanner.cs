@@ -214,7 +214,7 @@ public static class XmlMarkupPlanParser
             }
             else
             {
-                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ?
+                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out SKFunction? command) ?
                     new Plan(command) :
                     new Plan(node.InnerText);
                 planStep.PluginName = pluginName;

@@ -9,7 +9,7 @@ internal static class IKernelExtensions
     /// <summary>
     /// Retrieve a kernel function based on the tool name.
     /// </summary>
-    public static ISKFunction GetAssistantTool(this Kernel kernel, string toolName)
+    public static SKFunction GetAssistantTool(this Kernel kernel, string toolName)
     {
         string[] nameParts = toolName.Split('-');
         return nameParts.Length switch

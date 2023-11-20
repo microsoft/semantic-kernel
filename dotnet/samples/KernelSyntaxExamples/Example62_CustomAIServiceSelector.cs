@@ -67,7 +67,7 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+        public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, SKFunction skfunction) where T : IAIService
         {
             var services = context.ServiceProvider.GetServices<T>();
             foreach (var service in services)

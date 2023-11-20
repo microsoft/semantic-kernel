@@ -341,7 +341,7 @@ public sealed class PlanTests
 
         var returnContext = new SKContext(kernel, serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<SKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName"));
@@ -369,7 +369,7 @@ public sealed class PlanTests
 
         var returnContext = new SKContext(kernel, serviceProvider.Object, serviceSelector.Object);
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<SKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName"));
@@ -439,7 +439,7 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal, new Mock<ISKFunction>().Object, new Mock<ISKFunction>().Object);
+        var plan = new Plan(goal, new Mock<SKFunction>().Object, new Mock<SKFunction>().Object);
 
         // Assert
         Assert.NotNull(plan);
@@ -765,7 +765,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     [Fact]
     public async Task ConPlanStepsTriggerKernelEventsAsync()
     {
-        List<ISKFunction> functions = new();
+        List<SKFunction> functions = new();
 
         // Arrange
         [SKName("WritePoem")]

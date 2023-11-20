@@ -29,12 +29,12 @@ public static class ISKPluginExtensions
     /// <param name="plugin">The plugin.</param>
     /// <param name="function">The function.</param>
     /// <returns>true if the plugin contains the specified function; otherwise, false.</returns>
-    public static bool Contains(this ISKPlugin plugin, ISKFunction function)
+    public static bool Contains(this ISKPlugin plugin, SKFunction function)
     {
         Verify.NotNull(plugin);
         Verify.NotNull(function);
 
-        return plugin.TryGetFunction(function.Name, out ISKFunction? found) && found == function;
+        return plugin.TryGetFunction(function.Name, out SKFunction? found) && found == function;
     }
 
     /// <summary>Gets whether the plugins collection contains a plugin with the specified name.</summary>
@@ -54,12 +54,12 @@ public static class ISKPluginExtensions
     /// <param name="pluginName">The name of the plugin storing the function.</param>
     /// <param name="functionName">The name of the function.</param>
     /// <returns>The function from the collection.</returns>
-    public static ISKFunction GetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName)
+    public static SKFunction GetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
 
-        if (!TryGetFunction(plugins, pluginName, functionName, out ISKFunction? function))
+        if (!TryGetFunction(plugins, pluginName, functionName, out SKFunction? function))
         {
             throw new KeyNotFoundException("The plugin collection does not contain a plugin and/or function with the specified names.");
         }
@@ -77,7 +77,7 @@ public static class ISKPluginExtensions
     /// If <paramref name="pluginName"/> is null or entirely whitespace, all plugins are searched for a function with the specified name,
     /// and the first one found is returned.
     /// </remarks>
-    public static bool TryGetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? func)
+    public static bool TryGetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName, [NotNullWhen(true)] out SKFunction? func)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
@@ -132,7 +132,7 @@ public static class ISKPluginExtensions
         List<FunctionView> views = new();
         foreach (ISKPlugin plugin in plugins)
         {
-            foreach (ISKFunction function in plugin)
+            foreach (SKFunction function in plugin)
             {
                 views.Add(function.Describe() with { PluginName = plugin.Name });
             }

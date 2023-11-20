@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -19,25 +18,16 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Standard Semantic Kernel callable function with instrumentation.
 /// </summary>
-internal sealed class InstrumentedSKFunction : ISKFunction
+internal sealed class InstrumentedSKFunction : SKFunction
 {
-    /// <inheritdoc/>
-    public string Name => this._function.Name;
-
-    /// <inheritdoc/>
-    public string Description => this._function.Description;
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
     /// </summary>
-    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="function">Instance of <see cref="SKFunction"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedSKFunction(
-        ISKFunction function,
-        ILoggerFactory? loggerFactory = null)
+        SKFunction function,
+        ILoggerFactory? loggerFactory = null) : base(function.Name, function.Description, function.ModelSettings)
     {
         this._function = function;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionHelper)) : NullLogger.Instance;
@@ -61,11 +51,11 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public FunctionView Describe() =>
+    public override FunctionView Describe() =>
         this._function.Describe();
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public override async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -77,7 +67,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
 
     #region private ================================================================================
 
-    private readonly ISKFunction _function;
+    private readonly SKFunction _function;
     private readonly ILogger _logger;
 
     /// <summary>

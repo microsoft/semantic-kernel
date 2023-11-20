@@ -141,7 +141,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
 
             // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
-            ISKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
+            SKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();

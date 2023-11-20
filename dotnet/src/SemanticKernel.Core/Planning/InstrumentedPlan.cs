@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -16,38 +15,29 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
 /// </summary>
-internal sealed class InstrumentedPlan : ISKFunction
+internal sealed class InstrumentedPlan : SKFunction
 {
-    /// <inheritdoc/>
-    public string Name => this._plan.Name;
-
-    /// <inheritdoc/>
-    public string Description => this._plan.Description;
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => this._plan.ModelSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
     /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedPlan(
-        ISKFunction plan,
-        ILoggerFactory? loggerFactory = null)
+        SKFunction plan,
+        ILoggerFactory? loggerFactory = null) : base(plan.Name, plan.Description, plan.ModelSettings)
     {
         this._plan = plan;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
-    public FunctionView Describe()
+    public override FunctionView Describe()
     {
         return this._plan.Describe();
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public override async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -59,7 +49,7 @@ internal sealed class InstrumentedPlan : ISKFunction
 
     #region private ================================================================================
 
-    private readonly ISKFunction _plan;
+    private readonly SKFunction _plan;
     private readonly ILogger _logger;
 
     /// <summary>

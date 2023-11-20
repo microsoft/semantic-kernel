@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromPrompt : ISKFunction
+internal sealed class SKFunctionFromPrompt : SKFunction
 {
     // TODO: Revise these Create method XML comments
 
@@ -40,7 +40,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static SKFunction Create(
         string promptTemplate,
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
@@ -75,7 +75,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static SKFunction Create(
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -99,7 +99,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static SKFunction Create(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -118,25 +118,16 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
             loggerFactory: loggerFactory);
     }
 
-    /// <inheritdoc/>
-    public string Name { get; }
-
-    /// <inheritdoc/>
-    public string Description => this._promptTemplateConfig.Description;
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
-
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <inheritdoc/>
-    public FunctionView Describe() => new(this.Name, PluginName: null, this.Description, this.Parameters);
+    public override FunctionView Describe() => new(this.Name, PluginName: null, this.Description, this.Parameters);
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    public override async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -197,7 +188,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
         string functionName,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, promptTemplateConfig.ModelSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionHelper)) : NullLogger.Instance;
 

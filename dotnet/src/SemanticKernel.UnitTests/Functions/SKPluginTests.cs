@@ -48,37 +48,37 @@ public class SKPluginTests
     [Fact]
     public void ItExposesFunctionsItContains()
     {
-        ISKFunction func1 = SKFunctionHelper.FromMethod(() => { }, "Function1");
-        ISKFunction func2 = SKFunctionHelper.FromMethod(() => { }, "Function2");
+        SKFunction func1 = SKFunctionHelper.FromMethod(() => { }, "Function1");
+        SKFunction func2 = SKFunctionHelper.FromMethod(() => { }, "Function2");
 
         SKPlugin plugin = new("name", new[] { func1, func2 });
 
-        foreach (ISKFunction func in new[] { func1, func2 })
+        foreach (SKFunction func in new[] { func1, func2 })
         {
             Assert.True(plugin.Contains(func.Name));
             Assert.True(plugin.Contains(func));
 
-            Assert.True(plugin.TryGetFunction(func.Name, out ISKFunction? found));
+            Assert.True(plugin.TryGetFunction(func.Name, out SKFunction? found));
             Assert.Equal(found, func);
 
             Assert.Equal(func, plugin[func.Name]);
             Assert.Equal(func, plugin[func.Name.ToUpperInvariant()]);
         }
 
-        ISKFunction[] actual = plugin.OrderBy(f => f.Name).ToArray();
+        SKFunction[] actual = plugin.OrderBy(f => f.Name).ToArray();
         Assert.Equal(actual[0], func1);
         Assert.Equal(actual[1], func2);
 
         Assert.Throws<KeyNotFoundException>(() => plugin["Function3"]);
-        Assert.False(plugin.TryGetFunction("Function3", out ISKFunction? notFound));
+        Assert.False(plugin.TryGetFunction("Function3", out SKFunction? notFound));
         Assert.Null(notFound);
     }
 
     [Fact]
     public void ItContainsAddedFunctions()
     {
-        ISKFunction func1 = SKFunctionHelper.FromMethod(() => { }, "Function1");
-        ISKFunction func2 = SKFunctionHelper.FromMethod(() => { }, "Function2");
+        SKFunction func1 = SKFunctionHelper.FromMethod(() => { }, "Function1");
+        SKFunction func2 = SKFunctionHelper.FromMethod(() => { }, "Function2");
 
         SKPlugin plugin = new("name");
         Assert.Equal(0, plugin.FunctionCount);
@@ -103,8 +103,8 @@ public class SKPluginTests
     {
         Assert.Throws<ArgumentNullException>(() => new SKPlugin(null!));
         Assert.Throws<ArgumentNullException>(() => new SKPlugin(null!, ""));
-        Assert.Throws<ArgumentNullException>(() => new SKPlugin(null!, "", Array.Empty<ISKFunction>()));
-        Assert.Throws<ArgumentNullException>(() => new SKPlugin("name", "", new ISKFunction[] { null! }));
+        Assert.Throws<ArgumentNullException>(() => new SKPlugin(null!, "", Array.Empty<SKFunction>()));
+        Assert.Throws<ArgumentNullException>(() => new SKPlugin("name", "", new SKFunction[] { null! }));
 
         SKPlugin plugin = new("name");
         Assert.Throws<ArgumentNullException>(() => plugin.AddFunction(null!));
@@ -112,7 +112,7 @@ public class SKPluginTests
         Assert.Throws<ArgumentNullException>(() => plugin[null!]);
         Assert.Throws<ArgumentNullException>(() => plugin.TryGetFunction(null!, out _));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((string)null!));
-        Assert.Throws<ArgumentNullException>(() => plugin.Contains((ISKFunction)null!));
+        Assert.Throws<ArgumentNullException>(() => plugin.Contains((SKFunction)null!));
         Assert.Throws<ArgumentNullException>(() => ((ISKPlugin)null!).Contains("functionName"));
     }
 }

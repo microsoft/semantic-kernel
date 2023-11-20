@@ -13,18 +13,18 @@ internal static class ISKFunctionExtensions
     /// <summary>
     /// Produce a fully qualified toolname.
     /// </summary>
-    public static string GetQualifiedName(this ISKFunction function, string pluginName)
+    public static string GetQualifiedName(this SKFunction function, string pluginName)
     {
         return $"{pluginName}-{function.Name}";
     }
 
     /// <summary>
-    /// Convert <see cref="ISKFunction"/> to an OpenAI tool model.
+    /// Convert <see cref="SKFunction"/> to an OpenAI tool model.
     /// </summary>
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
     /// <returns>An OpenAI tool model</returns>
-    public static ToolModel ToToolModel(this ISKFunction function, string pluginName)
+    public static ToolModel ToToolModel(this SKFunction function, string pluginName)
     {
         var view = function.Describe();
         var required = new List<string>(view.Parameters.Count);

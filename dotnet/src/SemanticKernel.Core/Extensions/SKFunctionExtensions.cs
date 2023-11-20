@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Class that holds extension methods for objects implementing ISKFunction.
+/// Class that holds extension methods for objects implementing SKFunction.
 /// </summary>
 public static class SKFunctionExtensions
 {
@@ -28,7 +28,7 @@ public static class SKFunctionExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(this SKFunction function,
         Kernel kernel,
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null,
@@ -53,7 +53,7 @@ public static class SKFunctionExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(this SKFunction function,
         Kernel kernel,
         string input,
         IReadOnlySKPluginCollection? plugins = null,
@@ -64,11 +64,11 @@ public static class SKFunctionExtensions
         => function.InvokeAsync(kernel, new ContextVariables(input), plugins, culture, requestSettings, loggerFactory, cancellationToken);
 
     /// <summary>
-    /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.
+    /// Returns decorated instance of <see cref="SKFunction"/> with enabled instrumentation.
     /// </summary>
-    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="function">Instance of <see cref="SKFunction"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static ISKFunction WithInstrumentation(this ISKFunction function, ILoggerFactory? loggerFactory = null)
+    public static SKFunction WithInstrumentation(this SKFunction function, ILoggerFactory? loggerFactory = null)
     {
         return new InstrumentedSKFunction(function, loggerFactory);
     }

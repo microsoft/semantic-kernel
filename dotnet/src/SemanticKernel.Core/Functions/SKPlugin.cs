@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class SKPlugin : ISKPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
-    private readonly Dictionary<string, ISKFunction> _functions;
+    private readonly Dictionary<string, SKFunction> _functions;
 
     /// <summary>Initializes the new plugin from the provided name.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -35,7 +35,7 @@ public sealed class SKPlugin : ISKPlugin
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    public SKPlugin(string name, IEnumerable<ISKFunction>? functions) : this(name, description: null, functions)
+    public SKPlugin(string name, IEnumerable<SKFunction>? functions) : this(name, description: null, functions)
     {
     }
 
@@ -45,17 +45,17 @@ public sealed class SKPlugin : ISKPlugin
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public SKPlugin(string name, string? description, IEnumerable<ISKFunction>? functions = null)
+    public SKPlugin(string name, string? description, IEnumerable<SKFunction>? functions = null)
     {
         Verify.ValidPluginName(name);
 
         this.Name = name;
         this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";
 
-        this._functions = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
+        this._functions = new Dictionary<string, SKFunction>(StringComparer.OrdinalIgnoreCase);
         if (functions is not null)
         {
-            foreach (ISKFunction f in functions)
+            foreach (SKFunction f in functions)
             {
                 Verify.NotNull(f, nameof(functions));
                 this._functions.Add(f.Name, f);
@@ -73,18 +73,18 @@ public sealed class SKPlugin : ISKPlugin
     public int FunctionCount => this._functions.Count;
 
     /// <inheritdoc/>
-    public ISKFunction this[string functionName] => this._functions[functionName];
+    public SKFunction this[string functionName] => this._functions[functionName];
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string name, [NotNullWhen(true)] out ISKFunction? function) =>
+    public bool TryGetFunction(string name, [NotNullWhen(true)] out SKFunction? function) =>
         this._functions.TryGetValue(name, out function);
 
     /// <summary>Adds a function to the plugin.</summary>
     /// <param name="function">The function to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/>'s <see cref="ISKFunction.Name"/> is null.</exception>
-    /// <exception cref="ArgumentException">A function with the same <see cref="ISKFunction.Name"/> already exists in this plugin.</exception>
-    public void AddFunction(ISKFunction function)
+    /// <exception cref="ArgumentNullException"><paramref name="function"/>'s <see cref="SKFunction.Name"/> is null.</exception>
+    /// <exception cref="ArgumentException">A function with the same <see cref="SKFunction.Name"/> already exists in this plugin.</exception>
+    public void AddFunction(SKFunction function)
     {
         Verify.NotNull(function);
         this._functions.Add(function.Name, function);
@@ -93,20 +93,20 @@ public sealed class SKPlugin : ISKPlugin
     /// <summary>Adds all of the functions in the specified <paramref name="functions"/> collection to this plugin.</summary>
     /// <param name="functions">The functions to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">A function in <paramref name="functions"/>'s has a null <see cref="ISKFunction.Name"/>.</exception>
-    /// <exception cref="ArgumentException">A function with the same <see cref="ISKFunction.Name"/> already exists in this plugin.</exception>
-    public void AddFunctions(IEnumerable<ISKFunction> functions)
+    /// <exception cref="ArgumentNullException">A function in <paramref name="functions"/>'s has a null <see cref="SKFunction.Name"/>.</exception>
+    /// <exception cref="ArgumentException">A function with the same <see cref="SKFunction.Name"/> already exists in this plugin.</exception>
+    public void AddFunctions(IEnumerable<SKFunction> functions)
     {
         Verify.NotNull(functions);
 
-        foreach (ISKFunction function in functions)
+        foreach (SKFunction function in functions)
         {
             this.AddFunction(function);
         }
     }
 
     /// <inheritdoc/>
-    public IEnumerator<ISKFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
+    public IEnumerator<SKFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
@@ -122,7 +122,7 @@ public sealed class SKPlugin : ISKPlugin
 
         public string Description => this._plugin.Description;
 
-        public ISKFunction[] Functions => this._plugin._functions.Values.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        public SKFunction[] Functions => this._plugin._functions.Values.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     #region Factory Methods

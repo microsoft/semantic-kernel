@@ -19,9 +19,9 @@ public class ConversationSummaryPlugin
     /// </summary>
     private const int MaxTokens = 1024;
 
-    private readonly ISKFunction _summarizeConversationFunction;
-    private readonly ISKFunction _conversationActionItemsFunction;
-    private readonly ISKFunction _conversationTopicsFunction;
+    private readonly SKFunction _summarizeConversationFunction;
+    private readonly SKFunction _conversationActionItemsFunction;
+    private readonly SKFunction _conversationTopicsFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
