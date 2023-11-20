@@ -78,6 +78,8 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         Plan plan = new(this._nativeFunctions["ExecutePlan"]);
+        plan.PluginName = RestrictedPluginName;
+
         plan.Parameters.Set("question", goal);
 
         plan.Outputs.Add("stepCount");

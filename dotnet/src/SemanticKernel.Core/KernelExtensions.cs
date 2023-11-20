@@ -252,7 +252,7 @@ public static class KernelExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
         Verify.DirectoryExists(pluginDirectory);
 
-        var factory = promptTemplateFactory ?? SKFunctionFromPrompt.CreateDefaultPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
 
         SKPlugin plugin = new(pluginName);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));

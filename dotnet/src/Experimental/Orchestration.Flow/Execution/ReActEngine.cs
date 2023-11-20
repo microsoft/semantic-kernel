@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -238,8 +237,11 @@ internal sealed class ReActEngine
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        SKPlugin p = kernel.Plugins[RestrictedPluginName] as SKPlugin ?? throw new SKException("Failed to add plugin due to unknown plugin type");
-        return p.AddFunctionFromPrompt(template, config, functionName);
+        var plugin = new SKPlugin(RestrictedPluginName);
+
+        kernel.Plugins.Add(plugin);
+
+        return plugin.AddFunctionFromPrompt(template, config, functionName);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)

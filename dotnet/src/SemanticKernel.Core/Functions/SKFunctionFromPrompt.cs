@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,7 +82,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        var factory = promptTemplateFactory ?? CreateDefaultPromptTemplateFactory(loggerFactory);
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
             factory.Create(promptTemplate, promptTemplateConfig),
@@ -309,40 +308,6 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
 
     /// <summary>
-    /// Create a default prompt template factory.
-    ///
-    /// TODO:
-    /// This is a temporary solution to avoid breaking existing clients.
-    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
-    /// </summary>
-    internal static IPromptTemplateFactory CreateDefaultPromptTemplateFactory(ILoggerFactory? loggerFactory)
-    {
-        return
-            (IPromptTemplateFactory?)s_promptTemplateFactoryType?.Value?.Invoke(new object?[] { loggerFactory }) ??
-            new NullPromptTemplateFactory();
-    }
-
-    private const string BasicTemplateFactoryAssemblyName = "Microsoft.SemanticKernel.TemplateEngine.Basic";
-
-    private static readonly Lazy<ConstructorInfo?> s_promptTemplateFactoryType = new(() =>
-    {
-        try
-        {
-            const string BasicTemplateFactoryTypeName = "BasicPromptTemplateFactory";
-
-            var assembly = Assembly.Load(BasicTemplateFactoryAssemblyName);
-
-            return assembly.ExportedTypes.SingleOrDefault(type =>
-                type.Name.Equals(BasicTemplateFactoryTypeName, StringComparison.Ordinal) &&
-                type.GetInterface(nameof(IPromptTemplateFactory)) is not null)?.GetConstructor(new Type[] { typeof(ILoggerFactory) });
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            return null;
-        }
-    });
-
-    /// <summary>
     /// Default implementation to identify if a function was cancelled or skipped.
     /// </summary>
     /// <param name="context">Execution context</param>
@@ -373,24 +338,6 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <returns>True if it was cancelled or skipped</returns>
     internal static bool IsInvokedCancelRequested(SKContext context) =>
         context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
-
-    private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
-    {
-        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig) =>
-            new NullPromptTemplate(templateString);
-
-        private sealed class NullPromptTemplate : IPromptTemplate
-        {
-            private readonly string _templateText;
-
-            public NullPromptTemplate(string templateText) => this._templateText = templateText;
-
-            public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
-
-            public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
-                Task.FromResult(this._templateText);
-        }
-    }
 
     #endregion
 }
