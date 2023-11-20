@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -23,27 +24,34 @@ internal static class HttpClientExtensions
     internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
-
         try
         {
             response = await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
-
-            response.EnsureSuccessStatusCode();
-
-            return response;
         }
         catch (HttpRequestException e)
         {
-            string? responseContent = null;
+            throw new HttpOperationException(HttpStatusCode.BadRequest, null, e.Message, e);
+        }
 
+        if (!response.IsSuccessStatusCode)
+        {
+            string? responseContent = null;
             try
             {
+                // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
+                // that was changed years ago in .NET Core, but for .NET Framework it means in order
+                // to read the response content in the case of failure, that has to be
+                // done before calling EnsureSuccessStatusCode.
                 responseContent = await response!.Content.ReadAsStringAsync().ConfigureAwait(false);
+                response.EnsureSuccessStatusCode(); // will always throw
             }
-            catch { } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.
-
-            throw new HttpOperationException(response?.StatusCode ?? HttpStatusCode.BadRequest, responseContent, e.Message, e);
+            catch (Exception e)
+            {
+                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            }
         }
+
+        return response;
     }
 
     /// <summary>

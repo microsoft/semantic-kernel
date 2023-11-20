@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars planner.

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal sealed class HandlebarsParameterTypeView
 {

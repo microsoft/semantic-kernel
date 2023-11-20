@@ -2,15 +2,15 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
-using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.Planning;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Sequential;
+#pragma warning restore IDE0130
 
 public class SequentialPlanParserTests
 {

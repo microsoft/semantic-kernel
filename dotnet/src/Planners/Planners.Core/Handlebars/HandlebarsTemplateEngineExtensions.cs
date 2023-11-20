@@ -10,7 +10,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
