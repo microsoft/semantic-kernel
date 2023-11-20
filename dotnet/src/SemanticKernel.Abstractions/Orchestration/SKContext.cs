@@ -62,15 +62,6 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// </summary>
-    /// <returns>Processed input, aka result.</returns>
-    public override string ToString()
-    {
-        return this.Result;
-    }
-
-    /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
