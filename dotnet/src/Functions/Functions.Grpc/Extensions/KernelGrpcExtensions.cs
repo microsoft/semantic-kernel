@@ -206,7 +206,7 @@ public static class KernelGrpcExtensions
     {
         var operationParameters = operation.GetParameters();
 
-        async Task<SKContext> ExecuteAsync(SKContext context)
+        async Task<SKContext> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
         {
             try
             {
@@ -225,8 +225,7 @@ public static class KernelGrpcExtensions
                     throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{operation.Name}' gRPC function.");
                 }
 
-                //SKFunction should be extended to pass cancellation token for delegateFunction calls.
-                var result = await runner.RunAsync(operation, arguments, CancellationToken.None).ConfigureAwait(false);
+                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
 
                 if (result != null)
                 {

@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
@@ -115,4 +117,27 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null) =>
         SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
     #endregion
+
+    /// <summary>
+    /// Create a semantic function instance, given a prompt function model.
+    /// </summary>
+    /// <param name="promptFunctionModel">The model</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction FromPrompt(
+        PromptFunctionModel promptFunctionModel,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(promptFunctionModel);
+        Verify.NotNull(promptFunctionModel.Name);
+        Verify.NotNull(promptFunctionModel.Template);
+
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory();
+        var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(promptFunctionModel);
+        var promptTemplate = factory.Create(promptFunctionModel.Template, promptTemplateConfig);
+
+        return SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, promptFunctionModel.Name, loggerFactory);
+    }
 }
