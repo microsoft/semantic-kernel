@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -73,6 +72,6 @@ public sealed class SKParameterMetadata
     /// <summary>Gets the JSON type of the parameter.</summary>
     public ParameterJsonType? Type { get; init; }
 
-    /// <summary>Gets the JSON schema description of the parameter's type.</summary>
-    public JsonDocument? Schema { get; init; }
+    /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
+    public SKJsonSchema? Schema { get; init; }
 }

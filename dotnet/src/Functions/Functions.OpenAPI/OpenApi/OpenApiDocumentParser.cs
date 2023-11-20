@@ -235,7 +235,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description,
-                parameter.Schema.ToJsonDocument()
+                parameter.Schema.ToJsonSchema()
             );
 
             result.Add(restParameter);
@@ -272,7 +272,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
 
     private static IEnumerable<(string, RestApiOperationExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
@@ -285,7 +285,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 var matchingSchema = response.Value.Content[mediaType].Schema;
                 var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
 
-                yield return (response.Key, new RestApiOperationExpectedResponse(description, mediaType, matchingSchema?.ToJsonDocument()));
+                yield return (response.Key, new RestApiOperationExpectedResponse(description, mediaType, matchingSchema?.ToJsonSchema()));
             }
         }
     }
@@ -325,7 +325,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
-                propertySchema.ToJsonDocument());
+                propertySchema.ToJsonSchema());
 
             result.Add(property);
         }

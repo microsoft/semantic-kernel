@@ -26,7 +26,7 @@ public static class SKFunctionMetadataExtensions
                 Type = param.Type?.Name ?? "string",
                 IsRequired = param.IsRequired,
                 ParameterType = param.ParameterType,
-                Schema = param.Schema ?? OpenAIFunction.GetJsonSchemaDocument(param.ParameterType, param.Description),
+                Schema = param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType, param.Description),
             });
         }
 
@@ -39,7 +39,7 @@ public static class SKFunctionMetadataExtensions
             ReturnParameter = new OpenAIFunctionReturnParameter
             {
                 Description = functionView.ReturnParameter.Description,
-                Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
+                Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
             }
         };
     }

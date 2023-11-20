@@ -2,14 +2,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Extensions;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Extensions for functions views.
 /// </summary>
-public static class SKFunctionMetadataExtensions
+internal static class SKFunctionMetadataExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
@@ -18,10 +19,10 @@ public static class SKFunctionMetadataExtensions
     /// Creates a <see cref="JsonSchemaFunctionView"/> for a function.
     /// </summary>
     /// <param name="function">The function.</param>
-    /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
+    /// <param name="jsonSchemaDelegate">A delegate that creates a JSON Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this SKFunctionMetadata function, Func<Type?, string?, JsonDocument?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this SKFunctionMetadata function, Func<Type?, string?, SKJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionView = new JsonSchemaFunctionView
         {
