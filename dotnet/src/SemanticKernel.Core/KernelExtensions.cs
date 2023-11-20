@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -167,4 +168,34 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
     }
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this IKernel kernel, ISKFunction skFunction, string input, CancellationToken cancellationToken)
+        => kernel.RunStreamingAsync(skFunction, new ContextVariables(input), cancellationToken);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this IKernel kernel, ISKFunction skFunction, string input)
+        => kernel.RunStreamingAsync(skFunction, new ContextVariables(input), CancellationToken.None);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this IKernel kernel, ISKFunction skFunction)
+        => kernel.RunStreamingAsync(skFunction, null, CancellationToken.None);
 }

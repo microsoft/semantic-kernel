@@ -40,6 +40,7 @@ internal static class HttpRequest
     private static HttpContent? CreateJsonContent(object? payload)
     {
         HttpContent? content = null;
+        /*
         if (payload is not null)
         {
             byte[] utf8Bytes = payload is string s ?
@@ -48,6 +49,11 @@ internal static class HttpRequest
 
             content = new ByteArrayContent(utf8Bytes);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+        }*/
+
+        if (payload is not null)
+        {
+            return new StringContent(JsonSerializer.Serialize(payload, s_jsonSerializerOptions), Encoding.UTF8, "application/json");
         }
 
         return content;

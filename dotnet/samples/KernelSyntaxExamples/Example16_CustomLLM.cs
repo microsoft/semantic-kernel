@@ -88,7 +88,7 @@ public class MyStreamingResultChunk : StreamingResultChunk
 
     public string Content { get; }
 
-    public MyStreamingResultChunk(string content)
+    public MyStreamingResultChunk(string content) : base(content)
     {
         this.Content = content;
     }

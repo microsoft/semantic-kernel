@@ -245,7 +245,7 @@ internal sealed class NativeFunction : ISKFunction
         SKContext context,
         CancellationToken cancellationToken);
 
-    private delegate IAsyncEnumerable<StreamingNativeResultUpdate> ImplementationStreamingFunc(
+    private delegate IAsyncEnumerable<StreamingNativeResultChunk> ImplementationStreamingFunc(
         ITextCompletion? textCompletion,
         AIRequestSettings? requestSettingsk,
         SKContext context,
@@ -351,7 +351,7 @@ internal sealed class NativeFunction : ISKFunction
         }
 
         // Create the streaming func
-        async IAsyncEnumerable<StreamingNativeResultUpdate> StreamingFunction(
+        async IAsyncEnumerable<StreamingNativeResultChunk> StreamingFunction(
             ITextCompletion? text,
             AIRequestSettings? requestSettings,
             SKContext context,
@@ -393,7 +393,7 @@ internal sealed class NativeFunction : ISKFunction
                 {
                     object currentItem = currentProperty.GetValue(asyncEnumerator);
 
-                    yield return new StreamingNativeResultUpdate(currentItem);
+                    yield return new StreamingNativeResultChunk(currentItem);
                 }
             }
             else
@@ -408,7 +408,7 @@ internal sealed class NativeFunction : ISKFunction
                     // The enumeration will only return if there's actually a result.
                     if (functionResult.Value is not null)
                     {
-                        yield return new StreamingNativeResultUpdate(functionResult.Value);
+                        yield return new StreamingNativeResultChunk(functionResult.Value);
                     }
                 }
             }

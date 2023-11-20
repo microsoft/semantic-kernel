@@ -21,7 +21,7 @@ using RepoUtils;
  * This example shows how to use multiple prompt template formats.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example65_KernelStreaming
+public static class Example72_KernelStreaming
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.
@@ -104,7 +104,7 @@ Event: {{$input}}
         // Native string value type streaming function
         await foreach (var update in kernel.RunStreamingAsync(functions["MyValueTypeStreamingNativeFunction"], new ContextVariables("My Value Type Streaming Function Input"), cancellationToken))
         {
-            if (update.Type == "native_result_update" && update is StreamingNativeResultUpdate nativeUpdate)
+            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate)
             {
                 Console.Write(nativeUpdate.Value);
             }
@@ -119,7 +119,7 @@ Event: {{$input}}
         await foreach (var update in kernel.RunStreamingAsync(functions["MyComplexTypeStreamingNativeFunction"], new ContextVariables("My Complex Type Streaming Function Input"), cancellationToken))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultUpdate nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
+            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
             {
                 Console.WriteLine(Encoding.UTF8.GetString(myComplexType.Content));
             }
@@ -134,7 +134,7 @@ Event: {{$input}}
         await foreach (var update in kernel.RunStreamingAsync(functions["MyValueTypeNativeFunction"], new ContextVariables("My Value Type Non Streaming Function Input"), cancellationToken))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultUpdate nativeUpdate)
+            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate)
             {
                 Console.WriteLine(nativeUpdate.Value);
             }
@@ -149,7 +149,7 @@ Event: {{$input}}
         await foreach (var update in kernel.RunStreamingAsync(functions["MyComplexTypeNativeFunction"], new ContextVariables("My Complex Type Non Streaming Function Input"), cancellationToken))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultUpdate nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
+            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
             {
                 Console.WriteLine($"Text: {myComplexType.Text}, Number: {myComplexType.Number}");
             }

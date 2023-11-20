@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Native function streaming result update.
 /// </summary>
-public sealed class StreamingNativeResultUpdate : StreamingResultChunk
+public sealed class StreamingNativeResultChunk : StreamingResultChunk
 {
     /// <inheritdoc/>
     public override string Type => "native_result_update";
@@ -32,6 +32,7 @@ public sealed class StreamingNativeResultUpdate : StreamingResultChunk
             return (byte[])this.Value;
         }
 
+        // By default if a native value is not Byte[] we output the UTF8 string representation of the value
         return Encoding.UTF8.GetBytes(this.Value?.ToString());
     }
 
@@ -42,11 +43,11 @@ public sealed class StreamingNativeResultUpdate : StreamingResultChunk
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingNativeResultUpdate"/> class.
+    /// Initializes a new instance of the <see cref="StreamingNativeResultChunk"/> class.
     /// </summary>
-    /// <param name="update">Underlying object that represents the update</param>
-    public StreamingNativeResultUpdate(object update)
+    /// <param name="innerResultChunk">Underlying object that represents the chunk</param>
+    public StreamingNativeResultChunk(object innerResultChunk) : base(innerResultChunk)
     {
-        this.Value = update;
+        this.Value = innerResultChunk;
     }
 }

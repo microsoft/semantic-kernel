@@ -2,12 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -106,17 +109,14 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var choiceIndex = 0;
-        foreach (var result in await this.ExecuteGetCompletionsAsync(input, cancellationToken).ConfigureAwait(false))
+        await foreach(var result in this.InternalGetStreamingChunksAsync(input, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            var completion = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
 
             // If the provided T is a string, return the completion as is
             if (typeof(T) == typeof(string))
             {
-                yield return (T)(object)completion;
+                yield return (T)(object)result.Token.Text;
                 continue;
             }
 
@@ -124,11 +124,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             if (typeof(T) == typeof(StreamingTextResultChunk) ||
                 typeof(T) == typeof(StreamingResultChunk))
             {
-                yield return (T)(object)new StreamingTextResultChunk(completion, choiceIndex);
-                continue;
+                yield return (T)(object)result;
             }
-
-            choiceIndex++;
         }
     }
 
@@ -164,6 +161,47 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
 
         return completionResponse.ConvertAll(c => new TextCompletionResult(c));
+    }
+
+    private async IAsyncEnumerable<StreamingTextResultChunk> InternalGetStreamingChunksAsync(string text, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var completionRequest = new TextCompletionRequest
+        {
+            Input = text,
+            Stream = true
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+
+        const string ServerEventPayloadPrefix = "data:";
+        while (!reader.EndOfStream)
+        {
+            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
+            {
+                body = body.Substring(ServerEventPayloadPrefix.Length);
+            }
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                continue;
+            }
+
+            JsonElement chunkObject = JsonSerializer.Deserialize<JsonElement>(body);
+
+            yield return new StreamingTextResultChunk("hugging-text-stream=chunk", chunkObject);
+        }
     }
 
     /// <summary>

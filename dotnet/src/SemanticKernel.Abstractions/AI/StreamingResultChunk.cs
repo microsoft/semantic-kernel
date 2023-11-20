@@ -57,7 +57,7 @@ public abstract class StreamingResultChunk
     /// Initializes a new instance of the <see cref="StreamingResultChunk"/> class.
     /// </summary>
     /// <param name="innerResultChunk">Inner result chunk object reference</param>
-    protected StreamingResultChunk(object? innerResultChunk = null)
+    protected StreamingResultChunk(object? innerResultChunk)
     {
         this.InnerResultChunk = innerResultChunk;
     }

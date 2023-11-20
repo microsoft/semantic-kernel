@@ -1,35 +1,52 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 /// <summary>
-/// Streaming text result update.
+/// StreamResponse class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
 /// </summary>
 public class StreamingTextResultChunk : StreamingResultChunk
 {
     /// <inheritdoc/>
-    public override string Type => "huggingface_text_update";
+    public override string Type { get; }
 
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
 
     /// <summary>
-    /// Text associated to the update
+    /// Complete generated text
+    /// Only available when the generation is finished
     /// </summary>
-    public string Content { get; }
+    public string? GeneratedText { get; set; }
+
+    /// <summary>
+    /// Optional Generation details
+    /// Only available when the generation is finished
+    /// </summary>
+    public string? Details { get; set; }
+
+    /// <summary>
+    /// Token details
+    /// </summary>
+    public TokenChunkModel Token { get; set; }
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextResultChunk"/> class.
     /// </summary>
-    /// <param name="text">Text update</param>
-    /// <param name="choiceIndex">Index of the choice</param>
-    public StreamingTextResultChunk(string text, int choiceIndex)
+    /// <param name="type">Type of the chunk</param>
+    /// <param name="jsonChunk">JsonElement representation of the chunk</param>
+    public StreamingTextResultChunk(string type, JsonElement jsonChunk) : base(jsonChunk)
     {
-        this.ChoiceIndex = choiceIndex;
-        this.Content = text;
+        this.Type = type;
+        this.ChoiceIndex = 0;
+        this.GeneratedText = jsonChunk.GetProperty("generated_text").GetString();
+        this.Details = jsonChunk.GetProperty("details").GetString();
+        this.Token = JsonSerializer.Deserialize<TokenChunkModel>(jsonChunk.GetProperty("token").GetRawText())!;
     }
 
     /// <inheritdoc/>
@@ -41,6 +58,37 @@ public class StreamingTextResultChunk : StreamingResultChunk
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content;
+        return this.Token.Text;
+    }
+
+    /// <summary>
+    /// Token class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
+    /// </summary>
+    public record TokenChunkModel
+    {
+        /// <summary>
+        /// Id of the token
+        /// </summary>
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Text associated to the Token
+        /// </summary>
+        [JsonPropertyName("text")]
+        public string Text { get; set; }
+
+        /// <summary>
+        /// Log probability of the token
+        /// </summary>
+        [JsonPropertyName("logprob")]
+        public decimal LogProb { get; set; }
+
+        /// <summary>
+        /// Is the token a special token?
+        /// Can be used to ignore tokens when concatenating
+        /// </summary>
+        [JsonPropertyName("special")]
+        public bool Special { get; set; }
     }
 }
