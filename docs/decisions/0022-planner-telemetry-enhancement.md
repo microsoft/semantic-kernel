@@ -218,7 +218,7 @@ Pros:
 
 1. Logs are modified more frequently.
 2. Log configuration will affect what telemetry the libraries produce.
-3. More difficult to correlate telemetry items when in query time.
+3. More difficult to correlate telemetry items during query time.
 
 ## More Information
 
