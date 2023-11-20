@@ -51,22 +51,18 @@ public class SKJsonSchemaTests
   ""required"": [""title"", ""author"", ""year"", ""genre"", ""pages"", ""rating""]
 }";
 
-        using JsonDocument jsonDocument = JsonDocument.Parse(ValidJsonSchema);
-
         SKJsonSchema schema1 = SKJsonSchema.Parse(ValidJsonSchema);
         SKJsonSchema schema2 = SKJsonSchema.Parse((ReadOnlySpan<char>)ValidJsonSchema);
         SKJsonSchema schema3 = SKJsonSchema.Parse(Encoding.UTF8.GetBytes(ValidJsonSchema));
 
+        using JsonDocument jsonDocument = JsonDocument.Parse(ValidJsonSchema);
         string expected = JsonSerializer.Serialize(jsonDocument);
 
-        Assert.Equal(expected, JsonSerializer.Serialize(schema1.RootElement));
-        Assert.Equal(expected, schema1.ToString());
-
-        Assert.Equal(expected, JsonSerializer.Serialize(schema2.RootElement));
-        Assert.Equal(expected, schema2.ToString());
-
-        Assert.Equal(expected, JsonSerializer.Serialize(schema3.RootElement));
-        Assert.Equal(expected, schema3.ToString());
+        foreach (SKJsonSchema schema in new[] { schema1, schema2, schema3 })
+        {
+            Assert.Equal(expected, JsonSerializer.Serialize(schema.RootElement));
+            Assert.Equal(expected, JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(schema.ToString())));
+        }
     }
 
     [Fact]

@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel;
 [JsonConverter(typeof(SKJsonSchema.JsonConverter))]
 public sealed class SKJsonSchema
 {
+    /// <summary><see cref="JsonSerializerOptions"/> to write human-readable JSON.</summary>
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
     /// <summary>The schema stored as a string.</summary>
     private string? _schemaAsString;
 
@@ -42,7 +44,7 @@ public sealed class SKJsonSchema
     public JsonElement RootElement { get; }
 
     /// <summary>Gets the JSON Schema as a string.</summary>
-    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement);
+    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, s_writeIndentedOptions);
 
     /// <summary>Converter for reading/writing the schema.</summary>
     public sealed class JsonConverter : JsonConverter<SKJsonSchema>
