@@ -27,18 +27,18 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, context));
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
 
         var function = new Mock<ISKFunction>();
         function.Setup(x => x.Name).Returns("function");
@@ -55,7 +55,7 @@ public class CodeBlockTests
         var target = new CodeBlock("plugin.function", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(this._kernel, context));
     }
 
     [Fact]
@@ -140,11 +140,11 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("foo", result);
@@ -155,12 +155,12 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var varBlock = new VarBlock("$varName");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("bar", result);
@@ -170,11 +170,11 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("ciao", result);
@@ -184,12 +184,12 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("arrivederci", result);
@@ -200,7 +200,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var funcBlock = new FunctionIdBlock("plugin.function");
 
         var canary0 = string.Empty;
@@ -223,7 +223,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert - Values are received
         Assert.Equal("zero", canary0);
@@ -244,7 +244,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
@@ -260,7 +260,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal(VarValue, result);
@@ -273,7 +273,7 @@ public class CodeBlockTests
         // Arrange
         const string Value = "value";
 
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: null);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables: null);
         var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -289,7 +289,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal(Value, result);
@@ -307,7 +307,7 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables);
+        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables: variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");
@@ -326,7 +326,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal(FooValue, foo);

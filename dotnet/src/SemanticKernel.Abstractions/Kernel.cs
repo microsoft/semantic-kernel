@@ -88,7 +88,6 @@ public sealed class Kernel
         CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
             this._aiServiceProvider,
             this._aiServiceSelector,
             variables,

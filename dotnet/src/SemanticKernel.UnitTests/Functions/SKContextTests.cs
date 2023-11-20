@@ -16,7 +16,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), new Mock<IAIServiceProvider>().Object, new Mock<IAIServiceSelector>().Object, variables);
+        var target = new SKContext(new Mock<IAIServiceProvider>().Object, new Mock<IAIServiceSelector>().Object, variables);
         variables.Set("foo1", "bar1");
 
         // Act

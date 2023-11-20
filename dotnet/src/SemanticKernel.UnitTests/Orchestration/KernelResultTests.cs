@@ -22,7 +22,7 @@ public class KernelResultTests
 
     public KernelResultTests()
     {
-        this._context = new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
+        this._context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
     }
 
     [Fact]

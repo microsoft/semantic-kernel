@@ -318,7 +318,7 @@ internal static class Example12_SequentialPlanner
             {
                 if (string.IsNullOrEmpty(input))
                 {
-                    await plan.InvokeNextStepAsync(kernel.CreateNewContext());
+                    await plan.InvokeNextStepAsync(kernel, kernel.CreateNewContext());
                     // or await kernel.StepAsync(plan);
                 }
                 else

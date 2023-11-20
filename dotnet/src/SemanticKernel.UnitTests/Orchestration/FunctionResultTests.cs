@@ -19,7 +19,7 @@ public class FunctionResultTests
 
     private SKContext CreateContext()
     {
-        return new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
+        return new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
     }
 
     [Fact]

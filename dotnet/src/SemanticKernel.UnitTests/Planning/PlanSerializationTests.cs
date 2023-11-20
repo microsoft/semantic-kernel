@@ -86,7 +86,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var returnContext = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
+        var returnContext = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
 
         var function = SKFunction.FromMethod(() => { }, "function");
 
@@ -117,7 +117,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -150,7 +150,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -186,7 +186,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -222,7 +222,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -290,7 +290,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -357,7 +357,7 @@ public sealed class PlanSerializationTests
         var plugins = new SKPluginCollection();
 
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -397,7 +397,7 @@ public sealed class PlanSerializationTests
         cv.Update(string.Empty);
 
         var nextContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables()
         );
         plan = Plan.FromJson(serializedPlan1, plugins);
@@ -431,7 +431,7 @@ public sealed class PlanSerializationTests
         var plugins = new SKPluginCollection();
 
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 
@@ -473,7 +473,7 @@ public sealed class PlanSerializationTests
         var plugins = new SKPluginCollection();
 
         var returnContext = new SKContext(
-            this._kernel, this._serviceProvider.Object, this._serviceSelector.Object,
+            this._serviceProvider.Object, this._serviceSelector.Object,
             new ContextVariables(stepOutput)
         );
 

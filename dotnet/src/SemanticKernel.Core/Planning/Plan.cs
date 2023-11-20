@@ -227,21 +227,22 @@ public sealed class Plan : ISKFunction
     {
         var context = kernel.CreateNewContext(variables);
 
-        return this.InvokeNextStepAsync(context, cancellationToken);
+        return this.InvokeNextStepAsync(kernel, context, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">Context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
-            await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+            await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -313,7 +314,7 @@ public sealed class Plan : ISKFunction
             while (this.HasNextStep)
             {
                 AddVariablesToContext(this.State, context);
-                var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+                var stepResult = await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
                 // If a step was cancelled before invocation
                 // Return the last result state of the plan.
@@ -371,11 +372,12 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">Context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -385,7 +387,7 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             var stepResult = result.FunctionResults.FirstOrDefault();
             if (stepResult is null)

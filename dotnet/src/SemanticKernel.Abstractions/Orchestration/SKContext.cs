@@ -2,7 +2,6 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
@@ -35,11 +34,6 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Executes functions using the current resources loaded in the context
-    /// </summary>
-    public Kernel Runner { get; }
-
-    /// <summary>
     /// AI service provider
     /// </summary>
     public IAIServiceProvider ServiceProvider { get; }
@@ -62,7 +56,6 @@ public sealed class SKContext
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="kernel">Kernel reference</param>
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
@@ -70,7 +63,6 @@ public sealed class SKContext
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        Kernel kernel,
         IAIServiceProvider serviceProvider,
         IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
@@ -78,9 +70,6 @@ public sealed class SKContext
         EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
         CultureInfo? culture = null)
     {
-        Verify.NotNull(kernel, nameof(kernel));
-
-        this.Runner = kernel;
         this.ServiceProvider = serviceProvider;
         this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
@@ -115,7 +104,6 @@ public sealed class SKContext
     public SKContext Clone(ContextVariables? variables)
     {
         return new SKContext(
-            this.Runner,
             this.ServiceProvider,
             this.ServiceSelector,
             variables ?? this.Variables.Clone(),
