@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -69,23 +70,27 @@ public static class Example65_HandlebarsPlanner
 
         if (pluginDirectoryNames[0] == BasicDictionaryPlugin.PluginName)
         {
-            kernel.ImportFunctions(new BasicDictionaryPlugin(), BasicDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromObject(new BasicDictionaryPlugin(), BasicDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == ComplexDictionaryPlugin.PluginName)
         {
-            kernel.ImportFunctions(new ComplexDictionaryPlugin(), ComplexDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromObject(new ComplexDictionaryPlugin(), ComplexDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == CourseraPluginName)
         {
-            await kernel.ImportOpenApiPluginFunctionsAsync(
+            await kernel.ImportPluginFromOpenApiAsync(
                 CourseraPluginName,
                 new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
-                );
+            );
         }
         else
         {
             string folder = RepoFiles.SamplePluginsPath();
-            kernel.ImportSemanticFunctionsFromDirectory(folder, pluginDirectoryNames);
+
+            foreach (var pluginDirectoryName in pluginDirectoryNames)
+            {
+                kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+            }
         }
 
         // Use gpt-4 or newer models if you want to test with loops. 

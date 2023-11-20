@@ -20,6 +20,7 @@ public static class SKFunctionTextExtensions
     /// Extension method to aggregate partitioned results of a semantic function.
     /// </summary>
     /// <param name="func">Semantic Kernel function</param>
+    /// <param name="kernel">The kernel.</param>
     /// <param name="partitionedInput">Input to aggregate.</param>
     /// <param name="context">Semantic Kernel context.</param>
     /// <param name="resultsSeparator">Separator to use between results.</param>
@@ -28,6 +29,7 @@ public static class SKFunctionTextExtensions
     /// <returns>Aggregated results.</returns>
     public static async Task<SKContext> AggregatePartitionedResultsAsync(
         this ISKFunction func,
+        Kernel kernel,
         List<string> partitionedInput,
         SKContext context,
         string resultsSeparator = "\n",
@@ -38,7 +40,7 @@ public static class SKFunctionTextExtensions
         foreach (var partition in partitionedInput)
         {
             context.Variables.Update(partition);
-            var result = await func.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+            var result = await func.InvokeAsync(kernel, context, settings, cancellationToken).ConfigureAwait(false);
 
             context = result!.Context;
 

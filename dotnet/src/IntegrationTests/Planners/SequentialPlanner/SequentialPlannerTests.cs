@@ -35,14 +35,14 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
+    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "EmailPluginFake")]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "EmailPluginFake")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportFunctions(new EmailPluginFake());
+        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        kernel.ImportPluginFromObject<EmailPluginFake>();
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
@@ -63,7 +63,7 @@ public sealed class SequentialPlannerTests : IDisposable
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin, string expectedDefault)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
@@ -81,16 +81,16 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [RetryTheory]
-    [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
+    [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "EmailPluginFake")]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = true;
 
-        IKernel kernel = this.InitializeKernel(useEmbeddings);
+        Kernel kernel = this.InitializeKernel(useEmbeddings);
         ISemanticTextMemory memory = this.InitializeMemory(kernel.GetService<ITextEmbeddingGeneration>());
 
-        kernel.ImportFunctions(new EmailPluginFake());
+        kernel.ImportPluginFromObject<EmailPluginFake>();
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
@@ -109,7 +109,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
+    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);

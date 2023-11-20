@@ -31,9 +31,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// IKernel instance.
+    /// Kernel instance.
     /// </summary>
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// Creates an instance of a <see cref="KernelOpenApiPluginExtensionsTests"/> class.
@@ -51,7 +51,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var plugin = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", this._openApiDocument);
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -96,7 +96,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -126,7 +126,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -163,7 +163,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", new Uri(documentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(documentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -191,8 +191,8 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         var fakePlugin = new FakePlugin();
 
-        var openApiPlugins = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportFunctions(fakePlugin);
+        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters);
+        var fakePlugins = this._kernel.ImportPluginFromObject(fakePlugin, "fakePlugin2");
 
         var kernel = KernelBuilder.Create();
 
@@ -240,7 +240,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         using var registerCancellationToken = new System.Threading.CancellationTokenSource();
         using var executeCancellationToken = new System.Threading.CancellationTokenSource();
 
-        var openApiPlugins = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
+        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
 
         var kernel = KernelBuilder.Create();
 

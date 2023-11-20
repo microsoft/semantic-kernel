@@ -54,7 +54,7 @@ public sealed class ActionPlanner : IActionPlanner
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly ILogger _logger;
 
     // TODO: allow to inject plugin store
@@ -64,7 +64,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
     public ActionPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ActionPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -76,19 +76,18 @@ public sealed class ActionPlanner : IActionPlanner
 
         string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Action.skprompt.txt");
 
-        this._plannerFunction = kernel.CreateSemanticFunction(
-            pluginName: PluginName,
+        this._plannerFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            requestSettings: new AIRequestSettings()
+            new AIRequestSettings()
             {
-                ExtensionData = new Dictionary<string, object>()
+                ExtensionData = new()
                 {
                     { "StopSequences", new[] { StopSequence } },
                     { "MaxTokens", this.Config.MaxTokens },
                 }
             });
 
-        kernel.ImportFunctions(this, pluginName: PluginName);
+        kernel.ImportPluginFromObject(this, pluginName: PluginName);
 
         // Create context and logger
         this._context = kernel.CreateNewContext();
@@ -105,7 +104,7 @@ public sealed class ActionPlanner : IActionPlanner
 
         this._context.Variables.Update(goal);
 
-        FunctionResult result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
@@ -119,11 +118,12 @@ public sealed class ActionPlanner : IActionPlanner
         FunctionUtils.SplitPluginFunctionName(planData.Plan.Function, out var pluginName, out var functionName);
         if (!string.IsNullOrEmpty(functionName))
         {
-            var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+            var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
             var pluginFunction = getFunctionCallback(pluginName, functionName);
             if (pluginFunction != null)
             {
                 plan = new Plan(goal, pluginFunction);
+                plan.Steps[0].PluginName = pluginName;
             }
         }
 
@@ -161,7 +161,7 @@ public sealed class ActionPlanner : IActionPlanner
     {
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        var availableFunctions = await context.Functions.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
+        var availableFunctions = await context.Plugins.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
         this.PopulateList(list, availableFunctions);
 
         return list.ToString();

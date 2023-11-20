@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
@@ -20,11 +18,11 @@ public sealed class ActionPlannerTests
     public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResultAsync()
     {
         // Arrange
-        var plugins = this.CreateMockFunctionCollection();
+        var plugins = this.CreatePluginCollection();
 
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
 
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new ActionPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync("goal");
@@ -43,9 +41,9 @@ public sealed class ActionPlannerTests
         // Arrange
         string invalidJsonString = "<>";
 
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
+        var kernel = this.CreateKernel(invalidJsonString);
 
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new ActionPlanner(kernel);
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
@@ -55,16 +53,17 @@ public sealed class ActionPlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var kernel = this.CreateKernel(string.Empty);
+
         var getPromptTemplateMock = new Mock<Func<string>>();
+
         var config = new ActionPlannerConfig()
         {
             GetPromptTemplate = getPromptTemplateMock.Object
         };
 
         // Act
-        var planner = new ActionPlanner(kernel.Object, config);
+        var planner = new ActionPlanner(kernel, config);
 
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
@@ -76,39 +75,41 @@ public sealed class ActionPlannerTests
         // Arrange
 
         // Extra opening brace before rationale
-        string invalidJsonString = @"Here is a possible plan to accomplish the user intent:
+        string invalidJsonString =
+            @"Here is a possible plan to accomplish the user intent:
+            {
+                ""plan"": { {
+                    ""rationale"": ""the list contains a function that allows to list pull requests"",
+                    ""function"": ""GitHubPlugin.PullsList"",
+                    ""parameters"": {
+                        ""owner"": ""microsoft"",
+                        ""repo"": ""semantic-kernel"",
+                        ""state"": ""open""
+                    }
+                }
+            }
 
-{
-    ""plan"": { {
-        ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubPlugin.PullsList"",
-        ""parameters"": {
-            ""owner"": ""microsoft"",
-            ""repo"": ""semantic-kernel"",
-            ""state"": ""open""
-        }
-    }
-}
+            This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 
-This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.
-";
+        var kernel = this.CreateKernel(invalidJsonString);
 
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
-
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new ActionPlanner(kernel);
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
-    public async Task ListOfFunctionsIncludesNativeAndSemanticFunctionsAsync()
+    public async Task ListOfFunctionsIncludesNativeAndPromptFunctionsAsync()
     {
         // Arrange
-        var plugins = this.CreateMockFunctionCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
-        var planner = new ActionPlanner(kernel.Object);
-        var context = kernel.Object.CreateNewContext();
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
+
+        var planner = new ActionPlanner(kernel);
+
+        var context = kernel.CreateNewContext();
 
         // Act
         var result = await planner.ListOfFunctionsAsync("goal", context);
@@ -122,12 +123,16 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
     {
         // Arrange
-        var plugins = this.CreateMockFunctionCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
+
         var config = new ActionPlannerConfig();
         config.ExcludedPlugins.Add("GitHubPlugin");
-        var planner = new ActionPlanner(kernel.Object, config: config);
-        var context = kernel.Object.CreateNewContext();
+
+        var planner = new ActionPlanner(kernel, config: config);
+
+        var context = kernel.CreateNewContext();
 
         // Act
         var result = await planner.ListOfFunctionsAsync("goal", context);
@@ -141,12 +146,16 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
     {
         // Arrange
-        var plugins = this.CreateMockFunctionCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
+        var plugins = this.CreatePluginCollection();
+
+        var kernel = this.CreateKernel(ValidPlanString, plugins);
+
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("PullsList");
-        var planner = new ActionPlanner(kernel.Object, config: config);
-        var context = kernel.Object.CreateNewContext();
+
+        var planner = new ActionPlanner(kernel, config: config);
+
+        var context = kernel.CreateNewContext();
 
         // Act
         var result = await planner.ListOfFunctionsAsync("goal", context);
@@ -156,107 +165,61 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         Assert.Equal(expected, result);
     }
 
-    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<IFunctionCollection>? functions = null)
+    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
-        if (functions is null)
-        {
-            functions = new Mock<IFunctionCollection>();
-            functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
-        }
-        var functionRunner = new Mock<IFunctionRunner>();
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        plugins ??= new SKPluginCollection();
+
+        var textResult = new Mock<ITextResult>();
+        textResult
+            .Setup(tr => tr.GetCompletionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(testPlanString);
+
+        var textCompletionResult = new List<ITextResult> { textResult.Object };
+
+        var textCompletion = new Mock<ITextCompletion>();
+        textCompletion
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(textCompletionResult);
+
         var serviceSelector = new Mock<IAIServiceSelector>();
-        var kernel = new Mock<IKernel>();
+        serviceSelector
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Returns((textCompletion.Object, new AIRequestSettings()));
 
-        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, new ContextVariables(testPlanString), functions.Object);
+        var serviceProvider = new Mock<IAIServiceProvider>();
 
-        var context = new SKContext(functionRunner.Object, serviceProvider.Object, serviceSelector.Object, functions: functions.Object);
-
-        var mockFunctionFlowFunction = new Mock<ISKFunction>();
-
-        mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
-            It.IsAny<SKContext>(),
-            null,
-            default
-        )).Callback<
-            SKContext,
-            object,
-            CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
-
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
-            .Returns(context);
-        kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
-
-        kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
-            .Returns(mockFunctionFlowFunction.Object);
-
-        return kernel;
+        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-    // Method to create Mock<ISKFunction> objects
-    private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
+    private SKPluginCollection CreatePluginCollection()
     {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Describe()).Returns(functionView);
-        mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
-        return mockFunction;
-    }
-
-    private Mock<IFunctionCollection> CreateMockFunctionCollection()
-    {
-        var functions = new List<(string name, string pluginName, string description, bool isSemantic)>()
+        return new()
         {
-            ("SendEmail", "email", "Send an e-mail", false),
-            ("PullsList", "GitHubPlugin", "List pull requests", true),
-            ("RepoList", "GitHubPlugin", "List repositories", true),
+            new SKPlugin("email", new[]
+            {
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+            }),
+            new SKPlugin("GitHubPlugin", new[]
+            {
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+            })
         };
+    }
 
-        var functionsView = new List<FunctionView>();
-        var plugins = new Mock<IFunctionCollection>();
-        foreach (var (name, pluginName, description, isSemantic) in functions)
+    private const string ValidPlanString =
+        @"Here is a possible plan to accomplish the user intent:
         {
-            var functionView = new FunctionView(name, pluginName, description);
-            var mockFunction = CreateMockFunction(functionView);
-            functionsView.Add(functionView);
-
-            mockFunction.Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-                .Returns<
-                    SKContext,
-                    AIRequestSettings,
-                    CancellationToken>((context, settings, CancellationToken) =>
-                {
-                    context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(new FunctionResult(name, pluginName, context));
-                });
-            plugins.Setup(x => x.GetFunction(pluginName, name))
-                .Returns(mockFunction.Object);
-            ISKFunction? outFunc = mockFunction.Object;
-            plugins.Setup(x => x.TryGetFunction(pluginName, name, out outFunc)).Returns(true);
+            ""plan"":{
+                ""rationale"": ""the list contains a function that allows to list pull requests"",
+                ""function"": ""GitHubPlugin.PullsList"",
+                ""parameters"": {
+                    ""owner"": ""microsoft"",
+                    ""repo"": ""semantic-kernel"",
+                    ""state"": ""open""
+                }
+            }
         }
 
-        plugins.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        return plugins;
-    }
-
-    private const string ValidPlanString = @"Here is a possible plan to accomplish the user intent:
-{
-    ""plan"":{
-        ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubPlugin.PullsList"",
-        ""parameters"": {
-            ""owner"": ""microsoft"",
-            ""repo"": ""semantic-kernel"",
-            ""state"": ""open""
-        }
-    }
-}
-
-This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
+        This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 }

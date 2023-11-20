@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,14 +69,12 @@ public static class Example52_ApimAuth
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
-            folder,
-            "FunPlugin");
+        var plugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
         var result = await kernel.RunAsync(
             "I have no homework",
-            funFunctions["Excuses"]
+            plugin["Excuses"]
         );
         Console.WriteLine(result.GetValue<string>());
 

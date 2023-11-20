@@ -100,49 +100,6 @@ public class PromptTemplateConfig
         return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
 
-    #region Obsolete
-    /// <summary>
-    /// Schema - Not currently used.
-    /// </summary>
-    [JsonPropertyName("schema")]
-    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
-    public int Schema { get; set; } = 1;
-
-    /// <summary>
-    /// Type, such as "completion", "embeddings", etc.
-    /// </summary>
-    /// <remarks>TODO: use enum</remarks>
-    [JsonPropertyName("type")]
-    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
-    public string Type { get; set; } = "completion";
-
-    /// <summary>
-    /// Completion configuration parameters.
-    /// </summary>
-    [JsonPropertyName("completion")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.ModelSettings collection instead. This will be removed in a future release.")]
-    public AIRequestSettings? Completion
-    {
-        get { return this.GetDefaultRequestSettings(); }
-        set
-        {
-            if (value is not null)
-            {
-                this.ModelSettings.Add(value);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Default AI services to use.
-    /// </summary>
-    [JsonPropertyName("default_services")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("DefaultServices property is not being used. This will be removed in a future release.")]
-    public List<string> DefaultServices { get; set; } = new();
-    #endregion
-
     /// <summary>
     /// Creates a prompt template configuration from JSON.
     /// </summary>

@@ -17,15 +17,15 @@ public static class Example02_Pipeline
     {
         Console.WriteLine("======== Pipeline ========");
 
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
 
-        // Load native plugin
-        var textFunctions = kernel.ImportFunctions(new TextPlugin());
+        // Load plugin
+        var textPlugin = kernel.ImportPluginFromObject<TextPlugin>();
 
         KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
-            textFunctions["TrimStart"],
-            textFunctions["TrimEnd"],
-            textFunctions["Uppercase"]);
+            textPlugin["TrimStart"],
+            textPlugin["TrimEnd"],
+            textPlugin["Uppercase"]);
 
         Console.WriteLine(result.GetValue<string>());
     }

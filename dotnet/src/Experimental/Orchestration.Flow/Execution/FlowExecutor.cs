@@ -57,7 +57,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// System kernel for flow execution
     /// </summary>
-    private readonly IKernel _systemKernel;
+    private readonly Kernel _systemKernel;
 
     /// <summary>
     /// Re-Act engine for flow execution
@@ -110,11 +110,17 @@ internal class FlowExecutor : IFlowExecutor
 
         var checkRepeatStepPrompt = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt")!;
         var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json")!);
-        this._checkRepeatStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
+        this._checkRepeatStepFunction = CreateSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
 
         var checkStartStepPrompt = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt")!;
         var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
-        this._checkStartStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
+        this._checkStartStepFunction = CreateSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
+
+        this._systemKernel.Plugins.Add(new SKPlugin(RestrictedPluginName, new[]
+        {
+            this._checkRepeatStepFunction,
+            this._checkStartStepFunction,
+        }));
 
         this._config.ExcludedPlugins.Add(RestrictedPluginName);
         this._reActEngine = new ReActEngine(this._systemKernel, this._logger, this._config);
@@ -201,7 +207,7 @@ internal class FlowExecutor : IFlowExecutor
                     "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
                     stepState.ExecutionCount, step.Goal, input);
 
-                IKernel stepKernel = this._kernelBuilder.Build();
+                Kernel stepKernel = this._kernelBuilder.Build();
                 var stepContext = stepKernel.CreateNewContext();
                 foreach (var key in step.Requires)
                 {
@@ -226,7 +232,7 @@ internal class FlowExecutor : IFlowExecutor
                     var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(plugin, plugin.GetType().Name);
+                        stepKernel.ImportPluginFromObject(plugin, plugin.GetType().Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
@@ -507,7 +513,7 @@ internal class FlowExecutor : IFlowExecutor
         return string.Join("\n", scratchPadLines).Trim();
     }
 
-    private async Task<ContextVariables> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, IKernel kernel, SKContext context)
+    private async Task<ContextVariables> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, Kernel kernel, SKContext context)
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
@@ -528,7 +534,7 @@ internal class FlowExecutor : IFlowExecutor
 
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
         {
-            var actionStep = await this._reActEngine.GetNextStepAsync(context, question, stepsTaken).ConfigureAwait(false);
+            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, context, question, stepsTaken).ConfigureAwait(false);
 
             if (actionStep is null)
             {
@@ -681,12 +687,11 @@ internal class FlowExecutor : IFlowExecutor
         throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private static ISKFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
-
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
+        return kernel.CreateFunctionFromPrompt(template, config, functionName);
     }
 
     private class RepeatOrStartStepResult

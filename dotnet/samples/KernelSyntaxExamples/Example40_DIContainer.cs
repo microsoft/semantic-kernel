@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ public static class Example40_DIContainer
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
 
         //Registering Kernel
-        collection.AddTransient<IKernel>((serviceProvider) =>
+        collection.AddTransient<Kernel>((serviceProvider) =>
         {
             return new KernelBuilder()
             .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
@@ -78,12 +79,12 @@ public static class Example40_DIContainer
         var collection = new ServiceCollection();
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
         collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
-        collection.AddTransient<IFunctionCollection, FunctionCollection>();
+        collection.AddTransient<ISKPluginCollection, SKPluginCollection>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
         //Registering Kernel
-        collection.AddTransient<IKernel, Kernel>();
+        collection.AddTransient<Kernel>();
 
         //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
@@ -106,10 +107,10 @@ public static class Example40_DIContainer
     private sealed class KernelClient
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        private readonly IKernel _kernel;
+        private readonly Kernel _kernel;
         private readonly ILogger _logger;
 
-        public KernelClient(IKernel kernel, ILoggerFactory loggerFactory)
+        public KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
         {
             this._kernel = kernel;
             this._logger = loggerFactory.CreateLogger(nameof(KernelClient));
@@ -119,9 +120,9 @@ public static class Example40_DIContainer
         {
             string folder = RepoFiles.SamplePluginsPath();
 
-            var summarizeFunctions = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+            var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
+            var result = await this._kernel.RunAsync(ask, summarizePlugin["Summarize"]);
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }

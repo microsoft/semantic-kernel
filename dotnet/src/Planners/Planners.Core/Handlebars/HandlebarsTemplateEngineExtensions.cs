@@ -39,7 +39,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The rendered Handlebars template.</returns>
     public static string Render(
-        IKernel kernel,
+        Kernel kernel,
         SKContext executionContext,
         string template,
         Dictionary<string, object?> variables,
@@ -52,7 +52,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (FunctionView function in kernel.Functions.GetFunctionViews())
+        foreach (FunctionView function in kernel.Plugins.GetFunctionViews())
         {
             RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -65,7 +65,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     }
 
     private static void RegisterFunctionAsHelper(
-        IKernel kernel,
+        Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
         FunctionView functionView,
@@ -143,7 +143,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
 
             // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
-            ISKFunction function = kernel.Functions.GetFunction(functionView.PluginName, functionView.Name);
+            ISKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();

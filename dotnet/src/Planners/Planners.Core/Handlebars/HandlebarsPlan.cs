@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Planners.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlan
 {
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly string _template;
 
     /// <summary>
@@ -26,7 +26,7 @@ public sealed class HandlebarsPlan
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="template">A Handlebars template representing the plan.</param>
     /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
-    public HandlebarsPlan(IKernel kernel, string template, string createPlanPromptTemplate)
+    public HandlebarsPlan(Kernel kernel, string template, string createPlanPromptTemplate)
     {
         this._kernel = kernel;
         this._template = template;
@@ -53,6 +53,6 @@ public sealed class HandlebarsPlan
     {
         string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, executionContext, this._template, variables, cancellationToken);
         executionContext.Variables.Update(results);
-        return new FunctionResult("Plan", "HandlebarsPlanner", executionContext, results?.Trim());
+        return new FunctionResult("HandlebarsPlanner", executionContext, results?.Trim());
     }
 }
