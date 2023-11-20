@@ -90,11 +90,11 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
             .Build();
 
-        var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
+        var semanticFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
         var response = await kernel.RunAsync(ask, semanticFunction);

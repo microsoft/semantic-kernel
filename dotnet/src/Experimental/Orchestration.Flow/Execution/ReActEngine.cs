@@ -83,7 +83,7 @@ internal sealed class ReActEngine
     private static readonly Regex s_finalAnswerRegex =
         new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
 
-    internal ReActEngine(IKernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
+    internal ReActEngine(Kernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
     {
         this._logger = logger;
 
@@ -128,7 +128,7 @@ internal sealed class ReActEngine
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
     }
 
-    internal async Task<ReActStep?> GetNextStepAsync(SKContext context, string question, List<ReActStep> previousSteps)
+    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, SKContext context, string question, List<ReActStep> previousSteps)
     {
         context.Variables.Set("question", question);
         var scratchPad = this.CreateScratchPad(previousSteps);
@@ -156,7 +156,7 @@ internal sealed class ReActEngine
         this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
+        var llmResponse = await this._reActFunction.InvokeAsync(kernel, context).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
@@ -174,7 +174,7 @@ internal sealed class ReActEngine
         return actionStep;
     }
 
-    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, IKernel kernel, SKContext context)
+    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, SKContext context)
     {
         var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
 
@@ -189,7 +189,7 @@ internal sealed class ReActEngine
             throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
         }
 
-        var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
+        var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.Describe();
 
         var actionContext = this.CreateActionContext(variables, kernel, context);
@@ -203,7 +203,7 @@ internal sealed class ReActEngine
 
         try
         {
-            var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
+            var result = await function.InvokeAsync(kernel, actionContext).ConfigureAwait(false);
 
             foreach (var variable in actionContext.Variables)
             {
@@ -221,7 +221,7 @@ internal sealed class ReActEngine
         }
     }
 
-    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
+    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, Kernel kernel, SKContext context)
     {
         var actionContext = context.Clone();
         foreach (var kvp in actionVariables)
@@ -232,12 +232,16 @@ internal sealed class ReActEngine
         return actionContext;
     }
 
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
+        var plugin = new SKPlugin(RestrictedPluginName);
+
+        kernel.Plugins.Add(plugin);
+
+        return plugin.AddFunctionFromPrompt(template, config, functionName);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
@@ -371,14 +375,14 @@ internal sealed class ReActEngine
 
     private IEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
-        var functionViews = context.Functions!.GetFunctionViews();
+        var functionViews = context.Plugins.GetFunctionViews();
 
         var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
 
         var availableFunctions =
             functionViews
-                .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                .Where(s => !excludedPlugins.Contains(s.PluginName!) && !excludedFunctions.Contains(s.Name))
                 .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
 

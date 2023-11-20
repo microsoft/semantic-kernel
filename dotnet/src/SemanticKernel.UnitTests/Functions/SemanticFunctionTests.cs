@@ -31,11 +31,11 @@ public class SemanticFunctionTests
             .WithDefaultAIService(factory.Object)
             .Build();
 
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
+        kernel.Plugins.Add(new SKPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
         // Act & Assert - 3 functions, var name is not case sensitive
-        Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
-        Assert.True(kernel.Functions.TryGetFunction("JK", "JOKER", out _));
+        Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Plugins.TryGetFunction("JK", "JOKER", out _));
     }
 
     [Theory]
@@ -60,27 +60,13 @@ public class SemanticFunctionTests
             ChatSystemPrompt = providedSystemChatPrompt
         });
 
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
         await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public void ItAllowsToCreateFunctionsInTheGlobalNamespace()
-    {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-        var templateConfig = new PromptTemplateConfig();
-
-        // Act
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName");
-
-        // Assert
-        Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, func.PluginName);
     }
 
     [Fact]
@@ -101,7 +87,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -130,7 +116,7 @@ public class SemanticFunctionTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -154,7 +140,7 @@ public class SemanticFunctionTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
@@ -171,7 +157,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -198,7 +184,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -221,7 +207,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -244,7 +230,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -270,8 +256,8 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
-        var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        var semanticFunction1 = SKFunction.FromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
+        var semanticFunction2 = SKFunction.FromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -310,7 +296,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -339,7 +325,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = sut.CreateSemanticFunction(prompt);
+        var semanticFunction = SKFunction.FromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -362,7 +348,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = sut.CreateSemanticFunction(prompt);
+        var semanticFunction = SKFunction.FromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -383,22 +369,12 @@ public class SemanticFunctionTests
     public async Task ItReturnsFunctionResultsCorrectlyAsync()
     {
         // Arrange
-        [SKName("Function1")]
-        static string Function1() => "Result1";
-
-        [SKName("Function2")]
-        static string Function2() => "Result2";
-
-        const string PluginName = "MyPlugin";
-        const string Prompt = "Write a simple phrase about UnitTests";
-
         var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
 
-        var function1 = SKFunction.Create(Method(Function1), pluginName: PluginName);
-        var function2 = SKFunction.Create(Method(Function2), pluginName: PluginName);
-
-        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
+        var function1 = kernel.CreateFunctionFromMethod(() => "Result1", "Function1");
+        var function2 = kernel.CreateFunctionFromMethod(() => "Result2", "Function2");
+        var function3 = kernel.CreateFunctionFromPrompt("Write a simple phrase about UnitTests", functionName: "Function3");
 
         // Act
         var kernelResult = await kernel.RunAsync(function1, function2, function3);
@@ -407,9 +383,9 @@ public class SemanticFunctionTests
         Assert.NotNull(kernelResult);
         Assert.Equal("Result3", kernelResult.GetValue<string>());
 
-        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
-        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
-        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
+        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1");
+        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2");
+        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3");
 
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());

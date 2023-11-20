@@ -125,6 +125,7 @@ internal static class SequentialPlanParser
                         if (pluginFunction is not null)
                         {
                             var planStep = new Plan(pluginFunction);
+                            planStep.PluginName = pluginName;
 
                             var functionVariables = new ContextVariables();
                             var functionOutputs = new List<string>();
@@ -170,7 +171,7 @@ internal static class SequentialPlanParser
                         {
                             if (allowMissingFunctions)
                             {
-                                plan.AddSteps(new Plan(pluginFunctionName));
+                                plan.AddSteps(new Plan(pluginFunctionName) { PluginName = pluginName });
                             }
                             else
                             {

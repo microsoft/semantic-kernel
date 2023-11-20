@@ -56,13 +56,11 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
-        IKernel kernel = new KernelBuilder().Build();
-
-        var functions = kernel.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+        ISKPlugin plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
-            functions.Values,
+            plugin,
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
@@ -73,21 +71,16 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithSemanticFunctions ========");
 
-        IKernel kernel = new KernelBuilder().Build();
-
-        var functions =
-            new[]
-            {
-                kernel.CreateSemanticFunction(
-                    "Correct any misspelling or gramatical errors provided in input: {{$input}}",
-                    functionName: "spellChecker",
-                    pluginName: "test",
-                    description: "Correct the spelling for the user input."),
-            };
+        var plugin = new SKPlugin("test");
+        plugin.AddFunctionFromPrompt(
+             "Correct any misspelling or gramatical errors provided in input: {{$input}}",
+              functionName: "spellChecker",
+              description: "Correct the spelling for the user input."
+        );
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
-            functions,
+            plugin,
             "Hello",
             "Is this spelled correctly: exercize",
             "What is the special soup?",
@@ -104,14 +97,15 @@ public static class Example70_Assistant
                 OpenAIFunctionEnabledModel,
                 EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
-        IKernel kernel = new KernelBuilder().Build();
-        var assistants = kernel.ImportFunctions(assistant, assistant.Id);
+        Kernel kernel = new KernelBuilder().Build();
+
+        var assistants = kernel.ImportPluginFromObject(assistant, assistant.Id);
 
         var variables = new ContextVariables
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await kernel.RunAsync(assistants.Single().Value, variables);
+        var result = await kernel.RunAsync(assistants.Single(), variables);
         var resultValue = result.GetValue<string>();
 
         var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
@@ -129,17 +123,19 @@ public static class Example70_Assistant
 
     private static async Task ChatAsync(
         string resourcePath,
-        IEnumerable<ISKFunction>? functions,
+        ISKPlugin? plugin,
         params string[] messages)
     {
         var definition = EmbeddedResource.Read(resourcePath);
+
+        var plugins = plugin == null ? new SKPluginCollection() : new SKPluginCollection() { plugin };
 
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 OpenAIFunctionEnabledModel,
                 definition,
-                functions);
+                plugins);
 
         Console.WriteLine($"[{assistant.Id}]");
 

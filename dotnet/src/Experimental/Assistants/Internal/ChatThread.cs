@@ -71,7 +71,7 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
     {
-        var tools = assistant.Functions.Select(f => f.ToToolModel()).ToArray();
+        var tools = assistant.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
         var run = new ChatRun(runModel, assistant.Kernel, this._restContext);

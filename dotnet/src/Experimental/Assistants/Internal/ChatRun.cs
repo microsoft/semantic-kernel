@@ -40,7 +40,7 @@ internal sealed class ChatRun
 
     private readonly OpenAIRestContext _restContext;
     private ThreadRunModel _model;
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -106,7 +106,7 @@ internal sealed class ChatRun
     /// </summary>
     internal ChatRun(
         ThreadRunModel model,
-        IKernel kernel,
+        Kernel kernel,
         OpenAIRestContext restContext)
     {
         this._model = model;

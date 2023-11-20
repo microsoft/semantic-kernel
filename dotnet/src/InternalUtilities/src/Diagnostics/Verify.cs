@@ -36,12 +36,17 @@ internal static class Verify
         }
     }
 
-    internal static void ValidPluginName([NotNull] string? pluginName)
+    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlySKPluginCollection? plugins = null)
     {
         NotNullOrWhiteSpace(pluginName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
         {
             ThrowInvalidName("plugin name", pluginName);
+        }
+
+        if (plugins is not null && plugins.Contains(pluginName))
+        {
+            throw new SKException($"A plugin with the name '{pluginName}' already exists.");
         }
     }
 

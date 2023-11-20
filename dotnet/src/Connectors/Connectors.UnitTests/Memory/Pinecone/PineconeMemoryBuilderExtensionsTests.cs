@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Plugins.Memory;

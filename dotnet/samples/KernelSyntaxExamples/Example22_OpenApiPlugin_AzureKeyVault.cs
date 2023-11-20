@@ -46,7 +46,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import an Open AI Plugin via Stream
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters
@@ -78,7 +78,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters

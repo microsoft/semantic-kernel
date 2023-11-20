@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -104,7 +105,7 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILoggerFactory loggerFactory)
+    private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
@@ -118,17 +119,18 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }
 
     private static ISequentialPlanner GetSequentialPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
@@ -138,14 +140,14 @@ public sealed class Program
     }
 
     private static IActionPlanner GetActionPlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
     private static IStepwisePlanner GetStepwisePlanner(
-        IKernel kernel,
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)

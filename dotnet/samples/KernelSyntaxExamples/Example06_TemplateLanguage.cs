@@ -28,7 +28,7 @@ public static class Example06_TemplateLanguage
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
@@ -37,7 +37,7 @@ public static class Example06_TemplateLanguage
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
         // Semantic Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"
@@ -53,11 +53,11 @@ Is it weekend time (weekend/not weekend)?
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(kernel.CreateNewContext());
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

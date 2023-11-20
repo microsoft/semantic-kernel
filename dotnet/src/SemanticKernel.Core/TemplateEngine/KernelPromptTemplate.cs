@@ -47,7 +47,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
     {
         return await this.RenderAsync(this._blocks.Value, executionContext, cancellationToken).ConfigureAwait(false);
     }

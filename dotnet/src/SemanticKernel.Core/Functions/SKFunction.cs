@@ -5,40 +5,40 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
+
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
-/// Factory methods for creating <seealso cref="ISKFunction"/> instances.
+/// Provides factory methods for creating commonly-used implementations of <see cref="ISKFunction"/>, such as
+/// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
 public static class SKFunction
 {
+    #region FromMethod
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction Create(
+    public static ISKFunction FromMethod(
         Delegate method,
-        string? pluginName = null,
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        Create(method.Method, method.Target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
+        FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -46,110 +46,98 @@ public static class SKFunction
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction Create(
+    public static ISKFunction FromMethod(
         MethodInfo method,
         object? target = null,
-        string? pluginName = null,
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ReturnParameterView? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
+        SKFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+    #endregion
+
+    #region FromPrompt
+    // TODO: Revise these Create method XML comments
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified <see cref="PromptFunctionModel"/>.
+    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
+    /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="promptFunctionModel">Instance of <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
-    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="promptFunctionModel"/>.</returns>
-    public static ISKFunction Create(
-        PromptFunctionModel promptFunctionModel,
-        string? pluginName = null,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) =>
-        SemanticFunction.Create(promptFunctionModel, pluginName, promptTemplateFactory, loggerFactory);
-
-    #region Obsolete
-    /// <summary>
-    /// Create a native function instance, wrapping a native object method
-    /// </summary>
-    /// <param name="method">Signature of the method to invoke</param>
-    /// <param name="target">Object containing the method to invoke</param>
-    /// <param name="pluginName">SK plugin name</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>SK function instance</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This method will be removed in a future release. Use SKFunction.Create instead.")]
-    public static ISKFunction FromNativeMethod(
-        MethodInfo method,
-        object? target = null,
-        string? pluginName = null,
-        ILoggerFactory? loggerFactory = null) =>
-        Create(method, target, pluginName, loggerFactory: loggerFactory);
-
-    /// <summary>
-    /// Create a native function instance, wrapping a delegate function
-    /// </summary>
-    /// <param name="nativeFunction">Function to invoke</param>
-    /// <param name="pluginName">SK plugin name</param>
-    /// <param name="functionName">SK function name</param>
-    /// <param name="description">SK function description</param>
-    /// <param name="parameters">SK function parameters</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>SK function instance</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("This method will be removed in a future release. Use SKFunction.Create instead.")]
-    public static ISKFunction FromNativeFunction(
-        Delegate nativeFunction,
-        string? pluginName = null,
+    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction FromPrompt(
+        string promptTemplate,
+        AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null) =>
-        Create(nativeFunction, pluginName, functionName, description, parameters, null, loggerFactory);
+        SKFunctionFromPrompt.Create(promptTemplate, requestSettings, functionName, description, loggerFactory);
+
+    /// <summary>
+    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// </summary>
+    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction FromPrompt(
+        string promptTemplate,
+        PromptTemplateConfig promptTemplateConfig,
+        string? functionName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null) =>
+        SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
+
+    /// <summary>
+    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// </summary>
+    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction FromPrompt(
+        IPromptTemplate promptTemplate,
+        PromptTemplateConfig promptTemplateConfig,
+        string? functionName = null,
+        ILoggerFactory? loggerFactory = null) =>
+        SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
     #endregion
 
-    #region Internal
     /// <summary>
-    /// Default implementation to identify if a function was cancelled or skipped.
+    /// Create a semantic function instance, given a prompt function model.
     /// </summary>
-    /// <param name="context">Execution context</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingCancelOrSkipRequested(SKContext context) =>
-        IsInvokingCancelRequested(context) || IsInvokingSkipRequested(context);
+    /// <param name="promptFunctionModel">The model</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction FromPrompt(
+        PromptFunctionModel promptFunctionModel,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(promptFunctionModel);
+        Verify.NotNull(promptFunctionModel.Name);
+        Verify.NotNull(promptFunctionModel.Template);
 
-    /// <summary>
-    /// Default implementation to identify if a function was skipped.
-    /// </summary>
-    /// <param name="context">Execution context</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingSkipRequested(SKContext context) =>
-        context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested == true;
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory();
+        var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(promptFunctionModel);
+        var promptTemplate = factory.Create(promptFunctionModel.Template, promptTemplateConfig);
 
-    /// <summary>
-    /// Default implementation to identify if a function was cancelled in the pre hook.
-    /// </summary>
-    /// <param name="context">Execution context</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingCancelRequested(SKContext context) =>
-        context.FunctionInvokingHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
-
-    /// <summary>
-    /// Default implementation to identify if a function was cancelled in the post hook.
-    /// </summary>
-    /// <param name="context">Execution context</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokedCancelRequested(SKContext context) =>
-        context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
-    #endregion
+        return SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, promptFunctionModel.Name, loggerFactory);
+    }
 }

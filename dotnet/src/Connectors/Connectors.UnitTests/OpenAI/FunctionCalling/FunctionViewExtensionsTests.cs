@@ -153,9 +153,13 @@ public sealed class FunctionViewExtensionsTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var functions = kernel.ImportFunctions(new MyPlugin(), "MyPlugin");
-        var function = functions.First().Value;
+
+        var plugin = kernel.ImportPluginFromObject(new MyPlugin(), "MyPlugin");
+
+        var function = plugin.First();
+
         var functionView = function.Describe();
+
         var sut = functionView.ToOpenAIFunction();
 
         // Act

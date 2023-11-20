@@ -58,8 +58,5 @@
     <Content Include="Plugins\instacart-ai-plugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TemplateLanguage\tests.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
