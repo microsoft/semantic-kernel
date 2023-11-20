@@ -92,6 +92,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
 		src\InternalUtilities\test\FunctionHelpers.cs = src\InternalUtilities\test\FunctionHelpers.cs
+		src\Experimental\Assistants.UnitTests\SKFunctionMock.cs = src\Experimental\Assistants.UnitTests\SKFunctionMock.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
 EndProject

@@ -2,12 +2,10 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -40,17 +38,10 @@ public class CodeBlockTests
         // Arrange
         var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, plugins: this._kernel.Plugins);
 
-        var function = new Mock<SKFunction>();
-        function.Setup(x => x.Name).Returns("function");
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<Kernel>(),
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Throws(new RuntimeWrappedException("error"));
+        var function = new SKFunctionMock("function", "description");
+        function.InvokeDelegate = (kernel, context, requestSettings, cancellationToken) => throw new RuntimeWrappedException("error");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         var target = new CodeBlock("plugin.function", this._logger);
 

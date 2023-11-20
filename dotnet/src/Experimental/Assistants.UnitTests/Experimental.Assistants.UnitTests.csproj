@@ -11,6 +11,7 @@
     <NoWarn>CS1591;SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
     <ProjectReference Include="..\Assistants\Experimental.Assistants.csproj" />
   </ItemGroup>
   <ItemGroup>
