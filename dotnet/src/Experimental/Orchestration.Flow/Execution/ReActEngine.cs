@@ -190,7 +190,7 @@ internal sealed class ReActEngine
         }
 
         var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
-        var functionView = function.Describe();
+        var functionView = function.GetMetadata();
 
         var actionContext = this.CreateActionContext(variables, kernel, context);
         foreach (var parameter in functionView.Parameters)
@@ -368,14 +368,14 @@ internal sealed class ReActEngine
         return result;
     }
 
-    private string GetFunctionDescriptions(FunctionView[] functions)
+    private string GetFunctionDescriptions(SKFunctionMetadata[] functions)
     {
         return string.Join("\n", functions.Select(ToManualString));
     }
 
-    private IEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
+    private IEnumerable<SKFunctionMetadata> GetAvailableFunctions(SKContext context)
     {
-        var functionViews = context.Plugins.GetFunctionViews();
+        var functionViews = context.Plugins.GetFunctionsMetadata();
 
         var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
@@ -391,22 +391,23 @@ internal sealed class ReActEngine
             : availableFunctions;
     }
 
-    private static FunctionView GetStopAndPromptUserFunction()
+    private static SKFunctionMetadata GetStopAndPromptUserFunction()
     {
-        ParameterView promptParameter = new(
-            Constants.StopAndPromptParameterName,
-            "The message to be shown to the user.",
-            string.Empty,
-            ParameterViewType.String);
+        SKParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
+        {
+            Description = "The message to be shown to the user.",
+            Type = ParameterJsonType.String
+        };
 
-        return new FunctionView(
-            Constants.StopAndPromptFunctionName,
-            "_REACT_ENGINE_",
-            "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
-            new[] { promptParameter });
+        return new SKFunctionMetadata(Constants.StopAndPromptFunctionName)
+        {
+            PluginName = "_REACT_ENGINE_",
+            Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
+            Parameters = new[] { promptParameter }
+        };
     }
 
-    private static string ToManualString(FunctionView function)
+    private static string ToManualString(SKFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
@@ -424,7 +425,7 @@ internal sealed class ReActEngine
         return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
     }
 
-    private static string ToFullyQualifiedName(FunctionView function)
+    private static string ToFullyQualifiedName(SKFunctionMetadata function)
     {
         return $"{function.PluginName}.{function.Name}";
     }

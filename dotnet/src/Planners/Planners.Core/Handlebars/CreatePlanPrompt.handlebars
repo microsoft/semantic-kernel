@@ -35,7 +35,9 @@ What's the sum of 5+10+15?
   \{{set
     "randomNumber"
     (Example{{reservedNameDelimiter}}Random
-      seed=index
+      seed=(get
+        "index"
+      )
     )
   }}
   \{{!-- Step 4: Call example helper with random number and print the result to the screen --}}

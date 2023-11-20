@@ -3,21 +3,23 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars.Models;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars.Models;
+#pragma warning restore IDE0130
 
-internal class HandlebarsParameterTypeView
+internal class HandlebarsParameterTypeMetadata
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("isComplexType")]
-    public bool IsComplexType { get; set; } = false;
+    public bool IsComplex { get; set; } = false;
 
     /// <summary>
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<ParameterView> Properties { get; set; } = new();
+    public List<SKParameterMetadata> Properties { get; set; } = new();
 
     // Override the Equals method to compare the property values
     public override bool Equals(object obj)
@@ -28,11 +30,11 @@ internal class HandlebarsParameterTypeView
             return false;
         }
 
-        // Cast the obj to HandlebarsParameterTypeView
-        var other = (HandlebarsParameterTypeView)obj;
+        // Cast the obj to HandlebarsParameterTypeMetadata
+        var other = (HandlebarsParameterTypeMetadata)obj;
 
-        // Compare the Name and IsComplexType properties
-        if (this.Name != other.Name || this.IsComplexType != other.IsComplexType)
+        // Compare the Name and IsComplex properties
+        if (this.Name != other.Name || this.IsComplex != other.IsComplex)
         {
             return false;
         }
@@ -41,8 +43,8 @@ internal class HandlebarsParameterTypeView
         return ArePropertiesEqual(this.Properties, other.Properties);
     }
 
-    // A helper method to compare two lists of ParameterView
-    private static bool ArePropertiesEqual(List<ParameterView> list1, List<ParameterView> list2)
+    // A helper method to compare two lists of SKParameterMetadata
+    private static bool ArePropertiesEqual(List<SKParameterMetadata> list1, List<SKParameterMetadata> list2)
     {
         // Check if the lists are null or have different lengths
         if (list1 == null || list2 == null || list1.Count != list2.Count)
@@ -50,10 +52,10 @@ internal class HandlebarsParameterTypeView
             return false;
         }
 
-        // Compare the elements of the lists using the default ParameterView equality
+        // Compare the elements of the lists by comparing the Name and ParameterType properties
         for (int i = 0; i < list1.Count; i++)
         {
-            if (!list1[i].Equals(list2[i]))
+            if (!list1[i].Name.Equals(list2[i].Name, System.StringComparison.Ordinal) || !list1[i].ParameterType!.Equals(list2[i].ParameterType))
             {
                 return false;
             }
@@ -72,8 +74,8 @@ internal class HandlebarsParameterTypeView
         // Use the default string hash code for the Name property
         hash = (hash * 31) + (this.Name?.GetHashCode() ?? 0);
 
-        // Use the default bool hash code for the IsComplexType property
-        hash = (hash * 31) + this.IsComplexType.GetHashCode();
+        // Use the default bool hash code for the IsComplex property
+        hash = (hash * 31) + this.IsComplex.GetHashCode();
 
         // Use a helper method to compute the hash code of the Properties list
         hash = (hash * 31) + GetPropertiesHashCode(this.Properties);
@@ -81,17 +83,32 @@ internal class HandlebarsParameterTypeView
         return hash;
     }
 
-    // A helper method to compute the hash code of a list of ParameterView
-    private static int GetPropertiesHashCode(List<ParameterView> list)
+    // A helper method to compute the hash code of a list of SKParameterMetadata
+    private static int GetPropertiesHashCode(List<SKParameterMetadata> list)
     {
         // Use a prime number to combine the hash codes of the elements
         int hash = 19;
 
-        // Use the default ParameterView hash code for each element
+        // Use the default SKParameterMetadata hash code for each element
         foreach (var item in list)
         {
-            hash = (hash * 37) + (item?.GetHashCode() ?? 0);
+            hash = (hash * 37) + GetPropertyHashCode(item);
         }
+
+        return hash;
+    }
+
+    // A helper method to compute the hash code of a SKParameterMetadata object
+    private static int GetPropertyHashCode(SKParameterMetadata property)
+    {
+        // Use a prime number to combine the hash codes of the elements
+        int hash = 23;
+
+        // Use the default string hash code for each element's name
+        hash = (hash * 41) + (property?.Name.GetHashCode() ?? 0);
+
+        // Use the default type hash code for each element's ParameterType
+        hash = (hash * 41) + (property?.ParameterType?.GetHashCode() ?? 0);
 
         return hash;
     }

@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
-using Microsoft.SemanticKernel.Planners.Handlebars.Models;
+using Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
+using Microsoft.SemanticKernel.Planning.Handlebars.Models;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
-public class ParameterViewExtensionsTests
+public class SKParameterMetadataExtensionsTests
 {
     [Fact]
     public void ReturnsTrueForPrimitiveOrStringTypes()
@@ -24,22 +24,22 @@ public class ParameterViewExtensionsTests
         // Act and Assert
         foreach (var type in primitiveTypes)
         {
-            Assert.True(ParameterViewExtensions.isPrimitiveOrStringType(type));
+            Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
         }
 
-        Assert.True(ParameterViewExtensions.isPrimitiveOrStringType(stringType));
+        Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(stringType));
     }
 
     [Fact]
     public void ReturnsFalseForNonPrimitiveOrStringTypes()
     {
         // Arrange
-        var nonPrimitiveTypes = new Type[] { typeof(object), typeof(DateTime), typeof(List<int>), typeof(HandlebarsParameterTypeView) };
+        var nonPrimitiveTypes = new Type[] { typeof(object), typeof(DateTime), typeof(List<int>), typeof(HandlebarsParameterTypeMetadata) };
 
         // Act and Assert
         foreach (var type in nonPrimitiveTypes)
         {
-            Assert.False(ParameterViewExtensions.isPrimitiveOrStringType(type));
+            Assert.False(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
         }
     }
 
@@ -50,7 +50,7 @@ public class ParameterViewExtensionsTests
         var primitiveType = typeof(int);
 
         // Act
-        var result = primitiveType.ToHandlebarsParameterTypeView();
+        var result = primitiveType.ToHandlebarsParameterTypeMetadata();
 
         // Assert
         Assert.Empty(result);
@@ -63,12 +63,12 @@ public class ParameterViewExtensionsTests
         var simpleClassType = typeof(SimpleClass);
 
         // Act
-        var result = simpleClassType.ToHandlebarsParameterTypeView();
+        var result = simpleClassType.ToHandlebarsParameterTypeMetadata();
 
         // Assert
         Assert.Single(result);
         Assert.Equal("SimpleClass", result.First().Name);
-        Assert.True(result.First().IsComplexType);
+        Assert.True(result.First().IsComplex);
         Assert.Equal(2, result.First().Properties.Count);
         Assert.Equal("Id", result.First().Properties[0].Name);
         Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
@@ -83,7 +83,7 @@ public class ParameterViewExtensionsTests
         var nestedClassType = typeof(NestedClass);
 
         // Act
-        var result = nestedClassType.ToHandlebarsParameterTypeView();
+        var result = nestedClassType.ToHandlebarsParameterTypeMetadata();
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -92,7 +92,7 @@ public class ParameterViewExtensionsTests
         Assert.Contains(result, r => r.Name == "AnotherClass");
 
         var nestedClass = result.First(r => r.Name == "NestedClass");
-        Assert.True(nestedClass.IsComplexType);
+        Assert.True(nestedClass.IsComplex);
         Assert.Equal(3, nestedClass.Properties.Count);
         Assert.Equal("Id", nestedClass.Properties[0].Name);
         Assert.Equal(typeof(int), nestedClass.Properties[0].ParameterType);
@@ -102,7 +102,7 @@ public class ParameterViewExtensionsTests
         Assert.Equal(typeof(AnotherClass), nestedClass.Properties[2].ParameterType);
 
         var simpleClass = result.First(r => r.Name == "SimpleClass");
-        Assert.True(simpleClass.IsComplexType);
+        Assert.True(simpleClass.IsComplex);
         Assert.Equal(2, simpleClass.Properties.Count);
         Assert.Equal("Id", simpleClass.Properties[0].Name);
         Assert.Equal(typeof(int), simpleClass.Properties[0].ParameterType);
@@ -110,17 +110,17 @@ public class ParameterViewExtensionsTests
         Assert.Equal(typeof(string), simpleClass.Properties[1].ParameterType);
 
         var anotherClass = result.First(r => r.Name == "AnotherClass");
-        Assert.True(anotherClass.IsComplexType);
+        Assert.True(anotherClass.IsComplex);
         Assert.Single(anotherClass.Properties);
         Assert.Equal("Value", anotherClass.Properties[0].Name);
         Assert.Equal(typeof(double), anotherClass.Properties[0].ParameterType);
 
         // Should not contain primitive types
         Assert.DoesNotContain(result, r => r.Name == "Id");
-        Assert.DoesNotContain(result, r => !r.IsComplexType);
+        Assert.DoesNotContain(result, r => !r.IsComplex);
 
         // Should not contain empty complex types
-        Assert.DoesNotContain(result, r => r.IsComplexType && r.Properties.Count == 0);
+        Assert.DoesNotContain(result, r => r.IsComplex && r.Properties.Count == 0);
     }
 
     [Fact]
@@ -130,12 +130,12 @@ public class ParameterViewExtensionsTests
         var taskOfSimpleClassType = typeof(Task<SimpleClass>);
 
         // Act
-        var result = taskOfSimpleClassType.ToHandlebarsParameterTypeView();
+        var result = taskOfSimpleClassType.ToHandlebarsParameterTypeMetadata();
 
         // Assert
         Assert.Single(result);
         Assert.Equal("SimpleClass", result.First().Name);
-        Assert.True(result.First().IsComplexType);
+        Assert.True(result.First().IsComplex);
         Assert.Equal(2, result.First().Properties.Count);
         Assert.Equal("Id", result.First().Properties[0].Name);
         Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
@@ -151,8 +151,8 @@ public class ParameterViewExtensionsTests
         var taskOfStringType = typeof(Task<string>);
 
         // Act
-        var result1 = taskOfPrimitiveType.ToHandlebarsParameterTypeView();
-        var result2 = taskOfStringType.ToHandlebarsParameterTypeView();
+        var result1 = taskOfPrimitiveType.ToHandlebarsParameterTypeMetadata();
+        var result2 = taskOfStringType.ToHandlebarsParameterTypeMetadata();
 
         // Assert
         Assert.Empty(result1);
@@ -168,7 +168,7 @@ public class ParameterViewExtensionsTests
         // Act and Assert
         foreach (var type in primitiveSchemaTypes)
         {
-            Assert.True(ParameterViewExtensions.isPrimitiveOrStringType(type));
+            Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
         }
     }
 
@@ -181,7 +181,7 @@ public class ParameterViewExtensionsTests
         // Act and Assert
         foreach (var type in nonPrimitiveSchemaTypes)
         {
-            Assert.False(ParameterViewExtensions.isPrimitiveOrStringType(type));
+            Assert.False(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
         }
     }
 
@@ -201,7 +201,7 @@ public class ParameterViewExtensionsTests
         foreach (var pair in schemaTypeMap)
         {
             var schema = JsonDocument.Parse($"{{\"type\": \"{pair.Key}\"}}");
-            var parameter = new ParameterView("test", "test", Schema: schema);
+            var parameter = new SKParameterMetadata("test") { Schema = schema };
 
             // Act
             var result = parameter.ParseJsonSchema();
@@ -217,7 +217,7 @@ public class ParameterViewExtensionsTests
     {
         // Arrange
         var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var parameter = new ParameterView("test", "test", Schema: schema);
+        var parameter = new SKParameterMetadata("test") { Schema = schema };
 
         // Act
         var result = parameter.ParseJsonSchema();
@@ -246,7 +246,7 @@ public class ParameterViewExtensionsTests
     {
         // Arrange
         var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var parameter = new ParameterView("test", "test", Schema: schema);
+        var parameter = new SKParameterMetadata("test") { Schema = schema };
 
         // Act
         var result = parameter.GetSchemaTypeName();
@@ -256,15 +256,15 @@ public class ParameterViewExtensionsTests
     }
 
     [Fact]
-    public void ReturnsParameterViewWithFunctionNameAndReturnParameterViewProperties()
+    public void ConvertsReturnParameterMetadataToParameterMetadata()
     {
         // Arrange
         var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var returnParameter = new ReturnParameterView("test", ParameterType: typeof(object), Schema: schema);
-        var functionName = "Foo";
+        var returnParameter = new SKReturnParameterMetadata() { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
-        var result = returnParameter.ToParameterView(functionName);
+        var functionName = "Foo";
+        var result = returnParameter.ToSKParameterMetadata(functionName);
 
         // Assert
         Assert.Equal("FooReturns", result.Name);
@@ -274,14 +274,14 @@ public class ParameterViewExtensionsTests
     }
 
     [Fact]
-    public void ReturnsReturnParameterViewWithParameterViewProperties()
+    public void ConvertsParameterMetadataToReturnParameterMetadata()
     {
         // Arrange
         var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var parameter = new ParameterView("test", "test", ParameterType: typeof(object), Schema: schema);
+        var parameter = new SKParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
-        var result = parameter.ToReturnParameterView();
+        var result = parameter.ToSKReturnParameterMetadata();
 
         // Assert
         Assert.Equal("test", result.Description);

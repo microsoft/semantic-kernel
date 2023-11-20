@@ -28,44 +28,30 @@ public class ConversationSummaryPlugin
     /// </summary>
     public ConversationSummaryPlugin()
     {
+        AIRequestSettings settings = new()
+        {
+            ExtensionData = new()
+            {
+                { "Temperature", 0.1 },
+                { "TopP", 0.5 },
+                { "MaxTokens", MaxTokens }
+            }
+        };
+
         this._summarizeConversationFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
-            requestSettings: new AIRequestSettings()
-            {
-                ExtensionData = new Dictionary<string, object>()
-                {
-                    { "Temperature", 0.1 },
-                    { "TopP", 0.5 },
-                    { "MaxTokens", MaxTokens }
-                }
-            });
+            requestSettings: settings);
 
         this._conversationActionItemsFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
-            requestSettings: new AIRequestSettings()
-            {
-                ExtensionData = new Dictionary<string, object>()
-                {
-                    { "Temperature", 0.1 },
-                    { "TopP", 0.5 },
-                    { "MaxTokens", MaxTokens }
-                }
-            });
+            requestSettings: settings);
 
         this._conversationTopicsFunction = SKFunction.FromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
-            requestSettings: new AIRequestSettings()
-            {
-                ExtensionData = new Dictionary<string, object>()
-                {
-                    { "Temperature", 0.1 },
-                    { "TopP", 0.5 },
-                    { "MaxTokens", MaxTokens }
-                }
-            });
+            requestSettings: settings);
     }
 
     /// <summary>
@@ -75,17 +61,11 @@ public class ConversationSummaryPlugin
     /// <param name="kernel">The kernel</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
-    public Task<SKContext> SummarizeConversationAsync(
+    public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context)
-    {
-        List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
-        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
-
-        return this._summarizeConversationFunction
-            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
-    }
+        SKContext context) =>
+        ProcessAsync(this._summarizeConversationFunction, input, kernel, context);
 
     /// <summary>
     /// Given a long conversation transcript, identify action items.
@@ -94,17 +74,11 @@ public class ConversationSummaryPlugin
     /// <param name="kernel">The kernel.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify action items.")]
-    public Task<SKContext> GetConversationActionItemsAsync(
+    public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context)
-    {
-        List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
-        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
-
-        return this._conversationActionItemsFunction
-            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
-    }
+        SKContext context) =>
+        ProcessAsync(this._conversationActionItemsFunction, input, kernel, context);
 
     /// <summary>
     /// Given a long conversation transcript, identify topics.
@@ -113,15 +87,24 @@ public class ConversationSummaryPlugin
     /// <param name="kernel">The kernel.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
-    public Task<SKContext> GetConversationTopicsAsync(
+    public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context)
+        SKContext context) =>
+        ProcessAsync(this._conversationTopicsFunction, input, kernel, context);
+
+    private static async Task<string> ProcessAsync(ISKFunction func, string input, Kernel kernel, SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
-        return this._conversationTopicsFunction
-            .AggregatePartitionedResultsAsync(kernel, paragraphs, context);
+        string[] results = new string[paragraphs.Count];
+        for (int i = 0; i < results.Length; i++)
+        {
+            context.Variables.Update(paragraphs[i]);
+            results[i] = (await func.InvokeAsync(kernel, context).ConfigureAwait(false)).GetValue<string>() ?? "";
+        }
+
+        return string.Join("\n", results);
     }
 }

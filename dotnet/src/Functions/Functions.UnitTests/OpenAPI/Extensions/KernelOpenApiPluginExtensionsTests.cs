@@ -57,17 +57,17 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
-        var functionView = setSecretFunction.Describe();
+        var functionView = setSecretFunction.GetMetadata();
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
-        Assert.Equal(ParameterViewType.String, secretNameParameter.Type);
+        Assert.Equal(ParameterJsonType.String, secretNameParameter.Type);
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
         Assert.Equal("string", apiVersionParameter?.Type?.ToString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
-        Assert.Equal(ParameterViewType.Object, payloadParameter.Type);
+        Assert.Equal(ParameterJsonType.Object, payloadParameter.Type);
     }
 
     [Theory]

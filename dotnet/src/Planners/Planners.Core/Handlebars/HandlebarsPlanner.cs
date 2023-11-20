@@ -7,23 +7,21 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
-using Microsoft.SemanticKernel.Planners.Handlebars.Models;
+using Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
+using Microsoft.SemanticKernel.Planning.Handlebars.Models;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a Handlebars planner.
 /// </summary>
 public sealed class HandlebarsPlanner
 {
-    /// <summary>
-    /// The key for the available kernel functions.
-    /// </summary>
-    public const string AvailableKernelFunctionsKey = "AVAILABLE_KERNEL_FUNCTIONS";
-
     /// <summary>
     /// Gets the stopwatch used for measuring planning time.
     /// </summary>
@@ -53,8 +51,8 @@ public sealed class HandlebarsPlanner
     /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        var availableFunctions = this.GetAvailableFunctionsManual(out var complexParametersTypesView, out var complexParametersSchemaView, cancellationToken);
-        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions, complexParametersTypesView, complexParametersSchemaView);
+        var availableFunctions = this.GetAvailableFunctionsManual(out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
+        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
         var chatCompletion = this._kernel.GetService<IChatCompletion>();
 
         // Extract the chat history from the rendered prompt
@@ -96,53 +94,52 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
-    /// <summary>
-    /// Creates a function manual from the available functions in the kernel, including isolated complex types and schemas definitions for function parameters.
-    /// </summary>
-    /// <param name="complexParametersTypesView">Complex parameters types view for isolated render in prompt template.</param>
-    /// <param name="complexParametersSchemaView">Complex parameters schema view for isolated render in prompt template.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The available functions.</returns>
-    private List<FunctionView> GetAvailableFunctionsManual(
-        out HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
-        out Dictionary<string, string> complexParametersSchemaView,
+    private List<SKFunctionMetadata> GetAvailableFunctionsManual(
+        out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        out Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken = default)
     {
-        complexParametersTypesView = new();
-        complexParametersSchemaView = new();
-        var availableFunctions = this._kernel.Plugins.GetFunctionViews()
+        complexParameterTypes = new();
+        complexParameterSchemas = new();
+        var availableFunctions = this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
-        var functionsView = new List<FunctionView>();
+        var functionsMetadata = new List<SKFunctionMetadata>();
         foreach (var skFunction in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
-            var parametersView = new List<ParameterView>();
+            var parametersMetadata = new List<SKParameterMetadata>();
             foreach (var parameter in skFunction.Parameters)
             {
-                var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParametersTypesView, complexParametersSchemaView);
-                parametersView.Add(paramToAdd);
+                var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
+                parametersMetadata.Add(paramToAdd);
             }
 
-            var returnParameter = skFunction.ReturnParameter.ToParameterView(skFunction.Name);
-            returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParametersTypesView, complexParametersSchemaView);
+            var returnParameter = skFunction.ReturnParameter.ToSKParameterMetadata(skFunction.Name);
+            returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
 
-            // Need to override function view in case parameter views changed (e.g., converted primitive types from schema objects)
-            var functionView = new FunctionView(skFunction.Name, skFunction.PluginName, skFunction.Description, parametersView, returnParameter.ToReturnParameterView());
-            functionsView.Add(functionView);
+            // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
+            var functionMetadata = new SKFunctionMetadata(skFunction.Name)
+            {
+                PluginName = skFunction.PluginName,
+                Description = skFunction.Description,
+                Parameters = parametersMetadata,
+                ReturnParameter = returnParameter.ToSKReturnParameterMetadata()
+            };
+            functionsMetadata.Add(functionMetadata);
         }
 
-        return functionsView;
+        return functionsMetadata;
     }
 
     // Extract any complex types or schemas for isolated render in prompt template
-    private ParameterView SetComplexTypeDefinition(
-        ParameterView parameter,
-        HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
-        Dictionary<string, string> complexParametersSchemaView)
+    private SKParameterMetadata SetComplexTypeDefinition(
+        SKParameterMetadata parameter,
+        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        Dictionary<string, string> complexParameterSchemas)
     {
         // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
         if (parameter.ParameterType is not null)
@@ -151,10 +148,10 @@ public sealed class HandlebarsPlanner
             var type = parameter.ParameterType;
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
             {
-                parameter = parameter with { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
+                parameter = new(parameter) { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
             }
 
-            complexParametersTypesView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
+            complexParameterTypes.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeMetadata());
         }
         else if (parameter.Schema is not null)
         {
@@ -162,7 +159,7 @@ public sealed class HandlebarsPlanner
             var parsedParameter = parameter.ParseJsonSchema();
             if (parsedParameter.Schema is not null)
             {
-                complexParametersSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+                complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
             }
 
             parameter = parsedParameter;
@@ -203,9 +200,9 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(
         Kernel kernel, string goal,
-        List<FunctionView> availableFunctions,
-        HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
-        Dictionary<string, string> complexParametersSchemaView)
+        List<SKFunctionMetadata> availableFunctions,
+        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
@@ -214,8 +211,8 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
                 { "allowLoops", this._config.AllowLoops },
-                { "complexTypeDefinitions", complexParametersTypesView.Count > 0 && complexParametersTypesView.Any(p => p.IsComplexType) ? complexParametersTypesView.Where(p => p.IsComplexType) : null},
-                { "complexSchemaDefinitions", complexParametersSchemaView.Count > 0 ? complexParametersSchemaView : null},
+                { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
+                { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };

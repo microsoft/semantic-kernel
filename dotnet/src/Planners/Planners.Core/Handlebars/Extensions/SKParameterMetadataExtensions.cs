@@ -6,11 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Planners.Handlebars.Models;
+using Microsoft.SemanticKernel.Planning.Handlebars.Models;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
+#pragma warning restore IDE0130
 
-internal static class ParameterViewExtensions
+internal static class SKParameterMetadataExtensions
 {
     /// <summary>
     /// Checks if type is primitive or string
@@ -18,7 +20,7 @@ internal static class ParameterViewExtensions
     public static bool isPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
 
     /// <summary>
-    /// Converts non-primitive types to a data class definition and returns a hash set of complex type view definitions.
+    /// Converts non-primitive types to a data class definition and returns a hash set of complex type metadata.
     /// Complex types will become a data class.
     /// If there are nested complex types, the nested complex type will also be returned.
     /// Example:
@@ -28,9 +30,9 @@ internal static class ParameterViewExtensions
     ///    propertyB: str
     ///    propertyC: PropertyC
     /// </summary>
-    public static HashSet<HandlebarsParameterTypeView> ToHandlebarsParameterTypeView(this Type type)
+    public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
-        var parameterTypes = new HashSet<HandlebarsParameterTypeView>();
+        var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
         {
             // Async return type - need to extract the actual return type
@@ -39,11 +41,11 @@ internal static class ParameterViewExtensions
 
             if (!isPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
             {
-                parameterTypes.Add(new HandlebarsParameterTypeView()
+                parameterTypes.Add(new HandlebarsParameterTypeMetadata()
                 {
                     Name = actualReturnType.Name,
-                    IsComplexType = true,
-                    Properties = returnTypeProperties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
+                    IsComplex = true,
+                    Properties = returnTypeProperties.Select(p => new SKParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
                 parameterTypes.AddNestedComplexTypes(returnTypeProperties);
@@ -54,11 +56,11 @@ internal static class ParameterViewExtensions
             // Class
             var properties = type.GetProperties();
 
-            parameterTypes.Add(new HandlebarsParameterTypeView()
+            parameterTypes.Add(new HandlebarsParameterTypeMetadata()
             {
                 Name = type.Name,
-                IsComplexType = properties.Length is not 0,
-                Properties = properties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
+                IsComplex = properties.Length is not 0,
+                Properties = properties.Select(p => new SKParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
             parameterTypes.AddNestedComplexTypes(properties);
@@ -67,12 +69,12 @@ internal static class ParameterViewExtensions
         return parameterTypes;
     }
 
-    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeView> parameterTypes, PropertyInfo[] properties)
+    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties)
     {
         // Add nested complex types
         foreach (var property in properties)
         {
-            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeView());
+            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
         }
     }
 
@@ -96,13 +98,17 @@ internal static class ParameterViewExtensions
         return typeMap[schemaType];
     }
 
-    public static ParameterView ParseJsonSchema(this ParameterView parameter)
+    public static SKParameterMetadata ParseJsonSchema(this SKParameterMetadata parameter)
     {
         var schema = parameter.Schema!;
         var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
         if (isPrimitiveOrStringType(type) || type == "null")
         {
-            return parameter with { ParameterType = GetTypeFromSchema(type), Schema = null };
+            return new(parameter)
+            {
+                ParameterType = GetTypeFromSchema(type),
+                Schema = null
+            };
         }
 
         return parameter;
@@ -118,13 +124,23 @@ internal static class ParameterViewExtensions
         return JsonSerializer.Serialize(jsonProperties, options);
     }
 
-    public static string GetSchemaTypeName(this ParameterView parameter)
+    public static string GetSchemaTypeName(this SKParameterMetadata parameter)
     {
         var schemaType = parameter.Schema is not null && parameter.Schema.RootElement.TryGetProperty("type", out var typeElement) ? typeElement.ToString() : "object";
         return $"{parameter.Name}-{schemaType}";
     }
 
-    public static ParameterView ToParameterView(this ReturnParameterView parameter, string functionName) => new($"{functionName}Returns", parameter.Description, ParameterType: parameter.ParameterType, Schema: parameter.Schema);
+    public static SKParameterMetadata ToSKParameterMetadata(this SKReturnParameterMetadata parameter, string functionName) => new($"{functionName}Returns")
+    {
+        Description = parameter.Description,
+        ParameterType = parameter.ParameterType,
+        Schema = parameter.Schema
+    };
 
-    public static ReturnParameterView ToReturnParameterView(this ParameterView parameter) => new(parameter.Description, ParameterType: parameter.ParameterType, Schema: parameter.Schema);
+    public static SKReturnParameterMetadata ToSKReturnParameterMetadata(this SKParameterMetadata parameter) => new()
+    {
+        Description = parameter.Description,
+        ParameterType = parameter.ParameterType,
+        Schema = parameter.Schema
+    };
 }

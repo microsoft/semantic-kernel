@@ -58,12 +58,12 @@ internal static class RestApiOperationExtensions
     /// <param name="operation">The REST API operation object with Responses to parse.</param>
     /// <param name="preferredResponses">A list of preferred response codes to use when selecting the default response.</param>
     /// <returns>The default return parameter view, if any.</returns>
-    public static ReturnParameterView? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
+    public static SKReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
     {
         RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Description, null, restOperationResponse.Schema) : null;
+            restOperationResponse is not null ? new SKReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
 
         return returnParameter;
     }

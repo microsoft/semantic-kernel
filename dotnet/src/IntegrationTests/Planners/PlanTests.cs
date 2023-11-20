@@ -15,7 +15,9 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planning;
+#pragma warning restore IDE0130
 
 public sealed class PlanTests : IDisposable
 {
@@ -170,8 +172,8 @@ public sealed class PlanTests : IDisposable
 
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
             invokingListFunctions.Add(e.FunctionView);

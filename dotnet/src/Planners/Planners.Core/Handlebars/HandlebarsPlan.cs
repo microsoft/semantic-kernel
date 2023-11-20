@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a Handlebars plan.

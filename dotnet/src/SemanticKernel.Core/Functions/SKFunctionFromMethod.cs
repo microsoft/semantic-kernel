@@ -49,8 +49,8 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(method);
@@ -88,7 +88,14 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     IEnumerable<AIRequestSettings> ISKFunction.ModelSettings => Enumerable.Empty<AIRequestSettings>();
 
     /// <inheritdoc/>
-    public FunctionView Describe() => this._view ??= new FunctionView(this.Name, PluginName: null, this.Description, this._parameters, this._returnParameter);
+    public SKFunctionMetadata GetMetadata() =>
+        this._view ??=
+        new SKFunctionMetadata(this.Name)
+        {
+            Description = this.Description,
+            Parameters = this._parameters,
+            ReturnParameter = this._returnParameter
+        };
 
     /// <inheritdoc/>
     async Task<FunctionResult> ISKFunction.InvokeAsync(
@@ -147,7 +154,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         var eventWrapper = context.FunctionInvokingHandler;
         if (eventWrapper?.Handler is EventHandler<FunctionInvokingEventArgs> handler)
         {
-            eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+            eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
             handler(this, eventWrapper.EventArgs);
         }
     }
@@ -157,7 +164,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         var eventWrapper = context.FunctionInvokedHandler;
         if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
         {
-            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
             handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
@@ -198,18 +205,18 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
-    private readonly IReadOnlyList<ParameterView> _parameters;
-    private readonly ReturnParameterView _returnParameter;
+    private readonly IReadOnlyList<SKParameterMetadata> _parameters;
+    private readonly SKReturnParameterMetadata _returnParameter;
     private readonly ILogger _logger;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<ParameterView> Parameters, ReturnParameterView ReturnParameter);
+    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<SKParameterMetadata> Parameters, SKReturnParameterMetadata ReturnParameter);
 
     private SKFunctionFromMethod(
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
-        IReadOnlyList<ParameterView> parameters,
-        ReturnParameterView returnParameter,
+        IReadOnlyList<SKParameterMetadata> parameters,
+        SKReturnParameterMetadata returnParameter,
         ILogger logger)
     {
         Verify.ValidFunctionName(functionName);
@@ -251,7 +258,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         Verify.ValidFunctionName(functionName);
 
-        List<ParameterView> stringParameterViews = new();
+        List<SKParameterMetadata> stringParameterViews = new();
         var parameters = method.GetParameters();
 
         // Get marshaling funcs for parameters and build up the parameter views.
@@ -259,7 +266,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         bool sawFirstParameter = false, hasKernelParam = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
-            (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
+            (parameterFuncs[i], SKParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
                 ref sawFirstParameter, ref hasKernelParam, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
             if (parameterView is not null)
@@ -298,9 +305,11 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new ReturnParameterView(
-                Description: method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
-                ParameterType: method.ReturnType),
+            ReturnParameter = new SKReturnParameterMetadata()
+            {
+                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                ParameterType = method.ReturnType,
+            }
         };
     }
 
@@ -329,7 +338,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
-    private static (Func<Kernel, SKContext, CancellationToken, object?>, ParameterView?) GetParameterMarshalerDelegate(
+    private static (Func<Kernel, SKContext, CancellationToken, object?>, SKParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
         ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
     {
@@ -463,12 +472,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
             sawFirstParameter = true;
 
-            var parameterView = new ParameterView(
-                name,
-                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
-                defaultValue?.ToString() ?? string.Empty,
-                IsRequired: !parameter.IsOptional,
-                ParameterType: type);
+            var parameterView = new SKParameterMetadata(name)
+            {
+                Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                DefaultValue = defaultValue?.ToString(),
+                IsRequired = !parameter.IsOptional,
+                ParameterType = type
+            };
 
             return (parameterFunc, parameterView);
         }
@@ -870,7 +880,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
-    private FunctionView? _view;
+    private SKFunctionMetadata? _view;
 
     #endregion
 }

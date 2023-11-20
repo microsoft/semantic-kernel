@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners.Handlebars;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
@@ -37,7 +37,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 

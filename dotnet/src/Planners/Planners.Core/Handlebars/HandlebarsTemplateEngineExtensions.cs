@@ -10,9 +10,11 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Handlebars.Extensions;
+using Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -52,7 +54,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (FunctionView function in kernel.Plugins.GetFunctionViews())
+        foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -68,11 +70,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
-        FunctionView functionView,
+        SKFunctionMetadata functionMetadata,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
-        string fullyResolvedFunctionName = functionView.PluginName + ReservedNameDelimiter + functionView.Name;
+        string fullyResolvedFunctionName = functionMetadata.PluginName + ReservedNameDelimiter + functionMetadata.Name;
 
         handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
@@ -85,9 +87,9 @@ internal sealed class HandlebarsTemplateEngineExtensions
                     var handlebarArgs = arguments[0] as IDictionary<string, object>;
 
                     // Prepare the input parameters for the function
-                    foreach (var param in functionView.Parameters)
+                    foreach (var param in functionMetadata.Parameters)
                     {
-                        var fullyQualifiedParamName = functionView.Name + ReservedNameDelimiter + param.Name;
+                        var fullyQualifiedParamName = functionMetadata.Name + ReservedNameDelimiter + param.Name;
                         var value = handlebarArgs is not null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
 
                         if (value is not null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
@@ -96,20 +98,20 @@ internal sealed class HandlebarsTemplateEngineExtensions
                         }
                         else if (param.IsRequired == true)
                         {
-                            throw new SKException($"Parameter {param.Name} is required for function {functionView.Name}.");
+                            throw new SKException($"Parameter {param.Name} is required for function {functionMetadata.Name}.");
                         }
                     }
                 }
                 else
                 {
                     // Process positional arguments
-                    var requiredParameters = functionView.Parameters.Where(p => p.IsRequired == true).ToList();
-                    if (arguments.Length >= requiredParameters.Count && arguments.Length <= functionView.Parameters.Count)
+                    var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired == true).ToList();
+                    if (arguments.Length >= requiredParameters.Count && arguments.Length <= functionMetadata.Parameters.Count)
                     {
                         var argIndex = 0;
                         foreach (var arg in arguments)
                         {
-                            var param = functionView.Parameters[argIndex];
+                            var param = functionMetadata.Parameters[argIndex];
                             if (param.Type == null || arg.GetType() == typeof(object) || IsExpectedParameterType(param.Type.ToString(), arg.GetType().Name, arg))
                             {
                                 variables[param.Name] = arguments[argIndex];
@@ -117,13 +119,13 @@ internal sealed class HandlebarsTemplateEngineExtensions
                             }
                             else
                             {
-                                throw new SKException($"Invalid parameter type for function {functionView.Name}. Parameter {param.Name} expects type {param.Type} but received {arguments[argIndex].GetType()}.");
+                                throw new SKException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.Type} but received {arguments[argIndex].GetType()}.");
                             }
                         }
                     }
                     else
                     {
-                        throw new SKException($"Invalid parameter count for function {functionView.Name}. {arguments.Length} were specified but {functionView.Parameters.Count} are required.");
+                        throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
                     }
                 }
             }
@@ -131,7 +133,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             foreach (var v in variables)
             {
                 var value = v.Value ?? "";
-                var varString = !ParameterViewExtensions.isPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
+                var varString = !SKParameterMetadataExtensions.isPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
                 if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
                 {
                     executionContext.Variables[v.Key] = varString;
@@ -143,18 +145,18 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
 
             // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
-            ISKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
+            ISKFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
-            var returnType = function.Describe().ReturnParameter.ParameterType;
+            var returnType = function.GetMetadata().ReturnParameter.ParameterType;
             var resultAsObject = result.GetValue<object?>();
 
             // If return type is complex, serialize the object so it can be deserialized with appropriate keys to capture expected class properties.
             // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
-            if (returnType is not null && !ParameterViewExtensions.isPrimitiveOrStringType(returnType))
+            if (returnType is not null && !SKParameterMetadataExtensions.isPrimitiveOrStringType(returnType))
             {
                 var serializedResult = JsonSerializer.Serialize(resultAsObject);
                 resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
@@ -187,15 +189,15 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
         handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            ParameterView parameter = (ParameterView)arguments[0];
+            SKParameterMetadata parameter = (SKParameterMetadata)arguments[0];
             return parameter.GetSchemaTypeName();
         });
 
         handlebarsInstance.RegisterHelper("getSchemaReturnTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            ReturnParameterView parameter = (ReturnParameterView)arguments[0];
+            SKReturnParameterMetadata parameter = (SKReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();
-            return parameter.ToParameterView(functionName).GetSchemaTypeName();
+            return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -420,14 +422,14 @@ internal sealed class HandlebarsTemplateEngineExtensions
      * Handlebar argument type is an object (this covers complex types).
      * Function parameter is a generic type.
      */
-    private static bool IsExpectedParameterType(string functionViewType, string handlebarArgumentType, object handlebarArgValue)
+    private static bool IsExpectedParameterType(string functionMetadataType, string handlebarArgumentType, object handlebarArgValue)
     {
-        var isValidNumericType = IsNumericType(functionViewType) && IsNumericType(handlebarArgumentType);
-        if (IsNumericType(functionViewType) && !IsNumericType(handlebarArgumentType))
+        var isValidNumericType = IsNumericType(functionMetadataType) && IsNumericType(handlebarArgumentType);
+        if (IsNumericType(functionMetadataType) && !IsNumericType(handlebarArgumentType))
         {
             isValidNumericType = TryParseAnyNumber(handlebarArgValue.ToString());
         }
 
-        return functionViewType == handlebarArgumentType || isValidNumericType || handlebarArgumentType == "object";
+        return functionMetadataType == handlebarArgumentType || isValidNumericType || handlebarArgumentType == "object";
     }
 }
