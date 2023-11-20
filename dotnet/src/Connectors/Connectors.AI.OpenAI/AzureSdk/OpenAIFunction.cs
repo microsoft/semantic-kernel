@@ -2,13 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Text;
+using Json.More;
+using Json.Schema;
+using Json.Schema.Generation;
+using Microsoft.SemanticKernel.Extensions;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
-/// Represents a function parameter that can be pass to the OpenAI API
+/// Represents a function parameter that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunctionParameter
 {
@@ -31,17 +35,48 @@ public class OpenAIFunctionParameter
     /// Whether the parameter is required or not.
     /// </summary>
     public bool IsRequired { get; set; } = false;
+
+    /// <summary>
+    /// The Json Schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The parameter Type.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
 }
 
 /// <summary>
-/// Represents a function that can be pass to the OpenAI API
+/// Represents a return parameter of a function that can be passed to the OpenAI API
+/// </summary>
+public class OpenAIFunctionReturnParameter
+{
+    /// <summary>
+    /// Description of the parameter.
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The Json Schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The <see cref="Type"/> of the return parameter.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
+}
+
+/// <summary>
+/// Represents a function that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunction
 {
     /// <summary>
     /// Separator between the plugin name and the function name
     /// </summary>
-    public const string NameSeparator = "-";
+    public const string NameSeparator = "_";
 
     /// <summary>
     /// Name of the function
@@ -59,7 +94,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(NameSeparator, this.PluginName, this.FunctionName);
+        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
 
     /// <summary>
     /// Description of the function
@@ -72,40 +107,45 @@ public class OpenAIFunction
     public IList<OpenAIFunctionParameter> Parameters { get; set; } = new List<OpenAIFunctionParameter>();
 
     /// <summary>
+    /// The return parameter of the function.
+    /// </summary>
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
+
+    /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> to OpenAI's <see cref="FunctionDefinition"/>.
     /// </summary>
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        var requiredParams = new List<string>();
+        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchemaDocument, false);
 
-        var paramProperties = new Dictionary<string, object>();
-        foreach (var param in this.Parameters)
-        {
-            paramProperties.Add(
-                param.Name,
-                new
-                {
-                    type = param.Type,
-                    description = param.Description,
-                });
-
-            if (param.IsRequired)
-            {
-                requiredParams.Add(param.Name);
-            }
-        }
         return new FunctionDefinition
         {
             Name = this.FullyQualifiedName,
             Description = this.Description,
-            Parameters = BinaryData.FromObjectAsJson(
-            new
-            {
-                type = "object",
-                properties = paramProperties,
-                required = requiredParams,
-            }),
+            Parameters = BinaryData.FromObjectAsJson(jsonSchemaView.Parameters),
         };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
+    /// </summary>
+    /// <param name="type">The object Type.</param>
+    /// <param name="description">The object description.</param>
+    /// <returns>Return JSON schema document or null if the type is null</returns>
+    internal static JsonDocument? GetJsonSchemaDocument(Type? type, string? description)
+    {
+        if (type is null)
+        {
+            return null;
+        }
+
+        var schemaDocument = new JsonSchemaBuilder()
+                        .FromType(type)
+                        .Description(description ?? string.Empty)
+                        .Build()
+                        .ToJsonDocument();
+
+        return schemaDocument;
     }
 }

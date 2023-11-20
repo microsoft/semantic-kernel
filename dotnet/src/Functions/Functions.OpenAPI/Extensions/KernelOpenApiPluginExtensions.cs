@@ -213,7 +213,7 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
+        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
         {
             try
             {
@@ -264,12 +264,16 @@ public static class KernelOpenApiPluginExtensions
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
                 IsRequired = p.IsRequired,
+                Schema = p.Schema,
             })
             .ToList();
+
+        var returnParameter = operation.GetDefaultReturnParameter();
 
         var function = SKFunction.Create(
             method: ExecuteAsync,
             parameters: parameters,
+            returnParameter: returnParameter,
             description: operation.Description,
             pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),

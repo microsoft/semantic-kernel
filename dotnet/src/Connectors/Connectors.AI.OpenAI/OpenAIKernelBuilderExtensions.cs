@@ -457,14 +457,14 @@ public static class OpenAIKernelBuilderExtensions
     /// See https://platform.openai.com/docs for service details.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithOpenAIChatCompletionService(this KernelBuilder builder,
-        string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
         bool alsoAsTextCompletion = true,
         string? serviceId = null,
@@ -472,8 +472,8 @@ public static class OpenAIKernelBuilderExtensions
     {
         OpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
         {
-            return new(deploymentName, openAIClient, loggerFactory);
-        };
+            return new(modelId, openAIClient, loggerFactory);
+        }
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -567,10 +567,12 @@ public static class OpenAIKernelBuilderExtensions
 
     private static OpenAIClientOptions CreateOpenAIClientOptions(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, HttpClient? httpClient)
     {
-        OpenAIClientOptions options = new();
+        OpenAIClientOptions options = new()
+        {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory));
-        options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
+            Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory)),
+            RetryPolicy = new RetryPolicy(maxRetries: 0) //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
+        };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         return options;

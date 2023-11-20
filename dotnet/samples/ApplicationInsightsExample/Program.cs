@@ -210,13 +210,13 @@ public sealed class Program
             var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
             operation.Telemetry.Type = activity.Kind.ToString();
 
-            operations.TryAdd(activity.TraceId.ToString(), operation);
+            operations.TryAdd(activity.SpanId.ToString(), operation);
         }
 
         // We also need to manually stop Application Insights operation when Activity entity is stopped.
         void activityStopped(Activity activity)
         {
-            if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
+            if (operations.TryRemove(activity.SpanId.ToString(), out var operation))
             {
                 telemetryClient.StopOperation(operation);
             }
