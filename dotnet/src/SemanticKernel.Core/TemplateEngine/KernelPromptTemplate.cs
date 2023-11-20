@@ -44,7 +44,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
+    public IReadOnlyList<SKParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
@@ -58,16 +58,20 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IReadOnlyList<ParameterView>> _parameters;
+    private readonly Lazy<IReadOnlyList<SKParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
 
-    private List<ParameterView> InitParameters()
+    private List<SKParameterMetadata> InitParameters()
     {
         // Parameters from prompt template configuration
-        Dictionary<string, ParameterView> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, SKParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
+            result[p.Name] = new SKParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.DefaultValue
+            };
         }
 
         // Parameters from the template
@@ -76,7 +80,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         {
             if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
             {
-                result.Add(variableName!, new ParameterView(variableName!));
+                result.Add(variableName!, new SKParameterMetadata(variableName!));
             }
         }
 

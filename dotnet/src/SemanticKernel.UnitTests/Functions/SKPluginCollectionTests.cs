@@ -151,7 +151,7 @@ public class SKPluginCollectionTests
             })
         };
 
-        IList<FunctionView> views = c.GetFunctionViews().OrderBy(f => f.Name).ToList();
+        IList<SKFunctionMetadata> views = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
 
         Assert.Equal("plugin1", views[0].PluginName);
         Assert.Equal("Function1", views[0].Name);

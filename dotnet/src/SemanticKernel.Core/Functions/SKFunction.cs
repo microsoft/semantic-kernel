@@ -35,8 +35,8 @@ public static class SKFunction
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
@@ -57,8 +57,8 @@ public static class SKFunction
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         SKFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
     #endregion

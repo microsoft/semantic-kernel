@@ -116,8 +116,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 SKFunction.FromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
-        var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };
-        var nativeFunctionView = plugins["pluginName"]["nativeFunctionName"].Describe() with { PluginName = "pluginName" };
+        var functionView = new SKFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
+        var nativeFunctionView = new SKFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
 
         var memoryQueryResult =
             new MemoryQueryResult(
@@ -150,7 +150,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
-        Assert.Equal(functionView, result[0]);
+        Assert.Equivalent(functionView, result[0]);
 
         // Arrange update IncludedFunctions
         config.SemanticMemoryConfig = new() { Memory = memory.Object };
@@ -162,8 +162,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count); // IncludedFunctions should be added to the result
-        Assert.Equal(functionView, result[0]);
-        Assert.Equal(nativeFunctionView, result[1]);
+        Assert.Equivalent(functionView, result[0]);
+        Assert.Equivalent(nativeFunctionView, result[1]);
     }
 
     [Theory]
@@ -185,8 +185,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 SKFunction.FromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
-        var functionView = plugins["pluginName"]["functionName"].Describe() with { PluginName = "pluginName" };
-        var nativeFunctionView = plugins["pluginName"]["nativeFunctionName"].Describe() with { PluginName = "pluginName" };
+        var functionView = new SKFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
+        var nativeFunctionView = new SKFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
 
         var memoryQueryResult =
             new MemoryQueryResult(
@@ -220,7 +220,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Single(result);
-        Assert.Equal(functionView, result[0]);
+        Assert.Equivalent(functionView, result[0]);
 
         // Arrange update IncludedFunctions
         config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
@@ -231,8 +231,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count); // IncludedFunctions should be added to the result
-        Assert.Equal(functionView, result[0]);
-        Assert.Equal(nativeFunctionView, result[1]);
+        Assert.Equivalent(functionView, result[0]);
+        Assert.Equivalent(nativeFunctionView, result[1]);
     }
 
     [Theory]

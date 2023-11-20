@@ -51,7 +51,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (FunctionView function in kernel.Plugins.GetFunctionViews())
+        foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -67,7 +67,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
-        FunctionView functionView,
+        SKFunctionMetadata functionView,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {

@@ -250,18 +250,18 @@ public sealed class Plan : ISKFunction
     #region ISKFunction implementation
 
     /// <inheritdoc/>
-    public FunctionView Describe()
+    public SKFunctionMetadata GetMetadata()
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe();
+            return this.Function.GetMetadata();
         }
 
         // The parameter mapping definitions from Plan -> Function
         var stepParameters = this.Steps.SelectMany(s => s.Parameters);
 
         // The parameter descriptions from the Function
-        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+        var stepDescriptions = this.Steps.SelectMany(s => s.GetMetadata().Parameters);
 
         // The parameters for the Plan
         var parameters = this.Parameters.Select(p =>
@@ -269,11 +269,24 @@ public sealed class Plan : ISKFunction
             var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
             var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired, stepDescription?.ParameterType, stepDescription?.Schema);
+            return new SKParameterMetadata(p.Key)
+            {
+                Description = stepDescription?.Description,
+                DefaultValue = stepDescription?.DefaultValue,
+                Type = stepDescription?.Type,
+                IsRequired = stepDescription?.IsRequired ?? false,
+                ParameterType = stepDescription?.ParameterType,
+                Schema = stepDescription?.Schema
+            };
         }
         ).ToList();
 
-        return new(this.Name, this.PluginName, this.Description, parameters);
+        return new(this.Name)
+        {
+            PluginName = this.PluginName,
+            Description = this.Description,
+            Parameters = parameters
+        };
     }
 
     /// <inheritdoc/>
@@ -445,7 +458,7 @@ public sealed class Plan : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
@@ -459,7 +472,7 @@ public sealed class Plan : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution
@@ -611,7 +624,7 @@ public sealed class Plan : ISKFunction
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)
         // - All other variables. These are carried over in case the function wants access to the ambient content.
-        var functionParameters = step.Describe();
+        var functionParameters = step.GetMetadata();
         foreach (var param in functionParameters.Parameters)
         {
             if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))

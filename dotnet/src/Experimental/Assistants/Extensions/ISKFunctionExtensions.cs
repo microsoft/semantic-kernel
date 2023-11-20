@@ -26,14 +26,14 @@ internal static class ISKFunctionExtensions
     /// <returns>An OpenAI tool model</returns>
     public static ToolModel ToToolModel(this ISKFunction function, string pluginName)
     {
-        var view = function.Describe();
+        var view = function.GetMetadata();
         var required = new List<string>(view.Parameters.Count);
         var properties =
             view.Parameters.ToDictionary(
                 p => p.Name,
                 p =>
                 {
-                    if (p.IsRequired ?? false)
+                    if (p.IsRequired)
                     {
                         required.Add(p.Name);
                     }
