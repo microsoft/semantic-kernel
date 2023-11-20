@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
 // Currently the kernel config does not have and function within Java
+@Deprecated
 public final class KernelConfig implements Buildable {
 
     public static Builder builder() {

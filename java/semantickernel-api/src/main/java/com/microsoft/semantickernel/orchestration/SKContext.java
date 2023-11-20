@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import javax.annotation.CheckReturnValue;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import javax.annotation.CheckReturnValue;
+
 import reactor.util.annotation.Nullable;
 
 /** Semantic Kernel context. */
@@ -18,6 +20,8 @@ public interface SKContext extends Buildable {
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills);
 
+            
+    
     /**
      * Obtain the result of the execution that produced this context. This will be the "input" entry
      * in the variables.

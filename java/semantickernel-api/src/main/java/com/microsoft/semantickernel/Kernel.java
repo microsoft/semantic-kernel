@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
@@ -14,18 +19,17 @@ import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /** Interface for the semantic kernel. */
-public interface Kernel extends SkillExecutor, Buildable {
+public interface Kernel extends Buildable {
 
     /**
      * Settings required to execute functions, including details about AI dependencies, e.g.
      * endpoints and API keys.
      */
+    @Deprecated
     KernelConfig getConfig();
 
     /**
@@ -33,6 +37,7 @@ public interface Kernel extends SkillExecutor, Buildable {
      *
      * @return Reference to the engine rendering prompt templates
      */
+    @Deprecated
     PromptTemplateEngine getPromptTemplateEngine();
 
     /**
@@ -40,6 +45,7 @@ public interface Kernel extends SkillExecutor, Buildable {
      *
      * @return the SemanticTextMemory in use
      */
+    @Deprecated
     SemanticTextMemory getMemory();
 
     /**
@@ -48,7 +54,8 @@ public interface Kernel extends SkillExecutor, Buildable {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext> runAsync(SKFunction<?>... pipeline);
+    @Deprecated
+    Mono<SKContext> runAsync(SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -57,7 +64,8 @@ public interface Kernel extends SkillExecutor, Buildable {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline);
+    @Deprecated
+    Mono<SKContext> runAsync(String input, SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -66,7 +74,8 @@ public interface Kernel extends SkillExecutor, Buildable {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
+    @Deprecated
+    Mono<SKContext> runAsync(ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Register a semantic function on this kernel
@@ -76,6 +85,7 @@ public interface Kernel extends SkillExecutor, Buildable {
      * @param functionConfig The function configuration
      * @return The registered function
      */
+    @Deprecated
     CompletionSKFunction registerSemanticFunction(
             String skillName, String functionName, SemanticFunctionConfig functionConfig);
 
@@ -83,17 +93,21 @@ public interface Kernel extends SkillExecutor, Buildable {
      * Get a completion function builder, functions created with this builder will be registered on
      * the kernel
      */
+    @Deprecated
     CompletionSKFunction.Builder getSemanticFunctionBuilder();
 
     /** Obtains the service with the given name and type */
+    @Deprecated
     <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
             throws KernelException;
 
     /** Registers a semantic function on this kernel */
+    @Deprecated
     <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
 
     /** Obtains a semantic function with the given name */
+    @Deprecated
     SKFunction getFunction(String skill, String function);
 
     static Builder builder() {
@@ -107,6 +121,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param kernelConfig Kernel configuration
          * @return Builder
          */
+        @Deprecated
         Builder withConfiguration(KernelConfig kernelConfig);
 
         /**
@@ -115,6 +130,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param promptTemplateEngine Prompt template engine to add.
          * @return Updated kernel builder including the prompt template engine.
          */
+        @Deprecated
         Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
 
         /**
@@ -123,6 +139,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param storage Storage to add.
          * @return Updated kernel builder including the memory storage.
          */
+        @Deprecated
         Builder withMemoryStorage(MemoryStore storage);
 
         /**
@@ -131,6 +148,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param factory The storage factory.
          * @return Updated kernel builder including the memory storage.
          */
+        @Deprecated
         Builder withMemoryStorage(Supplier<MemoryStore> factory);
 
         /**
@@ -139,6 +157,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param instance The instance.
          * @return The builder.
          */
+        @Deprecated
         <T extends AIService> Builder withDefaultAIService(T instance);
 
         /**
@@ -148,6 +167,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param clazz The class of the instance.
          * @return The builder.
          */
+        @Deprecated
         <T extends AIService> Builder withDefaultAIService(T instance, Class<T> clazz);
 
         /**
@@ -156,6 +176,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param factory The factory method that creates the AI service instances of type T.
          * @param clazz The class of the instance.
          */
+        @Deprecated
         <T extends AIService> Builder withDefaultAIService(Supplier<T> factory, Class<T> clazz);
 
         /**
@@ -166,6 +187,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param setAsDefault Optional: set as the default AI service for type T
          * @param clazz The class of the instance.
          */
+        @Deprecated
         <T extends AIService> Builder withAIService(
                 @Nullable String serviceId, T instance, boolean setAsDefault, Class<T> clazz);
 
@@ -177,6 +199,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param setAsDefault Optional: set as the default AI service for type T
          * @param clazz The class of the instance.
          */
+        @Deprecated
         <T extends AIService> Builder withAIServiceFactory(
                 @Nullable String serviceId,
                 Function<KernelConfig, T> factory,
@@ -189,6 +212,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param memory Semantic text memory entity to add.
          * @return Updated kernel builder including the semantic text memory entity.
          */
+        @Deprecated
         Builder withMemory(SemanticTextMemory memory);
 
         /**
@@ -198,6 +222,7 @@ public interface Kernel extends SkillExecutor, Buildable {
          * @param embeddingGenerator Embedding generator to add.
          * @return Updated kernel builder including the memory storage and embedding generator.
          */
+        @Deprecated
         Builder withMemoryStorageAndTextEmbeddingGeneration(
                 MemoryStore storage, TextEmbeddingGeneration embeddingGenerator);
     }

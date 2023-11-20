@@ -1,20 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**
  * Semantic Kernel callable function interface
- *
- * @param <RequestConfiguration> The type of the configuration argument that will be provided when
- *     the function is invoked
  */
-public interface SKFunction<RequestConfiguration> {
+public interface SKFunction {
     /**
      * Returns a description of the function, including parameters.
      *
@@ -30,9 +29,9 @@ public interface SKFunction<RequestConfiguration> {
      * @param context Request context
      * @param settings Configuration of the request
      * @return an updated context with the result of the request
-     */
     @CheckReturnValue
     Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+     */
 
     /**
      * Invokes the function
@@ -54,9 +53,9 @@ public interface SKFunction<RequestConfiguration> {
      * The type of the configuration argument that will be provided when the function is invoked
      *
      * @return The type
-     */
     @Nullable
     Class<RequestConfiguration> getType();
+     */
 
     /**
      * Invokes the function with the given context and settings

@@ -3,11 +3,13 @@ package com.microsoft.semantickernel.orchestration;
 
 // Copyright (c) Microsoft. All rights reserved.
 
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 /**
  * Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -68,7 +70,7 @@ public interface ContextVariables extends Buildable {
          * @param map Existing variables
          * @return an instantiation of ContextVariables
          */
-        Builder withVariables(Map<String, String> map);
+        Builder withVariables(Map<String, Object> map);
 
         /**
          * Set variable
@@ -77,7 +79,7 @@ public interface ContextVariables extends Buildable {
          * @param value variable value
          * @return builder for fluent chaining
          */
-        Builder withVariable(String key, String value);
+        Builder withVariable(String key, Object value);
     }
 
     /**
