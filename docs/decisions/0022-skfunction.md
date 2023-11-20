@@ -37,7 +37,7 @@ The goal of the ADR is decide if this is the best abstraction to use to meet the
 ### `SKFunction` Case Class
 
 - Good, because the changes to the interface are **not** breaking changes for consumers.
-- Good, because class construct can be made `internal` so we can prevent extensions until we know there are valid use cases.
+- Good, because class constructor can be made `internal` so we can prevent extensions until we know there are valid use cases.
 - Good, because we can change the default implementation easily in future.
 - Bad, because implementations can only extend `SKFunction`.
 
