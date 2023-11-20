@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -41,6 +40,6 @@ public sealed class SKReturnParameterMetadata
     /// <summary>Gets the .NET type of the return parameter.</summary>
     public Type? ParameterType { get; init; }
 
-    /// <summary>Gets a JSON schema describing the type of the return parameter.</summary>
-    public JsonDocument? Schema { get; init; }
+    /// <summary>Gets a JSON Schema describing the type of the return parameter.</summary>
+    public SKJsonSchema? Schema { get; init; }
 }

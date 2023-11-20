@@ -6,12 +6,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Extensions;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
@@ -78,24 +76,17 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        JsonDocument? schemaBuilderDelegate(Type? type, string? description)
-        {
-            if (type is null)
-            {
-                return null;
-            }
-
-            var schema = new JsonSchemaBuilder()
-                .FromType(type)
-                .Description(description ?? string.Empty)
-                .Build()
-                .ToJsonDocument();
-
-            return schema;
-        }
+        static SKJsonSchema? CreateSchema(Type? type, string? description) =>
+            type is null ?
+                null :
+                SKJsonSchema.Parse(JsonSerializer.Serialize(
+                    new JsonSchemaBuilder()
+                        .FromType(type)
+                        .Description(description ?? string.Empty)
+                        .Build()));
 
         IEnumerable<SKFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(schemaBuilderDelegate, includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 
