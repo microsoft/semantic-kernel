@@ -296,7 +296,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             result = await this.Function
-                .WithInstrumentation(context.LoggerFactory)
+                .WithInstrumentation(kernel.LoggerFactory)
                 .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);

@@ -80,13 +80,11 @@ public sealed class Kernel
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
     /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <param name="loggerFactory">Logged factory used within the context</param>
     /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null,
-        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
         return new SKContext(
@@ -96,7 +94,6 @@ public sealed class Kernel
             variables,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
-            loggerFactory ?? this.LoggerFactory,
             culture);
     }
 

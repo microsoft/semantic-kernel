@@ -2,8 +2,6 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
@@ -35,11 +33,6 @@ public sealed class SKContext
     /// User variables
     /// </summary>
     public ContextVariables Variables { get; }
-
-    /// <summary>
-    /// App logger
-    /// </summary>
-    public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// Executes functions using the current resources loaded in the context
@@ -75,7 +68,6 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
-    /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
         Kernel kernel,
@@ -84,7 +76,6 @@ public sealed class SKContext
         ContextVariables? variables = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
         EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
-        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
@@ -93,7 +84,6 @@ public sealed class SKContext
         this.ServiceProvider = serviceProvider;
         this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
         this.FunctionInvokingHandler = invokingWrapper;
         this.FunctionInvokedHandler = invokedWrapper;
@@ -131,7 +121,6 @@ public sealed class SKContext
             variables ?? this.Variables.Clone(),
             this.FunctionInvokingHandler,
             this.FunctionInvokedHandler,
-            this.LoggerFactory,
             this.Culture);
     }
 
