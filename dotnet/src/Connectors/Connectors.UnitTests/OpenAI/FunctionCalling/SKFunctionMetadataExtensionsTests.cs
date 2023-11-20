@@ -1,24 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
-public sealed class FunctionViewExtensionsTests
+public sealed class SKFunctionMetadataExtensionsTests
 {
     [Fact]
     public void ItCanConvertToOpenAIFunctionNoParameters()
     {
         // Arrange
-        var sut = new FunctionView(
-            Name: "foo",
-            PluginName: "bar",
-            Description: "baz",
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
+        var sut = new SKFunctionMetadata("foo")
+        {
+            PluginName = "bar",
+            Description = "baz",
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
+        };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -36,11 +36,12 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoPluginName()
     {
         // Arrange
-        var sut = new FunctionView(
-            Name: "foo",
-            PluginName: string.Empty,
-            Description: "baz",
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
+        var sut = new SKFunctionMetadata("foo")
+        {
+            PluginName = string.Empty,
+            Description = "baz",
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
+        };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -58,20 +59,22 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithParameter()
     {
         // Arrange
-        var param1 = new ParameterView(
-            Name: "param1",
-            Description: "This is param1",
-            DefaultValue: "1",
-            Type: new ParameterViewType("int"),
-            ParameterType: typeof(int),
-            IsRequired: false);
+        var param1 = new SKParameterMetadata("param1")
+        {
+            Description = "This is param1",
+            DefaultValue = "1",
+            Type = new ParameterJsonType("int"),
+            ParameterType = typeof(int),
+            IsRequired = false
+        };
 
-        var sut = new FunctionView(
-            Name: "foo",
-            PluginName: "bar",
-            Description: "baz",
-            Parameters: new List<ParameterView> { param1 },
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
+        var sut = new SKFunctionMetadata("foo")
+        {
+            PluginName = "bar",
+            Description = "baz",
+            Parameters = new[] { param1 },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
+        };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -91,19 +94,18 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
         // Arrange
-        var param1 = new ParameterView(
-            Name: "param1",
-            Description: "This is param1",
-            Type: null,
-            ParameterType: null,
-            IsRequired: false);
+        var param1 = new SKParameterMetadata("param1")
+        {
+            Description = "This is param1"
+        };
 
-        var sut = new FunctionView(
-            Name: "foo",
-            PluginName: "bar",
-            Description: "baz",
-            Parameters: new List<ParameterView> { param1 },
-            ReturnParameter: new ReturnParameterView("retDesc", Schema: SKJsonSchema.Parse("\"schema\"")));
+        var sut = new SKFunctionMetadata("foo")
+        {
+            PluginName = "bar",
+            Description = "baz",
+            Parameters = new[] { param1 },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
+        };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -121,18 +123,18 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithNoReturnParameterType()
     {
         // Arrange
-        var param1 = new ParameterView(
-            Name: "param1",
-            Description: "This is param1",
-            Type: null,
-            ParameterType: typeof(int),
-            IsRequired: false);
+        var param1 = new SKParameterMetadata("param1")
+        {
+            Description = "This is param1",
+            ParameterType = typeof(int),
+        };
 
-        var sut = new FunctionView(
-            Name: "foo",
-            PluginName: "bar",
-            Description: "baz",
-            Parameters: new List<ParameterView> { param1 });
+        var sut = new SKFunctionMetadata("foo")
+        {
+            PluginName = "bar",
+            Description = "baz",
+            Parameters = new[] { param1 },
+        };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -157,7 +159,7 @@ public sealed class FunctionViewExtensionsTests
 
         var function = plugin.First();
 
-        var functionView = function.Describe();
+        var functionView = function.GetMetadata();
 
         var sut = functionView.ToOpenAIFunction();
 

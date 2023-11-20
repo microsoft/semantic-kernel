@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -167,7 +167,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
+        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
 

@@ -185,7 +185,7 @@ public class TemplateTokenizerTests
         // Assert
         Assert.Single(blocks);
         Assert.Equal(BlockTypes.Code, blocks[0].Type);
-        Assert.Equal(template[2..^2].Trim(), blocks[0].Content);
+        Assert.Equal(template.Substring(2, template.Length - 4).Trim(), blocks[0].Content);
     }
 
     [Fact]

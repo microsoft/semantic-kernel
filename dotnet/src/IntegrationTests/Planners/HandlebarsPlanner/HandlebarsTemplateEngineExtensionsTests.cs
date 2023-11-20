@@ -10,12 +10,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Planners.Handlebars;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.HandlebarsPlanner;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+#pragma warning restore IDE0130
 
 public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
 {

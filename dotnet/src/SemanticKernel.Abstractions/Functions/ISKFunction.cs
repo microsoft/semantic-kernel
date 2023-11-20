@@ -32,10 +32,10 @@ public interface ISKFunction
     IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
-    /// Returns a description of the function, including parameters.
+    /// Gets the metadata describing the function.
     /// </summary>
-    /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
-    FunctionView Describe();
+    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
+    SKFunctionMetadata GetMetadata();
 
     /// <summary>
     /// Invoke the <see cref="ISKFunction"/>.

@@ -884,10 +884,10 @@ public sealed class SKFunctionTests2
         await AssertResult((double input) => input * 2, context, "1024");
         await AssertResult((int input) => Task.FromResult(input * 2), context, "2048");
         await AssertResult((long input) => Task.FromResult(input * 2), context, "4096");
-        await AssertResult((int input) => ValueTask.FromResult(input * 2), context, "8192");
-        await AssertResult((long input) => ValueTask.FromResult(input * 2), context, "16384");
+        await AssertResult((int input) => new ValueTask<int>(input * 2), context, "8192");
+        await AssertResult((long input) => new ValueTask<long>(input * 2), context, "16384");
         await AssertResult((long? input) => input!.Value * 2, context, "32768");
-        await AssertResult((TimeSpan input) => input * 2, context, "65536.00:00:00");
+        await AssertResult((TimeSpan input) => TimeSpan.FromTicks(input.Ticks * 2), context, "65536.00:00:00");
         await AssertResult((TimeSpan? input) => (int?)null, context, "");
 
         context.Variables.Update("http://example.com/semantic");
@@ -954,9 +954,9 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Contains("Test", function.Name, StringComparison.Ordinal);
         Assert.Equal("Concat information", function.Description);
-        Assert.Equal("id", function.Describe().Parameters[0].Name);
-        Assert.Equal("name", function.Describe().Parameters[1].Name);
-        Assert.Equal("old", function.Describe().Parameters[2].Name);
+        Assert.Equal("id", function.GetMetadata().Parameters[0].Name);
+        Assert.Equal("name", function.GetMetadata().Parameters[1].Name);
+        Assert.Equal("old", function.GetMetadata().Parameters[2].Name);
     }
 
     [Fact]
@@ -971,9 +971,9 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Contains("Test", function.Name, StringComparison.Ordinal);
         Assert.Equal("Concat information", function.Description);
-        Assert.Equal("id", function.Describe().Parameters[0].Name);
-        Assert.Equal("name", function.Describe().Parameters[1].Name);
-        Assert.Equal("old", function.Describe().Parameters[2].Name);
+        Assert.Equal("id", function.GetMetadata().Parameters[0].Name);
+        Assert.Equal("name", function.GetMetadata().Parameters[1].Name);
+        Assert.Equal("old", function.GetMetadata().Parameters[2].Name);
     }
 
     [Fact]

@@ -55,8 +55,7 @@ public class SKJsonSchemaTests
         SKJsonSchema schema2 = SKJsonSchema.Parse((ReadOnlySpan<char>)ValidJsonSchema);
         SKJsonSchema schema3 = SKJsonSchema.Parse(Encoding.UTF8.GetBytes(ValidJsonSchema));
 
-        using JsonDocument jsonDocument = JsonDocument.Parse(ValidJsonSchema);
-        string expected = JsonSerializer.Serialize(jsonDocument);
+        string expected = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(ValidJsonSchema)); // roundtrip through JsonSerializer to normalize whitespace
 
         foreach (SKJsonSchema schema in new[] { schema1, schema2, schema3 })
         {

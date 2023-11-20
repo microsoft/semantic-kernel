@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -53,7 +53,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<FunctionView> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<SKFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -85,7 +85,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
                         .Description(description ?? string.Empty)
                         .Build()));
 
-        IEnumerable<FunctionView> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<SKFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
@@ -99,7 +99,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IEnumerable<FunctionView>> GetFunctionsAsync(
+    public static async Task<IEnumerable<SKFunctionMetadata>> GetFunctionsAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery,
@@ -121,21 +121,21 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IEnumerable<FunctionView>> GetAvailableFunctionsAsync(
+    public static async Task<IEnumerable<SKFunctionMetadata>> GetAvailableFunctionsAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = plugins.GetFunctionViews();
+        var functionsView = plugins.GetFunctionsMetadata();
 
         var availableFunctions = functionsView
             .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
-        List<FunctionView>? result = null;
+        List<SKFunctionMetadata>? result = null;
         var semanticMemoryConfig = config.SemanticMemoryConfig;
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig.Memory is NullMemory)
         {
@@ -145,7 +145,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
         }
         else
         {
-            result = new List<FunctionView>();
+            result = new List<SKFunctionMetadata>();
 
             // Remember functions in memory so that they can be searched.
             await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);
@@ -174,13 +174,13 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
             .ThenBy(x => x.Name);
     }
 
-    private static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(
-        IEnumerable<FunctionView> availableFunctions,
+    private static async Task<IEnumerable<SKFunctionMetadata>> GetRelevantFunctionsAsync(
+        IEnumerable<SKFunctionMetadata> availableFunctions,
         IAsyncEnumerable<MemoryQueryResult> memories,
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new List<FunctionView>();
+        var relevantFunctions = new List<SKFunctionMetadata>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
@@ -206,7 +206,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private static async Task RememberFunctionsAsync(
         ISemanticTextMemory memory,
-        List<FunctionView> availableFunctions,
+        List<SKFunctionMetadata> availableFunctions,
         CancellationToken cancellationToken = default)
     {
         foreach (var function in availableFunctions)

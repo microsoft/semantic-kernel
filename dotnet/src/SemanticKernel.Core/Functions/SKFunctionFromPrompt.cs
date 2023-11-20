@@ -130,10 +130,16 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
+    public IReadOnlyList<SKParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
     /// <inheritdoc/>
-    public FunctionView Describe() => new(this.Name, PluginName: null, this.Description, this.Parameters);
+    public SKFunctionMetadata GetMetadata() =>
+        this._view ??=
+        new SKFunctionMetadata(this.Name)
+        {
+            Description = this._promptTemplateConfig.Description,
+            Parameters = this.Parameters
+        };
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -206,15 +212,13 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
-
-        this._view = new(() => new(functionName, PluginName: null, promptTemplateConfig.Description, this.Parameters));
     }
 
     #region private
 
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private readonly Lazy<FunctionView> _view;
+    private SKFunctionMetadata? _view;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -251,7 +255,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context)
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context)
         {
             Metadata = {
                 [SKEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt
@@ -278,7 +282,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution
@@ -338,6 +342,24 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <returns>True if it was cancelled or skipped</returns>
     internal static bool IsInvokedCancelRequested(SKContext context) =>
         context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
+
+    private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
+    {
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig) =>
+            new NullPromptTemplate(templateString);
+
+        private sealed class NullPromptTemplate : IPromptTemplate
+        {
+            private readonly string _templateText;
+
+            public NullPromptTemplate(string templateText) => this._templateText = templateText;
+
+            public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
+
+            public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
+                Task.FromResult(this._templateText);
+        }
+    }
 
     #endregion
 }

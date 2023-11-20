@@ -13,12 +13,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Action;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Action;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -284,9 +283,9 @@ Goal: tell me a joke.
         throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
-    private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<SKFunctionMetadata> functions)
     {
-        foreach (FunctionView func in functions)
+        foreach (SKFunctionMetadata func in functions)
         {
             // Function description
             if (func.Description != null)

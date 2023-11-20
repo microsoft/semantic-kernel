@@ -76,7 +76,7 @@ public class OpenAIFunction
     /// Cached <see cref="BinaryData"/> storing the JSON for a function with no parameters.
     /// </summary>
     /// <remarks>
-    /// This is an optimization to avoid serializing the same JSON schema over and over again
+    /// This is an optimization to avoid serializing the same JSON Schema over and over again
     /// for this relatively common case.
     /// </remarks>
     private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");

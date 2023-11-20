@@ -19,7 +19,7 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">Context related to the event</param>
-    public FunctionInvokingEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
+    public FunctionInvokingEventArgs(SKFunctionMetadata functionView, SKContext context) : base(functionView, context)
     {
     }
 

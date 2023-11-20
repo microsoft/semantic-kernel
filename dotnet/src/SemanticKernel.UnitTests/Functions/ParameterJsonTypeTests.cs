@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class ParameterViewTypeTests
+public class ParameterJsonTypeTests
 {
     [Theory]
     [InlineData("string")]
@@ -16,7 +16,7 @@ public class ParameterViewTypeTests
     public void ItCanConvertParameterDataTypeToString(string name)
     {
         //Arrange
-        var sut = new ParameterViewType(name);
+        var sut = new ParameterJsonType(name);
 
         //Act
         var result = sut.ToString();
@@ -29,7 +29,7 @@ public class ParameterViewTypeTests
     public void ItCanCreateStringParameterDataType()
     {
         //Act
-        var sut = ParameterViewType.String;
+        var sut = ParameterJsonType.String;
 
         //Assert
         Assert.Equal("string", sut.Name);
@@ -39,7 +39,7 @@ public class ParameterViewTypeTests
     public void ItCanCreateNumberParameterDataType()
     {
         //Act
-        var sut = ParameterViewType.Number;
+        var sut = ParameterJsonType.Number;
 
         //Assert
         Assert.Equal("number", sut.Name);
@@ -49,7 +49,7 @@ public class ParameterViewTypeTests
     public void ItCanCreateObjectParameterDataType()
     {
         //Act
-        var sut = ParameterViewType.Object;
+        var sut = ParameterJsonType.Object;
 
         //Assert
         Assert.Equal("object", sut.Name);
@@ -59,7 +59,7 @@ public class ParameterViewTypeTests
     public void ItCanArrayParameterDataType()
     {
         //Act
-        var sut = ParameterViewType.Array;
+        var sut = ParameterJsonType.Array;
 
         //Assert
         Assert.Equal("array", sut.Name);
@@ -69,7 +69,7 @@ public class ParameterViewTypeTests
     public void ItCanCreateBooleanParameterDataType()
     {
         //Act
-        var sut = ParameterViewType.Boolean;
+        var sut = ParameterJsonType.Boolean;
 
         //Assert
         Assert.Equal("boolean", sut.Name);
@@ -79,8 +79,8 @@ public class ParameterViewTypeTests
     public void ItCanCheckTwoParameterDataTypesAreEqual()
     {
         //Arrange
-        var sut1 = new ParameterViewType("array");
-        var sut2 = new ParameterViewType("array");
+        var sut1 = new ParameterJsonType("array");
+        var sut2 = new ParameterJsonType("array");
 
         //Assert
         Assert.True(sut1.Equals(sut2));
@@ -90,8 +90,8 @@ public class ParameterViewTypeTests
     public void ItCanCheckTwoParameterDataTypesAreUnequal()
     {
         //Arrange
-        var sut1 = new ParameterViewType("array");
-        var sut2 = new ParameterViewType("string");
+        var sut1 = new ParameterJsonType("array");
+        var sut2 = new ParameterJsonType("string");
 
         //Assert
         Assert.False(sut1.Equals(sut2));
@@ -101,8 +101,8 @@ public class ParameterViewTypeTests
     public void ItCanCheckParameterDataTypeIsEqualToAnotherOneRepresentedByObject()
     {
         //Arrange
-        var sut1 = new ParameterViewType("array");
-        object sut2 = new ParameterViewType("array");
+        var sut1 = new ParameterJsonType("array");
+        object sut2 = new ParameterJsonType("array");
 
         //Assert
         Assert.True(sut1.Equals(sut2));
@@ -112,8 +112,8 @@ public class ParameterViewTypeTests
     public void ItCanCheckParameterDataTypeIsUnequalToAnotherOneRepresentedByObject()
     {
         //Arrange
-        var sut1 = new ParameterViewType("array");
-        object sut2 = new ParameterViewType("string");
+        var sut1 = new ParameterJsonType("array");
+        object sut2 = new ParameterJsonType("string");
 
         //Assert
         Assert.False(sut1.Equals(sut2));
@@ -123,7 +123,7 @@ public class ParameterViewTypeTests
     public void ItCanCheckParameterDataTypeIsUnequalToAnotherType()
     {
         //Arrange
-        var sut1 = new ParameterViewType("array");
+        var sut1 = new ParameterJsonType("array");
         var sut2 = "array";
 
         //Assert
