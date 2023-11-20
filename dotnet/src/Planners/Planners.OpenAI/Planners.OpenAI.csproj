@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planners.OpenAI</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Planners</RootNamespace>
+    <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
