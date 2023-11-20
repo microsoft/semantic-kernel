@@ -11,14 +11,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -167,7 +166,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
+        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
 

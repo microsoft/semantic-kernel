@@ -31,7 +31,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
-            Functions = kernel.Plugins.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+            Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList(),
             FunctionCall = "TimePlugin_Date",
         };
 

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -46,14 +46,14 @@ public class CodeBlockTests
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
                 It.IsAny<CancellationToken>()))
-            .Throws(new RuntimeWrappedException("error"));
+            .Throws(new FormatException("error"));
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
 
         var target = new CodeBlock("plugin.function", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(this._kernel, context));
+        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, context));
     }
 
     [Fact]

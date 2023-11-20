@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
+
 public sealed class AggregatorPromptTemplateFactoryTests
 {
     [Fact]
@@ -71,7 +71,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
+        public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {
@@ -103,7 +103,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
+        public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {

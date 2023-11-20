@@ -6,7 +6,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -96,8 +96,7 @@ public abstract class OpenAIClientBase : ClientBase
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
+                ApplicationId = HttpHeaderValues.UserAgent,
             }
         };
 

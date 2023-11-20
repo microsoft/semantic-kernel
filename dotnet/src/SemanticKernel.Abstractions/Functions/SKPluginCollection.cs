@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
 #pragma warning disable CA1725 // Parameter names should match base declaration

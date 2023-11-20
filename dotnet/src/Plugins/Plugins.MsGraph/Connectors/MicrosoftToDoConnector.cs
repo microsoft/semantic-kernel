@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using TaskStatus = Microsoft.Graph.TaskStatus;

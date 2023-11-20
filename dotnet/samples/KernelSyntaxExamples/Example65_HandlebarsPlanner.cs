@@ -8,8 +8,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Planners.Handlebars;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using RepoUtils;
 
 /**

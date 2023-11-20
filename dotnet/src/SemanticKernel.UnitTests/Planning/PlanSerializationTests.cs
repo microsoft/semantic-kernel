@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
@@ -291,9 +290,10 @@ public sealed class PlanSerializationTests
             })
             .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
 
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
+        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName")
         {
-            Parameters = new ParameterView[]
+            PluginName = "pluginName",
+            Parameters = new SKParameterMetadata[]
             {
                 new("variables")
             }
@@ -357,7 +357,7 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName"));
+        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName") { PluginName = "pluginName" });
 
         plugins.Add(new SKPlugin("pluginName", new[] { mockFunction.Object }));
 

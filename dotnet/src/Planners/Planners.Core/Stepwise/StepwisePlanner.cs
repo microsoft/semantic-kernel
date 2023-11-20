@@ -13,15 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -30,7 +28,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// <remarks>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
 /// </remarks>
-public class StepwisePlanner : IStepwisePlanner
+public class StepwisePlanner : IPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
@@ -70,12 +68,9 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     /// <inheritdoc />
-    public Plan CreatePlan(string goal)
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(goal))
-        {
-            throw new SKException("The goal specified is empty");
-        }
+        Verify.NotNullOrWhiteSpace(goal);
 
         Plan plan = new(this._nativeFunctions["ExecutePlan"]);
         plan.PluginName = RestrictedPluginName;
@@ -87,7 +82,7 @@ public class StepwisePlanner : IStepwisePlanner
         plan.Outputs.Add("stepsTaken");
         plan.Outputs.Add("iterations");
 
-        return plan;
+        return Task.FromResult(plan);
     }
 
     /// <summary>

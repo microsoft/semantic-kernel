@@ -8,10 +8,9 @@ using System.Text.Json;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -51,7 +50,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (FunctionView function in kernel.Plugins.GetFunctionViews())
+        foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -67,7 +66,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
-        FunctionView functionView,
+        SKFunctionMetadata functionView,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {

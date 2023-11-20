@@ -18,19 +18,21 @@ internal static class GrpcOperationExtensions
     /// TODO: not an extension method, `operation` is never used.
     /// </summary>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<ParameterView> GetParameters(this GrpcOperation operation)
+    public static IReadOnlyList<SKParameterMetadata> GetParameters(this GrpcOperation operation)
     {
-        var parameters = new ParameterView[]
+        var parameters = new SKParameterMetadata[]
         {
             // Register the "address" parameter so that it's possible to override it if needed.
-            new(GrpcOperation.AddressArgumentName,
-                "Address for gRPC channel to use.",
-                string.Empty),
+            new(GrpcOperation.AddressArgumentName)
+            {
+                Description = "Address for gRPC channel to use.",
+            },
 
             // Register the "payload" parameter to be used as gRPC operation request message.
-            new(GrpcOperation.PayloadArgumentName,
-                "gRPC request message.",
-                string.Empty)
+            new(GrpcOperation.PayloadArgumentName)
+            {
+                Description = "gRPC request message.",
+            },
         };
 
         return parameters;

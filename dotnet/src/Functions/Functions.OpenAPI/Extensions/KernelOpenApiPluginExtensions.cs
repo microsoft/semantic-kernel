@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
@@ -321,11 +320,11 @@ public static class KernelOpenApiPluginExtensions
         }
 
         var parameters = restOperationParameters
-            .Select(p => new ParameterView(p.AlternativeName ?? p.Name)
+            .Select(p => new SKParameterMetadata(p.AlternativeName ?? p.Name)
             {
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
-                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
+                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterJsonType(p.Type),
                 IsRequired = p.IsRequired,
                 Schema = p.Schema,
             })

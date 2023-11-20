@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -129,7 +128,7 @@ public sealed class Program
         return kernel;
     }
 
-    private static ISequentialPlanner GetSequentialPlanner(
+    private static IPlanner GetSequentialPlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory,
         int maxTokens = 1024)
@@ -139,14 +138,14 @@ public sealed class Program
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
-    private static IActionPlanner GetActionPlanner(
+    private static IPlanner GetActionPlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
-    private static IStepwisePlanner GetStepwisePlanner(
+    private static IPlanner GetStepwisePlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,

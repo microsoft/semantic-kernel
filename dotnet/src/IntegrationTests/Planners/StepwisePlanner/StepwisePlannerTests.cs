@@ -6,9 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -17,7 +16,9 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+#pragma warning restore IDE0130
 
 public sealed class StepwisePlannerTests : IDisposable
 {
@@ -44,7 +45,7 @@ public sealed class StepwisePlannerTests : IDisposable
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
     [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    public async Task CanCreateStepwisePlanAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -54,10 +55,10 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = planner.CreatePlan(prompt);
+        var plan = await planner.CreatePlanAsync(prompt);
 
         // Assert
         Assert.Empty(plan.Steps);
@@ -80,10 +81,10 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = planner.CreatePlan(prompt);
+        var plan = await planner.CreatePlanAsync(prompt);
         var planResult = await plan.InvokeAsync(kernel);
         var result = planResult.GetValue<string>();
 
@@ -109,10 +110,10 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPluginFromObject<FileIOPlugin>("FileIO");
         kernel.ImportPluginFromObject<HttpPlugin>("Http");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
+        var planner = new StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
         // Act
-        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
         var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
@@ -127,10 +128,10 @@ public sealed class StepwisePlannerTests : IDisposable
 
         _ = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
+        var planner = new StepwisePlanner(kernel);
 
         // Act
-        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
         var kernelResult = await kernel.RunAsync(plan);
         var result = kernelResult.GetValue<string>();
 
