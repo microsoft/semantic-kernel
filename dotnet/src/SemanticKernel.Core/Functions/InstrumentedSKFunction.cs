@@ -40,7 +40,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         ILoggerFactory? loggerFactory = null)
     {
         this._function = function;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionHelper)) : NullLogger.Instance;
 
         this._executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: $"SK.Plugin.{this.Name}.ExecutionTime",

@@ -563,7 +563,7 @@ public class KernelTests
 
         var context = new SKContext(new Kernel(serviceProvider.Object), serviceProvider.Object, serviceSelector.Object, new ContextVariables());
 
-        var function = SKFunction.FromMethod(() => "fake result", "function");
+        var function = SKFunctionHelper.FromMethod(() => "fake result", "function");
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
         kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));

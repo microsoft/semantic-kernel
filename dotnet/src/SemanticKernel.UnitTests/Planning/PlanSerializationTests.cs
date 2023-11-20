@@ -88,7 +88,7 @@ public sealed class PlanSerializationTests
         // Arrange Mocks
         var returnContext = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, new ContextVariables(stepOutput));
 
-        var function = SKFunction.FromMethod(() => { }, "function");
+        var function = SKFunctionHelper.FromMethod(() => { }, "function");
 
         plan.AddSteps(new Plan(function));
 
@@ -121,7 +121,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var function = SKFunction.FromMethod(() => { }, "function");
+        var function = SKFunctionHelper.FromMethod(() => { }, "function");
 
         plan.AddSteps(function);
 
@@ -154,9 +154,9 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var function1 = SKFunction.FromMethod(() => { }, "function1");
+        var function1 = SKFunctionHelper.FromMethod(() => { }, "function1");
 
-        var function2 = SKFunction.FromMethod(() => { }, "function2");
+        var function2 = SKFunctionHelper.FromMethod(() => { }, "function2");
 
         plan.AddSteps(function1, function2);
 
@@ -190,9 +190,9 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var function1 = SKFunction.FromMethod(() => { }, "function1");
+        var function1 = SKFunctionHelper.FromMethod(() => { }, "function1");
 
-        var function2 = SKFunction.FromMethod(() => { }, "function2");
+        var function2 = SKFunctionHelper.FromMethod(() => { }, "function2");
 
         plan.AddSteps(new Plan(function1), function2);
 
@@ -226,9 +226,9 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var function1 = SKFunction.FromMethod(() => { }, "function1");
+        var function1 = SKFunctionHelper.FromMethod(() => { }, "function1");
 
-        var function2 = SKFunction.FromMethod(() => { }, "function2");
+        var function2 = SKFunctionHelper.FromMethod(() => { }, "function2");
 
         plan.AddSteps(new Plan(function1), new Plan(function2));
 
@@ -246,7 +246,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var plan = new Plan("Write a poem or joke and send it in an e-mail to Kai.");
 
-        var function = SKFunction.FromMethod(() => { }, "function");
+        var function = SKFunctionHelper.FromMethod(() => { }, "function");
 
         plan.AddSteps(function, function);
 
@@ -435,7 +435,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var mockFunction = SKFunction.FromMethod((string input) => input + input, "functionName");
+        var mockFunction = SKFunctionHelper.FromMethod((string input) => input + input, "functionName");
         plugins.Add(new SKPlugin("test", new[] { mockFunction }));
 
         plan.AddSteps(new Plan("Step1", mockFunction), mockFunction);
@@ -477,7 +477,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        var function = SKFunction.FromMethod((SKContext context) =>
+        var function = SKFunctionHelper.FromMethod((SKContext context) =>
         {
             returnContext.Variables.Update(returnContext.Variables.Input + context.Variables.Input);
         }, "function");

@@ -250,7 +250,7 @@ public static class KernelOpenApiPluginExtensions
     }
 
     /// <summary>
-    /// Registers SKFunction for a REST API operation.
+    /// Registers SKFunctionHelper for a REST API operation.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
@@ -333,7 +333,7 @@ public static class KernelOpenApiPluginExtensions
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
-        return SKFunction.FromMethod(
+        return SKFunctionHelper.FromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             returnParameter: returnParameter,

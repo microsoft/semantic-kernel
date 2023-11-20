@@ -58,7 +58,7 @@ public static class SKFunctionYaml
 
         var promptFunctionModel = deserializer.Deserialize<PromptFunctionModel>(text);
 
-        return SKFunction.FromPrompt(
+        return SKFunctionHelper.FromPrompt(
             promptFunctionModel,
             promptTemplateFactory,
             loggerFactory);

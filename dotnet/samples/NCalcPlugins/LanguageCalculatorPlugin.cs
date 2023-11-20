@@ -66,7 +66,7 @@ Question: {{ $input }}
     /// </summary>
     public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = SKFunction.FromPrompt(
+        this._mathTranslator = SKFunctionHelper.FromPrompt(
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",

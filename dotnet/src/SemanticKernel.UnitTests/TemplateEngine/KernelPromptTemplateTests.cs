@@ -153,7 +153,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this, "function");
 
         Assert.NotNull(func);
 
@@ -180,7 +180,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this, "function");
 
         Assert.NotNull(func);
 
@@ -212,7 +212,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this, "function");
 
         Assert.NotNull(func);
 
@@ -245,7 +245,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -274,7 +274,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        ISKFunction func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this, "function");
 
         Assert.NotNull(func);
 
@@ -324,9 +324,9 @@ public sealed class KernelPromptTemplateTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.FromMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunction.FromMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunction.FromMethod(Method(MyFunction3Async), this, "func3")
+            SKFunctionHelper.FromMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunctionHelper.FromMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunctionHelper.FromMethod(Method(MyFunction3Async), this, "func3")
         };
 
         // Act
@@ -347,7 +347,7 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        ISKFunction func = SKFunctionHelper.FromMethod(Method(MyFunctionAsync), this, "function");
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");

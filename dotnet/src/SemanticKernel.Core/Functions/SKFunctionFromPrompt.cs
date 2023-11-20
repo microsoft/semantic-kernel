@@ -199,7 +199,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         string functionName,
         ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionHelper)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;

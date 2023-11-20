@@ -193,7 +193,7 @@ public static class KernelGrpcExtensions
     #region private
 
     /// <summary>
-    /// Registers SKFunction for a gRPC operation.
+    /// Registers SKFunctionHelper for a gRPC operation.
     /// </summary>
     /// <param name="runner">gRPC operation runner.</param>
     /// <param name="operation">The gRPC operation.</param>
@@ -241,7 +241,7 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-        return SKFunction.FromMethod(
+        return SKFunctionHelper.FromMethod(
             method: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,

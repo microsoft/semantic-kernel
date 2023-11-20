@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel;
 /// Provides factory methods for creating commonly-used implementations of <see cref="ISKFunction"/>, such as
 /// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
-public static class SKFunction
+public static class SKFunctionHelper
 {
     #region FromMethod
     /// <summary>

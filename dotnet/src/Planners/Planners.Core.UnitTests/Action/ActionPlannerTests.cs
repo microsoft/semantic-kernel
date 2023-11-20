@@ -197,12 +197,12 @@ public sealed class ActionPlannerTests
         {
             new SKPlugin("email", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+                SKFunctionHelper.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
             }),
             new SKPlugin("GitHubPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+                SKFunctionHelper.FromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                SKFunctionHelper.FromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
             })
         };
     }
