@@ -237,10 +237,7 @@ public class ParameterViewExtensionsTests
         var result = jsonProperties.ToJsonString();
 
         // Assert
-        var expected = @"{
-  ""name"": ""Alice"",
-  ""age"": 25
-}";
+        var expected = "{\r\n  \"name\": \"Alice\",\r\n  \"age\": 25\r\n}";
         Assert.Equal(expected, result);
     }
 
@@ -305,11 +302,11 @@ public class ParameterViewExtensionsTests
         public double Value { get; set; }
     }
 
-    private sealed class NestedClass
+    private static class NestedClass
     {
-        public int Id { get; set; }
-        public SimpleClass? Simple { get; set; }
-        public AnotherClass? Another { get; set; }
+        public static int Id { get; set; }
+        public static SimpleClass Simple { get; set; } = new SimpleClass();
+        public static AnotherClass Another { get; set; } = new AnotherClass();
     }
 
     #endregion  
