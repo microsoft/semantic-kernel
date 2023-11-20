@@ -38,7 +38,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
 
         var function = new Mock<ISKFunction>();
         function.Setup(x => x.Name).Returns("function");
@@ -140,7 +140,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
@@ -155,7 +155,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -200,7 +200,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var funcBlock = new FunctionIdBlock("plugin.function");
 
         var canary0 = string.Empty;
@@ -244,7 +244,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
@@ -273,7 +273,7 @@ public class CodeBlockTests
         // Arrange
         const string Value = "value";
 
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: null, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: null);
         var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -307,7 +307,7 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables, plugins: this._kernel.Plugins);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");

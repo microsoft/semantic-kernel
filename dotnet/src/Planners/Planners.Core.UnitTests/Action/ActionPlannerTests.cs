@@ -109,10 +109,8 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel);
 
-        var context = kernel.CreateNewContext();
-
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
@@ -135,7 +133,7 @@ public sealed class ActionPlannerTests
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
@@ -158,7 +156,7 @@ public sealed class ActionPlannerTests
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";

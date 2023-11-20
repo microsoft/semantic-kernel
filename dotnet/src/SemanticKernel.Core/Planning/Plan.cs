@@ -292,7 +292,7 @@ public sealed class Plan : ISKFunction
             // This is done to prevent the function from having access to variables that it shouldn't.
             AddVariablesToContext(this.State, context);
             var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables, context.Plugins);
+            var functionContext = context.Clone(functionVariables);
 
             // Execute the step
             result = await this.Function

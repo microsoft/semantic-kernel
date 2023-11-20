@@ -591,16 +591,16 @@ public class KernelTests
         }
 
         [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
+        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
         {
             await Task.Delay(0);
 
-            if (context.Plugins == null)
+            if (kernel.Plugins == null)
             {
                 Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in context.Plugins.GetFunctionViews())
+            foreach (var function in kernel.Plugins.GetFunctionViews())
             {
                 context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }

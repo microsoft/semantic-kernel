@@ -94,7 +94,6 @@ public sealed class Kernel
             this._aiServiceProvider,
             this._aiServiceSelector,
             variables,
-            plugins ?? this.Plugins,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,

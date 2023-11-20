@@ -37,11 +37,6 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Gets a read-only collection of plugins available in the context.
-    /// </summary>
-    public IReadOnlySKPluginCollection Plugins { get; }
-
-    /// <summary>
     /// App logger
     /// </summary>
     public ILoggerFactory LoggerFactory { get; }
@@ -78,7 +73,6 @@ public sealed class SKContext
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="plugins">Plugins to include in context.</param>
     /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
@@ -88,7 +82,6 @@ public sealed class SKContext
         IAIServiceProvider serviceProvider,
         IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
-        IReadOnlySKPluginCollection? plugins = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
         EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
         ILoggerFactory? loggerFactory = null,
@@ -100,7 +93,6 @@ public sealed class SKContext
         this.ServiceProvider = serviceProvider;
         this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
-        this.Plugins = plugins ?? EmptyReadOnlyPluginCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
         this.FunctionInvokingHandler = invokingWrapper;
@@ -122,23 +114,21 @@ public sealed class SKContext
     /// </summary>
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
-        => this.Clone(null, null);
+        => this.Clone(null);
 
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
     /// and optionally allows overriding the variables and plugins.
     /// </summary>
     /// <param name="variables">Override the variables with the provided ones</param>
-    /// <param name="plugins">Override the plugins with the provided ones</param>
     /// <returns>A new context cloned from the current one</returns>
-    public SKContext Clone(ContextVariables? variables, IReadOnlySKPluginCollection? plugins)
+    public SKContext Clone(ContextVariables? variables)
     {
         return new SKContext(
             this.Runner,
             this.ServiceProvider,
             this.ServiceSelector,
             variables ?? this.Variables.Clone(),
-            plugins ?? this.Plugins,
             this.FunctionInvokingHandler,
             this.FunctionInvokedHandler,
             this.LoggerFactory,
@@ -156,11 +146,6 @@ public sealed class SKContext
         get
         {
             string display = this.Variables.DebuggerDisplay;
-
-            if (this.Plugins is IReadOnlySKPluginCollection plugins)
-            {
-                display += $", Plugins = {plugins.Count}";
-            }
 
             display += $", Culture = {this.Culture.EnglishName}";
 

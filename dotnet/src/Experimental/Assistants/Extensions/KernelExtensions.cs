@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static class IKernelExtensions
+internal static class KernelExtensions
 {
     /// <summary>
     /// Retrieve a kernel function based on the tool name.
