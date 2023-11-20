@@ -31,6 +31,7 @@ Contoso is a company that is developing an AI application using SK.
 ## Out of scope
 
 1. We focus on Application Insights. Although other telemetry service options are supported technically, we will not cover possible ways of setting them up in this ADR.
+2. This ADR does not seek to modify the current instrumentation design in SK.
 
 ## Decision Drivers
 
@@ -50,7 +51,6 @@ Contoso is a company that is developing an AI application using SK.
   - Logging & Metrics
     - Use logging to record custom information for individual operations.
     - Use metrics to continuously monitor performance.
-- Return model token usage as a property of function result.
 
 ## Decision Outcome
 
@@ -219,3 +219,7 @@ Pros:
 1. Logs are modified more frequently.
 2. Log configuration will affect what telemetry the libraries produce.
 3. More difficult to correlate telemetry items when in query time.
+
+## More Information
+
+The current design of the instrumented planner does not allow token usages to be propagated upward for instrumentation. Thus, we need to correlate planner operations and model call operations.
