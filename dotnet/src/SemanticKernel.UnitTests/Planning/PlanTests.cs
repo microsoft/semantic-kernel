@@ -58,7 +58,7 @@ public sealed class PlanTests
 
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, new ContextVariables("Some input"));
+        var context = new SKContext(new ContextVariables("Some input"));
 
         // Act
         var result = await plan.InvokeAsync(kernel, context);
@@ -339,7 +339,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext(serviceProvider.Object, serviceSelector.Object, new ContextVariables(stepOutput));
+        var returnContext = new SKContext(new ContextVariables(stepOutput));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -367,7 +367,7 @@ public sealed class PlanTests
         var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext(serviceProvider.Object, serviceSelector.Object);
+        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -393,7 +393,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext(serviceProvider.Object, serviceSelector.Object);
+        var returnContext = new SKContext();
 
         var childFunction1 = SKFunction.FromMethod((SKContext context) =>
         {
@@ -543,7 +543,7 @@ public sealed class PlanTests
         plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
-        var contextOverride = new SKContext(serviceProvider.Object, serviceSelector.Object);
+        var contextOverride = new SKContext();
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa");
 
@@ -562,7 +562,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext(serviceProvider.Object, serviceSelector.Object);
+        var returnContext = new SKContext();
 
         var function = SKFunction.FromMethod((SKContext context) =>
         {
@@ -607,7 +607,7 @@ public sealed class PlanTests
         planStep.Parameters.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
-        var contextOverride = new SKContext(serviceProvider.Object, serviceSelector.Object);
+        var contextOverride = new SKContext();
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa"); // context input will not override parameters
 

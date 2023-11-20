@@ -60,7 +60,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -141,7 +141,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -213,7 +213,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -274,7 +274,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";

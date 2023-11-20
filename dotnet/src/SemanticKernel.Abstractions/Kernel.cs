@@ -35,6 +35,16 @@ public sealed class Kernel
     public ISKPluginCollection Plugins { get; }
 
     /// <summary>
+    /// AI service provider
+    /// </summary>
+    public IAIServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// AIService selector implementation
+    /// </summary>
+    internal IAIServiceSelector ServiceSelector { get; }
+
+    /// <summary>
     /// Reference to Http handler factory
     /// </summary>
     public IDelegatingHandlerFactory HttpHandlerFactory { get; }
@@ -66,9 +76,9 @@ public sealed class Kernel
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._aiServiceProvider = aiServiceProvider;
+        this.ServiceProvider = aiServiceProvider;
         this.Plugins = plugins ?? new SKPluginCollection();
-        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
+        this.ServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
@@ -88,8 +98,6 @@ public sealed class Kernel
         CultureInfo? culture = null)
     {
         return new SKContext(
-            this._aiServiceProvider,
-            this._aiServiceSelector,
             variables,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
@@ -104,7 +112,7 @@ public sealed class Kernel
     /// <returns>Instance of T</returns>
     public T GetService<T>(string? name = null) where T : IAIService
     {
-        var service = this._aiServiceProvider.GetService<T>(name);
+        var service = this.ServiceProvider.GetService<T>(name);
         if (service != null)
         {
             return service;
@@ -114,8 +122,7 @@ public sealed class Kernel
     }
 
     #region private ================================================================================
-    private readonly IAIServiceProvider _aiServiceProvider;
-    private readonly IAIServiceSelector _aiServiceSelector;
+
     private readonly ILogger _logger;
 
     #endregion

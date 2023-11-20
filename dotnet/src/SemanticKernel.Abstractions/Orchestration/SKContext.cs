@@ -3,7 +3,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -34,16 +33,6 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// AI service provider
-    /// </summary>
-    public IAIServiceProvider ServiceProvider { get; }
-
-    /// <summary>
-    /// AIService selector implementation
-    /// </summary>
-    internal IAIServiceSelector ServiceSelector { get; }
-
-    /// <summary>
     /// Function invoking event handler wrapper
     /// </summary>
     internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
@@ -56,22 +45,16 @@ public sealed class SKContext
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="serviceProvider">AI service provider</param>
-    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IAIServiceProvider serviceProvider,
-        IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
         EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
         CultureInfo? culture = null)
     {
-        this.ServiceProvider = serviceProvider;
-        this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
         this._culture = culture ?? CultureInfo.CurrentCulture;
         this.FunctionInvokingHandler = invokingWrapper;
@@ -104,8 +87,6 @@ public sealed class SKContext
     public SKContext Clone(ContextVariables? variables)
     {
         return new SKContext(
-            this.ServiceProvider,
-            this.ServiceSelector,
             variables ?? this.Variables.Clone(),
             this.FunctionInvokingHandler,
             this.FunctionInvokedHandler,

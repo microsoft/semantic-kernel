@@ -161,7 +161,7 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -188,7 +188,7 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $myVar}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -221,7 +221,7 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -237,7 +237,7 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, context));
@@ -269,7 +269,7 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -316,7 +316,7 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -346,7 +346,7 @@ public sealed class KernelPromptTemplateTests
 
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, this._variables);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);

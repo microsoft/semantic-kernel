@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -41,7 +40,7 @@ public sealed class SKFunctionTests2
             s_actual = s_expected;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -63,7 +62,7 @@ public sealed class SKFunctionTests2
             return s_expected;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -87,7 +86,7 @@ public sealed class SKFunctionTests2
             return Task.FromResult(s_expected);
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -112,7 +111,7 @@ public sealed class SKFunctionTests2
             return s_expected;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -136,7 +135,7 @@ public sealed class SKFunctionTests2
             context.Variables["canary"] = s_expected;
         }
 
-        var context = this.MockContext("xy");
+        var context = new SKContext(new ContextVariables("xy"));
         context.Variables["someVar"] = "qz";
 
         // Act
@@ -160,7 +159,7 @@ public sealed class SKFunctionTests2
             return "abc";
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables["someVar"] = s_expected;
 
         // Act
@@ -188,7 +187,7 @@ public sealed class SKFunctionTests2
             return "abc";
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables["someVar"] = s_expected;
 
         // Act
@@ -219,7 +218,7 @@ public sealed class SKFunctionTests2
             return Task.FromResult(s_expected);
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Func<SKContext, Task<string>> method = Test;
@@ -252,7 +251,7 @@ public sealed class SKFunctionTests2
             return context;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Func<SKContext, Task<SKContext>> method = TestAsync;
@@ -281,7 +280,7 @@ public sealed class SKFunctionTests2
             s_actual = s_expected + input;
         }
 
-        var context = this.MockContext(".blah");
+        var context = new SKContext(new ContextVariables(".blah"));
 
         // Act
         Action<string> method = Test;
@@ -308,7 +307,7 @@ public sealed class SKFunctionTests2
             return "foo-bar";
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Func<string, string> method = Test;
@@ -337,7 +336,7 @@ public sealed class SKFunctionTests2
             return Task.FromResult("hello there");
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Func<string, Task<string>> method = Test;
@@ -367,7 +366,7 @@ public sealed class SKFunctionTests2
             context.Variables["canary"] = s_expected;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Action<string, SKContext> method = Test;
@@ -397,7 +396,7 @@ public sealed class SKFunctionTests2
             actualKernel = kernel;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Action<Kernel> method = Test;
@@ -426,7 +425,7 @@ public sealed class SKFunctionTests2
             context.Variables["canary"] = s_expected;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         Action<SKContext, string> method = Test;
@@ -456,7 +455,7 @@ public sealed class SKFunctionTests2
             return "new data";
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -484,7 +483,7 @@ public sealed class SKFunctionTests2
             return Task.FromResult("new data");
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
@@ -518,7 +517,7 @@ public sealed class SKFunctionTests2
             return Task.FromResult(newContext);
         }
 
-        var oldContext = this.MockContext("");
+        var oldContext = new SKContext(new ContextVariables(string.Empty));
         oldContext.Variables["legacy"] = "something";
 
         // Act
@@ -562,7 +561,7 @@ public sealed class SKFunctionTests2
             return new ValueTask<SKContext>(newCx);
         }
 
-        var oldContext = this.MockContext("test");
+        var oldContext = new SKContext(new ContextVariables("test"));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test), loggerFactory: this._logger.Object);
@@ -584,7 +583,7 @@ public sealed class SKFunctionTests2
             return Task.CompletedTask;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -606,7 +605,7 @@ public sealed class SKFunctionTests2
             return default;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -630,7 +629,7 @@ public sealed class SKFunctionTests2
             return Task.CompletedTask;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -657,7 +656,7 @@ public sealed class SKFunctionTests2
             return Task.CompletedTask;
         }
 
-        var context = this.MockContext("input:");
+        var context = new SKContext(new ContextVariables("input:"));
 
         // Act
         var function = SKFunction.FromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -682,7 +681,7 @@ public sealed class SKFunctionTests2
             return Task.CompletedTask;
         }
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
         var function = SKFunction.FromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -699,7 +698,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(string input) => "Result: " + input;
 
-        var context = this.MockContext("input value");
+        var context = new SKContext(new ContextVariables("input value"));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test));
@@ -716,7 +715,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(string other) => "Result: " + other;
 
-        var context = this.MockContext("input value");
+        var context = new SKContext(new ContextVariables("input value"));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test));
@@ -733,7 +732,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(int something, long orother) => "Result: " + (something + orother);
 
-        var context = this.MockContext("42");
+        var context = new SKContext(new ContextVariables("42"));
         context.Variables.Set("orother", "8");
 
         // Act
@@ -751,7 +750,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(string other) => "Result: " + other;
 
-        var context = this.MockContext("input value");
+        var context = new SKContext(new ContextVariables("input value"));
         context.Variables.Set("other", "other value");
 
         // Act
@@ -769,7 +768,7 @@ public sealed class SKFunctionTests2
     {
         static string Test([SKName("input"), Description("description")] string other) => "Result: " + other;
 
-        var context = this.MockContext("input value");
+        var context = new SKContext(new ContextVariables("input value"));
         context.Variables.Set("other", "other value");
 
         // Act
@@ -787,7 +786,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(string? input = null, string? other = null) => "Result: " + (other is null);
 
-        var context = this.MockContext("input value");
+        var context = new SKContext(new ContextVariables("input value"));
 
         // Act
         var function = SKFunction.FromMethod(Method(Test));
@@ -805,7 +804,7 @@ public sealed class SKFunctionTests2
         static string Test(int a, long b, decimal c, Guid d, DateTimeOffset e, DayOfWeek? f) =>
             $"{a} {b} {c} {d} {e:R} {f}";
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables.Set("a", "1");
         context.Variables.Set("b", "-2");
         context.Variables.Set("c", "1234");
@@ -828,7 +827,7 @@ public sealed class SKFunctionTests2
     {
         static int Test(MyCustomType mct) => mct.Value * 2;
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables.Set("mct", "42");
 
         // Act
@@ -861,7 +860,7 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsConvertingFromToManyTypesAsync()
     {
         // Arrange
-        var context = this.MockContext("1");
+        var context = new SKContext(new ContextVariables("1"));
 
         async Task AssertResult(Delegate d, SKContext context, string expected)
         {
@@ -898,7 +897,7 @@ public sealed class SKFunctionTests2
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
         // Arrange
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         ISKFunction func = SKFunction.FromMethod((double input) => input * 2, functionName: "Test");
         FunctionResult result;
 
@@ -929,7 +928,7 @@ public sealed class SKFunctionTests2
     {
         static string Test(Guid g) => g.ToString();
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables.Set("g", "7e08cc00-1d71-4558-81ed-69929499dxyz");
 
         // Act
@@ -991,10 +990,10 @@ public sealed class SKFunctionTests2
         var function4 = SKFunction.FromMethod(Method(TestBool));
 
         // Act
-        FunctionResult result1 = await function1.InvokeAsync(this._kernel, this.MockContext("42"));
-        FunctionResult result2 = await function2.InvokeAsync(this._kernel, this.MockContext("3.14"));
-        FunctionResult result3 = await function3.InvokeAsync(this._kernel, this.MockContext("test-string"));
-        FunctionResult result4 = await function4.InvokeAsync(this._kernel, this.MockContext("true"));
+        FunctionResult result1 = await function1.InvokeAsync(this._kernel, new SKContext(new ContextVariables("42")));
+        FunctionResult result2 = await function2.InvokeAsync(this._kernel, new SKContext(new ContextVariables("3.14")));
+        FunctionResult result3 = await function3.InvokeAsync(this._kernel, new SKContext(new ContextVariables("test-string")));
+        FunctionResult result4 = await function4.InvokeAsync(this._kernel, new SKContext(new ContextVariables("true")));
 
         // Assert
         Assert.Equal(42, result1.GetValue<int>());
@@ -1009,7 +1008,7 @@ public sealed class SKFunctionTests2
         // Arrange
         static MyCustomType TestCustomType(MyCustomType instance) => instance;
 
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         context.Variables.Set("instance", "42");
 
         var function = SKFunction.FromMethod(Method(TestCustomType));
@@ -1044,7 +1043,7 @@ public sealed class SKFunctionTests2
         var function = SKFunction.FromMethod(Method(TestAsyncEnumerableTypeAsync));
 
         // Act
-        FunctionResult result = await function.InvokeAsync(this._kernel, this.MockContext(string.Empty));
+        FunctionResult result = await function.InvokeAsync(this._kernel, new SKContext(new ContextVariables(string.Empty)));
 
         // Assert
         Assert.NotNull(result);
@@ -1067,7 +1066,7 @@ public sealed class SKFunctionTests2
     public async Task ItPropagatesOriginalExceptionTypeAsync()
     {
         // Arrange
-        var context = this.MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         Exception expected = new FormatException("expected");
         ISKFunction func = SKFunction.FromMethod(() => { throw expected; });
 
@@ -1081,17 +1080,5 @@ public sealed class SKFunctionTests2
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
-    }
-
-    private SKContext MockContext(string input)
-    {
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
-        return new SKContext(
-            serviceProvider.Object,
-            serviceSelector.Object,
-            new ContextVariables(input)
-        );
     }
 }

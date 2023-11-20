@@ -19,15 +19,13 @@ namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 public class CodeBlockTests
 {
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IAIServiceProvider> _serviceProvider = new();
-    private readonly Mock<IAIServiceSelector> _serviceSelector = new();
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext();
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
@@ -38,7 +36,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext();
 
         var function = new Mock<ISKFunction>();
         function.Setup(x => x.Name).Returns("function");
@@ -140,7 +138,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(variables);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
@@ -155,7 +153,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -170,7 +168,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext();
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
@@ -184,7 +182,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext();
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
@@ -200,7 +198,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var funcBlock = new FunctionIdBlock("plugin.function");
 
         var canary0 = string.Empty;
@@ -244,7 +242,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables);
+        var context = new SKContext(variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
@@ -273,7 +271,7 @@ public class CodeBlockTests
         // Arrange
         const string Value = "value";
 
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables: null);
+        var context = new SKContext(variables: null);
         var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -307,7 +305,7 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._serviceProvider.Object, this._serviceSelector.Object, variables: variables);
+        var context = new SKContext(variables);
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");

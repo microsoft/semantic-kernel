@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -16,7 +13,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(new Mock<IAIServiceProvider>().Object, new Mock<IAIServiceSelector>().Object, variables);
+        var target = new SKContext(variables);
         variables.Set("foo1", "bar1");
 
         // Act

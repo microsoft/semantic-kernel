@@ -561,7 +561,7 @@ public class KernelTests
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        var context = new SKContext(serviceProvider.Object, serviceSelector.Object, new ContextVariables());
+        var context = new SKContext(new ContextVariables());
 
         var function = SKFunction.FromMethod(() => "fake result", "function");
 

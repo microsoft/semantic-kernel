@@ -181,7 +181,7 @@ public sealed class ActionPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();
