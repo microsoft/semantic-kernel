@@ -5,12 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -109,7 +107,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach(var result in this.InternalGetStreamingChunksAsync(input, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this.InternalGetStreamingChunksAsync(input, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
