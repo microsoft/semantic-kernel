@@ -61,8 +61,8 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public FunctionView Describe() =>
-        this._function.Describe();
+    public SKFunctionMetadata GetMetadata() =>
+        this._function.GetMetadata();
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(

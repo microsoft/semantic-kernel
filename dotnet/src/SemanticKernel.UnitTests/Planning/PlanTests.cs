@@ -344,7 +344,7 @@ public sealed class PlanTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName"));
+        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -372,7 +372,7 @@ public sealed class PlanTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName"));
+        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
@@ -789,8 +789,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
             invokingListFunctions.Add(e.FunctionView);
@@ -835,8 +835,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 0;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -884,8 +884,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 0;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -937,8 +937,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -992,8 +992,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -1049,8 +1049,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -1104,8 +1104,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<FunctionView>();
-        var invokedListFunctions = new List<FunctionView>();
+        var invokingListFunctions = new List<SKFunctionMetadata>();
+        var invokedListFunctions = new List<SKFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {

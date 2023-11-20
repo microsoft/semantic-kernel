@@ -7,16 +7,16 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Provides extension methods for the <see cref="FunctionView"/> class.
+/// Provides extension methods for the <see cref="SKFunctionMetadata"/> class.
 /// </summary>
-internal static class FunctionViewExtensions
+internal static class SKFunctionMetadataExtensions
 {
     /// <summary>
     /// Create a manual-friendly string for a function.
     /// </summary>
     /// <param name="function">The function to create a manual-friendly string for.</param>
     /// <returns>A manual-friendly string for a function.</returns>
-    internal static string ToManualString(this FunctionView function)
+    internal static string ToManualString(this SKFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
@@ -37,7 +37,7 @@ internal static class FunctionViewExtensions
     /// </summary>
     /// <param name="function">The function to create a fully qualified name for.</param>
     /// <returns>A fully qualified name for a function.</returns>
-    internal static string ToFullyQualifiedName(this FunctionView function)
+    internal static string ToFullyQualifiedName(this SKFunctionMetadata function)
     {
         return $"{function.PluginName}.{function.Name}";
     }
@@ -47,7 +47,7 @@ internal static class FunctionViewExtensions
     /// </summary>
     /// <param name="function">The function to create a string for generating an embedding for.</param>
     /// <returns>A string for generating an embedding for a function.</returns>
-    internal static string ToEmbeddingString(this FunctionView function)
+    internal static string ToEmbeddingString(this SKFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
         return $"{function.Name}:\n  description: {function.Description}\n  inputs:\n{inputs}";

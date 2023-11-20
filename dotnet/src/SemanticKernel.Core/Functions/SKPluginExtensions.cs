@@ -32,8 +32,8 @@ public static class SKPluginExtensions
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
@@ -62,8 +62,8 @@ public static class SKPluginExtensions
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null,
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
