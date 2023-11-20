@@ -17,7 +17,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Theory]
@@ -32,7 +32,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Fact]

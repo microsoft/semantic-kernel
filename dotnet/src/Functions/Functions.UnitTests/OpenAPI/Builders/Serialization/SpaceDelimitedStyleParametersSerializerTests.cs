@@ -16,7 +16,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Label);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Theory]
@@ -31,7 +31,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Fact]

@@ -63,10 +63,7 @@ public class AIServiceCollection
     public void SetService<T>(string? name, Func<T> factory, bool setAsDefault = false) where T : IAIService
     {
         // Validate the factory function
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        Verify.NotNull(factory);
 
         // Get or create the nested dictionary for the service type
         var type = typeof(T);
