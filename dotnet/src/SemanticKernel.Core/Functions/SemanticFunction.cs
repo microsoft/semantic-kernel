@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Functions;
+using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -38,47 +39,15 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string PluginName { get; }
 
     /// <inheritdoc/>
-    public string Description { get; }
+    public string Description => this._promptTemplateConfig.Description;
+
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
 
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
-
-    /// <summary>
-    /// Create a semantic function instance, given a semantic function configuration.
-    /// </summary>
-    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
-    /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="promptTemplate">Prompt template.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>SK function instance.</returns>
-    public static ISKFunction FromSemanticConfig(
-        string pluginName,
-        string functionName,
-        PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplate promptTemplate,
-        ILoggerFactory? loggerFactory = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(promptTemplateConfig);
-        Verify.NotNull(promptTemplate);
-
-        var func = new SemanticFunction(
-            template: promptTemplate,
-            description: promptTemplateConfig.Description,
-            pluginName: pluginName,
-            functionName: functionName,
-            loggerFactory: loggerFactory
-        )
-        {
-            _modelSettings = promptTemplateConfig.ModelSettings
-        };
-
-        return func;
-    }
 
     /// <inheritdoc/>
     public FunctionView Describe()
@@ -118,9 +87,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal SemanticFunction(
         IPromptTemplate template,
+        PromptTemplateConfig promptTemplateConfig,
         string pluginName,
         string functionName,
-        string description,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -130,13 +99,74 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
+        this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.PluginName = pluginName;
-        this.Description = description;
 
-        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
+        this._view = new(() => new(functionName, pluginName, promptTemplateConfig.Description, this.Parameters));
+    }
+
+    /// <summary>
+    /// Create a semantic function instance, given a semantic function configuration.
+    /// </summary>
+    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
+    /// <param name="functionName">Name of the function to create.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>SK function instance.</returns>
+    public static ISKFunction FromSemanticConfig(
+        string pluginName,
+        string functionName,
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate,
+        ILoggerFactory? loggerFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptTemplate);
+
+        return new SemanticFunction(
+            template: promptTemplate,
+            promptTemplateConfig: promptTemplateConfig,
+            pluginName: pluginName,
+            functionName: functionName,
+            loggerFactory: loggerFactory
+        );
+    }
+
+    /// <summary>
+    /// Create a semantic function instance, given a semantic function configuration.
+    /// </summary>
+    /// <param name="promptFunctionModel"></param>
+    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="promptFunctionModel"/>.</returns>
+    public static ISKFunction Create(
+        PromptFunctionModel promptFunctionModel,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory ? loggerFactory = null)
+    {
+        Verify.NotNull(promptFunctionModel);
+        Verify.NotNull(promptFunctionModel.Name);
+        Verify.NotNull(promptFunctionModel.Template);
+
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory();
+        var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(promptFunctionModel);
+        var promptTemplate = factory.Create(promptFunctionModel.Template, promptTemplateConfig);
+
+        return new SemanticFunction(
+            template: promptTemplate,
+            promptTemplateConfig: promptTemplateConfig,
+            pluginName: pluginName ??= FunctionCollection.GlobalFunctionsPluginName,
+            functionName: promptFunctionModel.Name,
+            loggerFactory: loggerFactory
+        );
     }
 
     #region private
@@ -145,7 +175,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IAIServiceSelector? _serviceSelector;
-    private List<AIRequestSettings>? _modelSettings;
+    private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly Lazy<FunctionView> _view;
     private readonly IPromptTemplate _promptTemplate;
 
@@ -182,7 +212,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
             var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
@@ -293,7 +323,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
+    public AIRequestSettings? RequestSettings => this._promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>();
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]

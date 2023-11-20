@@ -50,10 +50,10 @@ public static class KernelExtensions
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, functionsInstance, pluginName, kernel.LoggerFactory);
+                ISKFunction function = SKFunction.Create(method, functionsInstance, pluginName, loggerFactory: kernel.LoggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
-                    throw new SKException("Function overloads are not supported, please differentiate function names");
+                    throw new SKException("Function overloads are not supported. Differentiate function names.");
                 }
 
                 result.Add(function.Name, function);

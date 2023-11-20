@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -30,6 +31,9 @@ internal sealed class InstrumentedSKFunction : ISKFunction
 
     /// <inheritdoc/>
     public string Description => this._function.Description;
+
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -83,12 +87,12 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName!);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.

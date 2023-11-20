@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -55,6 +56,11 @@ public class OpenApiFunctionExecutionParameters
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
+    /// Optional list of HTTP operations to skip when importing the OpenAPI document.
+    /// </summary>
+    public IList<string> OperationsToExclude { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>
@@ -68,6 +74,7 @@ public class OpenApiFunctionExecutionParameters
     /// If false, the operation payload must be provided via the 'payload' context variable.</param>
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
+    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
@@ -75,7 +82,8 @@ public class OpenApiFunctionExecutionParameters
         string userAgent = Telemetry.HttpUserAgent,
         bool ignoreNonCompliantErrors = false,
         bool enableDynamicOperationPayload = false,
-        bool enablePayloadNamespacing = false)
+        bool enablePayloadNamespacing = false,
+        IList<string>? operationsToExclude = null)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
@@ -84,5 +92,6 @@ public class OpenApiFunctionExecutionParameters
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
+        this.OperationsToExclude = operationsToExclude ?? new List<string>();
     }
 }

@@ -25,9 +25,17 @@ public static class FunctionViewExtensions
                 Description = (param.Description ?? string.Empty)
                     + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
                 Type = param.Type?.Name ?? "string",
-                IsRequired = param.IsRequired ?? false
+                IsRequired = param.IsRequired ?? false,
+                ParameterType = param.ParameterType,
+                Schema = param.Schema ?? OpenAIFunction.GetJsonSchemaDocument(param.ParameterType!, param.Description),
             });
         }
+
+        var returnParameter = new OpenAIFunctionReturnParameter
+        {
+            Description = functionView.ReturnParameter.Description ?? string.Empty,
+            Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchemaDocument(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
+        };
 
         return new OpenAIFunction
         {
@@ -35,6 +43,7 @@ public static class FunctionViewExtensions
             PluginName = functionView.PluginName,
             Description = functionView.Description,
             Parameters = openAIParams,
+            ReturnParameter = returnParameter
         };
     }
 }

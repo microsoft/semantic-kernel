@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
@@ -43,7 +43,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
@@ -121,7 +125,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-
+    private readonly Dictionary<string, string> _attributes = new();
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
@@ -223,7 +227,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private T DeserializeResponse<T>(string body)
     {
-        var response = Json.Deserialize<T>(body);
+        var response = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(body);
 
         if (response is null)
         {

@@ -150,7 +150,11 @@ public static class KernelOpenApiPluginExtensions
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
+            var operations = await parser.ParseAsync(
+                documentStream,
+                executionParameters?.IgnoreNonCompliantErrors ?? false,
+                executionParameters?.OperationsToExclude,
+                cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
                 httpClient,
@@ -203,15 +207,13 @@ public static class KernelOpenApiPluginExtensions
         CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters(
-            executionParameters?.ServerUrlOverride,
             executionParameters?.EnableDynamicPayload ?? false,
-            executionParameters?.EnablePayloadNamespacing ?? false,
-            documentUri
+            executionParameters?.EnablePayloadNamespacing ?? false
         );
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
+        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
         {
             try
             {
@@ -262,12 +264,16 @@ public static class KernelOpenApiPluginExtensions
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
                 IsRequired = p.IsRequired,
+                Schema = p.Schema,
             })
             .ToList();
 
-        var function = SKFunction.FromNativeFunction(
-            nativeFunction: ExecuteAsync,
+        var returnParameter = operation.GetDefaultReturnParameter();
+
+        var function = SKFunction.Create(
+            method: ExecuteAsync,
             parameters: parameters,
+            returnParameter: returnParameter,
             description: operation.Description,
             pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),

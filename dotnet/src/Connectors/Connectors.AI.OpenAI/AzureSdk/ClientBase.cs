@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.Prompt;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -28,6 +28,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public abstract class ClientBase
 {
     private const int MaxResultsPerPrompt = 128;
+    private const string NameProperty = "Name";
+    private const string ArgumentsProperty = "Arguments";
 
     // Prevent external inheritors
     private protected ClientBase(ILoggerFactory? loggerFactory = null)
@@ -38,7 +40,7 @@ public abstract class ClientBase
     /// <summary>
     /// Model Id or Deployment Name
     /// </summary>
-    private protected string ModelId { get; set; } = string.Empty;
+    private protected string DeploymentOrModelName { get; set; } = string.Empty;
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client
@@ -51,9 +53,14 @@ public abstract class ClientBase
     private protected ILogger Logger { get; set; }
 
     /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
+
+    /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name!);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
@@ -97,7 +104,7 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -135,7 +142,7 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         using StreamingCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
@@ -157,7 +164,7 @@ public abstract class ClientBase
         var options = new EmbeddingsOptions(data);
 
         Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-            () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetEmbeddingsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -203,7 +210,7 @@ public abstract class ClientBase
         var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsAsync(this.DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -230,7 +237,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<ChatMessageBase> chat,
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -243,7 +250,7 @@ public abstract class ClientBase
         var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -265,6 +272,16 @@ public abstract class ClientBase
     private protected static OpenAIChatHistory InternalCreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
+    }
+
+    /// <summary>
+    /// Create a new chat instance based on chat history.
+    /// </summary>
+    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
+    /// <returns>Chat object</returns>
+    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
+    {
+        return new OpenAIChatHistory(chatHistory);
     }
 
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
@@ -293,9 +310,23 @@ public abstract class ClientBase
         }
     }
 
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
+        }
+    }
+
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        {
+            return InternalCreateNewChat(chatHistory);
+        }
+
         var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         return chat;
@@ -310,7 +341,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            Prompts = { text.NormalizeLineEndings() },
+            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
@@ -339,7 +370,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -364,7 +395,7 @@ public abstract class ClientBase
                 options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
             }
             else if (requestSettings.FunctionCall != OpenAIRequestSettings.FunctionCallNone
-                    && !requestSettings.FunctionCall.IsNullOrEmpty())
+                    && !string.IsNullOrEmpty(requestSettings.FunctionCall))
             {
                 var filteredFunctions = requestSettings.Functions
                     .Where(f => f.FullyQualifiedName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
@@ -394,25 +425,22 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var validRole = GetValidChatRole(message.Role);
-            options.Messages.Add(new ChatMessage(validRole, message.Content));
+            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
+
+            if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
+            {
+                azureMessage.Name = name;
+
+                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out string? arguments) is true)
+                {
+                    azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                }
+            }
+
+            options.Messages.Add(azureMessage);
         }
 
         return options;
-    }
-
-    private static ChatRole GetValidChatRole(AuthorRole role)
-    {
-        var validRole = new ChatRole(role.Label);
-
-        if (validRole != ChatRole.User &&
-            validRole != ChatRole.System &&
-            validRole != ChatRole.Assistant)
-        {
-            throw new ArgumentException($"Invalid chat message author role: {role}");
-        }
-
-        return validRole;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)

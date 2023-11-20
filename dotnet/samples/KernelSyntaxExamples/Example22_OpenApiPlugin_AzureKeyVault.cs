@@ -49,11 +49,14 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters
+            {
+                AuthCallback = authenticationProvider.AuthenticateRequestAsync,
+                ServerUrlOverride = new Uri(TestConfiguration.KeyVault.Endpoint),
+            });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
 
