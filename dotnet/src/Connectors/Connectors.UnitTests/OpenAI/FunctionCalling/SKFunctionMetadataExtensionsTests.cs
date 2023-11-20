@@ -2,7 +2,6 @@
 
 using System;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Xunit;
@@ -18,7 +17,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -30,7 +29,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -41,7 +40,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         {
             PluginName = string.Empty,
             Description = "baz",
-            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -53,7 +52,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -74,7 +73,7 @@ public sealed class SKFunctionMetadataExtensionsTests
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -88,7 +87,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -105,7 +104,7 @@ public sealed class SKFunctionMetadataExtensionsTests
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") },
+            ReturnParameter = new SKReturnParameterMetadata { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -117,7 +116,7 @@ public sealed class SKFunctionMetadataExtensionsTests
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = JsonDocument.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
