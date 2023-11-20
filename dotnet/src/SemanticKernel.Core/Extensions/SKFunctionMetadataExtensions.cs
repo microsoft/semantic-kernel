@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Extensions;
 /// <summary>
 /// Extensions for functions views.
 /// </summary>
-public static class FunctionViewExtensions
+public static class SKFunctionMetadataExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
@@ -21,7 +21,7 @@ public static class FunctionViewExtensions
     /// <param name="jsonSchemaDelegate">A delegate that creates a Json Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this FunctionView function, Func<Type?, string?, JsonDocument?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this SKFunctionMetadata function, Func<Type?, string?, JsonDocument?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionView = new JsonSchemaFunctionView
         {
@@ -32,12 +32,12 @@ public static class FunctionViewExtensions
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? string.Empty);
+            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description);
             if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
             }
-            if (parameter.IsRequired ?? false)
+            if (parameter.IsRequired)
             {
                 requiredProperties.Add(parameter.Name);
             }
@@ -45,10 +45,12 @@ public static class FunctionViewExtensions
 
         if (includeOutputSchema)
         {
-            var functionResponse = new JsonSchemaFunctionResponse();
-            functionResponse.Description = SuccessfulResponseDescription;
+            var functionResponse = new JsonSchemaFunctionResponse
+            {
+                Description = SuccessfulResponseDescription
+            };
 
-            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType!, SuccessfulResponseDescription);
+            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType, SuccessfulResponseDescription);
             functionResponse.Content.JsonResponse.Schema = schema;
 
             functionView.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);

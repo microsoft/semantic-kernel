@@ -36,12 +36,12 @@ internal static class Verify
         }
     }
 
-    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlySKPluginCollection? plugins = null)
+    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlySKPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
         {
-            ThrowInvalidName("plugin name", pluginName);
+            ThrowArgumentInvalidName("plugin name", pluginName, paramName);
         }
 
         if (plugins is not null && plugins.Contains(pluginName))
@@ -50,18 +50,12 @@ internal static class Verify
         }
     }
 
-    internal static void ValidFunctionName([NotNull] string? functionName) =>
-        ValidName(functionName, "function name");
-
-    internal static void ValidFunctionParamName([NotNull] string? functionParamName) =>
-        ValidName(functionParamName, "function parameter name");
-
-    private static void ValidName([NotNull] string? name, string kind)
+    internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression("functionName")] string? paramName = null)
     {
-        NotNullOrWhiteSpace(name);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(name))
+        NotNullOrWhiteSpace(functionName);
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
-            ThrowInvalidName(kind, name);
+            ThrowArgumentInvalidName("function name", functionName, paramName);
         }
     }
 
@@ -88,7 +82,7 @@ internal static class Verify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IReadOnlyList<ParameterView> parameters)
+    internal static void ParametersUniqueness(IReadOnlyList<SKParameterMetadata> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -96,7 +90,7 @@ internal static class Verify
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < count; i++)
             {
-                ParameterView p = parameters[i];
+                SKParameterMetadata p = parameters[i];
                 if (string.IsNullOrWhiteSpace(p.Name))
                 {
                     string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
@@ -119,8 +113,8 @@ internal static class Verify
     }
 
     [DoesNotReturn]
-    private static void ThrowInvalidName(string kind, string name) =>
-        throw new SKException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+    private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
+        throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>

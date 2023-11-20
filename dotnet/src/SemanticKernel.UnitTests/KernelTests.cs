@@ -573,7 +573,7 @@ public class KernelTests
                 Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in context.Plugins.GetFunctionViews())
+            foreach (var function in context.Plugins.GetFunctionsMetadata())
             {
                 context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }

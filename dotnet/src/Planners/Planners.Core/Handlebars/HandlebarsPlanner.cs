@@ -96,9 +96,9 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, template);
     }
 
-    private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
+    private List<SKFunctionMetadata> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
     {
-        return this._kernel.Plugins.GetFunctionViews()
+        return this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
@@ -135,7 +135,7 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(Kernel kernel, string goal, List<FunctionView> availableFunctions)
+    private string GetHandlebarsTemplate(Kernel kernel, string goal, List<SKFunctionMetadata> availableFunctions)
     {
         var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
         var variables = new Dictionary<string, object?>()

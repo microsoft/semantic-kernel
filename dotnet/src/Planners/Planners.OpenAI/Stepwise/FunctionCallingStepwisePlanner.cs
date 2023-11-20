@@ -167,7 +167,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
+        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
 

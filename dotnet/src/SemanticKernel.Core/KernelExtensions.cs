@@ -36,8 +36,8 @@ public static class KernelExtensions
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null)
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
@@ -62,8 +62,8 @@ public static class KernelExtensions
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null)
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
@@ -518,7 +518,7 @@ repeat:
 
             try
             {
-                var functionDetails = skFunction.Describe();
+                var functionDetails = skFunction.GetMetadata();
 
                 functionResult = await skFunction.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 

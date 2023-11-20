@@ -117,13 +117,46 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        JsonSchemaFunctionView jsonSchemaView = this.ToFunctionView().ToJsonSchemaFunctionView(GetJsonSchemaDocument, false);
+        JsonSchemaFunctionView jsonSchemaView = this.GetMetadata().ToJsonSchemaFunctionView(GetJsonSchemaDocument, false);
 
         return new FunctionDefinition
         {
             Name = this.FullyQualifiedName,
             Description = this.Description,
             Parameters = BinaryData.FromObjectAsJson(jsonSchemaView.Parameters),
+        };
+    }
+
+    /// <summary>
+    /// Converts this to an <see cref="SKFunctionMetadata"/>.
+    /// </summary>
+    /// <returns>An <see cref="SKFunctionMetadata"/> object.</returns>
+    private SKFunctionMetadata GetMetadata()
+    {
+        var parameterMetadata = new SKParameterMetadata[this.Parameters.Count];
+        for (int i = 0; i < parameterMetadata.Length; i++)
+        {
+            var p = this.Parameters[i];
+            parameterMetadata[i] = new SKParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                IsRequired = p.IsRequired,
+                Schema = p.Schema,
+                ParameterType = p.ParameterType
+            };
+        }
+
+        return new SKFunctionMetadata(this.FunctionName)
+        {
+            PluginName = this.PluginName,
+            Description = this.Description,
+            Parameters = parameterMetadata,
+            ReturnParameter = new SKReturnParameterMetadata
+            {
+                Description = this.ReturnParameter.Description,
+                Schema = this.ReturnParameter.Schema,
+                ParameterType = this.ReturnParameter.ParameterType
+            }
         };
     }
 

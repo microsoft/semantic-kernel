@@ -283,9 +283,9 @@ Goal: tell me a joke.
         throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
-    private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<SKFunctionMetadata> functions)
     {
-        foreach (FunctionView func in functions)
+        foreach (SKFunctionMetadata func in functions)
         {
             // Function description
             if (func.Description != null)

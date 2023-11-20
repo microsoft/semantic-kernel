@@ -41,9 +41,9 @@ internal sealed class InstrumentedPlan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public FunctionView Describe()
+    public SKFunctionMetadata GetMetadata()
     {
-        return this._plan.Describe();
+        return this._plan.GetMetadata();
     }
 
     /// <inheritdoc/>
