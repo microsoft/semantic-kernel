@@ -32,13 +32,13 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportFunctions(new EmailPluginFake());
+        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
@@ -59,7 +59,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
@@ -75,7 +75,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         );
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
+    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);

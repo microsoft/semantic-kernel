@@ -27,7 +27,7 @@ public sealed class HandlebarsPlanner
     /// </summary>
     public Stopwatch Stopwatch { get; } = new();
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     private readonly HandlebarsPlannerConfig _config;
 
@@ -38,7 +38,7 @@ public sealed class HandlebarsPlanner
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="config">The configuration.</param>
-    public HandlebarsPlanner(IKernel kernel, HandlebarsPlannerConfig? config = default)
+    public HandlebarsPlanner(Kernel kernel, HandlebarsPlannerConfig? config = default)
     {
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
@@ -98,7 +98,7 @@ public sealed class HandlebarsPlanner
 
     private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
     {
-        return this._kernel.Functions.GetFunctionViews()
+        return this._kernel.Plugins.GetFunctionViews()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
@@ -135,7 +135,7 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
+    private string GetHandlebarsTemplate(Kernel kernel, string goal, List<FunctionView> availableFunctions)
     {
         var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
         var variables = new Dictionary<string, object?>()

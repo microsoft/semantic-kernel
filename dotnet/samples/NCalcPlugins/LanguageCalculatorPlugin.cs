@@ -64,12 +64,10 @@ Question: {{ $input }}
     /// <summary>
     /// Initializes a new instance of the <see cref="LanguageCalculatorPlugin"/> class.
     /// </summary>
-    /// <param name="kernel">The kernel to be used for creating the semantic function.</param>
-    public LanguageCalculatorPlugin(IKernel kernel)
+    public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = kernel.CreateSemanticFunction(
+        this._mathTranslator = SKFunction.FromPrompt(
             MathTranslatorPrompt,
-            pluginName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
             requestSettings: new AIRequestSettings()
@@ -123,7 +121,7 @@ Question: {{ $input }}
     {
         var textExpressions = match.Groups[1].Value;
         var expr = new Expression(textExpressions, EvaluateOptions.IgnoreCase);
-        expr.EvaluateParameter += delegate (string name, ParameterArgs args)
+        expr.EvaluateParameter += (string name, ParameterArgs args) =>
         {
             args.Result = name.ToLower(System.Globalization.CultureInfo.CurrentCulture) switch
             {

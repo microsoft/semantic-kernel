@@ -43,14 +43,14 @@ public sealed class WebPluginTests : IDisposable
     public async Task BingPluginTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
         BingConnector connector = new(this._bingApiKey, connectorLogger);
         Assert.NotEmpty(this._bingApiKey);
 
         WebSearchEnginePlugin plugin = new(connector);
-        var searchFunctions = kernel.ImportFunctions(plugin, "WebSearchEngine");
+        var searchFunctions = kernel.ImportPluginFromObject(plugin, "WebSearchEngine");
 
         // Act
         KernelResult result = await kernel.RunAsync(
@@ -66,10 +66,10 @@ public sealed class WebPluginTests : IDisposable
     public async Task WebFileDownloadPluginFileTestAsync()
     {
         // Arrange
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
         using XunitLogger<WebFileDownloadPlugin> pluginLogger = new(this._output);
         var plugin = new WebFileDownloadPlugin(pluginLogger);
-        var downloadFunctions = kernel.ImportFunctions(plugin, "WebFileDownload");
+        var downloadFunctions = kernel.ImportPluginFromObject(plugin, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
         contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);

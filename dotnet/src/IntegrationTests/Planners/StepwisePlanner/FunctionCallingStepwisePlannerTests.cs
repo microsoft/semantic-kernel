@@ -45,11 +45,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings);
+        Kernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject(new TimePlugin(), "time");
 
         var planner = new FunctionCallingStepwisePlanner(
             kernel,
@@ -66,7 +66,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 10);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);

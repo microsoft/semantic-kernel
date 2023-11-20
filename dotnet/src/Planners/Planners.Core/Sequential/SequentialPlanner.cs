@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
@@ -28,7 +27,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
-        IKernel kernel,
+        Kernel kernel,
         SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -40,14 +39,13 @@ public sealed class SequentialPlanner : ISequentialPlanner
         // Set up prompt template
         string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Sequential.skprompt.txt");
 
-        this._functionFlowFunction = kernel.CreateSemanticFunction(
+        this._functionFlowFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            pluginName: RestrictedPluginName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
             requestSettings: new AIRequestSettings()
             {
-                ExtensionData = new Dictionary<string, object>()
+                ExtensionData = new()
                 {
                     { "Temperature", 0.0 },
                     { "StopSequences", new[] { StopSequence } },
@@ -66,7 +64,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
         ContextVariables vars = new(goal)
         {
@@ -84,7 +82,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
 
         Plan plan;
         try
@@ -106,7 +104,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed

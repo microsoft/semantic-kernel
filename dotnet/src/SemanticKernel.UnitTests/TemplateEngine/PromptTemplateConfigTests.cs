@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
@@ -133,9 +135,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-#pragma warning disable CS0618 // Ensure backward compatibility
-        Assert.NotNull(promptTemplateConfig.Completion);
-        Assert.Equal("gpt-4", promptTemplateConfig.Completion.ModelId);
-#pragma warning restore CS0618 // Ensure backward compatibility
+        Assert.NotNull(promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>());
+        Assert.Equal("gpt-4", promptTemplateConfig?.ModelSettings.FirstOrDefault<AIRequestSettings>()?.ModelId);
     }
 }

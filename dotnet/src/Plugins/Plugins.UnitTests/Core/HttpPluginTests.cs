@@ -39,7 +39,7 @@ public class HttpPluginTests : IDisposable
         var plugin = new HttpPlugin();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(plugin, "http");
+        kernel.ImportPluginFromObject(plugin, "http");
     }
 
     [Fact]

@@ -61,14 +61,14 @@ public static class Example30_ChatWithPrompts
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
         // of available plugins needed to render prompt templates.
@@ -90,12 +90,12 @@ public static class Example30_ChatWithPrompts
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(context);
+        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(context);
+        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
