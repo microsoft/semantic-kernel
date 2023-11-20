@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner : IActionPlanner
+public sealed class ActionPlanner : IPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string PluginName = "this";
@@ -96,10 +96,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(goal))
-        {
-            throw new SKException("The goal specified is empty");
-        }
+        Verify.NotNullOrWhiteSpace(goal);
 
         this._context.Variables.Update(goal);
 

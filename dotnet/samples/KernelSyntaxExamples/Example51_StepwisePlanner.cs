@@ -139,7 +139,7 @@ public static class Example51_StepwisePlanner
         try
         {
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
-            var plan = planner.CreatePlan(question);
+            var plan = await planner.CreatePlanAsync(question);
 
             var kernelResult = await kernel.RunAsync(plan);
             var planResult = kernelResult.FunctionResults.First();
