@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <remarks>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
 /// </remarks>
-public class StepwisePlanner : IStepwisePlanner
+public class StepwisePlanner : IPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
@@ -68,12 +68,9 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     /// <inheritdoc />
-    public Plan CreatePlan(string goal)
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(goal))
-        {
-            throw new SKException("The goal specified is empty");
-        }
+        Verify.NotNullOrWhiteSpace(goal);
 
         Plan plan = new(this._nativeFunctions["ExecutePlan"]);
         plan.PluginName = RestrictedPluginName;
@@ -85,7 +82,7 @@ public class StepwisePlanner : IStepwisePlanner
         plan.Outputs.Add("stepsTaken");
         plan.Outputs.Add("iterations");
 
-        return plan;
+        return Task.FromResult(plan);
     }
 
     /// <summary>

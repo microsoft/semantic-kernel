@@ -70,6 +70,8 @@ public static class SKFunctionExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public static ISKFunction WithInstrumentation(this ISKFunction function, ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(function);
+
         return new InstrumentedSKFunction(function, loggerFactory);
     }
 }
