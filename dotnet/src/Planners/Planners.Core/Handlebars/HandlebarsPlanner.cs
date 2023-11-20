@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 

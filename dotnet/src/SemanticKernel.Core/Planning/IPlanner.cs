@@ -3,7 +3,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan

@@ -12,8 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-using Microsoft.SemanticKernel.Diagnostics;
-using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Verify;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -176,8 +175,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     {
         this._logger.LogDebug("Deleting vector by point ID");
 
-        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
-        Verify.NotNull(pointIds, "Qdrant point IDs are NULL");
+        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNull(pointIds);
 
         using var request = DeleteVectorsRequest.DeleteFrom(collectionName)
             .DeleteRange(pointIds)
@@ -251,8 +250,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     public async Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Upserting vectors");
-        Verify.NotNull(vectorData, "The vector data entries are NULL");
-        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
+        Verify.NotNull(vectorData);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
         using var request = UpsertVectorRequest.Create(collectionName)
             .UpsertRange(vectorData)
@@ -465,7 +464,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
     private static Uri SanitizeEndpoint(string endpoint, int? port = null)
     {
-        Verify.IsValidUrl(nameof(endpoint), endpoint, false, true, false);
+        Verify.ValidateUrl(endpoint);
 
         UriBuilder builder = new(endpoint);
         if (port.HasValue) { builder.Port = port.Value; }

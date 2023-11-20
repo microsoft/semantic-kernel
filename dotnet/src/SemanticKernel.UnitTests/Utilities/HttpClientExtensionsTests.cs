@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;

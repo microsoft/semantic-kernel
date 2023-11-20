@@ -11,7 +11,7 @@ using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
@@ -327,7 +327,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
-        Application = Telemetry.HttpUserAgent,
+        Application = HttpHeaderValues.UserAgent,
     };
 
     private bool _searchInitialized;

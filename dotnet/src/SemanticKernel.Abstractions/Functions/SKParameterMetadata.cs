@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace

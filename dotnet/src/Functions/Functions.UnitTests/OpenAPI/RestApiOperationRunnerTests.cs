@@ -14,7 +14,6 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;

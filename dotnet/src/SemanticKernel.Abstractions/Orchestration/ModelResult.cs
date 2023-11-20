@@ -2,7 +2,6 @@
 
 using System;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable CA1024

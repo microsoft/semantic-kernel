@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;

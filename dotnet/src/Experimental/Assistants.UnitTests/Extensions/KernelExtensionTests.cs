@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 

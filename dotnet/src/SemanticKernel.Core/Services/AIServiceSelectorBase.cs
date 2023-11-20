@@ -3,7 +3,6 @@
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 

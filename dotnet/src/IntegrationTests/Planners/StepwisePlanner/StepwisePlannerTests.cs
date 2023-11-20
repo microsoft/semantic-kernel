@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;

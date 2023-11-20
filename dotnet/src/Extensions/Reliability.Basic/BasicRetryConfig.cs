@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Reliability.Basic;
 
@@ -56,11 +55,11 @@ public sealed record BasicRetryConfig
     /// </summary>
     public List<HttpStatusCode> RetryableStatusCodes { get; set; } = new()
     {
-        (HttpStatusCode)HttpStatusCodeType.RequestTimeout,
-        (HttpStatusCode)HttpStatusCodeType.ServiceUnavailable,
-        (HttpStatusCode)HttpStatusCodeType.GatewayTimeout,
-        (HttpStatusCode)HttpStatusCodeType.TooManyRequests,
-        (HttpStatusCode)HttpStatusCodeType.BadGateway,
+        HttpStatusCode.RequestTimeout,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        (HttpStatusCode)429 /* TooManyRequests */,
+        HttpStatusCode.BadGateway,
     };
 
     /// <summary>

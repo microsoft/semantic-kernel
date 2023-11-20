@@ -3,7 +3,6 @@
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
