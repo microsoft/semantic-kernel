@@ -348,12 +348,13 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
         var defaultConfig = new PromptTemplateConfig();
         var azureConfig = PromptTemplateConfig.FromJson(
-            @"
-            {
-                ""completion"": {
-                    ""max_tokens"": 256,
-                    ""service_id"": ""azure-text-davinci-003""
-                }
+            @"{
+                ""models"": [
+                    {
+                        ""max_tokens"": 256,
+                        ""service_id"": ""azure-text-davinci-003""
+                    }
+                ]
             }");
 
         var defaultFunc = target.CreateFunctionFromPrompt(
@@ -361,7 +362,7 @@ public sealed class OpenAICompletionTests : IDisposable
             defaultConfig,
             "FishMarket1");
         var azureFunc = target.CreateFunctionFromPrompt(
-            promptTemplateFactory.Create(prompt, defaultConfig),
+            promptTemplateFactory.Create(prompt, azureConfig),
             azureConfig,
             "FishMarket2");
 
