@@ -188,7 +188,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "Foo {{Foo-Bar}}";
         var variables = new Dictionary<string, object?>();
-        kernel.ImportFunctions(new Foo(), "Foo");
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
@@ -223,7 +223,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
         var variables = new Dictionary<string, object?>();
-        kernel.ImportFunctions(new Foo(), "Foo");
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
@@ -240,7 +240,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "{{Foo-Combine x=\"Bar\"}}";
         var variables = new Dictionary<string, object?>();
-        kernel.ImportFunctions(new Foo(), "Foo");
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert   
         Assert.Throws<SKException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
@@ -254,7 +254,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "{{Foo-StringifyInt x=\"twelve\"}}";
         var variables = new Dictionary<string, object?>();
-        kernel.ImportFunctions(new Foo(), "Foo");
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
@@ -268,19 +268,19 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "{{Foo-Random x=\"random\"}}";
         var variables = new Dictionary<string, object?>();
-        kernel.ImportFunctions(new Foo(), "Foo");
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert   
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
     }
 
-    private IKernel InitializeKernel()
+    private Kernel InitializeKernel()
     {
         // Arrange
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithRetryBasic()
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,

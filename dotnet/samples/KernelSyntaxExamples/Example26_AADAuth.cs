@@ -42,7 +42,7 @@ public static class Example26_AADAuth
             ExcludeAzurePowerShellCredential = true
         };
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
             .WithAzureOpenAIChatCompletionService(

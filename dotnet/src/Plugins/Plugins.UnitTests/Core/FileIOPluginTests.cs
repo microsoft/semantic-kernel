@@ -25,7 +25,7 @@ public class FileIOPluginTests
         var kernel = new KernelBuilder().Build();
 
         // Act
-        var functions = kernel.ImportFunctions(new FileIOPlugin(), "fileIO");
+        var functions = kernel.ImportPluginFromObject<FileIOPlugin>("fileIO");
 
         // Assert no exception occurs e.g. due to reflection
         Assert.NotNull(functions);

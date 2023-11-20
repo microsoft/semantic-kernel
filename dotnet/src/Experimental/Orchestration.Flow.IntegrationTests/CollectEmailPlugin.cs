@@ -12,6 +12,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Orchestration;
 
+#pragma warning disable SKEXP0001
+
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class CollectEmailPlugin
@@ -34,7 +36,7 @@ Do not expose the regex unless asked.
 
     private readonly AIRequestSettings _chatRequestSettings;
 
-    public CollectEmailPlugin(IKernel kernel)
+    public CollectEmailPlugin(Kernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
         this._chatRequestSettings = new OpenAIRequestSettings

@@ -40,7 +40,7 @@ public static class FunctionViewExtensions
         return new OpenAIFunction
         {
             FunctionName = functionView.Name,
-            PluginName = functionView.PluginName,
+            PluginName = functionView.PluginName ?? "",
             Description = functionView.Description,
             Parameters = openAIParams,
             ReturnParameter = returnParameter

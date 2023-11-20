@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -18,8 +17,10 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 /// </summary>
 public static class KernelOpenAIPluginExtensions
 {
+    // TODO: Review XML comments
+
     /// <summary>
-    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -27,22 +28,85 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="pluginName">Plugin name.</param>
+    /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A collection of invocable functions</returns>
+    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+        this Kernel kernel,
+        string pluginName,
+        Uri uri,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="pluginName">Plugin name.</param>
+    /// <param name="stream">A stream representing the AI Plugin</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A collection of invocable functions</returns>
+    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+        this Kernel kernel,
+        string pluginName,
+        Stream stream,
+        OpenAIFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="pluginName">Plugin name.</param>
+    /// <param name="filePath">The file path to the AI Plugin</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A collection of invocable functions</returns>
+    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+        this Kernel kernel,
         string pluginName,
         string filePath,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName);
+        Verify.ValidPluginName(pluginName, kernel.Plugins);
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
             kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
-        return await ImportAsync(
+        return await CreateAsync(
             kernel,
             openAIManifest,
             pluginName,
@@ -51,7 +115,7 @@ public static class KernelOpenAIPluginExtensions
     }
 
     /// <summary>
-    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -59,15 +123,15 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+        this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName);
+        Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -81,7 +145,7 @@ public static class KernelOpenAIPluginExtensions
             executionParameters?.UserAgent,
             cancellationToken).ConfigureAwait(false);
 
-        return await ImportAsync(
+        return await CreateAsync(
             kernel,
             openAIManifest,
             pluginName,
@@ -90,7 +154,7 @@ public static class KernelOpenAIPluginExtensions
     }
 
     /// <summary>
-    /// Imports a plugin that is exposed through OpenAI's ChatGPT format.
+    /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -98,19 +162,19 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenAIPluginFunctionsAsync(
-        this IKernel kernel,
+    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+        this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName);
+        Verify.ValidPluginName(pluginName, kernel.Plugins);
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
 
-        return await ImportAsync(
+        return await CreateAsync(
             kernel,
             openAIManifest,
             pluginName,
@@ -120,8 +184,8 @@ public static class KernelOpenAIPluginExtensions
 
     #region private
 
-    private static async Task<IDictionary<string, ISKFunction>> ImportAsync(
-        IKernel kernel,
+    private static async Task<ISKPlugin> CreateAsync(
+        Kernel kernel,
         string openAIManifest,
         string pluginName,
         OpenAIFunctionExecutionParameters? executionParameters = null,
@@ -148,7 +212,7 @@ public static class KernelOpenAIPluginExtensions
             };
         }
 
-        return await kernel.ImportOpenApiPluginFunctionsAsync(
+        return await kernel.CreatePluginFromOpenApiAsync(
             pluginName,
             ParseOpenAIManifestForOpenApiSpecUrl(pluginJson),
             executionParameters,

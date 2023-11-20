@@ -15,9 +15,9 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Extensions;
 
-public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
+public sealed class KernelFunctionExtensionsTests : IDisposable
 {
-    public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
+    public KernelFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
     }
@@ -28,14 +28,14 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
 
-        var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress}}}}";
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -47,14 +47,14 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
-        IKernel target = builder.Build();
+        Kernel target = builder.Build();
 
-        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
+        var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
 
-        var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress \"a person\"}}}}";
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());

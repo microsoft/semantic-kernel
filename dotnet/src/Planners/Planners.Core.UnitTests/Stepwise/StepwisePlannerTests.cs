@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -14,8 +14,8 @@ public sealed class StepwisePlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new StepwisePlannerConfig()
         {
@@ -23,7 +23,7 @@ public sealed class StepwisePlannerTests
         };
 
         // Act
-        var planner = new StepwisePlanner(kernel.Object, config);
+        var planner = new StepwisePlanner(kernel, config);
 
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());

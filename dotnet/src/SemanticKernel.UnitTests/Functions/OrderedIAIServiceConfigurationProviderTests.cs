@@ -19,9 +19,8 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNoServices()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
-        var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateSemanticFunction("Hello AI");
+        var context = new KernelBuilder().Build().CreateNewContext();
+        var skfunction = SKFunction.FromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -35,7 +34,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithAIService<IAIService>("service1", new AIService()).Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateSemanticFunction("Hello AI");
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -52,7 +51,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>("service1", new TextCompletion()).Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateSemanticFunction("Hello AI");
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -73,7 +72,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "service2" };
-        var skfunction = kernel.CreateSemanticFunction("Hello AI", requestSettings: requestSettings);
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -94,7 +93,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "service3" };
-        var skfunction = kernel.CreateSemanticFunction("Hello AI", requestSettings: requestSettings);
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -111,7 +110,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
             .Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateSemanticFunction("Hello AI");
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -133,7 +132,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings();
-        var skfunction = kernel.CreateSemanticFunction("Hello AI", requestSettings: requestSettings);
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -154,7 +153,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "" };
-        var skfunction = kernel.CreateSemanticFunction("Hello AI", requestSettings: requestSettings);
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
@@ -184,7 +183,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
         }
-        var skfunction = kernel.CreateSemanticFunction("Hello AI", promptTemplateConfig: new PromptTemplateConfig() { ModelSettings = modelSettings });
+        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", promptTemplateConfig: new PromptTemplateConfig() { ModelSettings = modelSettings });
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act

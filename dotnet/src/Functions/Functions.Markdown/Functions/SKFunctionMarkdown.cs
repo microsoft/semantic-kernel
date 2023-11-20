@@ -63,9 +63,8 @@ public static class SKFunctionMarkdown
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return SKFunction.Create(
+        return SKFunction.FromPrompt(
             CreateFromPromptMarkdown(text, functionName),
-            pluginName,
             promptTemplateFactory,
             loggerFactory);
     }

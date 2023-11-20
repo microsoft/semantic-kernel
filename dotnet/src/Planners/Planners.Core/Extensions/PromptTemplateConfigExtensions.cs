@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
+// ReSharper disable once CheckNamespace - Using the namespace of Kernel
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.TemplateEngine;
 

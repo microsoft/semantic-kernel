@@ -27,7 +27,7 @@ public class WaitPluginTests
         var kernel = new KernelBuilder().Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new WaitPlugin(), "wait");
+        kernel.ImportPluginFromObject<WaitPlugin>("wait");
     }
 
     [Theory]
