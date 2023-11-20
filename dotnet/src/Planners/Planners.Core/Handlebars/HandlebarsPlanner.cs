@@ -33,10 +33,6 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPlannerConfig _config;
 
-    private readonly HashSet<HandlebarsParameterTypeView> _parametersTypeView = new();
-
-    private readonly Dictionary<string, string> _parametersSchemaView = new();
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
@@ -57,11 +53,9 @@ public sealed class HandlebarsPlanner
     /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        var availableFunctions = this.GetAvailableFunctionsManual(cancellationToken);
-        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions);
+        var availableFunctions = this.GetAvailableFunctionsManual(out var complexParametersTypesView, out var complexParametersSchemaView, cancellationToken);
+        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions, complexParametersTypesView, complexParametersSchemaView);
         var chatCompletion = this._kernel.GetService<IChatCompletion>();
-
-        // Console.WriteLine($"\nTemplate:\n{createPlanPrompt}");
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
@@ -102,8 +96,20 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
-    private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Creates a function manual from the available functions in the kernel, including isolated complex types and schemas definitions for function parameters.
+    /// </summary>
+    /// <param name="complexParametersTypesView">Complex parameters types view for isolated render in prompt template.</param>
+    /// <param name="complexParametersSchemaView">Complex parameters schema view for isolated render in prompt template.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The available functions.</returns>
+    private List<FunctionView> GetAvailableFunctionsManual(
+        out HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
+        out Dictionary<string, string> complexParametersSchemaView,
+        CancellationToken cancellationToken = default)
     {
+        complexParametersTypesView = new();
+        complexParametersSchemaView = new();
         var availableFunctions = this._kernel.Functions.GetFunctionViews()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
@@ -117,12 +123,12 @@ public sealed class HandlebarsPlanner
             var parametersView = new List<ParameterView>();
             foreach (var parameter in skFunction.Parameters)
             {
-                var paramToAdd = this.SetComplexTypeDefinition(parameter);
+                var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParametersTypesView, complexParametersSchemaView);
                 parametersView.Add(paramToAdd);
             }
 
             var returnParameter = skFunction.ReturnParameter.ToParameterView(skFunction.Name);
-            returnParameter = this.SetComplexTypeDefinition(returnParameter);
+            returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParametersTypesView, complexParametersSchemaView);
 
             // Need to override function view in case parameter views changed (e.g., converted primitive types from schema objects)
             var functionView = new FunctionView(skFunction.Name, skFunction.PluginName, skFunction.Description, parametersView, returnParameter.ToReturnParameterView());
@@ -133,7 +139,10 @@ public sealed class HandlebarsPlanner
     }
 
     // Extract any complex types or schemas for isolated render in prompt template
-    private ParameterView SetComplexTypeDefinition(ParameterView parameter)
+    private ParameterView SetComplexTypeDefinition(
+        ParameterView parameter,
+        HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
+        Dictionary<string, string> complexParametersSchemaView)
     {
         // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
         if (parameter.ParameterType is not null)
@@ -145,7 +154,7 @@ public sealed class HandlebarsPlanner
                 parameter = parameter with { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
             }
 
-            this._parametersTypeView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
+            complexParametersTypesView.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeView());
         }
         else if (parameter.Schema is not null)
         {
@@ -153,7 +162,7 @@ public sealed class HandlebarsPlanner
             var parsedParameter = parameter.ParseJsonSchema();
             if (parsedParameter.Schema is not null)
             {
-                this._parametersSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+                complexParametersSchemaView[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
             }
 
             parameter = parsedParameter;
@@ -192,7 +201,11 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
+    private string GetHandlebarsTemplate(
+        IKernel kernel, string goal,
+        List<FunctionView> availableFunctions,
+        HashSet<HandlebarsParameterTypeView> complexParametersTypesView,
+        Dictionary<string, string> complexParametersSchemaView)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
@@ -201,8 +214,8 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
                 { "allowLoops", this._config.AllowLoops },
-                { "complexTypeDefinitions", this._parametersTypeView.Count > 0 && this._parametersTypeView.Any(p => p.IsComplexType) ? this._parametersTypeView.Where(p => p.IsComplexType) : null},
-                { "complexSchemaDefinitions", this._parametersSchemaView.Count > 0 ? this._parametersSchemaView : null},
+                { "complexTypeDefinitions", complexParametersTypesView.Count > 0 && complexParametersTypesView.Any(p => p.IsComplexType) ? complexParametersTypesView.Where(p => p.IsComplexType) : null},
+                { "complexSchemaDefinitions", complexParametersSchemaView.Count > 0 ? complexParametersSchemaView : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };
