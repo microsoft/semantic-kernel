@@ -37,9 +37,6 @@ public static class Example65_HandlebarsPlanner
 
         // Using Complex Types as inputs and outputs
         await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
-
-        // TODO (@teresaqhoang): Enable this sample once complex types are supported for remote plugins return type.
-        // await RunRemoteDictionaryWithComplexTypesSampleAsync();
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -68,13 +65,13 @@ public static class Example65_HandlebarsPlanner
                 apiKey: apiKey)
             .Build();
 
-        if (pluginDirectoryNames[0] == BasicDictionaryPlugin.PluginName)
+        if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new BasicDictionaryPlugin(), BasicDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromObject(new StringParamsDictionaryPlugin(), StringParamsDictionaryPlugin.PluginName);
         }
-        else if (pluginDirectoryNames[0] == ComplexDictionaryPlugin.PluginName)
+        else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new ComplexDictionaryPlugin(), ComplexDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromObject(new ComplexParamsDictionaryPlugin(), ComplexParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == CourseraPluginName)
         {
@@ -149,7 +146,7 @@ public static class Example65_HandlebarsPlanner
     private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Dictionary");
-        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, BasicDictionaryPlugin.PluginName);
+        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -168,9 +165,8 @@ public static class Example65_HandlebarsPlanner
 
     private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        // Test with Coursera APIs, which uses complex types as inputs and outputs. 
         WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
-        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexDictionaryPlugin.PluginName);
+        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -199,20 +195,6 @@ public static class Example65_HandlebarsPlanner
             Word 2: dog
             Definition 2: a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship
         */
-    }
-
-    private static async Task RunRemoteDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Complex Types with Coursera OpenAPI Plugin");
-
-        try
-        {
-            await RunSampleAsync("I'd like to learn about prompt engineering. Please recommend some free courses.", shouldPrintPrompt, CourseraPluginName);
-        }
-        catch (InvalidOperationException)
-        {
-            Console.WriteLine("======== DONE RunRemoteDictionaryWithComplexTypesSampleAsync ========");
-        }
     }
 
     private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)

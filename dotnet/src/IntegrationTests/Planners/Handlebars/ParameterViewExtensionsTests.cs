@@ -163,7 +163,7 @@ public class ParameterViewExtensionsTests
     public void ReturnsTrueForPrimitiveOrStringSchemaTypes()
     {
         // Arrange
-        var primitiveSchemaTypes = new string[] { "string", "number", "integer", "boolean", "null" };
+        var primitiveSchemaTypes = new string[] { "string", "number", "integer", "boolean" };
 
         // Act and Assert
         foreach (var type in primitiveSchemaTypes)
@@ -176,7 +176,7 @@ public class ParameterViewExtensionsTests
     public void ReturnsFalseForNonPrimitiveOrStringSchemaTypes()
     {
         // Arrange
-        var nonPrimitiveSchemaTypes = new string[] { "object", "array", "any" };
+        var nonPrimitiveSchemaTypes = new string[] { "object", "array", "any", "null" };
 
         // Act and Assert
         foreach (var type in nonPrimitiveSchemaTypes)

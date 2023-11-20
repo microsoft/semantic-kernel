@@ -77,7 +77,7 @@ internal static class ParameterViewExtensions
     }
 
     public static bool isPrimitiveOrStringType(string type) =>
-        type == "string" || type == "number" || type == "integer" || type == "boolean" || type == "null";
+        type == "string" || type == "number" || type == "integer" || type == "boolean";
 
     private static Type GetTypeFromSchema(string schemaType)
     {
@@ -100,7 +100,7 @@ internal static class ParameterViewExtensions
     {
         var schema = parameter.Schema!;
         var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
-        if (isPrimitiveOrStringType(type))
+        if (isPrimitiveOrStringType(type) || type == "null")
         {
             return parameter with { ParameterType = GetTypeFromSchema(type), Schema = null };
         }
