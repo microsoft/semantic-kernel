@@ -72,7 +72,7 @@ public sealed class SKFunctionTests2
 
         // Assert
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context.Result);
+        Assert.Equal(s_expected, context.Variables.Input);
         Assert.Equal(s_expected, result.GetValue<string>());
     }
 
@@ -96,7 +96,7 @@ public sealed class SKFunctionTests2
 
         // Assert
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context.Result);
+        Assert.Equal(s_expected, context.Variables.Input);
         Assert.Equal(s_expected, result.GetValue<string>());
     }
 
@@ -121,7 +121,7 @@ public sealed class SKFunctionTests2
 
         // Assert
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context.Result);
+        Assert.Equal(s_expected, context.Variables.Input);
         Assert.Equal(s_expected, result.GetValue<string>());
     }
 
@@ -170,7 +170,7 @@ public sealed class SKFunctionTests2
 
         // Assert
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal("abc", context.Result);
+        Assert.Equal("abc", context.Variables.Input);
         Assert.Equal("abc", result.GetValue<string>());
     }
 
@@ -200,7 +200,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal("abc", context.Result);
+        Assert.Equal("abc", context.Variables.Input);
         Assert.Equal("abc", result.GetValue<string>());
     }
 
@@ -230,7 +230,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_actual, context.Result);
+        Assert.Equal(s_actual, context.Variables.Input);
         Assert.Equal(s_actual, result.GetValue<string>());
         Assert.Equal(s_expected, context.Variables["canary"]);
     }
@@ -264,7 +264,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("foo", context.Result);
+        Assert.Equal("foo", context.Variables.Input);
         Assert.Equal("foo", result.GetValue<string>());
     }
 
@@ -319,7 +319,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal("foo-bar", context.Result);
+        Assert.Equal("foo-bar", context.Variables.Input);
         Assert.Equal("foo-bar", result.GetValue<string>());
     }
 
@@ -348,7 +348,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal("hello there", context.Result);
+        Assert.Equal("hello there", context.Variables.Input);
         Assert.Equal("hello there", result.GetValue<string>());
     }
 
@@ -379,7 +379,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("x y z", context.Result);
+        Assert.Equal("x y z", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 
@@ -438,7 +438,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("x y z", context.Result);
+        Assert.Equal("x y z", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 
@@ -466,7 +466,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("new data", context.Result);
+        Assert.Equal("new data", context.Variables.Input);
         Assert.Equal("new data", result.GetValue<string>());
     }
 
@@ -493,7 +493,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("new data", context.Result);
+        Assert.Equal("new data", context.Variables.Input);
         Assert.Equal("new data", result.GetValue<string>());
     }
 
@@ -542,8 +542,8 @@ public sealed class SKFunctionTests2
         Assert.True(oldContext.Variables.ContainsKey("legacy"));
         Assert.False(newContext.Variables.ContainsKey("legacy"));
 
-        Assert.Equal("x y z", oldContext.Result);
-        Assert.Equal("new data", newContext.Result);
+        Assert.Equal("x y z", oldContext.Variables.Input);
+        Assert.Equal("new data", newContext.Variables.Input);
 
         Assert.Equal("new data", result.GetValue<string>());
     }
@@ -640,7 +640,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("x y z", context.Result);
+        Assert.Equal("x y z", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 
@@ -667,7 +667,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
-        Assert.Equal("input:x y z", context.Result);
+        Assert.Equal("input:x y z", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 

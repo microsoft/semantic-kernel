@@ -355,7 +355,7 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
         Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
     }
 
     [Fact]
@@ -379,7 +379,7 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
         Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
     }
 
     [Theory]

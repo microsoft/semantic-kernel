@@ -13,12 +13,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// </summary>
-    /// <returns>Processed input, aka result</returns>
-    public string Result => this.Variables.ToString();
-
-    /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
     public CultureInfo Culture

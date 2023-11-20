@@ -161,7 +161,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
@@ -518,7 +518,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static (functionName, result, _) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Variables.Input));
             };
         }
 
@@ -527,7 +527,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static async (functionName, result, _) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context, context.Result);
+                return new FunctionResult(functionName, context, context.Variables.Input);
             };
         }
 

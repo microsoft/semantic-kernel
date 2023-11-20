@@ -330,7 +330,7 @@ public sealed class Plan : ISKFunction
 
                 this.UpdateContextWithOutputs(context);
 
-                result = new FunctionResult(this.Name, context, context.Result);
+                result = new FunctionResult(this.Name, context, context.Variables.Input);
                 this.UpdateFunctionResultWithOutputs(result);
             }
 
@@ -396,7 +396,7 @@ public sealed class Plan : ISKFunction
                 return null;
             }
 
-            var resultValue = stepResult.Context.Result.Trim();
+            var resultValue = stepResult.Context.Variables.Input.Trim();
 
             #region Update State
 

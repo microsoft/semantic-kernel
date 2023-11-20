@@ -25,7 +25,6 @@ public class SKContextTests
         Assert.Equal("bar1", target.Variables["foo1"]);
         Assert.Equal("bar2", target.Variables["foo2"]);
         Assert.Equal("bar2", target.Variables["foo2"]);
-        Assert.Equal(target.Variables["INPUT"], target.Result);
         Assert.Equal(target.Variables["INPUT"], target.Variables.Input);
         Assert.Equal(target.Variables["INPUT"], target.Variables.ToString());
     }
