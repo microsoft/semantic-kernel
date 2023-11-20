@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
 using Microsoft.SemanticKernel.Orchestration;

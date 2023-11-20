@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents the base exception from which all Semantic Kernel exceptions derive.

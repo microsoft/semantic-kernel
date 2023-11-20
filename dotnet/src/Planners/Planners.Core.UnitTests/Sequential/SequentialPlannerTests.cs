@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -53,8 +52,7 @@ public sealed class SequentialPlannerTests
         var planner = new SequentialPlanner(kernel);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
-        Assert.Equal("The goal specified is empty", exception.Message);
+        await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(""));
     }
 
     [Fact]

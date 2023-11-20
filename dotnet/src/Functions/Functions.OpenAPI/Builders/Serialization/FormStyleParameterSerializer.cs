@@ -3,7 +3,6 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Web;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;

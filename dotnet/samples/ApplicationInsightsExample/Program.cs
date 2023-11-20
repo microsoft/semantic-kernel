@@ -128,7 +128,7 @@ public sealed class Program
         return kernel;
     }
 
-    private static ISequentialPlanner GetSequentialPlanner(
+    private static IPlanner GetSequentialPlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory,
         int maxTokens = 1024)
@@ -138,14 +138,14 @@ public sealed class Program
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
-    private static IActionPlanner GetActionPlanner(
+    private static IPlanner GetActionPlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
-    private static IStepwisePlanner GetStepwisePlanner(
+    private static IPlanner GetStepwisePlanner(
         Kernel kernel,
         ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,

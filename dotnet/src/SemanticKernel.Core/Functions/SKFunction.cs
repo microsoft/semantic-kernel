@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.TemplateEngine;
 

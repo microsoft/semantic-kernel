@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -56,7 +55,7 @@ public class SKFunctionMetadataTests
         {
             Description = "ReturnParameterA",
             ParameterType = typeof(string),
-            Schema = JsonDocument.Parse("\"schema\""),
+            Schema = SKJsonSchema.Parse("\"schema\""),
         };
 
         // Act
@@ -67,7 +66,7 @@ public class SKFunctionMetadataTests
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(System.Text.Json.JsonDocument.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(SKJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]

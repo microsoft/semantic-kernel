@@ -9,7 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable IDE0130
 

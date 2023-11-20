@@ -3,7 +3,7 @@
 using System;
 using System.Net;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
+namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// Represents an exception specific to HTTP operations.
@@ -13,7 +13,7 @@ public class HttpOperationException : Exception
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class.
     /// </summary>
-    public HttpOperationException() : base()
+    public HttpOperationException()
     {
     }
 

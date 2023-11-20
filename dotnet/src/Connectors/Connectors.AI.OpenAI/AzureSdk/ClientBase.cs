@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Prompt;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -60,14 +59,15 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name!);
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.AI.OpenAI");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "SK.Connectors.OpenAI.PromptTokens",
+            name: "sk.connectors.openai.tokens.prompt",
+            unit: "{token}",
             description: "Number of prompt tokens used");
 
     /// <summary>
@@ -75,7 +75,8 @@ public abstract class ClientBase
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "SK.Connectors.OpenAI.CompletionTokens",
+            name: "sk.connectors.openai.tokens.completion",
+            unit: "{token}",
             description: "Number of completion tokens used");
 
     /// <summary>
@@ -83,8 +84,9 @@ public abstract class ClientBase
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "SK.Connectors.OpenAI.TotalTokens",
-            description: "Total number of tokens used");
+            name: "sk.connectors.openai.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
 
     /// <summary>
     /// Creates completions for the prompt and settings.

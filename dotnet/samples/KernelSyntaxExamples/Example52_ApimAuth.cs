@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -46,8 +45,6 @@ public static class Example52_ApimAuth
             Diagnostics =
             {
                 LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
-                ApplicationId = Telemetry.HttpUserAgent,
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);

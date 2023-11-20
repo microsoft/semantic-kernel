@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -38,7 +37,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public JsonDocument? Schema { get; }
+    public SKJsonSchema? Schema { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayloadProperty"/> class.
@@ -55,7 +54,7 @@ public sealed class RestApiOperationPayloadProperty
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
         string? description = null,
-        JsonDocument? schema = null)
+        SKJsonSchema? schema = null)
     {
         this.Name = name;
         this.Type = type;

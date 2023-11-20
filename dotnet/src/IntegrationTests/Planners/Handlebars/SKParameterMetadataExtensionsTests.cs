@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
@@ -200,7 +199,7 @@ public class SKParameterMetadataExtensionsTests
 
         foreach (var pair in schemaTypeMap)
         {
-            var schema = JsonDocument.Parse($"{{\"type\": \"{pair.Key}\"}}");
+            var schema = SKJsonSchema.Parse($"{{\"type\": \"{pair.Key}\"}}");
             var parameter = new SKParameterMetadata("test") { Schema = schema };
 
             // Act
@@ -216,7 +215,7 @@ public class SKParameterMetadataExtensionsTests
     public void ReturnsParameterWithSchemaForNonPrimitiveOrStringSchemaType()
     {
         // Arrange
-        var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = SKJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
         var parameter = new SKParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -231,7 +230,7 @@ public class SKParameterMetadataExtensionsTests
     public void ReturnsIndentedJsonStringForJsonElement()
     {
         // Arrange
-        var jsonProperties = JsonDocument.Parse("{\"name\": \"Alice\", \"age\": 25}").RootElement;
+        var jsonProperties = SKJsonSchema.Parse("{\"name\": \"Alice\", \"age\": 25}").RootElement;
 
         // Act
         var result = jsonProperties.ToJsonString();
@@ -245,7 +244,7 @@ public class SKParameterMetadataExtensionsTests
     public void ReturnsParameterNameAndSchemaType()
     {
         // Arrange
-        var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = SKJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
         var parameter = new SKParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -259,7 +258,7 @@ public class SKParameterMetadataExtensionsTests
     public void ConvertsReturnParameterMetadataToParameterMetadata()
     {
         // Arrange
-        var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = SKJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
         var returnParameter = new SKReturnParameterMetadata() { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
@@ -277,7 +276,7 @@ public class SKParameterMetadataExtensionsTests
     public void ConvertsParameterMetadataToReturnParameterMetadata()
     {
         // Arrange
-        var schema = JsonDocument.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = SKJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
         var parameter = new SKParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act

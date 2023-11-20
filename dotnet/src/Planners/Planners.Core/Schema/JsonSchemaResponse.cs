@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130
@@ -9,13 +8,13 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A class to describe the content schma of a response/return type from an SKFunction, in a Json Schema friendly way.
+/// A class to describe the content schma of a response/return type from an SKFunction, in a JSON Schema friendly way.
 /// </summary>
-public sealed class JsonSchemaResponse
+internal sealed class JsonSchemaResponse
 {
     /// <summary>
-    /// The Json Schema
+    /// The JSON Schema
     /// </summary>
     [JsonPropertyName("schema")]
-    public JsonDocument? Schema { get; set; }
+    public SKJsonSchema? Schema { get; set; }
 }

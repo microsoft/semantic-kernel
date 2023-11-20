@@ -57,7 +57,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            var contentDoc = JsonDocument.Parse(response.Content.ToString());
+            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }
@@ -78,7 +78,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            var contentDoc = JsonDocument.Parse($"\"{response.Content}\"");
+            using var contentDoc = JsonDocument.Parse($"\"{response.Content}\"");
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }
