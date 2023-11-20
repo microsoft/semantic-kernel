@@ -114,7 +114,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             // If the provided T is a string, return the completion as is
             if (typeof(T) == typeof(string))
             {
-                yield return (T)(object)result.Token.Text;
+                yield return (T)(object)(result.Token?.Text ?? string.Empty);
                 continue;
             }
 

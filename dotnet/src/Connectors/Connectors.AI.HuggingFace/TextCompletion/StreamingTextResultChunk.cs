@@ -58,7 +58,7 @@ public class StreamingTextResultChunk : StreamingResultChunk
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Token.Text;
+        return this.Token?.Text ?? string.Empty;
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class StreamingTextResultChunk : StreamingResultChunk
         /// Text associated to the Token
         /// </summary>
         [JsonPropertyName("text")]
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         /// <summary>
         /// Log probability of the token
