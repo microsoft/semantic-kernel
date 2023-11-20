@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Sequential;
-using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
