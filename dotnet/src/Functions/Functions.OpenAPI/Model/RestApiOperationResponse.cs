@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -24,7 +23,7 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
-    public JsonDocument? ExpectedSchema { get; internal set; }
+    public SKJsonSchema? ExpectedSchema { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
@@ -32,7 +31,7 @@ public sealed class RestApiOperationResponse
     /// <param name="content">The content of the response.</param>
     /// <param name="contentType">The content type of the response.</param>
     /// <param name="expectedSchema">The schema against which the response body should be validated.</param>
-    public RestApiOperationResponse(object content, string contentType, JsonDocument? expectedSchema = null)
+    public RestApiOperationResponse(object content, string contentType, SKJsonSchema? expectedSchema = null)
     {
         this.Content = content;
         this.ContentType = contentType;

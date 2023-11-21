@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
@@ -36,8 +35,8 @@ public static class KernelExtensions
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null)
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
@@ -62,8 +61,8 @@ public static class KernelExtensions
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<ParameterView>? parameters = null,
-        ReturnParameterView? returnParameter = null)
+        IEnumerable<SKParameterMetadata>? parameters = null,
+        SKReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
@@ -518,7 +517,7 @@ repeat:
 
             try
             {
-                var functionDetails = skFunction.Describe();
+                var functionDetails = skFunction.GetMetadata();
 
                 functionResult = await skFunction.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 

@@ -14,11 +14,11 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class FunctionViewTests
+public class SKFunctionMetadataTests
 {
     private readonly Mock<ILoggerFactory> _logger;
 
-    public FunctionViewTests()
+    public SKFunctionMetadataTests()
     {
         this._logger = new Mock<ILoggerFactory>();
     }
@@ -27,14 +27,14 @@ public class FunctionViewTests
     public void ItReturnsFunctionParams()
     {
         // Arrange
-        var paramsA = new List<ParameterView>
+        var paramsA = new List<SKParameterMetadata>
         {
-            new("p1", "param 1", "default 1"),
-            new("p2", "param 2", "default 2")
+            new("p1") { Description = "param 1", DefaultValue = "default 1" },
+            new("p2") { Description = "param 2", DefaultValue = "default 2" },
         };
 
         // Act
-        var funcViewA = new FunctionView("funcA", "s1", "", paramsA);
+        var funcViewA = new SKFunctionMetadata("funcA") { Parameters = paramsA };
 
         // Assert
         Assert.NotNull(funcViewA);
@@ -51,17 +51,22 @@ public class FunctionViewTests
     public void ItReturnsFunctionReturnParameter()
     {
         // Arrange
-        var ReturnParameterViewA = new ReturnParameterView("ReturnParameterA", ParameterType: typeof(string), Schema: System.Text.Json.JsonDocument.Parse("\"schema\""));
+        var ReturnParameterViewA = new SKReturnParameterMetadata
+        {
+            Description = "ReturnParameterA",
+            ParameterType = typeof(string),
+            Schema = SKJsonSchema.Parse("\"schema\""),
+        };
 
         // Act
-        var funcViewA = new FunctionView("funcA", "s1", "", null, ReturnParameterViewA);
+        var funcViewA = new SKFunctionMetadata("funcA") { ReturnParameter = ReturnParameterViewA };
 
         // Assert
         Assert.NotNull(funcViewA);
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(System.Text.Json.JsonDocument.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(SKJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]
@@ -71,7 +76,7 @@ public class FunctionViewTests
         var function = SKFunction.FromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
         Assert.Equal("ValidFunctionName", fv.Name);
@@ -83,7 +88,7 @@ public class FunctionViewTests
         // Act
         var function = SKFunction.FromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
         Assert.Equal("ValidFunctionName", fv.Name);
@@ -101,7 +106,7 @@ public class FunctionViewTests
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
         Assert.Equal("NewTestFunctionName", fv.Name);
@@ -122,7 +127,7 @@ public class FunctionViewTests
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
         Assert.Equal("function description", fv.Description);
@@ -144,7 +149,7 @@ public class FunctionViewTests
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
         Assert.Equal(string.Empty, fv.Description);
@@ -166,10 +171,10 @@ public class FunctionViewTests
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        FunctionView fv = function.Describe();
+        SKFunctionMetadata fv = function.GetMetadata();
 
         // Assert
-        var emptyList = new List<ParameterView>();
+        var emptyList = new List<SKParameterMetadata>();
 
         Assert.Equal(emptyList, fv.Parameters);
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);

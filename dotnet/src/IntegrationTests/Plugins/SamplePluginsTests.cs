@@ -18,7 +18,7 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var functionViews = kernel.Plugins.GetFunctionViews();
+        var functionViews = kernel.Plugins.GetFunctionsMetadata();
         Assert.NotNull(functionViews);
         Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
         functionViews.ToList().ForEach(view =>
@@ -40,7 +40,7 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var functionViews = kernel.Plugins.GetFunctionViews();
+        var functionViews = kernel.Plugins.GetFunctionsMetadata();
         Assert.NotNull(functionViews);
         Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
         functionViews.ToList().ForEach(view =>

@@ -3,20 +3,17 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Sequential;
-using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class SequentialPlanner : ISequentialPlanner
+public sealed class SequentialPlanner : IPlanner
 {
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
@@ -59,10 +56,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(goal))
-        {
-            throw new SKException("The goal specified is empty");
-        }
+        Verify.NotNullOrWhiteSpace(goal);
 
         string relevantFunctionsManual = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
@@ -42,7 +42,7 @@ public class RestApiOperationResponseTests
     public void ItShouldFailValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -59,7 +59,7 @@ public class RestApiOperationResponseTests
     public void ItShouldPassValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -76,7 +76,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();
@@ -93,7 +93,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();

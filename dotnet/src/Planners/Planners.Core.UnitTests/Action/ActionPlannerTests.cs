@@ -2,14 +2,13 @@
 
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Action.UnitTests;
+namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ActionPlannerTests

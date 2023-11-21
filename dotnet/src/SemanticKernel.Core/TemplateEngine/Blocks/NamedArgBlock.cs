@@ -2,7 +2,6 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;

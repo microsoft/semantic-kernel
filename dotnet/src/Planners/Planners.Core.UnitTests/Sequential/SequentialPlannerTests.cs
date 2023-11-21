@@ -2,14 +2,13 @@
 
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
+namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class SequentialPlannerTests
@@ -53,8 +52,7 @@ public sealed class SequentialPlannerTests
         var planner = new SequentialPlanner(kernel);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
-        Assert.Equal("The goal specified is empty", exception.Message);
+        await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(""));
     }
 
     [Fact]

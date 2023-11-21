@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -28,7 +27,7 @@ public record RestApiOperationPayload
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public JsonDocument? Schema { get; }
+    public SKJsonSchema? Schema { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayload"/> class.
@@ -36,8 +35,8 @@ public record RestApiOperationPayload
     /// <param name="mediaType">The media type.</param>
     /// <param name="properties">The properties.</param>
     /// <param name="description">The description.</param>
-    /// <param name="schema">The JSON schema.</param>
-    public RestApiOperationPayload(string mediaType, IList<RestApiOperationPayloadProperty> properties, string? description = null, JsonDocument? schema = null)
+    /// <param name="schema">The JSON Schema.</param>
+    public RestApiOperationPayload(string mediaType, IList<RestApiOperationPayloadProperty> properties, string? description = null, SKJsonSchema? schema = null)
     {
         this.MediaType = mediaType;
         this.Properties = properties;
