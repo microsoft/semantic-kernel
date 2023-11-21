@@ -13,7 +13,6 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
@@ -53,10 +52,10 @@ public interface Kernel extends Buildable {
      *
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
-    Mono<SKContext> runAsync(SKFunction... pipeline);
+    Mono<KernelResult> runAsync(SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -64,10 +63,10 @@ public interface Kernel extends Buildable {
      * @param input Input to process
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
-    Mono<SKContext> runAsync(String input, SKFunction... pipeline);
+    Mono<KernelResult> runAsync(String input, SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -75,10 +74,10 @@ public interface Kernel extends Buildable {
      * @param variables variables to initialise the context with
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
-    Mono<SKContext> runAsync(ContextVariables variables, SKFunction... pipeline);
+    Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -88,7 +87,7 @@ public interface Kernel extends Buildable {
      * @return Result of the function composition
      * @since 1.0.0
      */
-    Mono<SKContext> runAsync(boolean streaming, ContextVariables variables, SKFunction... pipeline);
+    Mono<KernelResult> runAsync(boolean streaming, ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Register a semantic function on this kernel
