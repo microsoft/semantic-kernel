@@ -152,7 +152,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
@@ -179,7 +179,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
@@ -211,7 +211,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
@@ -258,7 +258,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
@@ -308,9 +308,9 @@ public sealed class KernelPromptTemplateTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.FromMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunction.FromMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunction.FromMethod(Method(MyFunction3Async), this, "func3")
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
         };
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
@@ -335,7 +335,7 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
