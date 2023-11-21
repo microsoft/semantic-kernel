@@ -172,6 +172,52 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
             throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
         }
+
+        IAsyncEnumerator<object> enumerator = this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+
+        T? genericChunk = default;
+        bool moreItems;
+
+        // Manually handling the enumeration to properly log any exception
+        do
+        {
+            try
+            {
+                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
+
+                if (moreItems)
+                {
+                    var chunk = enumerator.Current;
+
+                    if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
+                    {
+                        genericChunk = (T)(object)chunk;
+                        continue;
+                    }
+
+                    if (chunk is StreamingNativeResultChunk nativeChunk)
+                    {
+                        genericChunk = (T)nativeChunk.Value;
+                        continue;
+                    }
+
+                    throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+                }
+            }
+            catch (Exception e)
+            {
+                if (this._logger.IsEnabled(LogLevel.Error))
+                {
+                    this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
+                }
+                throw;
+            }
+
+            if (moreItems && genericChunk is not null)
+            {
+                yield return genericChunk;
+            }
+        } while (moreItems);
     }
 
     /// <summary>

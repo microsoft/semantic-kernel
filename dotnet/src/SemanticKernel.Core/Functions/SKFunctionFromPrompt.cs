@@ -200,19 +200,40 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
 
         StringBuilder fullCompletion = new();
-        await foreach (T genericChunk in textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            fullCompletion.Append(genericChunk);
+        IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-            // Check if genericChunk is a StreamingResultChunk and update the context
-            if (genericChunk is StreamingResultChunk resultChunk)
+        // Manually handling the enumeration to properly log any exception
+        bool moreItems;
+        do
+        {
+            T? genericChunk = default;
+            try
             {
-                // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
-                resultChunk.Context = context;
+                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (moreItems)
+                {
+                    genericChunk = enumerator.Current;
+                    fullCompletion.Append(genericChunk);
+
+                    // Check if genericChunk is a StreamingResultChunk and update the context
+                    if (genericChunk is StreamingResultChunk resultChunk)
+                    {
+                        // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
+                        resultChunk.Context = context;
+                    }
+                }
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
+                throw;
             }
 
-            yield return genericChunk;
-        }
+            if (moreItems && genericChunk is not null)
+            {
+                yield return genericChunk;
+            }
+        } while (moreItems);
 
         // Update the result with the completion
         context.Variables.Update(fullCompletion.ToString());

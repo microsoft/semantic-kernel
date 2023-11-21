@@ -76,17 +76,42 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     private async IAsyncEnumerable<T> StreamingInvokeWithInstrumentationAsync<T>(Func<IAsyncEnumerable<T>> func)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-
         this._logger.LogInformation("Function invoking streaming");
         TagList tags = new() { { "sk.function.name", this.Name } };
 
         long startingTimestamp = Stopwatch.GetTimestamp();
         StringBuilder fullResult = new();
-        await foreach (var update in func().ConfigureAwait(false))
+
+        IAsyncEnumerator<T> enumerator = func().GetAsyncEnumerator();
+        bool moreChunks;
+        do
         {
-            fullResult.Append(update);
-            yield return update;
-        }
+            T? genericChunk = default;
+
+            try
+            {
+                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (moreChunks)
+                {
+                    genericChunk = enumerator.Current;
+                    fullResult.Append(genericChunk);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (this._logger.IsEnabled(LogLevel.Error))
+                {
+                    this._logger.LogError(ex, "Function invocation failed: {Message}", ex.Message);
+                    tags.Add("error.type", ex.GetType().FullName);
+                }
+                throw;
+            }
+
+            if (moreChunks && genericChunk is not null)
+            {
+                yield return genericChunk;
+            }
+        } while (moreChunks);
 
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
