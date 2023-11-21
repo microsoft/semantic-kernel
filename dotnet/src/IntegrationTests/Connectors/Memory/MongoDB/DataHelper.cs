@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using System.Numerics.Tensors;
 using Microsoft.SemanticKernel.Memory;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
@@ -18,7 +18,7 @@ internal static class DataHelper
         VectorSearchTestRecords = CreateBatchRecords(8);
         VectorSearchTestEmbedding = new[] { 1, 0.699f, 0.701f };
         VectorSearchExpectedResults = VectorSearchTestRecords
-            .OrderByDescending(r => r.Embedding.Span.CosineSimilarity(VectorSearchTestEmbedding))
+            .OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))
             .ToArray();
     }
 
