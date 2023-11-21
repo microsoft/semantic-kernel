@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -275,7 +276,7 @@ public static class KernelExtensions
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(promptTemplateConfig));
+                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptTemplateConfig, JsonOptionsCache.WriteIndented));
             }
 
             // Load prompt template

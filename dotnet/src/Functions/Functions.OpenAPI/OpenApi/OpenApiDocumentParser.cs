@@ -18,6 +18,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
@@ -44,7 +45,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Text.Json.SerializeToUtf8Bytes(jsonObject));
+        using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, JsonOptionsCache.WriteIndented));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 

@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 
@@ -181,13 +182,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
-    public override string ToString() => this.ToString(false);
-
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public string ToString(bool writeIndented) =>
-        JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
 
     #region private
 
@@ -200,8 +195,6 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         SKContext context,
         CancellationToken cancellationToken);
 
-    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
-    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<SKParameterMetadata> _parameters;

@@ -49,7 +49,7 @@ public class WeaviateMemoryStore : IMemoryStore
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new ReadOnlyMemoryConverter() }
+        Converters = { JsonOptionsCache.ReadOnlyMemoryConverter }
     };
 
     private readonly HttpClient _httpClient;

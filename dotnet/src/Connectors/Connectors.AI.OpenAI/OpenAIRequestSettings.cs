@@ -6,12 +6,14 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
+[JsonConverter(typeof(OpenAIRequestSettingsConverter))]
 public class OpenAIRequestSettings : AIRequestSettings
 {
     /// <summary>
@@ -144,7 +146,7 @@ public class OpenAIRequestSettings : AIRequestSettings
         }
 
         var json = JsonSerializer.Serialize(requestSettings);
-        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
+        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, JsonOptionsCache.ReadPermissive);
 
         if (openAIRequestSettings is not null)
         {
@@ -157,23 +159,6 @@ public class OpenAIRequestSettings : AIRequestSettings
     #region private ================================================================================
 
     private string _chatSystemPrompt = OpenAIRequestSettings.DefaultChatSystemPrompt;
-
-    private static readonly JsonSerializerOptions s_options = CreateOptions();
-
-    private static JsonSerializerOptions CreateOptions()
-    {
-        JsonSerializerOptions options = new()
-        {
-            WriteIndented = true,
-            MaxDepth = 20,
-            AllowTrailingCommas = true,
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new OpenAIRequestSettingsConverter() }
-        };
-
-        return options;
-    }
 
     #endregion
 }
