@@ -143,7 +143,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             ISKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
+            FunctionResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             // Write the result to the template
