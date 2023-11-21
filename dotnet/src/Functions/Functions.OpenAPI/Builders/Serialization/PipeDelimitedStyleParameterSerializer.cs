@@ -21,19 +21,16 @@ internal static class PipeDelimitedStyleParameterSerializer
     {
         const string ArrayType = "array";
 
-        if (parameter is null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        Verify.NotNull(parameter);
 
         if (parameter.Style != RestApiOperationParameterStyle.PipeDelimited)
         {
-            throw new SKException($"Unexpected Rest Api operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.");
+            throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         if (parameter.Type != ArrayType)
         {
-            throw new SKException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.PipeDelimited}` style parameters. Parameter name `{parameter.Name}`.");
+            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.PipeDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         return SerializeArrayParameter(parameter, argument);
