@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -65,48 +66,25 @@ internal class HandlebarsParameterTypeMetadata
     // Override the GetHashCode method to generate a hash code based on the property values
     public override int GetHashCode()
     {
-        // Use a prime number to combine the hash codes of the properties
-        int hash = 17;
+        HashCode hash = default;
+        hash.Add(this.Name);
+        hash.Add(this.IsComplex);
 
-        // Use the default string hash code for the Name property
-        hash = (hash * 31) + (this.Name?.GetHashCode() ?? 0);
-
-        // Use the default bool hash code for the IsComplex property
-        hash = (hash * 31) + this.IsComplex.GetHashCode();
-
-        // Use a helper method to compute the hash code of the Properties list
-        hash = (hash * 31) + GetPropertiesHashCode(this.Properties);
-
-        return hash;
+        return hash.ToHashCode() + GetPropertiesHashCode(this.Properties);
     }
 
-    // A helper method to compute the hash code of a list of SKParameterMetadata
+    // A helper method to compute the hash code of a list of SKParameterMetadata using only the Name and ParameterType properties.
     private static int GetPropertiesHashCode(List<SKParameterMetadata> list)
     {
-        // Use a prime number to combine the hash codes of the elements
-        int hash = 19;
-
-        // Use the default SKParameterMetadata hash code for each element
+        HashCode hash = default;
         foreach (var item in list)
         {
-            hash = (hash * 37) + GetPropertyHashCode(item);
+            // Combine the Name and ParameterType properties into one hash code
+            hash.Add(
+                HashCode.Combine(item.Name, item.ParameterType)
+            );
         }
 
-        return hash;
-    }
-
-    // A helper method to compute the hash code of a SKParameterMetadata object
-    private static int GetPropertyHashCode(SKParameterMetadata property)
-    {
-        // Use a prime number to combine the hash codes of the elements
-        int hash = 23;
-
-        // Use the default string hash code for each element's name
-        hash = (hash * 41) + (property?.Name.GetHashCode() ?? 0);
-
-        // Use the default type hash code for each element's ParameterType
-        hash = (hash * 41) + (property?.ParameterType?.GetHashCode() ?? 0);
-
-        return hash;
+        return hash.ToHashCode();
     }
 }
