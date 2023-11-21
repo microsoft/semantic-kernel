@@ -2,10 +2,8 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
@@ -42,7 +40,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var expectedSteps = "\"steps\":[{";
-        var plan = new Plan(goal, new Mock<KernelFunction>().Object, new Mock<KernelFunction>().Object);
+        var plan = new Plan(goal, new KernelFunctionMock(), new KernelFunctionMock());
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -281,25 +279,24 @@ public sealed class PlanSerializationTests
         var returnContext = new SKContext(new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<KernelFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
-            {
-                c.Variables.TryGetValue("variables", out string? v);
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            })
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
+        var mockFunction = new KernelFunctionMock("functionName");
+        mockFunction.InvokeDelegate = (k, c, s, ct) =>
+        {
+            c.Variables.TryGetValue("variables", out string? v);
+            returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
+            return Task.FromResult(new FunctionResult("functionName", returnContext));
+        };
 
-        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName")
+        mockFunction.GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
         {
             PluginName = "pluginName",
             Parameters = new SKParameterMetadata[]
             {
                 new("variables")
             }
-        });
+        };
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction, mockFunction);
 
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
@@ -347,21 +344,25 @@ public sealed class PlanSerializationTests
         var returnContext = new SKContext(new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<KernelFunction>();
-        mockFunction.Setup(x => x.Name).Returns("functionName");
-        mockFunction
-            .Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
+        var mockFunction = new KernelFunctionMock("functionName");
+        mockFunction.InvokeDelegate = (k, c, s, ct) =>
+        {
+            c.Variables.TryGetValue("variables", out string? v);
+            returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
+            return Task.FromResult(new FunctionResult("functionName", returnContext));
+        };
+        mockFunction.GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
+        {
+            PluginName = "pluginName",
+            Parameters = new SKParameterMetadata[]
             {
-                c.Variables.TryGetValue("variables", out string? v);
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            })
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName") { PluginName = "pluginName" });
+                new("variables")
+            }
+        };
 
-        plugins.Add(new SKPlugin("pluginName", new[] { mockFunction.Object }));
+        plugins.Add(new SKPlugin("pluginName", new[] { mockFunction }));
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction, mockFunction);
 
         var serializedPlan = plan.ToJson();
 

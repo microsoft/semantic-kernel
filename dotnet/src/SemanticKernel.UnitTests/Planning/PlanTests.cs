@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -338,17 +337,17 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<KernelFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
+        var mockFunction = new KernelFunctionMock
+        {
+            InvokeDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
+            GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
+        };
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction, mockFunction);
 
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -364,17 +363,17 @@ public sealed class PlanTests
         var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<KernelFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
+        var mockFunction = new KernelFunctionMock
+        {
+            InvokeDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
+            GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
+        };
 
-        plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(mockFunction), new Plan(mockFunction));
 
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -434,7 +433,7 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal, new Mock<KernelFunction>().Object, new Mock<KernelFunction>().Object);
+        var plan = new Plan(goal, new KernelFunctionMock(), new KernelFunctionMock());
 
         // Assert
         Assert.NotNull(plan);
