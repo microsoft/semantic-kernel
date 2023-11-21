@@ -176,16 +176,16 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         IAsyncEnumerator<object> enumerator = this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         T? genericChunk = default;
-        bool moreItems;
+        bool moreChunks;
 
         // Manually handling the enumeration to properly log any exception
         do
         {
             try
             {
-                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
 
-                if (moreItems)
+                if (moreChunks)
                 {
                     var chunk = enumerator.Current;
 
@@ -213,11 +213,11 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                 throw;
             }
 
-            if (moreItems && genericChunk is not null)
+            if (moreChunks && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreItems);
+        } while (moreChunks);
     }
 
     /// <summary>

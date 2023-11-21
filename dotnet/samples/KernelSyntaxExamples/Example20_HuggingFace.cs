@@ -63,7 +63,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Why is streaming important?");
 
-        await foreach (var chunk in kernel.RunStreamingAsync(questionAnswerFunction))
+        await foreach (var chunk in await kernel.RunStreamingAsync(questionAnswerFunction))
         {
             Console.Write(chunk);
         }

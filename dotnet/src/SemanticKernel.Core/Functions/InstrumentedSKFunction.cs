@@ -73,7 +73,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<StreamingFunctionResult<T>> StreamingInvokeWithInstrumentationAsync<T>(Func<IAsyncEnumerable<T>> func)
+    private async Task<StreamingFunctionResult<T>> StreamingInvokeWithInstrumentationAsync<T>(Func<Task<StreamingFunctionResult<T>>> func)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
         this._logger.LogInformation("Function invoking streaming");
@@ -82,49 +82,56 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         long startingTimestamp = Stopwatch.GetTimestamp();
         StringBuilder fullResult = new();
 
-        IAsyncEnumerator<T> enumerator = func().GetAsyncEnumerator();
-        bool moreChunks;
-        do
-        {
-            T? genericChunk = default;
+        var streamingResult = await func().ConfigureAwait(false);
 
-            try
+        async IAsyncEnumerable<T> RetrieveStreamingSource()
+        {
+            IAsyncEnumerator<T> enumerator = streamingResult.GetAsyncEnumerator();
+            bool moreChunks;
+            do
             {
-                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (moreChunks)
+                T? genericChunk = default;
+
+                try
                 {
-                    genericChunk = enumerator.Current;
-                    fullResult.Append(genericChunk);
+                    moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                    if (moreChunks)
+                    {
+                        genericChunk = enumerator.Current;
+                        fullResult.Append(genericChunk);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                if (this._logger.IsEnabled(LogLevel.Error))
+                catch (Exception ex)
                 {
-                    this._logger.LogError(ex, "Function invocation failed: {Message}", ex.Message);
-                    tags.Add("error.type", ex.GetType().FullName);
+                    if (this._logger.IsEnabled(LogLevel.Error))
+                    {
+                        this._logger.LogError(ex, "Function invocation failed: {Message}", ex.Message);
+                        tags.Add("error.type", ex.GetType().FullName);
+                    }
+                    throw;
                 }
-                throw;
-            }
 
-            if (moreChunks && genericChunk is not null)
+                if (moreChunks && genericChunk is not null)
+                {
+                    yield return genericChunk;
+                }
+            } while (moreChunks);
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                yield return genericChunk;
+                this._logger.LogTrace("Function succeeded: {Result}", fullResult); // Sensitive data, logging as trace, disabled by default
             }
-        } while (moreChunks);
+            else if (this._logger.IsEnabled(LogLevel.Information))
+            {
+                this._logger.LogInformation("Function succeeded.");
+            }
 
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Function succeeded: {Result}", fullResult); // Sensitive data, logging as trace, disabled by default
-        }
-        else if (this._logger.IsEnabled(LogLevel.Information))
-        {
-            this._logger.LogInformation("Function succeeded.");
+            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+            this._logger.LogInformation("Function invocation duration: {Duration}ms", duration.TotalMilliseconds);
+            s_invocationDuration.Record(duration.TotalSeconds, in tags);
         }
 
-        TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-        this._logger.LogInformation("Function invocation duration: {Duration}ms", duration.TotalMilliseconds);
-        s_invocationDuration.Record(duration.TotalSeconds, in tags);
+        return new StreamingFunctionResult<T>(streamingResult.FunctionName, streamingResult.Context, RetrieveStreamingSource, streamingResult);
     }
 
     /// <inheritdoc/>
