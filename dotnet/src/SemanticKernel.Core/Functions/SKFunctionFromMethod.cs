@@ -694,7 +694,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
         throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
 
-    /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
+    /// <summary>Throws an exception indicating an invalid SKFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
     {
         if (condition)

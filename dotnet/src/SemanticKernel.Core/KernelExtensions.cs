@@ -40,7 +40,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
@@ -93,7 +93,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -356,7 +356,7 @@ public static class KernelExtensions
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.RunAsync((ISKFunction)SKFunction.FromPrompt(
+        kernel.RunAsync((ISKFunction)SKFunctionFactory.CreateFromPrompt(
             promptTemplate,
             requestSettings,
             functionName,

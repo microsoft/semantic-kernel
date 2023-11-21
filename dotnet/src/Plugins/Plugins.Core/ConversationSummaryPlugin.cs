@@ -38,17 +38,17 @@ public class ConversationSummaryPlugin
             }
         };
 
-        this._summarizeConversationFunction = SKFunction.FromPrompt(
+        this._summarizeConversationFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             requestSettings: settings);
 
-        this._conversationActionItemsFunction = SKFunction.FromPrompt(
+        this._conversationActionItemsFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             requestSettings: settings);
 
-        this._conversationTopicsFunction = SKFunction.FromPrompt(
+        this._conversationTopicsFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             requestSettings: settings);
