@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -350,7 +351,7 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
         Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
     }
 
     [Fact]
@@ -374,7 +375,7 @@ public class KernelTests
         Assert.NotNull(kernelResult);
         Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
         Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
     }
 
     [Theory]
@@ -549,6 +550,28 @@ public class KernelTests
         Assert.Equal(expectedInvocations, numberOfInvocations);
     }
 
+    [Fact]
+    public async Task ItCanFindAndRunFunctionAsync()
+    {
+        //Arrange
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+
+        var context = new SKContext(new ContextVariables());
+
+        var function = SKFunction.FromMethod(() => "fake result", "function");
+
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+
+        //Act
+        var result = await kernel.RunAsync("plugin", "function");
+
+        //Assert
+        Assert.NotNull(result);
+        Assert.Equal("fake result", result.GetValue<string>());
+    }
+
     public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
@@ -564,16 +587,16 @@ public class KernelTests
         }
 
         [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
+        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
         {
             await Task.Delay(0);
 
-            if (context.Plugins == null)
+            if (kernel.Plugins == null)
             {
                 Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in context.Plugins.GetFunctionsMetadata())
+            foreach (var function in kernel.Plugins.GetFunctionsMetadata())
             {
                 context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }

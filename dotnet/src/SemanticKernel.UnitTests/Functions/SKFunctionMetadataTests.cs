@@ -184,26 +184,12 @@ public class SKFunctionMetadataTests
     private static async Task ValidFunctionNameAsync()
     {
         var function = SKFunction.FromMethod(Method(ValidFunctionName));
-        var context = MockContext("");
+        var context = new SKContext(new ContextVariables(string.Empty));
         var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
     }
 
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
-    }
-
-    private static SKContext MockContext(string input)
-    {
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
-        return new SKContext(
-            kernel,
-            serviceProvider.Object,
-            serviceSelector.Object,
-            new ContextVariables(input)
-        );
     }
 }

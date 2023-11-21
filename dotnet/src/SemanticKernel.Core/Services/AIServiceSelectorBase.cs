@@ -15,9 +15,9 @@ namespace Microsoft.SemanticKernel;
 public abstract class AIServiceSelectorBase : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        var services = context.ServiceProvider.GetServices<T>();
+        var services = kernel.ServiceProvider.GetServices<T>();
         foreach (var service in services)
         {
             var result = this.SelectAIService<T>(context, skfunction, service);
