@@ -203,19 +203,11 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         };
 
         //Act
-        var res = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
+        var result = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
 
         //Assert
-        Assert.NotNull(res);
 
-        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
-        Assert.NotNull(openApiPluginResult);
-
-        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
-
-        //Check original response
         Assert.NotNull(result);
-        Assert.Equal("fake-content", result.Content);
 
         //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
         Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
@@ -252,19 +244,16 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var res = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+        var result = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
 
         //Assert
-        Assert.NotNull(res);
+        Assert.NotNull(result);
 
-        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
-        Assert.NotNull(openApiPluginResult);
-
-        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
+        var response = result.GetValue<RestApiOperationResponse>();
 
         //Check original response
-        Assert.NotNull(result);
-        Assert.Equal("fake-content", result.Content);
+        Assert.NotNull(response);
+        Assert.Equal("fake-content", response.Content);
     }
 
     public void Dispose()

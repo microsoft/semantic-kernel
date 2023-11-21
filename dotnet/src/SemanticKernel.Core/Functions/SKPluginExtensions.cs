@@ -38,7 +38,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+        ISKFunction function = SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -68,7 +68,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+        ISKFunction function = SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -99,7 +99,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, loggerFactory);
+        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -123,7 +123,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
+        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -146,7 +146,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
+        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }

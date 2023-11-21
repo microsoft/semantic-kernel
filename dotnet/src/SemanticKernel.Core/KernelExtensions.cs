@@ -40,7 +40,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
@@ -93,7 +93,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -349,14 +349,14 @@ public static class KernelExtensions
     /// <param name="requestSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
-    /// <returns>Kernel execution result</returns>
-    public static Task<KernelResult> InvokePromptAsync(
+    /// <returns>Function execution result</returns>
+    public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.RunAsync((ISKFunction)SKFunction.FromPrompt(
+        kernel.RunAsync((ISKFunction)SKFunctionFactory.CreateFromPrompt(
             promptTemplate,
             requestSettings,
             functionName,
@@ -371,7 +371,7 @@ public static class KernelExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         ISKFunction skFunction,
         ContextVariables? variables = null,
@@ -388,7 +388,7 @@ public static class KernelExtensions
     /// <param name="kernel">The kernel.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         params ISKFunction[] pipeline)
     {
@@ -404,7 +404,7 @@ public static class KernelExtensions
     /// <param name="input">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         string input,
         params ISKFunction[] pipeline)
@@ -421,7 +421,7 @@ public static class KernelExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         ContextVariables variables,
         params ISKFunction[] pipeline)
@@ -438,7 +438,7 @@ public static class KernelExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline)
@@ -456,7 +456,7 @@ public static class KernelExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         string input,
         CancellationToken cancellationToken,
@@ -476,7 +476,7 @@ public static class KernelExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function run.</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         string pluginName,
         string functionName,
@@ -499,7 +499,7 @@ public static class KernelExtensions
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     /// <inheritdoc/>
-    public static async Task<KernelResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public static async Task<FunctionResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = kernel.CreateNewContext(variables);
 
@@ -548,7 +548,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
+        return allFunctionResults.LastOrDefault();
     }
 
     /// <summary>

@@ -130,11 +130,9 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public async Task<string> Type06Async(SKContext context)
+    public async Task<string> Type06Async(Kernel kernel)
     {
-        var summarizer = context.Plugins["SummarizePlugin"]["Summarize"];
-        var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
-
+        var summary = await kernel.RunAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
         Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");
         return "";
     }

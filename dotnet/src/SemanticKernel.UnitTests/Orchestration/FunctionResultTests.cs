@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Orchestration;
@@ -14,21 +11,13 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IAIServiceProvider> _serviceProvider = new();
-    private readonly Mock<IAIServiceSelector> _serviceSelector = new();
-
-    private SKContext CreateContext()
-    {
-        return new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
-    }
-
     [Fact]
     public void TryGetMetadataValueReturnsTrueWhenKeyExists()
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", this.CreateContext());
+        FunctionResult target = new("functionName", new SKContext());
 
         // Act
         target.Metadata.Add(key, value);
@@ -43,7 +32,7 @@ public class FunctionResultTests
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", this.CreateContext());
+        FunctionResult target = new("functionName", new SKContext());
 
         // Act,Assert
         Assert.False(target.TryGetMetadataValue<string>(key, out string result));
@@ -56,7 +45,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         int value = 42;
-        FunctionResult target = new("functionName", this.CreateContext());
+        FunctionResult target = new("functionName", new SKContext());
 
         // Act
         target.Metadata.Add(key, value);
@@ -71,7 +60,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", new SKContext(), value);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -81,7 +70,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName", this.CreateContext());
+        FunctionResult target = new("functionName", new SKContext());
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -92,7 +81,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", new SKContext(), value);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -104,7 +93,7 @@ public class FunctionResultTests
         // Arrange
         string functionName = Guid.NewGuid().ToString();
         string pluginName = Guid.NewGuid().ToString();
-        SKContext context = this.CreateContext();
+        SKContext context = new();
 
         // Act
         FunctionResult target = new(functionName, context);
@@ -119,7 +108,7 @@ public class FunctionResultTests
     {
         // Arrange
         string functionName = Guid.NewGuid().ToString();
-        SKContext context = this.CreateContext();
+        SKContext context = new();
         string value = Guid.NewGuid().ToString();
 
         // Act
@@ -136,7 +125,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", new SKContext(), value);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());
