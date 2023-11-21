@@ -64,12 +64,10 @@ Question: {{ $input }}
     /// <summary>
     /// Initializes a new instance of the <see cref="LanguageCalculatorPlugin"/> class.
     /// </summary>
-    /// <param name="kernel">The kernel to be used for creating the semantic function.</param>
-    public LanguageCalculatorPlugin(IKernel kernel)
+    public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = kernel.CreateSemanticFunction(
+        this._mathTranslator = SKFunction.FromPrompt(
             MathTranslatorPrompt,
-            pluginName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
             requestSettings: new AIRequestSettings()
@@ -87,19 +85,19 @@ Question: {{ $input }}
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="context">The context for the plugin execution.</param>
+    /// <param name="kernel">The contextkernel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,
-        SKContext context)
+        Kernel kernel)
     {
         string answer;
 
         try
         {
-            var result = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
@@ -123,7 +121,7 @@ Question: {{ $input }}
     {
         var textExpressions = match.Groups[1].Value;
         var expr = new Expression(textExpressions, EvaluateOptions.IgnoreCase);
-        expr.EvaluateParameter += delegate (string name, ParameterArgs args)
+        expr.EvaluateParameter += (string name, ParameterArgs args) =>
         {
             args.Result = name.ToLower(System.Globalization.CultureInfo.CurrentCulture) switch
             {

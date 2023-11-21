@@ -11,14 +11,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -32,7 +31,7 @@ public sealed class FunctionCallingStepwisePlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
     public FunctionCallingStepwisePlanner(
-        IKernel kernel,
+        Kernel kernel,
         FunctionCallingStepwisePlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -66,7 +65,7 @@ public sealed class FunctionCallingStepwisePlanner
         Verify.NotNullOrWhiteSpace(question);
 
         // Add the final answer function
-        this._kernel.ImportFunctions(new UserInteraction(), "UserInteraction");
+        this._kernel.ImportPluginFromObject(new UserInteraction(), "UserInteraction");
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
@@ -120,7 +119,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
 
             // Look up function in kernel
-            if (this._kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
+            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
             {
                 try
                 {
@@ -160,14 +159,14 @@ public sealed class FunctionCallingStepwisePlanner
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
-        return await this._kernel.Functions.GetJsonSchemaFunctionsViewAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
+        return await this._kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
     private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
         var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
+        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
 
@@ -180,7 +179,7 @@ public sealed class FunctionCallingStepwisePlanner
         var systemContext = this._kernel.CreateNewContext();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         systemContext.Variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(systemContext, cancellationToken).ConfigureAwait(false);
+        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -199,7 +198,7 @@ public sealed class FunctionCallingStepwisePlanner
         var systemContext = this._kernel.CreateNewContext();
         systemContext.Variables.Set(GoalKey, goal);
         systemContext.Variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(systemContext, cancellationToken).ConfigureAwait(false);
+        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 
@@ -279,7 +278,7 @@ public sealed class FunctionCallingStepwisePlanner
     private FunctionCallingStepwisePlannerConfig Config { get; }
 
     // Context used to access the list of functions in the kernel
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly IChatCompletion _chatCompletion;
     private readonly ILogger? _logger;
 

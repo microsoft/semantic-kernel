@@ -7,14 +7,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
@@ -91,7 +90,7 @@ internal sealed class RestApiOperationRunner
         bool enablePayloadNamespacing = false)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
+        this._userAgent = userAgent ?? HttpHeaderValues.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
 
@@ -152,7 +151,7 @@ internal sealed class RestApiOperationRunner
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         HttpContent? payload = null,
-        IDictionary<string, JsonDocument?>? expectedSchemas = null,
+        IDictionary<string, SKJsonSchema?>? expectedSchemas = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -166,7 +165,7 @@ internal sealed class RestApiOperationRunner
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
-            : Telemetry.HttpUserAgent);
+            : HttpHeaderValues.UserAgent);
 
         if (headers != null)
         {
@@ -330,34 +329,24 @@ internal sealed class RestApiOperationRunner
     /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="statusCode">The status code.</param>
     /// <returns>The expected schema for the given status code.</returns>
-    private static JsonDocument? GetExpectedSchema(IDictionary<string, JsonDocument?>? expectedSchemas, HttpStatusCode statusCode)
+    private static SKJsonSchema? GetExpectedSchema(IDictionary<string, SKJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
+        SKJsonSchema? matchingResponse = null;
         if (expectedSchemas is not null)
         {
             var statusCodeKey = $"{(int)statusCode}";
 
             // Exact Match
-            var matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
+            matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
 
             // Wildcard match e.g. 2XX
-            if (matchingResponse is null)
-            {
-                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
-            }
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
 
             // Default
-            if (matchingResponse is null)
-            {
-                matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;
-            }
-
-            if (matchingResponse is not null)
-            {
-                return matchingResponse;
-            }
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;
         }
 
-        return null;
+        return matchingResponse;
     }
 
     /// <summary>

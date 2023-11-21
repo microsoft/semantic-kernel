@@ -31,7 +31,7 @@ public static class Example64_MultiplePromptTemplates
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
@@ -47,15 +47,15 @@ public static class Example64_MultiplePromptTemplates
         var skPrompt = "Hello AI, my name is {{$name}}. What is the origin of my name?";
         var handlebarsPrompt = "Hello AI, my name is {{name}}. What is the origin of my name?";
 
-        await RunSemanticFunctionAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
-        await RunSemanticFunctionAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
+        await RunPromptAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
+        await RunPromptAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    public static async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
-        var skfunction = kernel.CreateSemanticFunction(
+        var skfunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: prompt,
             functionName: "MyFunction",
             promptTemplateConfig: new PromptTemplateConfig()

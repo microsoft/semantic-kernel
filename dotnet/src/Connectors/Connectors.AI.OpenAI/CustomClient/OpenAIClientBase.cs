@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
@@ -43,7 +43,7 @@ public abstract class OpenAIClientBase
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
     }
 
     /// <summary>

@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;

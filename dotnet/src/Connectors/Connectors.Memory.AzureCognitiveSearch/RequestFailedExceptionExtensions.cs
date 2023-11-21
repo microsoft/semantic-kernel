@@ -2,7 +2,7 @@
 
 using System.Net;
 using Azure;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 

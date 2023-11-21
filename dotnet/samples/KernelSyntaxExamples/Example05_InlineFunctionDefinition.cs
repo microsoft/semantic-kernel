@@ -28,7 +28,7 @@ public static class Example05_InlineFunctionDefinition
          *          function inline if you like.
          */
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
@@ -49,7 +49,7 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
         Console.WriteLine(result.GetValue<string>());
@@ -57,7 +57,7 @@ Event: {{$input}}
         result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
         Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });
+        var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(fixedFunction);
         Console.WriteLine(result.GetValue<string>());
