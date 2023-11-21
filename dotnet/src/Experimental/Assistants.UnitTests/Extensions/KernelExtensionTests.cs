@@ -16,7 +16,7 @@ public sealed class KernelExtensionTests
     public static void InvokeTwoPartTool()
     {
         //Arrange
-        var function = SKFunction.FromMethod(() => { }, functionName: "Bogus");
+        var function = SKFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
         var kernel = KernelBuilder.Create();
         kernel.Plugins.Add(new SKPlugin("Fake", new[] { function }));

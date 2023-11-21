@@ -12,7 +12,7 @@ internal static class FunctionHelpers
     /// <summary>
     /// Invokes a function on a plugin instance via the kernel.
     /// </summary>
-    public static Task<KernelResult> CallViaKernelAsync(
+    public static Task<FunctionResult> CallViaKernelAsync(
         object pluginInstance,
         string methodName,
         params (string Name, object Value)[] variables)
