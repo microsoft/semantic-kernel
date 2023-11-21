@@ -11,7 +11,7 @@ internal static class ResourcePluginsProvider
     /// Loads .proto file from assembly resource.
     /// </summary>
     /// <param name="resourceName">The resource name.</param>
-    /// <returns>The OpenApi document resource stream.</returns>
+    /// <returns>The OpenAPI document resource stream.</returns>
     public static Stream LoadFromResource(string resourceName)
     {
         var type = typeof(ResourcePluginsProvider);
