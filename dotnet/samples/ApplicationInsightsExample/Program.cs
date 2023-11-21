@@ -1,23 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Extensions.DependencyInjection;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -34,74 +31,60 @@ public sealed class Program
     private const LogLevel MinLogLevel = LogLevel.Information;
 
     /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for the application activities.
+    /// </summary>
+    private static readonly ActivitySource s_activitySource = new("ApplicationInsights.Example");
+
+    /// <summary>
     /// The main entry point for the application.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
-        var serviceProvider = GetServiceProvider();
+        var connectionString = Env.Var("ApplicationInsights__ConnectionString");
 
-        var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+        using var traceProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Microsoft.SemanticKernel.*")
+            .AddSource("ApplicationInsights.Example")
+            .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
+            .Build();
 
-        using var meterListener = new MeterListener();
-        using var activityListener = new ActivityListener();
+        using var meterProvider = Sdk.CreateMeterProviderBuilder()
+            .AddMeter("Microsoft.SemanticKernel.*")
+            .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
+            .Build();
 
-        ConfigureMetering(meterListener, telemetryClient);
-        ConfigureTracing(activityListener, telemetryClient);
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            // Add OpenTelemetry as a logging provider
+            builder.AddOpenTelemetry(options =>
+            {
+                options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
+                // Format log messages. This is default to false.
+                options.IncludeFormattedMessage = true;
+            });
+            builder.SetMinimumLevel(MinLogLevel);
+        });
 
         var kernel = GetKernel(loggerFactory);
         var planner = GetSequentialPlanner(kernel, loggerFactory);
+        // var planner = GetActionPlanner(kernel, loggerFactory);
+        // var planner = GetStepwisePlanner(kernel, loggerFactory);
 
-        try
-        {
-            using var operation = telemetryClient.StartOperation<DependencyTelemetry>("ApplicationInsights.Example");
+        using var activity = s_activitySource.StartActivity("Main");
 
-            Console.WriteLine("Operation/Trace ID:");
-            Console.WriteLine(Activity.Current?.TraceId);
+        Console.WriteLine("Operation/Trace ID:");
+        Console.WriteLine(Activity.Current?.TraceId);
 
-            var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
-            Console.WriteLine("Original plan:");
-            Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(plan.ToPlanString());
 
-            var result = await kernel.RunAsync(plan);
+        var result = await kernel.RunAsync(plan);
 
-            Console.WriteLine("Result:");
-            Console.WriteLine(result.GetValue<string>());
-        }
-        finally
-        {
-            // Explicitly call Flush() followed by sleep is required in console apps.
-            // This is to ensure that even if application terminates, telemetry is sent to the back-end.
-            telemetryClient.Flush();
-            await Task.Delay(5000);
-        }
-    }
-
-    private static ServiceProvider GetServiceProvider()
-    {
-        var services = new ServiceCollection();
-
-        ConfigureApplicationInsightsTelemetry(services);
-
-        return services.BuildServiceProvider();
-    }
-
-    private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
-    {
-        string instrumentationKey = Env.Var("ApplicationInsights__InstrumentationKey");
-
-        services.AddLogging(loggingBuilder =>
-        {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == MinLogLevel);
-            loggingBuilder.SetMinimumLevel(MinLogLevel);
-        });
-
-        services.AddApplicationInsightsTelemetryWorkerService(options =>
-        {
-            options.ConnectionString = $"InstrumentationKey={instrumentationKey}";
-        });
+        Console.WriteLine("Result:");
+        Console.WriteLine(result.GetValue<string>());
     }
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
@@ -158,80 +141,5 @@ public sealed class Program
         };
 
         return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
-    }
-
-    /// <summary>
-    /// Example of metering configuration in Application Insights
-    /// using <see cref="MeterListener"/> to attach for <see cref="Meter"/> recordings.
-    /// </summary>
-    /// <param name="meterListener">Instance of <see cref="MeterListener"/> for metering configuration.</param>
-    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
-    private static void ConfigureMetering(MeterListener meterListener, TelemetryClient telemetryClient)
-    {
-        meterListener.InstrumentPublished = (instrument, listener) =>
-        {
-            // Subscribe to all metrics in Semantic Kernel
-            if (instrument.Meter.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordinal))
-            {
-                listener.EnableMeasurementEvents(instrument);
-            }
-        };
-
-        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<int>(telemetryClient));
-        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<double>(telemetryClient));
-
-        meterListener.Start();
-    }
-
-    /// <summary>
-    /// The callback which can be used to get measurement recording.
-    /// </summary>
-    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
-    private static MeasurementCallback<T> GetMeasurementCallback<T>(TelemetryClient telemetryClient) where T : struct
-    {
-        return (instrument, measurement, tags, state) =>
-        {
-            telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
-        };
-    }
-
-    /// <summary>
-    /// Example of advanced distributed tracing configuration in Application Insights
-    /// using <see cref="ActivityListener"/> to attach for <see cref="Activity"/> events.
-    /// </summary>
-    /// <param name="activityListener">Instance of <see cref="ActivityListener"/> for tracing configuration.</param>
-    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
-    private static void ConfigureTracing(ActivityListener activityListener, TelemetryClient telemetryClient)
-    {
-        var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
-
-        // For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
-        void activityStarted(Activity activity)
-        {
-            var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
-            operation.Telemetry.Type = activity.Kind.ToString();
-
-            operations.TryAdd(activity.SpanId.ToString(), operation);
-        }
-
-        // We also need to manually stop Application Insights operation when Activity entity is stopped.
-        void activityStopped(Activity activity)
-        {
-            if (operations.TryRemove(activity.SpanId.ToString(), out var operation))
-            {
-                telemetryClient.StopOperation(operation);
-            }
-        }
-
-        // Subscribe to all traces in Semantic Kernel
-        activityListener.ShouldListenTo =
-            activitySource => activitySource.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordinal);
-
-        activityListener.Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData;
-        activityListener.SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData;
-        activityListener.ActivityStarted = activityStarted;
-        activityListener.ActivityStopped = activityStopped;
-
-        ActivitySource.AddActivityListener(activityListener);
     }
 }
