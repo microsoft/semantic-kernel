@@ -134,7 +134,7 @@ internal sealed class ReActEngine
         var scratchPad = this.CreateScratchPad(previousSteps);
         context.Variables.Set("agentScratchPad", scratchPad);
 
-        var availableFunctions = this.GetAvailableFunctions(context).ToArray();
+        var availableFunctions = this.GetAvailableFunctions(kernel).ToArray();
         if (availableFunctions.Length == 1)
         {
             var firstActionFunction = availableFunctions.First();
@@ -182,7 +182,7 @@ internal sealed class ReActEngine
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
         this._logger?.LogInformation("Action: {Action}({ActionVariables})", actionStep.Action, JsonSerializer.Serialize(variables));
 
-        var availableFunctions = this.GetAvailableFunctions(context);
+        var availableFunctions = this.GetAvailableFunctions(kernel);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionStep.Action);
         if (targetFunction is null)
         {
@@ -373,9 +373,9 @@ internal sealed class ReActEngine
         return string.Join("\n", functions.Select(ToManualString));
     }
 
-    private IEnumerable<SKFunctionMetadata> GetAvailableFunctions(SKContext context)
+    private IEnumerable<SKFunctionMetadata> GetAvailableFunctions(Kernel kernel)
     {
-        var functionViews = context.Plugins.GetFunctionsMetadata();
+        var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
         var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();

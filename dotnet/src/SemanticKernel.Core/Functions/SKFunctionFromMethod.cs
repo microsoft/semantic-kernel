@@ -167,7 +167,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
@@ -363,8 +363,8 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
-                ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory, null);
+                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
+                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -527,7 +527,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static (functionName, result, _) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Variables.Input));
             };
         }
 
@@ -536,7 +536,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static async (functionName, result, _) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context, context.Result);
+                return new FunctionResult(functionName, context, context.Variables.Input);
             };
         }
 

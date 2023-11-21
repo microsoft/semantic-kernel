@@ -85,19 +85,19 @@ Question: {{ $input }}
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="context">The context for the plugin execution.</param>
+    /// <param name="kernel">The contextkernel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,
-        SKContext context)
+        Kernel kernel)
     {
         string answer;
 
         try
         {
-            var result = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

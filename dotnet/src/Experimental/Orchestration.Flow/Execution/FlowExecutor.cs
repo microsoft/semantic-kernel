@@ -635,7 +635,7 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger?.LogInformation("Observation: {Observation}", actionStep.Observation);
                 await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(context.Result))
+                if (!string.IsNullOrEmpty(context.Variables.Input))
                 {
                     if (context.Variables.IsTerminateFlow())
                     {
