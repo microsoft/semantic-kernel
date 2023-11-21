@@ -859,7 +859,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var result = await sut.RunAsync("PlanInput", plan);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.Null(result);
         Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
         Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
 
@@ -869,9 +869,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Expected invoked sequence
         Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
-
-        // Aborting at the plan level, will render no result
-        Assert.Null(result.Value);
     }
 
     [Fact]

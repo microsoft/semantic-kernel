@@ -528,8 +528,8 @@ public class StepwisePlanner : IPlanner
             string? result = null;
 
             var vars = this.CreateActionContextVariables(actionVariables);
-            var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
-            var resultObject = kernelResult.GetValue<object>();
+            var functionResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
+            var resultObject = functionResult.GetValue<object>();
 
             if (resultObject is not null)
             {
