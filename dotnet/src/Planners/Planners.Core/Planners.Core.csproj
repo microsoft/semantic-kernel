@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planners.Core</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Planners</RootNamespace>
+    <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
@@ -63,7 +63,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
   </ItemGroup>
 
   <ItemGroup>

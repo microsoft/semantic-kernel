@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.

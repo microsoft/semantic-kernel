@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
@@ -338,6 +338,30 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var explodeFormParam = operation.Parameters.Single(p => p.Name == "nonExplodeFormParam");
 
         Assert.False(explodeFormParam.Expand);
+    }
+
+    [Fact]
+    public async Task ItCanParseResponsesSuccessfullyAsync()
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+
+        operation.Responses.TryGetValue("200", out var response);
+        Assert.NotNull(response);
+        Assert.Equal("text/plain", response.MediaType);
+        Assert.Equal("The OK response", response.Description);
+        Assert.NotNull(response.Schema);
+        Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal(
+            JsonSerializer.Serialize(SKJsonSchema.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(response.Schema));
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)

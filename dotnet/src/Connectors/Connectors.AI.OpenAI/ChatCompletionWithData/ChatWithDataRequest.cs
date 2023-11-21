@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-[Serializable]
 internal sealed class ChatWithDataRequest
 {
     [JsonPropertyName("temperature")]

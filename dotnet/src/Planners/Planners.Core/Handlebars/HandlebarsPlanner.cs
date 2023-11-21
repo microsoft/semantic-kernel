@@ -8,9 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -27,7 +26,7 @@ public sealed class HandlebarsPlanner
     /// </summary>
     public Stopwatch Stopwatch { get; } = new();
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     private readonly HandlebarsPlannerConfig _config;
 
@@ -38,7 +37,7 @@ public sealed class HandlebarsPlanner
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="config">The configuration.</param>
-    public HandlebarsPlanner(IKernel kernel, HandlebarsPlannerConfig? config = default)
+    public HandlebarsPlanner(Kernel kernel, HandlebarsPlannerConfig? config = default)
     {
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
@@ -71,13 +70,13 @@ public sealed class HandlebarsPlanner
         var resultContext = this._kernel.CreateNewContext();
         resultContext.Variables.Update(completionMessage.Content);
 
-        if (resultContext.Result.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (resultContext.Variables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
-            throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{resultContext.Result}");
+            throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{resultContext.Variables.Input}");
         }
 
-        Match match = Regex.Match(resultContext.Result, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(resultContext.Variables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
@@ -96,9 +95,9 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, template);
     }
 
-    private List<FunctionView> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
+    private List<SKFunctionMetadata> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
     {
-        return this._kernel.Functions.GetFunctionViews()
+        return this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
@@ -135,7 +134,7 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(IKernel kernel, string goal, List<FunctionView> availableFunctions)
+    private string GetHandlebarsTemplate(Kernel kernel, string goal, List<SKFunctionMetadata> availableFunctions)
     {
         var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
         var variables = new Dictionary<string, object?>()

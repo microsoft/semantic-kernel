@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -71,7 +70,7 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
     {
-        var tools = assistant.Functions.Select(f => f.ToToolModel()).ToArray();
+        var tools = assistant.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
         var run = new ChatRun(runModel, assistant.Kernel, this._restContext);

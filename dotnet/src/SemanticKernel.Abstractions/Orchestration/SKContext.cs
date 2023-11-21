@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -18,19 +12,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
-    /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// </summary>
-    /// <returns>Processed input, aka result</returns>
-    public string Result => this.Variables.ToString();
-
-    /// <summary>
-    /// When a prompt is processed, aka the current data after any model results processing occurred.
-    /// (One prompt can have multiple results).
-    /// </summary>
-    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
-    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
-
     /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
@@ -46,31 +27,6 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only functions collection
-    /// </summary>
-    public IReadOnlyFunctionCollection Functions { get; }
-
-    /// <summary>
-    /// App logger
-    /// </summary>
-    public ILoggerFactory LoggerFactory { get; }
-
-    /// <summary>
-    /// Executes functions using the current resources loaded in the context
-    /// </summary>
-    public IFunctionRunner Runner { get; }
-
-    /// <summary>
-    /// AI service provider
-    /// </summary>
-    public IAIServiceProvider ServiceProvider { get; }
-
-    /// <summary>
-    /// AIService selector implementation
-    /// </summary>
-    internal IAIServiceSelector ServiceSelector { get; }
-
-    /// <summary>
     /// Function invoking event handler wrapper
     /// </summary>
     internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
@@ -83,74 +39,42 @@ public sealed class SKContext
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="functionRunner">Function runner reference</param>
-    /// <param name="serviceProvider">AI service provider</param>
-    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="functions">Functions to include in context.</param>
     /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
-    /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IFunctionRunner functionRunner,
-        IAIServiceProvider serviceProvider,
-        IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
         EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
-        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
-        Verify.NotNull(functionRunner, nameof(functionRunner));
-
-        this.Runner = functionRunner;
-        this.ServiceProvider = serviceProvider;
-        this.ServiceSelector = serviceSelector;
         this.Variables = variables ?? new();
-        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
         this.FunctionInvokingHandler = invokingWrapper;
         this.FunctionInvokedHandler = invokedWrapper;
     }
 
     /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// </summary>
-    /// <returns>Processed input, aka result.</returns>
-    public override string ToString()
-    {
-        return this.Result;
-    }
-
-    /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
-        => this.Clone(null, null);
+        => this.Clone(null);
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
-    /// and optionally allows overriding the variables and functions.
+    /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
+    /// and optionally allows overriding the variables and plugins.
     /// </summary>
     /// <param name="variables">Override the variables with the provided ones</param>
-    /// <param name="functions">Override the functions with the provided ones</param>
     /// <returns>A new context cloned from the current one</returns>
-    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
+    public SKContext Clone(ContextVariables? variables)
     {
         return new SKContext(
-            this.Runner,
-            this.ServiceProvider,
-            this.ServiceSelector,
             variables ?? this.Variables.Clone(),
-            functions ?? this.Functions,
             this.FunctionInvokingHandler,
             this.FunctionInvokedHandler,
-            this.LoggerFactory,
             this.Culture);
     }
 
@@ -165,12 +89,6 @@ public sealed class SKContext
         get
         {
             string display = this.Variables.DebuggerDisplay;
-
-            if (this.Functions is IReadOnlyFunctionCollection functions)
-            {
-                var view = functions.GetFunctionViews();
-                display += $", Functions = {view.Count}";
-            }
 
             display += $", Culture = {this.Culture.EnglishName}";
 

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
@@ -50,7 +49,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>

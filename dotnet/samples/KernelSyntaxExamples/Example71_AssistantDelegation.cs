@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -30,16 +29,14 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        IKernel kernel = new KernelBuilder().Build();
-
-        var functions = kernel.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+        var plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
 
         var menuAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                functions: functions.Values);
+                new SKPluginCollection { plugin });
 
         var parrotAssistant =
             await AssistantBuilder.FromDefinitionAsync(
@@ -47,14 +44,14 @@ public static class Example71_AssistantDelegation
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
-        var helperAssistants = Import(menuAssistant, parrotAssistant).ToArray();
+        var helperAssistantPlugins = Import(menuAssistant, parrotAssistant);
 
         var toolAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                functions: helperAssistants);
+                helperAssistantPlugins);
 
         await ChatAsync(
             toolAssistant,
@@ -62,16 +59,16 @@ public static class Example71_AssistantDelegation
             "Can you talk like pirate?",
             "Thank you");
 
-        IEnumerable<ISKFunction> Import(params IAssistant[] assistants)
+        ISKPluginCollection Import(params IAssistant[] assistants)
         {
+            var plugins = new SKPluginCollection();
+
             foreach (var assistant in assistants)
             {
-                var functions = kernel.ImportFunctions(assistant, assistant.Id);
-                foreach (var function in functions.Values)
-                {
-                    yield return function;
-                }
+                plugins.Add(SKPlugin.FromObject(assistant, assistant.Id));
             }
+
+            return plugins;
         }
     }
     private static async Task ChatAsync(IAssistant assistant, params string[] messages)

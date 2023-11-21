@@ -16,10 +16,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
@@ -46,7 +44,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
+        using var memoryStream = new MemoryStream(Text.Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
@@ -58,7 +56,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     #region private
 
     /// <summary>
-    /// Max depth to traverse down OpenApi schema to discover payload properties.
+    /// Max depth to traverse down OpenAPI schema to discover payload properties.
     /// </summary>
     private const int PayloadPropertiesHierarchyMaxDepth = 10;
 
@@ -86,7 +84,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
-    /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
+    /// This class relies on Microsoft.OpenAPI.NET library to work with OpenAPI documents.
     /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
     /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenAPI.NET/issues/795
     /// This method should be removed/revised as soon the support is added.
@@ -143,9 +141,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <summary>
-    /// Parses an OpenApi document and extracts REST API operations.
+    /// Parses an OpenAPI document and extracts REST API operations.
     /// </summary>
-    /// <param name="document">The OpenApi document.</param>
+    /// <param name="document">The OpenAPI document.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <returns>List of Rest operations.</returns>
     private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude = null)
@@ -195,7 +193,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
-                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
+                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
 
             operations.Add(operation);
@@ -208,7 +207,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Creates REST API operation parameters.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
-    /// <param name="parameters">The OpenApi parameters.</param>
+    /// <param name="parameters">The OpenAPI parameters.</param>
     /// <returns>The parameters.</returns>
     private static List<RestApiOperationParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
     {
@@ -236,7 +235,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description,
-                parameter.Schema.ToJsonDocument()
+                parameter.Schema.ToJsonSchema()
             );
 
             result.Add(restParameter);
@@ -248,7 +247,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Creates REST API operation headers.
     /// </summary>
-    /// <param name="parameters">The OpenApi parameters</param>
+    /// <param name="parameters">The OpenAPI parameters</param>
     /// <returns>The headers.</returns>
     private static Dictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
     {
@@ -259,7 +258,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Creates REST API operation payload.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
-    /// <param name="requestBody">The OpenApi request body.</param>
+    /// <param name="requestBody">The OpenAPI request body.</param>
     /// <returns>The REST API operation payload.</returns>
     private static RestApiOperationPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
     {
@@ -273,16 +272,31 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
-        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonDocument());
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
+    }
+
+    private static IEnumerable<(string, RestApiOperationExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
+    {
+        foreach (var response in responses)
+        {
+            var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
+            if (mediaType is not null)
+            {
+                var matchingSchema = response.Value.Content[mediaType].Schema;
+                var description = response.Value.Description ?? matchingSchema?.Description ?? string.Empty;
+
+                yield return (response.Key, new RestApiOperationExpectedResponse(description, mediaType, matchingSchema?.ToJsonSchema()));
+            }
+        }
     }
 
     /// <summary>
     /// Returns REST API operation payload properties.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
-    /// <param name="schema">An OpenApi document schema representing request body properties.</param>
+    /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
     /// <param name="requiredProperties">List of required properties.</param>
-    /// <param name="level">Current level in OpenApi schema.</param>
+    /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
     private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
         int level = 0)
@@ -311,7 +325,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
-                propertySchema.ToJsonDocument());
+                propertySchema.ToJsonSchema());
 
             result.Add(property);
         }
@@ -332,55 +346,21 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        switch (value.PrimitiveType)
+        return value.PrimitiveType switch
         {
-            case PrimitiveType.Integer:
-                var intValue = (OpenApiInteger)value;
-                return intValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Long:
-                var longValue = (OpenApiLong)value;
-                return longValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Float:
-                var floatValue = (OpenApiFloat)value;
-                return floatValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Double:
-                var doubleValue = (OpenApiDouble)value;
-                return doubleValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.String:
-                var stringValue = (OpenApiString)value;
-                return stringValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Byte:
-                var byteValue = (OpenApiByte)value;
-                return Convert.ToBase64String(byteValue.Value);
-
-            case PrimitiveType.Binary:
-                var binaryValue = (OpenApiBinary)value;
-                return Encoding.UTF8.GetString(binaryValue.Value);
-
-            case PrimitiveType.Boolean:
-                var boolValue = (OpenApiBoolean)value;
-                return boolValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Date:
-                var dateValue = (OpenApiDate)value;
-                return dateValue.Value.ToString("o").Substring(0, 10);
-
-            case PrimitiveType.DateTime:
-                var dateTimeValue = (OpenApiDateTime)value;
-                return dateTimeValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Password:
-                var passwordValue = (OpenApiPassword)value;
-                return passwordValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            default:
-                throw new SKException($"The value type - {value.PrimitiveType} is not supported.");
-        }
+            PrimitiveType.Integer => ((OpenApiInteger)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Long => ((OpenApiLong)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Float => ((OpenApiFloat)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Double => ((OpenApiDouble)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.String => ((OpenApiString)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Byte => Convert.ToBase64String(((OpenApiByte)value).Value),
+            PrimitiveType.Binary => Encoding.UTF8.GetString(((OpenApiBinary)value).Value),
+            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Date => ((OpenApiDate)value).Value.ToString("o").Substring(0, 10),
+            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Password => ((OpenApiPassword)value).Value.ToString(CultureInfo.InvariantCulture),
+            _ => throw new SKException($"The value type - {value.PrimitiveType} is not supported."),
+        };
     }
 
     /// <summary>

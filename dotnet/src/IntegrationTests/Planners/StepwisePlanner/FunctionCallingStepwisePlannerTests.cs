@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -14,7 +14,9 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+#pragma warning restore IDE0130
 
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
@@ -45,11 +47,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings);
+        Kernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject(new TimePlugin(), "time");
 
         var planner = new FunctionCallingStepwisePlanner(
             kernel,
@@ -66,7 +68,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 10);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);

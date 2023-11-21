@@ -16,24 +16,12 @@ public sealed class SKFunctionExtensionTests
     private const string PluginName = "Fake";
 
     [Fact]
-    public static void GetSinglePartName()
-    {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.SetupGet(f => f.Name).Returns(ToolName);
-
-        string qualifiedName = mockFunction.Object.GetQualifiedName();
-
-        Assert.Equal(ToolName, qualifiedName);
-    }
-
-    [Fact]
     public static void GetTwoPartName()
     {
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.SetupGet(f => f.Name).Returns(ToolName);
-        mockFunction.SetupGet(f => f.PluginName).Returns(PluginName);
 
-        string qualifiedName = mockFunction.Object.GetQualifiedName();
+        string qualifiedName = mockFunction.Object.GetQualifiedName(PluginName);
 
         Assert.Equal($"{PluginName}-{ToolName}", qualifiedName);
     }
@@ -45,17 +33,22 @@ public sealed class SKFunctionExtensionTests
         const string RequiredParamName = "required";
         const string OptionalParamName = "optional";
 
-        var requiredParam = new ParameterView("required", IsRequired: true);
-        var optionalParam = new ParameterView("optional", IsRequired: false);
-        var parameters = new List<ParameterView> { requiredParam, optionalParam };
-        var functionView = new FunctionView(ToolName, PluginName, FunctionDescription, parameters);
+        var requiredParam = new SKParameterMetadata("required") { IsRequired = true };
+        var optionalParam = new SKParameterMetadata("optional");
+        var parameters = new List<SKParameterMetadata> { requiredParam, optionalParam };
+        var functionView = new SKFunctionMetadata(ToolName)
+        {
+            PluginName = PluginName,
+            Description = FunctionDescription,
+            Parameters = parameters
+        };
+
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.SetupGet(f => f.Name).Returns(ToolName);
-        mockFunction.SetupGet(f => f.PluginName).Returns(PluginName);
         mockFunction.SetupGet(f => f.Description).Returns(FunctionDescription);
-        mockFunction.Setup(f => f.Describe()).Returns(functionView);
+        mockFunction.Setup(f => f.GetMetadata()).Returns(functionView);
 
-        var toolModel = mockFunction.Object.ToToolModel();
+        var toolModel = mockFunction.Object.ToToolModel(PluginName);
         var properties = toolModel.Function?.Parameters.Properties;
         var required = toolModel.Function?.Parameters.Required;
 

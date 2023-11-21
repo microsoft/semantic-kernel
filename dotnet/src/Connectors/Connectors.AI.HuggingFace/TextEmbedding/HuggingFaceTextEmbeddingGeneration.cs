@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
@@ -72,7 +72,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(httpClient);
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         this._model = model;
@@ -108,7 +108,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);

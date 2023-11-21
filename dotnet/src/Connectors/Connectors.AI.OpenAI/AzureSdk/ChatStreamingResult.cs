@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -45,10 +44,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            if (message.FunctionCall is not null || message.Content is { Length: > 0 })
-            {
-                yield return new AzureOpenAIChatMessage(message);
-            }
+            yield return new AzureOpenAIChatMessage(message);
         }
     }
 
