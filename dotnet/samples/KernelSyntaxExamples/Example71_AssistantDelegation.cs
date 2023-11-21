@@ -29,7 +29,7 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        var plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
+        var plugin = SKPluginFactory.CreateFromObject(new MenuPlugin(), nameof(MenuPlugin));
 
         var menuAssistant =
             await AssistantBuilder.FromDefinitionAsync(
@@ -65,7 +65,7 @@ public static class Example71_AssistantDelegation
 
             foreach (var assistant in assistants)
             {
-                plugins.Add(SKPlugin.FromObject(assistant, assistant.Id));
+                plugins.Add(SKPluginFactory.CreateFromObject(assistant, assistant.Id));
             }
 
             return plugins;

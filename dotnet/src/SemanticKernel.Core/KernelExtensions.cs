@@ -152,7 +152,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject<T>(pluginName, kernel.LoggerFactory);
+        return SKPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
@@ -168,7 +168,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject(target, pluginName, kernel.LoggerFactory);
+        return SKPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
     }
     #endregion
 
