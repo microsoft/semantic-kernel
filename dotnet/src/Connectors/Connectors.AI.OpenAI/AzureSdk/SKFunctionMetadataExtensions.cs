@@ -20,30 +20,13 @@ public static class SKFunctionMetadataExtensions
         var openAIParams = new List<OpenAIFunctionParameter>();
         foreach (SKParameterMetadata param in metadata.Parameters)
         {
-            // Get the parameter's schema, or if it doesn't have one but it has a .NET type,
-            // infer the schema from the .NET type.
-            SKJsonSchema? schema = param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType, param.Description);
-
-            // Read the "type" property from the schema, if it exists.
-            // If it doesn't, that means we lack any type information for the property.
-            string? type = null;
-            if (schema?.RootElement.TryGetProperty("type", out JsonElement prop) == true)
-            {
-                type = prop.GetString();
-            }
-            type ??= "string";
-
-            string description = string.IsNullOrEmpty(param.DefaultValue) ?
-                param.Description :
-                $"{param.Description} (default value: {param.DefaultValue})";
-
             openAIParams.Add(new OpenAIFunctionParameter
             {
                 Name = param.Name,
-                Description = description,
+                Description = string.IsNullOrEmpty(param.DefaultValue) ? param.Description : $"{param.Description} (default value: {param.DefaultValue})",
                 IsRequired = param.IsRequired,
                 ParameterType = param.ParameterType,
-                Schema = schema,
+                Schema = param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType, param.Description),
             });
         }
 
