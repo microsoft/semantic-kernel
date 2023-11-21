@@ -113,9 +113,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
+        //var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
+        var embeddingResponse = JsonSerializer.Deserialize<List<float[]>>(body);
+        return embeddingResponse?.Select(l => new ReadOnlyMemory<float>(l)).ToList()!;
 
-        return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
+        //return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
     }
 
     /// <summary>
