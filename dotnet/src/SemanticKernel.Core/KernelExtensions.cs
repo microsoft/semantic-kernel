@@ -634,7 +634,7 @@ repeat:
             repeatRequested = false;
 
             var functionDetails = skFunction.GetMetadata();
-            var result = skFunction.InvokeStreamingAsync<T>(kernel, context, null, cancellationToken);
+            var result = await skFunction.InvokeStreamingAsync<T>(kernel, context, null, cancellationToken).ConfigureAwait(false);
             await foreach (T update in result.ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
