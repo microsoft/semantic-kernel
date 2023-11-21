@@ -108,10 +108,8 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel);
 
-        var context = kernel.CreateNewContext();
-
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
@@ -134,7 +132,7 @@ public sealed class ActionPlannerTests
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
@@ -157,7 +155,7 @@ public sealed class ActionPlannerTests
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
@@ -182,7 +180,7 @@ public sealed class ActionPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();

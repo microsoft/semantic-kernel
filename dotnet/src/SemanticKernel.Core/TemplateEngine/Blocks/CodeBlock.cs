@@ -71,7 +71,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(SKContext context, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -87,7 +87,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return ((ITextRendering)this._tokens[0]).Render(context.Variables);
 
             case BlockTypes.FunctionId:
-                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
+                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false);
         }
 
         throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
@@ -98,7 +98,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, SKContext context)
     {
         // Clone the context to avoid unexpected variable mutations from the inner function execution
         ContextVariables inputVariables = context.Variables.Clone();
@@ -111,7 +111,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            await context.Runner.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
+            await kernel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

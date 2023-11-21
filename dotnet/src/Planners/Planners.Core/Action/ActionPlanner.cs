@@ -145,18 +145,16 @@ public sealed class ActionPlanner : IPlanner
     /// excluding functions in the planner itself.
     /// </summary>
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
-    /// <param name="context">Function execution context</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
     [SKFunction, Description("List all functions available in the kernel")]
     public async Task<string> ListOfFunctionsAsync(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context,
         CancellationToken cancellationToken = default)
     {
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        var availableFunctions = await context.Plugins.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
+        var availableFunctions = await this._kernel.Plugins.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
         this.PopulateList(list, availableFunctions);
 
         return list.ToString();
