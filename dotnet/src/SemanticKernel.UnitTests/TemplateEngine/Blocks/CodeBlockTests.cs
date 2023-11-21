@@ -37,7 +37,7 @@ public class CodeBlockTests
         var context = new SKContext();
 
         var function = new KernelFunctionMock("function", "description");
-        function.InvokeDelegate = (kernel, context, requestSettings, cancellationToken) => throw new FormatException("error");
+        function.InvokeCoreDelegate = (kernel, context, requestSettings, cancellationToken) => throw new FormatException("error");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 

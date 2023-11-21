@@ -16,20 +16,20 @@ namespace SemanticKernel.UnitTests;
 public class KernelFunctionMock : KernelFunction
 {
     public Func<SKFunctionMetadata>? GetMetadataDelegate { get; set; }
-    public Func<Kernel, SKContext, AIRequestSettings?, CancellationToken, Task<FunctionResult>>? InvokeDelegate { get; set; }
+    public Func<Kernel, SKContext, AIRequestSettings?, CancellationToken, Task<FunctionResult>>? InvokeCoreDelegate { get; set; }
 
     public KernelFunctionMock(string? name = null, string? description = null, IEnumerable<AIRequestSettings>? modelSettings = null) : base(name ?? string.Empty, description ?? string.Empty, modelSettings)
     {
     }
 
-    public override Task<FunctionResult> InvokeAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    protected override Task<FunctionResult> InvokeCoreAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        if (this.InvokeDelegate is null)
+        if (this.InvokeCoreDelegate is null)
         {
             return Task.FromResult(new FunctionResult(this.Name, context));
         }
 
-        return this.InvokeDelegate(kernel, context, requestSettings, cancellationToken);
+        return this.InvokeCoreDelegate(kernel, context, requestSettings, cancellationToken);
     }
 
     public override SKFunctionMetadata GetMetadata()

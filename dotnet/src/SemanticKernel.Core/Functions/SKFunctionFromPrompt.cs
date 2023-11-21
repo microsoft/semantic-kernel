@@ -132,7 +132,7 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
         };
 
     /// <inheritdoc/>
-    public override async Task<FunctionResult> InvokeAsync(
+    protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,

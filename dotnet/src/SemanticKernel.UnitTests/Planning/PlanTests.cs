@@ -339,7 +339,7 @@ public sealed class PlanTests
 
         var mockFunction = new KernelFunctionMock
         {
-            InvokeDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
+            InvokeCoreDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
             GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
         };
 
@@ -365,7 +365,7 @@ public sealed class PlanTests
 
         var mockFunction = new KernelFunctionMock
         {
-            InvokeDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
+            InvokeCoreDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
             GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
         };
 

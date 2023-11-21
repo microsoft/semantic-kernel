@@ -52,7 +52,7 @@ internal sealed class InstrumentedKernelFunction : KernelFunction
         this._function.GetMetadata();
 
     /// <inheritdoc/>
-    public override async Task<FunctionResult> InvokeAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+    protected override async Task<FunctionResult> InvokeCoreAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
 

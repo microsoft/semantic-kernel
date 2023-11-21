@@ -280,7 +280,7 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new KernelFunctionMock("functionName");
-        mockFunction.InvokeDelegate = (k, c, s, ct) =>
+        mockFunction.InvokeCoreDelegate = (k, c, s, ct) =>
         {
             c.Variables.TryGetValue("variables", out string? v);
             returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -345,7 +345,7 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new KernelFunctionMock("functionName");
-        mockFunction.InvokeDelegate = (k, c, s, ct) =>
+        mockFunction.InvokeCoreDelegate = (k, c, s, ct) =>
         {
             c.Variables.TryGetValue("variables", out string? v);
             returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
