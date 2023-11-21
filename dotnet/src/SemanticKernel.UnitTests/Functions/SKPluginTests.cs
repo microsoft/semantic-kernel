@@ -17,9 +17,9 @@ public class SKPluginTests
 
         var functions = new[]
         {
-            SKFunction.FromMethod(() => { }, "Function1"),
-            SKFunction.FromMethod(() => { }, "Function2"),
-            SKFunction.FromMethod(() => { }, "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         };
 
         plugin = new SKPlugin("name");
@@ -48,8 +48,8 @@ public class SKPluginTests
     [Fact]
     public void ItExposesFunctionsItContains()
     {
-        ISKFunction func1 = SKFunction.FromMethod(() => { }, "Function1");
-        ISKFunction func2 = SKFunction.FromMethod(() => { }, "Function2");
+        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => { }, "Function1");
+        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
         SKPlugin plugin = new("name", new[] { func1, func2 });
 
@@ -77,8 +77,8 @@ public class SKPluginTests
     [Fact]
     public void ItContainsAddedFunctions()
     {
-        ISKFunction func1 = SKFunction.FromMethod(() => { }, "Function1");
-        ISKFunction func2 = SKFunction.FromMethod(() => { }, "Function2");
+        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => { }, "Function1");
+        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
         SKPlugin plugin = new("name");
         Assert.Equal(0, plugin.FunctionCount);
@@ -94,8 +94,8 @@ public class SKPluginTests
         Assert.Equal(func2, plugin[func2.Name]);
 
         Assert.Throws<ArgumentException>(() => plugin.AddFunction(func1));
-        Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunction.FromMethod(() => { }, "function1")));
-        Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunction.FromMethod(() => { }, "FUNCTION2")));
+        Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunctionFactory.CreateFromMethod(() => { }, "function1")));
+        Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunctionFactory.CreateFromMethod(() => { }, "FUNCTION2")));
     }
 
     [Fact]

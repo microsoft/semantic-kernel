@@ -63,12 +63,12 @@ public class SKPluginCollectionTests
 
         SKPlugin plugin1 = new("name1", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function1"),
-            SKFunction.FromMethod(() => { }, "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
 
         c.Add(plugin1);
@@ -141,13 +141,13 @@ public class SKPluginCollectionTests
         {
             new SKPlugin("plugin1", new[]
             {
-                SKFunction.FromMethod(() => { }, "Function1"),
-                SKFunction.FromMethod(() => { }, "Function2"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
             }),
             new SKPlugin("plugin2", new[]
             {
-                SKFunction.FromMethod(() => { }, "Function2"),
-                SKFunction.FromMethod(() => { }, "Function3"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
             })
         };
 
@@ -171,12 +171,12 @@ public class SKPluginCollectionTests
     {
         SKPlugin plugin1 = new("name1", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function1"),
-            SKFunction.FromMethod(() => { }, "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
 
         var c = new SKPluginCollection(new[] { plugin1, plugin2 });
