@@ -46,7 +46,10 @@ public sealed class KernelBuilder
         );
 #pragma warning restore CS8604 // Possible null reference argument.
 
-        instance.Culture = this._culture ?? instance.Culture;
+        if (this._culture != null)
+        {
+            instance.Culture = this._culture;
+        }
 
         return instance;
     }
