@@ -189,9 +189,9 @@ public static class Example59_OpenAIFunctionCalling
                 // you can invoke it using the following code.
                 if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
                 {
-                    var kernelResult = await kernel.RunAsync(func, context);
+                    var functionResult = await kernel.RunAsync(func, context);
 
-                    var result = kernelResult.GetValue<object>();
+                    var result = functionResult.GetValue<object>();
 
                     string? resultMessage = null;
                     if (result is RestApiOperationResponse apiResponse)

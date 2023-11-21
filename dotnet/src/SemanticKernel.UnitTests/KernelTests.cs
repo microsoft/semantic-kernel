@@ -65,7 +65,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Plugins.GetFunction("mySk", "GetAnyValue"));
+        var result = await kernel.RunAsync(cts.Token, kernel.Plugins.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
@@ -147,7 +147,7 @@ public class KernelTests
         // Assert
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Null(result.GetValue<string>());
+        Assert.Null(result);
     }
 
     [Fact]
@@ -319,15 +319,11 @@ public class KernelTests
         var function2 = SKFunction.FromMethod(() => "Result2", "Function2");
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1, function2);
-        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1");
-        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2");
+        var result = await kernel.RunAsync(function1, function2);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal("Result2", kernelResult.GetValue<string>());
-        Assert.Equal("Result1", functionResult1.GetValue<string>());
-        Assert.Equal("Result2", functionResult2.GetValue<string>());
+        Assert.NotNull(result);
+        Assert.Equal("Result2", result.GetValue<string>());
     }
 
     [Fact]
@@ -345,13 +341,12 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1);
+        var result = await kernel.RunAsync(function1);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
+        Assert.NotNull(result);
+        Assert.Equal(ExpectedValue, result.GetValue<string>());
+        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
     }
 
     [Fact]
@@ -369,13 +364,12 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1);
+        var result = await kernel.RunAsync(function1);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
-        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Variables.Input);
+        Assert.NotNull(result);
+        Assert.Equal(ExpectedValue, result.GetValue<string>());
+        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
     }
 
     [Theory]
@@ -404,11 +398,10 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1, function2);
+        var result = await kernel.RunAsync(function1, function2);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal(2 + numberOfRepeats, kernelResult.FunctionResults.Count);
+        Assert.NotNull(result);
         Assert.Equal(2 + numberOfRepeats, numberOfInvocations);
     }
 
@@ -443,15 +436,12 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(string.Empty, function1, function2, function3);
+        var result = await kernel.RunAsync(string.Empty, function1, function2, function3);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal(expectedResult, kernelResult.GetValue<string>()!.Trim());
+        Assert.NotNull(result);
+        Assert.Equal(expectedResult, result.GetValue<string>()!.Trim());
         Assert.Equal(ExpectedInvocations, numberOfInvocations);
-
-        // ExpectedInvocations
-        Assert.Equal(ExpectedInvocations, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
@@ -489,16 +479,22 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
+        var result = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
 
         // Assert
-        Assert.NotNull(kernelResult);
+        if (functionCancelIndex == 0)
+        {
+            // If the first function was cancelled, the result should be null
+            Assert.Null(result);
+        }
+        else
+        {
+            // Else result should be of the last invoked function
+            Assert.Equal($"Result{functionCancelIndex}", result.GetValue<string>());
+        }
 
         // Kernel result is the same as the last invoked function
         Assert.Equal(invokedHandlerInvocations, numberOfInvocations);
-
-        // Number of invocations
-        Assert.Equal(numberOfInvocations, kernelResult.FunctionResults.Count);
     }
 
     [Theory]
@@ -532,20 +528,19 @@ public class KernelTests
         };
 
         // Act
-        var kernelResult = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
+        var result = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
 
         // Assert
-        Assert.NotNull(kernelResult);
 
         if (functionCancelIndex == 0)
         {
             // If the first function was cancelled, the result should be null
-            Assert.Null(kernelResult.GetValue<string>());
+            Assert.Null(result);
         }
         else
         {
             // Else result should be of the last invoked function
-            Assert.Equal($"Result{functionCancelIndex}", kernelResult.GetValue<string>());
+            Assert.Equal($"Result{functionCancelIndex}", result.GetValue<string>());
         }
         Assert.Equal(expectedInvocations, numberOfInvocations);
     }
