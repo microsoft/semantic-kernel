@@ -355,51 +355,16 @@ internal sealed class RestApiOperationRunner
     /// <param name="propertyValue">The value of the property to be converted.</param>
     /// <param name="propertyMetadata">The metadata of the property.</param>
     /// <returns>A JsonNode representing the converted property value.</returns>
-    private static JsonNode? ConvertJsonPropertyValueType(string propertyValue, RestApiOperationPayloadProperty propertyMetadata)
-    {
-        switch (propertyMetadata.Type)
+    private static JsonNode? ConvertJsonPropertyValueType(string propertyValue, RestApiOperationPayloadProperty propertyMetadata) =>
+        propertyMetadata.Type switch
         {
-            case "number":
-            {
-                if (long.TryParse(propertyValue, out var intValue))
-                {
-                    return JsonValue.Create(intValue);
-                }
-
-                return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
-            }
-
-            case "boolean":
-            {
-                return JsonValue.Create(bool.Parse(propertyValue));
-            }
-
-            case "integer":
-            {
-                return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
-            }
-
-            case "array":
-            {
-                if (JsonArray.Parse(propertyValue) is JsonArray array)
-                {
-                    return array;
-                }
-
-                throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
-            }
-
-            case "string":
-            {
-                return JsonValue.Create(propertyValue);
-            }
-
-            default:
-            {
-                throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
-            }
-        }
-    }
+            "number" => long.TryParse(propertyValue, out var intValue) ? JsonValue.Create(intValue) : JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture)),
+            "boolean" => JsonValue.Create(bool.Parse(propertyValue)),
+            "integer" => JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture)),
+            "array" => JsonArray.Parse(propertyValue) as JsonArray ?? throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array."),
+            "string" => JsonValue.Create(propertyValue),
+            _ => throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}"),
+        };
 
     /// <summary>
     /// Builds "text/plain" payload.
