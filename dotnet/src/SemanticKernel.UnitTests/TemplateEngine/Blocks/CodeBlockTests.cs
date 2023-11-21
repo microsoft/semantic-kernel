@@ -38,7 +38,7 @@ public class CodeBlockTests
         // Arrange
         var context = new SKContext();
 
-        var function = new Mock<ISKFunction>();
+        var function = new Mock<KernelFunction>();
         function.Setup(x => x.Name).Returns("function");
         function
             .Setup(x => x.InvokeAsync(

@@ -259,7 +259,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
-    private static ISKFunction CreateRestApiFunction(
+    private static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,

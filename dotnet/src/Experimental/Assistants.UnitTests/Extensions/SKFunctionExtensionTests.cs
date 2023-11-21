@@ -18,7 +18,7 @@ public sealed class SKFunctionExtensionTests
     [Fact]
     public static void GetTwoPartName()
     {
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.SetupGet(f => f.Name).Returns(ToolName);
 
         string qualifiedName = mockFunction.Object.GetQualifiedName(PluginName);
@@ -43,7 +43,7 @@ public sealed class SKFunctionExtensionTests
             Parameters = parameters
         };
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.SetupGet(f => f.Name).Returns(ToolName);
         mockFunction.SetupGet(f => f.Description).Returns(FunctionDescription);
         mockFunction.Setup(f => f.GetMetadata()).Returns(functionView);

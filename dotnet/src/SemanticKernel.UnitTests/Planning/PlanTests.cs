@@ -338,7 +338,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
         mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
@@ -364,7 +364,7 @@ public sealed class PlanTests
         var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Throws(new ArgumentException("Error message"));
         mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
@@ -434,7 +434,7 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal, new Mock<ISKFunction>().Object, new Mock<ISKFunction>().Object);
+        var plan = new Plan(goal, new Mock<KernelFunction>().Object, new Mock<KernelFunction>().Object);
 
         // Assert
         Assert.NotNull(plan);
@@ -761,7 +761,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     [Fact]
     public async Task ConPlanStepsTriggerKernelEventsAsync()
     {
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
 
         // Arrange
         [SKName("WritePoem")]

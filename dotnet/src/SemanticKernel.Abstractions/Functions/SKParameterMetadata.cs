@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Provides read-only metadata for an <see cref="ISKFunction"/> parameter.
+/// Provides read-only metadata for an <see cref="KernelFunction"/> parameter.
 /// </summary>
 public sealed class SKParameterMetadata
 {

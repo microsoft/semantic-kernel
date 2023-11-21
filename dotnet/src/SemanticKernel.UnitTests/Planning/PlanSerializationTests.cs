@@ -42,7 +42,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var expectedSteps = "\"steps\":[{";
-        var plan = new Plan(goal, new Mock<ISKFunction>().Object, new Mock<ISKFunction>().Object);
+        var plan = new Plan(goal, new Mock<KernelFunction>().Object, new Mock<KernelFunction>().Object);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -281,7 +281,7 @@ public sealed class PlanSerializationTests
         var returnContext = new SKContext(new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
             {
@@ -347,7 +347,7 @@ public sealed class PlanSerializationTests
         var returnContext = new SKContext(new ContextVariables(stepOutput)
         );
 
-        var mockFunction = new Mock<ISKFunction>();
+        var mockFunction = new Mock<KernelFunction>();
         mockFunction.Setup(x => x.Name).Returns("functionName");
         mockFunction
             .Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
