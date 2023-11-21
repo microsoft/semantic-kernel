@@ -80,17 +80,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
 
-        switch (this._tokens[0].Type)
+        return this._tokens[0].Type switch
         {
-            case BlockTypes.Value:
-            case BlockTypes.Variable:
-                return ((ITextRendering)this._tokens[0]).Render(context.Variables);
-
-            case BlockTypes.FunctionId:
-                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false);
-        }
-
-        throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
+            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(context.Variables),
+            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false),
+            _ => throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}"),
+        };
     }
 
     #region private ================================================================================

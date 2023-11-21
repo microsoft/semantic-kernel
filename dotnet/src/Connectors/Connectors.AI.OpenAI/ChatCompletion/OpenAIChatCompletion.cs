@@ -36,7 +36,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <summary>
