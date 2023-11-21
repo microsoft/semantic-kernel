@@ -69,15 +69,7 @@ internal class HandlebarsParameterTypeMetadata
         HashCode hash = default;
         hash.Add(this.Name);
         hash.Add(this.IsComplex);
-
-        return hash.ToHashCode() + GetPropertiesHashCode(this.Properties);
-    }
-
-    // A helper method to compute the hash code of a list of SKParameterMetadata using only the Name and ParameterType properties.
-    private static int GetPropertiesHashCode(List<SKParameterMetadata> list)
-    {
-        HashCode hash = default;
-        foreach (var item in list)
+        foreach (var item in this.Properties)
         {
             // Combine the Name and ParameterType properties into one hash code
             hash.Add(

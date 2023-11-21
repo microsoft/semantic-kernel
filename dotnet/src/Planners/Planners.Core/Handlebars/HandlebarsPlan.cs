@@ -41,7 +41,10 @@ public sealed class HandlebarsPlan
         this.Prompt = createPlanPromptTemplate;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Print the generated plan, aka handlebars template that was the create plan chat completion result.
+    /// </summary>
+    /// <returns>Handlebars template representing the plan.</returns>
     public override string ToString()
     {
         return this._template;
