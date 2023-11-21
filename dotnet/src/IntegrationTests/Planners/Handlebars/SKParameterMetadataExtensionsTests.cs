@@ -23,10 +23,10 @@ public class SKParameterMetadataExtensionsTests
         // Act and Assert
         foreach (var type in primitiveTypes)
         {
-            Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
+            Assert.True(SKParameterMetadataExtensions.IsPrimitiveOrStringType(type));
         }
 
-        Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(stringType));
+        Assert.True(SKParameterMetadataExtensions.IsPrimitiveOrStringType(stringType));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class SKParameterMetadataExtensionsTests
         // Act and Assert
         foreach (var type in nonPrimitiveTypes)
         {
-            Assert.False(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
+            Assert.False(SKParameterMetadataExtensions.IsPrimitiveOrStringType(type));
         }
     }
 
@@ -167,7 +167,7 @@ public class SKParameterMetadataExtensionsTests
         // Act and Assert
         foreach (var type in primitiveSchemaTypes)
         {
-            Assert.True(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
+            Assert.True(SKParameterMetadataExtensions.IsPrimitiveOrStringType(type));
         }
     }
 
@@ -180,7 +180,7 @@ public class SKParameterMetadataExtensionsTests
         // Act and Assert
         foreach (var type in nonPrimitiveSchemaTypes)
         {
-            Assert.False(SKParameterMetadataExtensions.isPrimitiveOrStringType(type));
+            Assert.False(SKParameterMetadataExtensions.IsPrimitiveOrStringType(type));
         }
     }
 

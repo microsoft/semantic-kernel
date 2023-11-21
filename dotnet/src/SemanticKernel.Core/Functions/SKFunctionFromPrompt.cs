@@ -153,8 +153,8 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
-            var serviceSelector = context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
+            var serviceSelector = kernel.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
@@ -204,7 +204,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         string functionName,
         ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;

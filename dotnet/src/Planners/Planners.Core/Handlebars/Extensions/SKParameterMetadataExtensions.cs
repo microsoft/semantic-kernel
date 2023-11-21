@@ -17,7 +17,13 @@ internal static class SKParameterMetadataExtensions
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
-    public static bool isPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
+    public static bool IsPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
+
+    /// <summary>
+    /// Checks if stringified type is primitive or string
+    /// </summary>
+    public static bool IsPrimitiveOrStringType(string type) =>
+        type == "string" || type == "number" || type == "integer" || type == "boolean";
 
     /// <summary>
     /// Converts non-primitive types to a data class definition and returns a hash set of complex type metadata.
@@ -39,7 +45,7 @@ internal static class SKParameterMetadataExtensions
             var actualReturnType = type.GenericTypeArguments[0]; // Actual Return Type
             var returnTypeProperties = actualReturnType.GetProperties();
 
-            if (!isPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
+            if (!IsPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
             {
                 parameterTypes.Add(new HandlebarsParameterTypeMetadata()
                 {
@@ -78,9 +84,6 @@ internal static class SKParameterMetadataExtensions
         }
     }
 
-    public static bool isPrimitiveOrStringType(string type) =>
-        type == "string" || type == "number" || type == "integer" || type == "boolean";
-
     private static Type GetTypeFromSchema(string schemaType)
     {
         var typeMap = new Dictionary<string, Type>
@@ -102,7 +105,7 @@ internal static class SKParameterMetadataExtensions
     {
         var schema = parameter.Schema!;
         var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
-        if (isPrimitiveOrStringType(type) || type == "null")
+        if (IsPrimitiveOrStringType(type) || type == "null")
         {
             return new(parameter)
             {

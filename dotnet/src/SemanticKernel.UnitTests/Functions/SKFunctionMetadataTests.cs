@@ -73,7 +73,7 @@ public class SKFunctionMetadataTests
     public void ItSupportsValidFunctionName()
     {
         // Act
-        var function = SKFunction.FromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         SKFunctionMetadata fv = function.GetMetadata();
@@ -86,7 +86,7 @@ public class SKFunctionMetadataTests
     public void ItSupportsValidFunctionAsyncName()
     {
         // Act
-        var function = SKFunction.FromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
         SKFunctionMetadata fv = function.GetMetadata();
 
@@ -103,7 +103,7 @@ public class SKFunctionMetadataTests
         { }
 
         // Act
-        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         SKFunctionMetadata fv = function.GetMetadata();
@@ -124,7 +124,7 @@ public class SKFunctionMetadataTests
         { }
 
         // Act
-        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         SKFunctionMetadata fv = function.GetMetadata();
@@ -146,7 +146,7 @@ public class SKFunctionMetadataTests
         static void TestFunctionName(int p1, int p2) { }
 
         // Act
-        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         SKFunctionMetadata fv = function.GetMetadata();
@@ -168,7 +168,7 @@ public class SKFunctionMetadataTests
         static void TestFunctionName() { }
 
         // Act
-        var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = SKFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         SKFunctionMetadata fv = function.GetMetadata();
@@ -183,27 +183,13 @@ public class SKFunctionMetadataTests
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
-        var function = SKFunction.FromMethod(Method(ValidFunctionName));
-        var context = MockContext("");
+        var function = SKFunctionFactory.CreateFromMethod(Method(ValidFunctionName));
+        var context = new SKContext(new ContextVariables(string.Empty));
         var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
     }
 
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
-    }
-
-    private static SKContext MockContext(string input)
-    {
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
-        var serviceProvider = new Mock<IAIServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
-        return new SKContext(
-            kernel,
-            serviceProvider.Object,
-            serviceSelector.Object,
-            new ContextVariables(input)
-        );
     }
 }

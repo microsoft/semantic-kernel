@@ -24,14 +24,11 @@ internal class HandlebarsParameterTypeMetadata
     // Override the Equals method to compare the property values
     public override bool Equals(object obj)
     {
-        // Check if the obj is null or of a different type
-        if (obj == null || obj.GetType() != this.GetType())
+        // Check to make sure the object is the expected type
+        if (obj is not HandlebarsParameterTypeMetadata other)
         {
             return false;
         }
-
-        // Cast the obj to HandlebarsParameterTypeMetadata
-        var other = (HandlebarsParameterTypeMetadata)obj;
 
         // Compare the Name and IsComplex properties
         if (this.Name != other.Name || this.IsComplex != other.IsComplex)

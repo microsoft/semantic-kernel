@@ -90,8 +90,8 @@ public static class Example65_HandlebarsPlanner
         }
 
         // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are able handle loops but is more prone to syntax errors.
-        var allowLoopsInPlan = !chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase);
+        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
+        var allowLoopsInPlan = chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
             kernel,
             new HandlebarsPlannerConfig()

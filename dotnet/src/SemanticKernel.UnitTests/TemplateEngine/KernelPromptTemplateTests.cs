@@ -152,15 +152,15 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        Assert.NotNull(func);
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = this.MockContext(func);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -179,15 +179,15 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Variables.Input})";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        Assert.NotNull(func);
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{plugin.function $myVar}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = this.MockContext(func);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -211,16 +211,16 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        Assert.NotNull(func);
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = this.MockContext(func);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -232,26 +232,11 @@ public sealed class KernelPromptTemplateTests
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
-        // Arrange
-        string MyFunctionAsync(
-            [Description("Name"), SKName("input")] string name,
-            [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
-            [Description("Date"), SKName("date")] DateTime date)
-        {
-            var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
-            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
-            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
-        }
-
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
-        Assert.NotNull(func);
-
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
-        var context = this.MockContext(func);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, context));
@@ -273,9 +258,9 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        Assert.NotNull(func);
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
@@ -283,7 +268,7 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = this.MockContext(func);
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -323,13 +308,17 @@ public sealed class KernelPromptTemplateTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.FromMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunction.FromMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunction.FromMethod(Method(MyFunction3Async), this, "func3")
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
         };
 
+        this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
+
+        var context = new SKContext(this._variables);
+
         // Act
-        var result = await target.RenderAsync(this._kernel, this.MockContext(functions.ToArray()));
+        var result = await target.RenderAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
@@ -346,14 +335,17 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this, "function");
-        Assert.NotNull(func);
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
 
         var template = "foo-{{plugin.function $myVar}}-baz";
+
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
-        var context = this.MockContext(func);
+
+        var context = new SKContext(this._variables);
 
         // Act
         var result = await target.RenderAsync(this._kernel, context);
@@ -365,22 +357,5 @@ public sealed class KernelPromptTemplateTests
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
-    }
-
-    private SKContext MockContext(params ISKFunction[] functions)
-    {
-        var plugins = new SKPluginCollection();
-
-        if (functions?.Length > 0)
-        {
-            plugins.Add(new SKPlugin("plugin", functions));
-        }
-
-        return new SKContext(
-            new Kernel(new Mock<IAIServiceProvider>().Object, plugins),
-            this._serviceProvider.Object,
-            this._serviceSelector.Object,
-            this._variables,
-            this._functions.Object);
     }
 }
