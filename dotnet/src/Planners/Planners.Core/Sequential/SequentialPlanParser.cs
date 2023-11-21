@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -125,12 +125,13 @@ internal static class SequentialPlanParser
                         if (pluginFunction is not null)
                         {
                             var planStep = new Plan(pluginFunction);
+                            planStep.PluginName = pluginName;
 
                             var functionVariables = new ContextVariables();
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 
-                            var view = pluginFunction.Describe();
+                            var view = pluginFunction.GetMetadata();
                             foreach (var p in view.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
@@ -170,7 +171,7 @@ internal static class SequentialPlanParser
                         {
                             if (allowMissingFunctions)
                             {
-                                plan.AddSteps(new Plan(pluginFunctionName));
+                                plan.AddSteps(new Plan(pluginFunctionName) { PluginName = pluginName });
                             }
                             else
                             {

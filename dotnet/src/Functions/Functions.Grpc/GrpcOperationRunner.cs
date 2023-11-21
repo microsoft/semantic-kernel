@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using ProtoBuf;
 
@@ -24,6 +23,10 @@ namespace Microsoft.SemanticKernel.Functions.Grpc;
 /// </summary>
 internal sealed class GrpcOperationRunner
 {
+    /// <summary>Serialization options that use a camel casing naming policy.</summary>
+    private static readonly JsonSerializerOptions s_camelCaseOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    /// <summary>Deserialization options that use case-insensitive property names.</summary>
+    private static readonly JsonSerializerOptions s_propertyCaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
@@ -87,7 +90,7 @@ internal sealed class GrpcOperationRunner
     /// <returns>The converted response.</returns>
     private static JsonObject ConvertResponse(object response, Type responseType)
     {
-        var content = JsonSerializer.Serialize(response, responseType, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var content = JsonSerializer.Serialize(response, responseType, s_camelCaseOptions);
 
         //First iteration allowing to associate additional metadata with the returned content.
         var result = new JsonObject();
@@ -159,7 +162,7 @@ internal sealed class GrpcOperationRunner
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var instance = JsonSerializer.Deserialize(payload, type, s_propertyCaseInsensitiveOptions);
         if (instance == null)
         {
             throw new SKException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
@@ -215,12 +218,12 @@ internal sealed class GrpcOperationRunner
             propertyBuilder.SetSetMethod(setterBuilder);
 
             //Add ProtoMember attribute to the data contract with tag/number
-            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) }), new object[] { field.Number });
+            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) })!, new object[] { field.Number });
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }
 
         //Add ProtoContract attribute to the data contract
-        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes), Array.Empty<object>());
+        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
         var type = typeBuilder.CreateTypeInfo();

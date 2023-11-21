@@ -3,7 +3,6 @@
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -33,7 +32,7 @@ internal sealed class CreateCollectionRequest
             payload: this);
     }
 
-    internal sealed class VectorSettings : IValidatable
+    internal sealed class VectorSettings
     {
         [JsonPropertyName("size")]
         public int? Size { get; set; }
@@ -46,15 +45,6 @@ internal sealed class CreateCollectionRequest
 
         [JsonIgnore]
         private QdrantDistanceType DistanceType { get; set; }
-
-        public void Validate()
-        {
-            Verify.True(this.Size > 0, "The vector size must be greater than zero");
-            Verify.NotNull(this.DistanceType, "The distance type has not been defined");
-            Verify.True(
-                this.DistanceType is QdrantDistanceType.Cosine or QdrantDistanceType.DotProduct or QdrantDistanceType.Euclidean or QdrantDistanceType.Manhattan,
-                $"Distance type {this.DistanceType:G} not supported.");
-        }
 
         public VectorSettings(int vectorSize, QdrantDistanceType distanceType)
         {

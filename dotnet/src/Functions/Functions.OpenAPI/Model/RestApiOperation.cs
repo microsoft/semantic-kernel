@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -60,6 +59,11 @@ public sealed class RestApiOperation
     public IList<RestApiOperationParameter> Parameters { get; }
 
     /// <summary>
+    /// The list of possible operation responses.
+    /// </summary>
+    public IDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
+
+    /// <summary>
     /// The operation payload.
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
@@ -75,6 +79,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
+    /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
         string id,
         Uri? serverUrl,
@@ -83,7 +88,8 @@ public sealed class RestApiOperation
         string description,
         IList<RestApiOperationParameter> parameters,
         IDictionary<string, string> headers,
-        RestApiOperationPayload? payload = null)
+        RestApiOperationPayload? payload = null,
+        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -93,6 +99,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Headers = headers;
         this.Payload = payload;
+        this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
 
     /// <summary>

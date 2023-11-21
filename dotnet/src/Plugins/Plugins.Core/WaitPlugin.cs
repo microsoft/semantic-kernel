@@ -21,8 +21,13 @@ public sealed class WaitPlugin
     /// <summary>
     /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
     /// </summary>
+    public WaitPlugin() : this(null) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
+    /// </summary>
     /// <param name="timeProvider">An optional time provider. If not provided, a default time provider will be used.</param>
-    public WaitPlugin(TimeProvider? timeProvider = null) =>
+    public WaitPlugin(TimeProvider? timeProvider) =>
         this._timeProvider = timeProvider ?? TimeProvider.System;
 
     /// <summary>

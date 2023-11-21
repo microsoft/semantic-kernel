@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
@@ -32,7 +31,7 @@ public class MultipleModelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        ISKFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
         await kernel.RunAsync(func);
@@ -56,7 +55,7 @@ public class MultipleModelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
@@ -94,7 +93,7 @@ public class MultipleModelTests
         {
             templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
         }
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
         await kernel.RunAsync(func);
@@ -155,7 +154,7 @@ public class MultipleModelTests
 }";
 
         var templateConfig = PromptTemplateConfig.FromJson(json);
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
         await kernel.RunAsync(func);

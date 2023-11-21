@@ -29,7 +29,7 @@ public static class Example58_ConfigureRequestSettings
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
@@ -42,7 +42,7 @@ public static class Example58_ConfigureRequestSettings
 
         // Option 1:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
-        var result = await kernel.InvokeSemanticFunctionAsync(
+        var result = await kernel.InvokePromptAsync(
             prompt,
             new OpenAIRequestSettings()
             {
@@ -68,7 +68,7 @@ public static class Example58_ConfigureRequestSettings
           }
         }";
         var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateSemanticFunction(prompt, templateConfig!, "HelloAI");
+        var func = kernel.CreateFunctionFromPrompt(prompt, templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
         Console.WriteLine(result.GetValue<string>());

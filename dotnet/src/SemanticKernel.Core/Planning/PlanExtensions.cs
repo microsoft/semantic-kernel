@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -67,26 +65,5 @@ public static class PlanExtensions
         }));
 
         return planString;
-    }
-
-    /// <summary>
-    /// Returns decorated instance of <see cref="IPlan"/> with enabled instrumentation.
-    /// </summary>
-    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [Obsolete("Use concrete class Plan WithInstrumentation instead")]
-    public static IPlan WithInstrumentation(this IPlan plan, ILoggerFactory? loggerFactory = null)
-    {
-        throw new NotSupportedException("This method is obsolete, use concrete class Plan WithInstrumentation instead");
-    }
-
-    /// <summary>
-    /// Returns decorated instance of <see cref="ISKFunction"/> with plan enabled instrumentation.
-    /// </summary>
-    /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static ISKFunction WithInstrumentation(this Plan plan, ILoggerFactory? loggerFactory = null)
-    {
-        return new InstrumentedPlan(plan, loggerFactory);
     }
 }

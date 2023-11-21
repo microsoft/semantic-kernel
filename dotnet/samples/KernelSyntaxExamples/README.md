@@ -1,4 +1,4 @@
-# Semantic Kernel syntax examples
+#Semantic Kernel syntax examples
 
 This project contains a collection of semi-random examples about various scenarios
 using SK components.

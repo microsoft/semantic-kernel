@@ -9,7 +9,6 @@ using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory.Collections;
 
@@ -120,7 +119,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
-            collectionDict.TryRemove(key, out MemoryRecord _);
+            collectionDict.TryRemove(key, out _);
         }
 
         return Task.CompletedTask;

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
+// ReSharper disable once CheckNamespace - Using the namespace of Kernel
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>

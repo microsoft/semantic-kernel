@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -11,8 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -161,17 +158,17 @@ public sealed class Plan : ISKFunction
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="functions">The collection of available functions..</param>
+    /// <param name="plugins">The collection of available functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlySKPluginCollection? plugins = null, bool requireFunctions = true)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, s_includeFieldsOptions) ?? new Plan(string.Empty);
 
-        if (functions != null)
+        if (plugins != null)
         {
-            plan = SetAvailableFunctions(plan, functions, requireFunctions);
+            plan = SetAvailablePlugins(plan, plugins, requireFunctions);
         }
 
         return plan;
@@ -184,7 +181,9 @@ public sealed class Plan : ISKFunction
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return indented ?
+            JsonSerializer.Serialize(this, s_writeIndentedOptions) :
+            JsonSerializer.Serialize(this);
     }
 
     /// <summary>
@@ -223,25 +222,26 @@ public sealed class Plan : ISKFunction
     /// The context variables contain the necessary information for executing the plan, such as the functions and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
-    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<Plan> RunNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = kernel.CreateNewContext(variables);
 
-        return this.InvokeNextStepAsync(context, cancellationToken);
+        return this.InvokeNextStepAsync(kernel, context, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">Context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
-            await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+            await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -250,18 +250,18 @@ public sealed class Plan : ISKFunction
     #region ISKFunction implementation
 
     /// <inheritdoc/>
-    public FunctionView Describe()
+    public SKFunctionMetadata GetMetadata()
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe();
+            return this.Function.GetMetadata();
         }
 
         // The parameter mapping definitions from Plan -> Function
         var stepParameters = this.Steps.SelectMany(s => s.Parameters);
 
         // The parameter descriptions from the Function
-        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+        var stepDescriptions = this.Steps.SelectMany(s => s.GetMetadata().Parameters);
 
         // The parameters for the Plan
         var parameters = this.Parameters.Select(p =>
@@ -269,20 +269,34 @@ public sealed class Plan : ISKFunction
             var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
             var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired, stepDescription?.ParameterType, stepDescription?.Schema);
+            return new SKParameterMetadata(p.Key)
+            {
+                Description = stepDescription?.Description,
+                DefaultValue = stepDescription?.DefaultValue,
+                Type = stepDescription?.Type,
+                IsRequired = stepDescription?.IsRequired ?? false,
+                ParameterType = stepDescription?.ParameterType,
+                Schema = stepDescription?.Schema
+            };
         }
         ).ToList();
 
-        return new(this.Name, this.PluginName, this.Description, parameters);
+        return new(this.Name)
+        {
+            PluginName = this.PluginName,
+            Description = this.Description,
+            Parameters = parameters
+        };
     }
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(this.Name, this.PluginName, context);
+        var result = new FunctionResult(this.Name, context);
 
         if (this.Function is not null)
         {
@@ -291,28 +305,28 @@ public sealed class Plan : ISKFunction
             // This is done to prevent the function from having access to variables that it shouldn't.
             AddVariablesToContext(this.State, context);
             var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables, context.Functions);
+            var functionContext = context.Clone(functionVariables);
 
             // Execute the step
             result = await this.Function
-                .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, cancellationToken)
+                .WithInstrumentation(kernel.LoggerFactory)
+                .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
             this.CallFunctionInvoking(context);
-            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context);
+                return new FunctionResult(this.Name, context);
             }
 
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
                 AddVariablesToContext(this.State, context);
-                var stepResult = await this.InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+                var stepResult = await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
                 // If a step was cancelled before invocation
                 // Return the last result state of the plan.
@@ -328,14 +342,14 @@ public sealed class Plan : ISKFunction
 
                 this.UpdateContextWithOutputs(context);
 
-                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                result = new FunctionResult(this.Name, context, context.Variables.Input);
                 this.UpdateFunctionResultWithOutputs(result);
             }
 
             this.CallFunctionInvoked(result, context);
-            if (SKFunction.IsInvokedCancelRequested(context))
+            if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
-                return new FunctionResult(this.Name, this.PluginName, context, result.Value);
+                return new FunctionResult(this.Name, context, result.Value);
             }
         }
 
@@ -370,11 +384,12 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">Context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -384,15 +399,14 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-
+            var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
             if (result is null)
             {
                 // Step was cancelled
                 return null;
             }
 
-            var resultValue = result.Context.Result.Trim();
+            var resultValue = result.Context.Variables.Input.Trim();
 
             #region Update State
 
@@ -443,7 +457,7 @@ public sealed class Plan : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.Describe(), context);
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
 
@@ -457,7 +471,7 @@ public sealed class Plan : ISKFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.Describe(), result);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution
@@ -469,16 +483,16 @@ public sealed class Plan : ISKFunction
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="functions">The collection of available functions.</param>
+    /// <param name="plugins">The collection of available plugins.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, IReadOnlyFunctionCollection functions, bool requireFunctions = true)
+    private static Plan SetAvailablePlugins(Plan plan, IReadOnlySKPluginCollection plugins, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            Verify.NotNull(functions);
+            Verify.NotNull(plugins);
 
-            if (functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
+            if (plugins.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
                 plan.SetFunction(planFunction);
             }
@@ -491,7 +505,7 @@ public sealed class Plan : ISKFunction
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, functions, requireFunctions);
+                SetAvailablePlugins(step, plugins, requireFunctions);
             }
         }
 
@@ -609,7 +623,7 @@ public sealed class Plan : ISKFunction
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)
         // - All other variables. These are carried over in case the function wants access to the ambient content.
-        var functionParameters = step.Describe();
+        var functionParameters = step.GetMetadata();
         foreach (var param in functionParameters.Parameters)
         {
             if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
@@ -669,16 +683,15 @@ public sealed class Plan : ISKFunction
     {
         this.Function = function;
         this.Name = function.Name;
-        this.PluginName = function.PluginName;
         this.Description = function.Description;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        this.RequestSettings = function.RequestSettings;
-        this.IsSemantic = function.IsSemantic;
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Deserialization options for including fields.</summary>
+    private static readonly JsonSerializerOptions s_includeFieldsOptions = new() { IncludeFields = true };
+    /// <summary>Serialization options for writing indented.</summary>
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
 
     private ISKFunction? Function { get; set; }
 
@@ -708,48 +721,4 @@ public sealed class Plan : ISKFunction
             return display;
         }
     }
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings { get; private set; }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
-
-    /// <inheritdoc/>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
-    }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
-
-    /// <inheritdoc/>
-    [Obsolete("This method is a nop and will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
-
-    #endregion
 }

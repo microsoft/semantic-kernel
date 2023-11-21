@@ -23,7 +23,7 @@ public static class Example59_OpenAIFunctionCalling
 {
     public static async Task RunAsync()
     {
-        IKernel kernel = await InitializeKernelAsync();
+        Kernel kernel = await InitializeKernelAsync();
         var chatCompletion = kernel.GetService<IChatCompletion>();
         var chatHistory = chatCompletion.CreateNewChat();
 
@@ -31,40 +31,52 @@ public static class Example59_OpenAIFunctionCalling
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
-            Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+            Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList(),
+            FunctionCall = "TimePlugin_Date",
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
-        requestSettings.FunctionCall = "TimePlugin-Date";
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
-        // Uncomment the samples and run them one at a time
-        //await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        // Before each invocation I need to specify the function call I want to use.
+        requestSettings.FunctionCall = "TimePlugin_Date";
+        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
         requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        //await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
-        //await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+
+        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+
+        // This sample relies on the AI picking the correct color from an enum
+        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, requestSettings);
+
+        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
-    private static async Task<IKernel> InitializeKernelAsync()
+    private static async Task<Kernel> InitializeKernelAsync()
     {
         // Create kernel with chat completions service
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             //.WithAzureOpenAIChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // Load functions to kernel
-        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
-        await kernel.ImportOpenAIPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters());
+        kernel.ImportPluginFromObject<TimePlugin>("TimePlugin");
+        kernel.ImportPluginFromObject(new WidgetPlugin(), "WidgetPlugin");
+        await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters());
 
         return kernel;
     }
 
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
+    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
     {
+        Console.WriteLine($"\n\n======== Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -78,9 +90,9 @@ public static class Example59_OpenAIFunctionCalling
         OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
-            // If the function returned by OpenAI is an SKFunction registered with the kernel,
+            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
                 var result = (await kernel.RunAsync(func, context)).GetValue<object>();
 
@@ -98,6 +110,7 @@ public static class Example59_OpenAIFunctionCalling
                 {
                     // Add the function result to chat history
                     chatHistory.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
+                    Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
                     requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
@@ -138,8 +151,9 @@ public static class Example59_OpenAIFunctionCalling
         }
     }
 
-    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
+    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
     {
+        Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -147,6 +161,7 @@ public static class Example59_OpenAIFunctionCalling
         await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
         {
             StringBuilder chatContent = new();
+            Console.Write("Assistant response: ");
             await foreach (var message in chatResult.GetStreamingChatMessageAsync())
             {
                 if (message.Content is not null)
@@ -170,13 +185,13 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
                 }
 
-                // If the function returned by OpenAI is an SKFunction registered with the kernel,
+                // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
                 // you can invoke it using the following code.
-                if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
                 {
-                    var kernelResult = await kernel.RunAsync(func, context);
+                    var functionResult = await kernel.RunAsync(func, context);
 
-                    var result = kernelResult.GetValue<object>();
+                    var result = functionResult.GetValue<object>();
 
                     string? resultMessage = null;
                     if (result is RestApiOperationResponse apiResponse)
@@ -201,6 +216,25 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
                 }
             }
+        }
+    }
+
+    private enum WidgetColor
+    {
+        Red,
+        Green,
+        Blue
+    }
+
+    private sealed class WidgetPlugin
+    {
+        [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        public string CreateWidget(
+            [System.ComponentModel.Description("Widget name")] string name,
+            [System.ComponentModel.Description("Widget color")] WidgetColor color
+            )
+        {
+            return $"Created a {color} widget named {name}";
         }
     }
 }

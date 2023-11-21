@@ -242,7 +242,7 @@ Do not expose the regex unless asked.
 
         private readonly AIRequestSettings _chatRequestSettings;
 
-        public ChatPlugin(IKernel kernel)
+        public ChatPlugin(Kernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
             this._chatRequestSettings = new OpenAIRequestSettings
@@ -268,7 +268,7 @@ Do not expose the regex unless asked.
             ChatHistory? chatHistory = context.GetChatHistory();
             if (chatHistory?.Any() ?? false)
             {
-                chat.Messages.AddRange(chatHistory);
+                chat.AddRange(chatHistory);
             }
 
             if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
