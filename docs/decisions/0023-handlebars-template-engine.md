@@ -3,8 +3,8 @@
 status: proposed
 contact: teresaqhoang
 date: 2023-11-21
-deciders: markwallace, mabolan, alliscode, SergeyMenshykh
-consulted:
+deciders: markwallace, mabolan, alliscode, SergeyMenshykh, dluc
+consulted: markwallace, mabolan
 informed:
 ---
 
@@ -60,7 +60,7 @@ Cons:
 Pros:
 
 - Has all the benefits of option 1, but largely improves the expressiveness and readability of the template, as the function name and parameters are directly written in the template.
-- Maintains ease of maintainence for handling each function, as each helper will follow the same templated logic for registration and execution.
+- Maintains ease of maintenance for handling each function, as each helper will follow the same templated logic for registration and execution.
 
 Cons:
 
