@@ -18,8 +18,9 @@ public interface IAIServiceSelector
     /// The returned value is a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/>
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
+    /// <param name="kernel">The kernel</param>
     /// <param name="context">Semantic Kernel context</param>
     /// <param name="skfunction">Semantic Kernel callable function interface</param>
     /// <returns></returns>
-    (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService;
 }

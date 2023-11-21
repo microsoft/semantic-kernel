@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
@@ -96,51 +97,8 @@ public class PromptTemplateConfig
     /// </summary>
     public AIRequestSettings GetDefaultRequestSettings()
     {
-        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
+        return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
-
-    #region Obsolete
-    /// <summary>
-    /// Schema - Not currently used.
-    /// </summary>
-    [JsonPropertyName("schema")]
-    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
-    public int Schema { get; set; } = 1;
-
-    /// <summary>
-    /// Type, such as "completion", "embeddings", etc.
-    /// </summary>
-    /// <remarks>TODO: use enum</remarks>
-    [JsonPropertyName("type")]
-    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
-    public string Type { get; set; } = "completion";
-
-    /// <summary>
-    /// Completion configuration parameters.
-    /// </summary>
-    [JsonPropertyName("completion")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.ModelSettings collection instead. This will be removed in a future release.")]
-    public AIRequestSettings? Completion
-    {
-        get { return this.GetDefaultRequestSettings(); }
-        set
-        {
-            if (value is not null)
-            {
-                this.ModelSettings.Add(value);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Default AI services to use.
-    /// </summary>
-    [JsonPropertyName("default_services")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Obsolete("DefaultServices property is not being used. This will be removed in a future release.")]
-    public List<string> DefaultServices { get; set; } = new();
-    #endregion
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.
@@ -152,5 +110,24 @@ public class PromptTemplateConfig
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
+    }
+
+    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
+    {
+        return new PromptTemplateConfig()
+        {
+            TemplateFormat = semanticFunctionConfig.TemplateFormat,
+            Description = semanticFunctionConfig.Description,
+            Input = new InputConfig()
+            {
+                Parameters = semanticFunctionConfig.InputParameters.Select(p => new InputParameter()
+                {
+                    Name = p.Name,
+                    Description = p.Description,
+                    DefaultValue = p.DefaultValue
+                }).ToList()
+            },
+            ModelSettings = semanticFunctionConfig.ModelSettings
+        };
     }
 }

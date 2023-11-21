@@ -2,13 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -45,7 +44,7 @@ public abstract class PlannerConfigBase
     /// If set, this function takes precedence over <see cref="Memory"/>.
     /// Setting <see cref="ExcludedPlugins"/>, <see cref="ExcludedFunctions"/> will be used to filter the results.
     /// </summary>
-    public Func<PlannerConfigBase, string?, CancellationToken, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<PlannerConfigBase, string?, CancellationToken, Task<IEnumerable<SKFunctionMetadata>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Callback to get a function by name (optional).

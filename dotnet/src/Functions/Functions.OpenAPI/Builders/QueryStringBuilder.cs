@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 

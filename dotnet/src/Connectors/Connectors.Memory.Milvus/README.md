@@ -23,7 +23,7 @@ docker-compose up -d
 ```csharp
 using MilvusMemoryStore memoryStore = new("localhost");
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
     .WithMemoryStorage(memoryStore)

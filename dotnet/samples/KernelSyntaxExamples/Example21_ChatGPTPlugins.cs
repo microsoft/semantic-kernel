@@ -25,16 +25,16 @@ public static class Example21_ChatGptPlugins
         using HttpClient httpClient = new();
 
         //Import an Open AI plugin via URI
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("<parameter-name>", "<parameter-value>");
 
         //Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["<function-name>"]);
+        var functionResult = await kernel.RunAsync(contextVariables, plugin["<function-name>"]);
 
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
+        var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
         Console.ReadLine();
@@ -51,9 +51,9 @@ public static class Example21_ChatGptPlugins
         //contextVariables.Set("budget", "200");    // maximum price of the matching product in local currency, filters results
         //contextVariables.Set("countryCode", "US");// ISO 3166 country code with 2 characters based on the user location. Currently, only US, GB, DE, SE and DK are supported.
 
-        //var kernelResult = await kernel.RunAsync(contextVariables, plugin["productsUsingGET"]);
+        //var functionResult = await kernel.RunAsync(contextVariables, plugin["productsUsingGET"]);
 
-        //var result = kernelResult.GetValue<RestApiOperationResponse>();
+        //var result = functionResult.GetValue<RestApiOperationResponse>();
 
         //Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
         //Console.ReadLine();

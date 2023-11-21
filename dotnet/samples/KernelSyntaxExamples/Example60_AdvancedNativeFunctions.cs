@@ -34,7 +34,7 @@ public static class Example60_AdvancedNativeFunctions
 
         var kernel = new KernelBuilder().Build();
 
-        var functions = kernel.ImportFunctions(new FunctionsChainingPlugin(), FunctionsChainingPlugin.PluginName);
+        var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
 
         var result = await kernel.RunAsync(functions["Function1"]);
         var customType = result.GetValue<MyCustomType>()!;
@@ -51,10 +51,10 @@ public static class Example60_AdvancedNativeFunctions
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
         [SKFunction, SKName("Function1")]
-        public async Task<MyCustomType> Function1Async(SKContext context)
+        public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
-            var result = await context.Runner.RunAsync(PluginName, "Function2");
+            var result = await kernel.RunAsync(PluginName, "Function2");
             var value = result?.GetValue<MyCustomType>()!;
 
             return new MyCustomType
@@ -89,7 +89,7 @@ public static class Example60_AdvancedNativeFunctions
 
         var kernel = new KernelBuilder().Build();
 
-        var functions = kernel.ImportFunctions(new FunctionsPipelinePlugin(), FunctionsPipelinePlugin.PluginName);
+        var functions = kernel.ImportPluginFromObject<FunctionsPipelinePlugin>();
 
         var result = await kernel.RunAsync(functions["Function1"], functions["Function2"]);
         var customType = result.GetValue<MyCustomType>()!;
@@ -140,7 +140,7 @@ public static class Example60_AdvancedNativeFunctions
 
         var kernel = new KernelBuilder().Build();
 
-        var functions = kernel.ImportFunctions(new PrimitiveTypesPlugin(), PrimitiveTypesPlugin.PluginName);
+        var functions = kernel.ImportPluginFromObject<PrimitiveTypesPlugin>();
 
         var contextVariables = new ContextVariables();
 
