@@ -56,7 +56,6 @@ public sealed class OpenAIFunctionTests
         {
             Name = "param1",
             Description = "String param 1",
-            Type = "string",
             IsRequired = true,
             ParameterType = typeof(string)
         };
@@ -65,7 +64,6 @@ public sealed class OpenAIFunctionTests
         {
             Name = "param2",
             Description = "Int param 2",
-            Type = "number",
             IsRequired = true,
             ParameterType = typeof(int)
         };
@@ -105,7 +103,6 @@ public sealed class OpenAIFunctionTests
         {
             Name = "param1",
             Description = "String param 1",
-            Type = "string",
             IsRequired = true,
             ParameterType = typeof(string)
         };
@@ -114,7 +111,6 @@ public sealed class OpenAIFunctionTests
         {
             Name = "param2",
             Description = "Int param 2",
-            Type = "number",
             IsRequired = true,
             ParameterType = typeof(int)
         };

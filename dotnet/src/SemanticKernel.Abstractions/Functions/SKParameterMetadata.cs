@@ -37,7 +37,6 @@ public sealed class SKParameterMetadata
         this.DefaultValue = metadata.DefaultValue;
         this.IsRequired = metadata.IsRequired;
         this.ParameterType = metadata.ParameterType;
-        this.Type = metadata.Type;
         this.Schema = metadata.Schema;
     }
 
@@ -68,9 +67,6 @@ public sealed class SKParameterMetadata
 
     /// <summary>Gets the .NET type of the parameter.</summary>
     public Type? ParameterType { get; init; }
-
-    /// <summary>Gets the JSON type of the parameter.</summary>
-    public ParameterJsonType? Type { get; init; }
 
     /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
     public SKJsonSchema? Schema { get; init; }
