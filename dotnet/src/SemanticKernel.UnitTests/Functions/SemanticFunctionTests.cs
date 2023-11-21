@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -197,7 +196,7 @@ public class SemanticFunctionTests
 
         // Assert
         Assert.True(invoked);
-        Assert.Null(result.GetValue<string>());
+        Assert.Null(result);
     }
 
     [Fact]
@@ -376,19 +375,11 @@ public class SemanticFunctionTests
         var function3 = kernel.CreateFunctionFromPrompt("Write a simple phrase about UnitTests", functionName: "Function3");
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1, function2, function3);
+        var result = await kernel.RunAsync(function1, function2, function3);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal("Result3", kernelResult.GetValue<string>());
-
-        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1");
-        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2");
-        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3");
-
-        Assert.Equal("Result1", functionResult1.GetValue<string>());
-        Assert.Equal("Result2", functionResult2.GetValue<string>());
-        Assert.Equal("Result3", functionResult3.GetValue<string>());
+        Assert.NotNull(result);
+        Assert.Equal("Result3", result.GetValue<string>());
     }
 
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)

@@ -133,7 +133,7 @@ Jane: Goodbye!
 
         ISKPlugin conversationSummaryPlugin = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
-        KernelResult summary = await kernel.RunAsync(
+        FunctionResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummaryPlugin["SummarizeConversation"]);
 
@@ -148,7 +148,7 @@ Jane: Goodbye!
 
         ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
-        KernelResult summary = await kernel.RunAsync(
+        FunctionResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummary["GetConversationActionItems"]);
 
@@ -163,7 +163,7 @@ Jane: Goodbye!
 
         ISKPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
-        KernelResult summary = await kernel.RunAsync(
+        FunctionResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummary["GetConversationTopics"]);
 

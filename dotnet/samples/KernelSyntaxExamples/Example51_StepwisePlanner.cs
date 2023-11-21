@@ -141,9 +141,9 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = await planner.CreatePlanAsync(question);
 
-            var kernelResult = await kernel.RunAsync(plan);
-            var planResult = kernelResult.FunctionResults.First();
-            var result = kernelResult.GetValue<string>()!;
+            var functionResult = await kernel.RunAsync(plan);
+
+            var result = functionResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
@@ -156,18 +156,18 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.answer = result;
             }
 
-            if (planResult.TryGetMetadataValue("stepCount", out string stepCount))
+            if (functionResult.TryGetMetadataValue("stepCount", out string stepCount))
             {
                 Console.WriteLine("Steps Taken: " + stepCount);
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (planResult.TryGetMetadataValue("functionCount", out string functionCount))
+            if (functionResult.TryGetMetadataValue("functionCount", out string functionCount))
             {
                 Console.WriteLine("Functions Used: " + functionCount);
             }
 
-            if (planResult.TryGetMetadataValue("iterations", out string iterations))
+            if (functionResult.TryGetMetadataValue("iterations", out string iterations))
             {
                 Console.WriteLine("Iterations: " + iterations);
                 currentExecutionResult.iterations = iterations;
