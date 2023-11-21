@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace SemanticKernel.UnitTests;
 
 /// <summary>
-/// Mock implementation of <see cref="SKFunction"/> for unit testing.
+/// Mock implementation of <see cref="KernelFunction"/> for unit testing.
 /// </summary>
 public class KernelFunctionMock : KernelFunction
 {
