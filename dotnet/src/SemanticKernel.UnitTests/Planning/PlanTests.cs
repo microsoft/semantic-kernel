@@ -58,7 +58,7 @@ public sealed class PlanTests
 
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var context = new SKContext(new ContextVariables("Some input"));
+        var context = kernel.CreateNewContext(new ContextVariables("Some input"));
 
         // Act
         var result = await plan.InvokeAsync(kernel, context);
@@ -333,13 +333,10 @@ public sealed class PlanTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
 
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
-
-        var returnContext = new SKContext(new ContextVariables(stepOutput));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -366,8 +363,6 @@ public sealed class PlanTests
         var logger = new Mock<ILogger>();
         var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
-
-        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))

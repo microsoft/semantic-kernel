@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
@@ -34,7 +33,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync(Type t)
     {
         // Arrange
-        var variables = new ContextVariables();
         var plugins = new SKPluginCollection();
         var cancellationToken = default(CancellationToken);
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
@@ -60,7 +58,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -103,7 +100,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithFunctionsAsync(Type t)
     {
         // Arrange
-        var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -141,7 +137,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -174,7 +169,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithFunctionsWithRelevancyAsync(Type t)
     {
         // Arrange
-        var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -213,7 +207,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -249,7 +242,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        var variables = new ContextVariables();
         var plugins = new SKPluginCollection();
         var cancellationToken = default(CancellationToken);
 
@@ -274,7 +266,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
