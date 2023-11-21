@@ -25,7 +25,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         if (parameter.Style != RestApiOperationParameterStyle.SpaceDelimited)
         {
-            throw new ArgumentException($"Unexpected Rest Api operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
+            throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         if (parameter.Type != ArrayType)

@@ -217,7 +217,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal("fake-content", result.Content);
 
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
+        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenAPI plugin in the pipeline since there's no direct access to the context.
         Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 

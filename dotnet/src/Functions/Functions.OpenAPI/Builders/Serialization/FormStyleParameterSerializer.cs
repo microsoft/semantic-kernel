@@ -26,7 +26,7 @@ internal static class FormStyleParameterSerializer
 
         if (parameter.Style != RestApiOperationParameterStyle.Form)
         {
-            throw new ArgumentException($"Unexpected Rest Api operation parameter style - `{parameter.Style}`", nameof(parameter));
+            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
         }
 
         // Handling parameters of array type.

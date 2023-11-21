@@ -92,7 +92,7 @@ public sealed class OpenAICompletionTests : IDisposable
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
-        // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
+        // Note: we use OpenAI Chat Completion and GPT 3.5 Turbo
         KernelBuilder builder = this._kernelBuilder.WithLoggerFactory(this._logger);
         this.ConfigureChatOpenAI(builder);
 
