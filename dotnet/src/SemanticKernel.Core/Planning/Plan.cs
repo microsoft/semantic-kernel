@@ -357,7 +357,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    public Task<StreamingFunctionResult<T>> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,

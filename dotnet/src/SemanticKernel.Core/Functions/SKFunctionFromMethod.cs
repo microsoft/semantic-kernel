@@ -151,73 +151,64 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    public Task<StreamingFunctionResult<T>> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false))
+        var streamingResult = new StreamingFunctionResult<T>(this.Name, context, RetrieveStreamingSource, null);
+        return Task.FromResult(streamingResult);
+
+        async IAsyncEnumerable<T> RetrieveStreamingSource()
         {
-            if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
-            {
-                yield return (T)(object)chunk;
-                continue;
-            }
 
-            if (chunk is StreamingNativeResultChunk nativeChunk)
-            {
-                yield return (T)nativeChunk.Value;
-            }
+            IAsyncEnumerator<object> enumerator = this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-            throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+            T? genericChunk = default;
+            bool moreChunks;
+
+            // Manually handling the enumeration to properly log any exception
+            do
+            {
+                try
+                {
+                    moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+
+                    if (moreChunks)
+                    {
+                        var chunk = enumerator.Current;
+
+                        if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
+                        {
+                            genericChunk = (T)(object)chunk;
+                            continue;
+                        }
+
+                        if (chunk is StreamingNativeResultChunk nativeChunk)
+                        {
+                            genericChunk = (T)nativeChunk.Value;
+                            continue;
+                        }
+
+                        throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (this._logger.IsEnabled(LogLevel.Error))
+                    {
+                        this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
+                    }
+                    throw;
+                }
+
+                if (moreChunks && genericChunk is not null)
+                {
+                    yield return genericChunk;
+                }
+            } while (moreChunks);
         }
-
-        IAsyncEnumerator<object> enumerator = this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
-
-        T? genericChunk = default;
-        bool moreChunks;
-
-        // Manually handling the enumeration to properly log any exception
-        do
-        {
-            try
-            {
-                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
-
-                if (moreChunks)
-                {
-                    var chunk = enumerator.Current;
-
-                    if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
-                    {
-                        genericChunk = (T)(object)chunk;
-                        continue;
-                    }
-
-                    if (chunk is StreamingNativeResultChunk nativeChunk)
-                    {
-                        genericChunk = (T)nativeChunk.Value;
-                        continue;
-                    }
-
-                    throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
-                }
-            }
-            catch (Exception e)
-            {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                {
-                    this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
-                }
-                throw;
-            }
-
-            if (moreChunks && genericChunk is not null)
-            {
-                yield return genericChunk;
-            }
-        } while (moreChunks);
     }
 
     /// <summary>
@@ -228,7 +219,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    private async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
     Kernel kernel,
     SKContext context,
     AIRequestSettings? requestSettings = null,

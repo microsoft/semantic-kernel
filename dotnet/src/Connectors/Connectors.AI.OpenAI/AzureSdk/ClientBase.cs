@@ -155,7 +155,7 @@ public abstract class ClientBase
         }
     }
 
-    private protected IAsyncEnumerable<StreamingTextResultChunk> InternalGetTextStreamingUpdatesAsync(
+    private protected Task<ConnectorAsyncEnumerable<StreamingTextResultChunk>> InternalGetTextStreamingUpdatesAsync(
     string prompt,
     AIRequestSettings? requestSettings,
     CancellationToken cancellationToken = default)
@@ -163,10 +163,10 @@ public abstract class ClientBase
         return this.InternalGetTextStreamingUpdatesAsync<StreamingTextResultChunk>(prompt, requestSettings, cancellationToken);
     }
 
-    private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
+    private protected async Task<ConnectorAsyncEnumerable<T>> InternalGetTextStreamingUpdatesAsync<T>(
         string prompt,
-    AIRequestSettings? requestSettings,
-    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings,
+        CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
@@ -177,31 +177,38 @@ public abstract class ClientBase
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
             () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
-        using StreamingCompletions streamingChatCompletions = response.Value;
+        using StreamingCompletions streamingTextCompletions = response.Value;
 
-        int choiceIndex = 0;
-        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        var streamingResponse = streamingTextCompletions.GetChoicesStreaming(cancellationToken);
+        var connectorAsyncEnumerable = new ConnectorAsyncEnumerable<T>(RetrieveStreamingSource, response.Value);
+        return connectorAsyncEnumerable;
+
+        async IAsyncEnumerable<T> RetrieveStreamingSource()
         {
-            await foreach (string update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            int choiceIndex = 0;
+            await foreach (StreamingChoice choice in streamingTextCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
             {
-                // If the provided T is a string, return the completion as is
-                if (typeof(T) == typeof(string))
+                await foreach (string update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
                 {
-                    yield return (T)(object)update;
-                    continue;
-                }
+                    // If the provided T is a string, return the completion as is
+                    if (typeof(T) == typeof(string))
+                    {
+                        yield return (T)(object)update;
+                        continue;
+                    }
 
-                // If the provided T is an specialized class of StreamingResultChunk interface
-                if (typeof(T) == typeof(StreamingTextResultChunk) ||
-                    typeof(T) == typeof(StreamingResultChunk))
-                {
-                    yield return (T)(object)new StreamingTextResultChunk(update, choiceIndex, update);
-                    continue;
-                }
+                    // If the provided T is an specialized class of StreamingResultChunk interface
+                    if (typeof(T) == typeof(StreamingTextResultChunk) ||
+                        typeof(T) == typeof(StreamingResultChunk))
+                    {
+                        yield return (T)(object)new StreamingTextResultChunk(update, choiceIndex, update);
+                        continue;
+                    }
 
-                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+                    throw new NotSupportedException($"Type {typeof(T)} is not supported");
+                }
+                choiceIndex++;
             }
-            choiceIndex++;
         }
     }
 
