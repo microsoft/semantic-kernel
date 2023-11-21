@@ -90,14 +90,14 @@ public sealed class RunHarness
     {
         var kernel = new KernelBuilder().Build();
 
-        var gamePlugin = kernel.ImportFunctions(new GuessingGame(), nameof(GuessingGame));
+        var gamePlugin = kernel.ImportPluginFromObject(new GuessingGame(), nameof(GuessingGame));
 
         var assistant =
             await AssistantBuilder.FromTemplateAsync(
                 apiKey: TestConfig.OpenAIApiKey,
                 model: TestConfig.SupportedGpt35TurboModel,
                 definitionPath: "Templates/GameAssistant.yaml",
-                functions: gamePlugin.Values).ConfigureAwait(true);
+                plugins: new SKPluginCollection { gamePlugin }).ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 

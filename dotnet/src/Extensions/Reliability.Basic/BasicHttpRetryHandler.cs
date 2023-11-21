@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Reliability.Basic;
 public sealed class BasicHttpRetryHandler : DelegatingHandler
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DefaultHttpRetryHandler"/> class.
+    /// Initializes a new instance of the <see cref="BasicHttpRetryHandler"/> class.
     /// </summary>
     /// <param name="config">The retry configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>

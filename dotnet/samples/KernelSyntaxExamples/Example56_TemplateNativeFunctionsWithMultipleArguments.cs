@@ -30,7 +30,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: deploymentName,
@@ -46,7 +46,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.ImportFunctions(new TextPlugin(), "text");
+        kernel.ImportPluginFromObject<TextPlugin>("text");
 
         // Semantic Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
@@ -57,11 +57,11 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(context);
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, context);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

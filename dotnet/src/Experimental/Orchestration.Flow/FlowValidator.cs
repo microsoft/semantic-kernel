@@ -2,7 +2,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 #pragma warning disable IDE0130

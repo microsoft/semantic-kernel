@@ -30,7 +30,7 @@ The index has to be defined on a field called ```embedding```. For example:
 var connectionString = "MONGODB ATLAS CONNECTION STRING"
 MongoDBMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
-IKernel kernel = Kernel.Builder
+Kernel kernel = Kernel.Builder
     .WithLogger(ConsoleLogger.Log)
     .WithOpenAITextCompletionService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
     .WithOpenAITextEmbeddingGenerationService(modelId: TestConfiguration.OpenAI.EmbeddingModelId, apiKey: TestConfiguration.OpenAI.ApiKey)

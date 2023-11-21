@@ -29,14 +29,14 @@ public static class Example20_HuggingFace
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction("Question: {{$input}}; Answer:");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 
@@ -54,14 +54,14 @@ public static class Example20_HuggingFace
     {
         Console.WriteLine("\n======== HuggingFace Inference API Streaming example ========\n");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
                 model: TestConfiguration.HuggingFace.StreamingModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction("Why is streaming important?");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Why is streaming important?");
 
         await foreach (var chunk in kernel.RunStreamingAsync(questionAnswerFunction))
         {
@@ -90,7 +90,7 @@ public static class Example20_HuggingFace
         // HuggingFace local HTTP server endpoint
         const string Endpoint = "http://localhost:5000/completions";
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
                 model: Model,
@@ -98,7 +98,7 @@ public static class Example20_HuggingFace
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction("Question: {{$input}}; Answer:");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 

@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -235,7 +235,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
 
         try

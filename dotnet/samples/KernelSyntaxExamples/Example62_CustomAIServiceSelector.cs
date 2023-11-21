@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
@@ -58,7 +57,7 @@ public static class Example62_CustomAIServiceSelector
             .Build();
 
         var prompt = "Hello AI, what can you do for me?";
-        var result = await kernel.InvokeSemanticFunctionAsync(prompt);
+        var result = await kernel.InvokePromptAsync(prompt);
         Console.WriteLine(result.GetValue<string>());
     }
 

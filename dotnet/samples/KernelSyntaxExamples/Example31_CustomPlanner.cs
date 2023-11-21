@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -25,21 +26,21 @@ internal static class Example31_CustomPlanner
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        IDictionary<string, ISKFunction> qaPlugin = LoadQAPlugin(kernel);
+        ISKPlugin qaPlugin = LoadQAPlugin(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
+        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel, memory);
 
         // MarkupPlugin named "markup"
-        var markup = kernel.ImportFunctions(new MarkupPlugin(), "markup");
+        var markup = kernel.ImportPluginFromObject<MarkupPlugin>("markup");
 
         // contextQuery "Who is my president? Who was president 3 years ago? What should I eat for dinner" | markup
         // Create a plan to execute the ContextQuery and then run the markup plugin on the output
@@ -48,7 +49,7 @@ internal static class Example31_CustomPlanner
 
         // Execute plan
         context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(context);
+        var result = await plan.InvokeAsync(kernel, context);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -74,7 +75,7 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-    private static SKContext CreateContextQueryContext(IKernel kernel)
+    private static SKContext CreateContextQueryContext(Kernel kernel)
     {
         var context = kernel.CreateNewContext();
         context.Variables.Set("firstname", "Jamal");
@@ -88,9 +89,9 @@ internal static class Example31_CustomPlanner
         return context;
     }
 
-    private static async Task RememberFactsAsync(IKernel kernel, ISemanticTextMemory memory)
+    private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
+        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
 
         List<string> memoriesToSave = new()
         {
@@ -115,19 +116,19 @@ internal static class Example31_CustomPlanner
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
+    private static ISKPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        kernel.ImportFunctions(bing, "bing");
+        kernel.ImportPluginFromObject(bing, "bing");
 
-        return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
+        return kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -213,27 +214,15 @@ public static class XmlMarkupPlanParser
             }
             else
             {
-                if (string.IsNullOrEmpty(pluginName)
-                        ? !context.Functions!.TryGetFunction(functionName, out var _)
-                        : !context.Functions!.TryGetFunction(pluginName, functionName, out var _))
-                {
-                    var planStep = new Plan(node.InnerText);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
-                else
-                {
-                    var command = string.IsNullOrEmpty(pluginName)
-                        ? context.Functions.GetFunction(functionName)
-                        : context.Functions.GetFunction(pluginName, functionName);
-                    var planStep = new Plan(command);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
+                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ?
+                    new Plan(command) :
+                    new Plan(node.InnerText);
+                planStep.PluginName = pluginName;
+
+                planStep.Parameters.Update(node.InnerText);
+                planStep.Outputs.Add($"markup.{functionName}.result");
+                plan.Outputs.Add($"markup.{functionName}.result");
+                plan.AddSteps(planStep);
             }
         }
 

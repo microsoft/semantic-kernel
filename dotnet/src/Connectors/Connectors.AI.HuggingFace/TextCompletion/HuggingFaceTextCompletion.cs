@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
@@ -138,7 +138,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -171,7 +171,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");

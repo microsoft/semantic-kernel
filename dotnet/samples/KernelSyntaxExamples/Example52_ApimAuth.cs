@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -45,8 +45,6 @@ public static class Example52_ApimAuth
             Diagnostics =
             {
                 LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
-                ApplicationId = Telemetry.HttpUserAgent,
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
@@ -68,14 +66,12 @@ public static class Example52_ApimAuth
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
-            folder,
-            "FunPlugin");
+        var plugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
         var result = await kernel.RunAsync(
             "I have no homework",
-            funFunctions["Excuses"]
+            plugin["Excuses"]
         );
         Console.WriteLine(result.GetValue<string>());
 

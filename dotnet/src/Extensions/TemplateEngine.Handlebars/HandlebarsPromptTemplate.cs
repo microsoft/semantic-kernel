@@ -29,23 +29,23 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
+    public IReadOnlyList<SKParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        var functionViews = executionContext.Functions.GetFunctionViews();
-
-        foreach (FunctionView functionView in functionViews)
+        foreach (ISKPlugin plugin in executionContext.Plugins)
         {
-            var skfunction = executionContext.Functions.GetFunction(functionView.PluginName, functionView.Name);
-            handlebars.RegisterHelper($"{functionView.PluginName}_{functionView.Name}", (writer, hcontext, parameters) =>
+            foreach (ISKFunction skfunction in plugin)
             {
-                var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
-                writer.WriteSafeString(result.GetValue<string>());
-            });
+                handlebars.RegisterHelper($"{plugin.Name}_{skfunction.Name}", (writer, hcontext, parameters) =>
+                {
+                    var result = skfunction.InvokeAsync(kernel, executionContext).GetAwaiter().GetResult();
+                    writer.WriteSafeString(result.GetValue<string>());
+                });
+            }
         }
 
         var template = handlebars.Compile(this._templateString);
@@ -60,14 +60,18 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private readonly Lazy<IReadOnlyList<ParameterView>> _parameters;
+    private readonly Lazy<IReadOnlyList<SKParameterMetadata>> _parameters;
 
-    private List<ParameterView> InitParameters()
+    private List<SKParameterMetadata> InitParameters()
     {
-        List<ParameterView> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
+        List<SKParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            parameters.Add(new ParameterView(p.Name, p.Description, p.DefaultValue));
+            parameters.Add(new SKParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.DefaultValue
+            });
         }
 
         return parameters;
