@@ -5,8 +5,8 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 
 public static class Example72_HuggingFaceEncoding
 {
-    const string SentenceTransformerModelId = "sentence-transformers/all-MiniLM-L6-v2";
-    const string SentenceTransformerEndpoint = "https://api-inference.huggingface.co/pipeline/feature-extraction";    
+    private const string SentenceTransformerModelId = "sentence-transformers/all-MiniLM-L6-v2";
+    private const string SentenceTransformerEndpoint = "https://api-inference.huggingface.co/pipeline/feature-extraction";
 
     public static async Task RunAsync()
     {
@@ -17,12 +17,12 @@ public static class Example72_HuggingFaceEncoding
             Console.WriteLine("HuggingFace apiKey not found. Skipping example.");
             return;
         }
-       
 
-        var kernel = new KernelBuilder()            
-                .WithHuggingFaceTextEmbeddingGenerationService(
-                    SentenceTransformerModelId,
-                    SentenceTransformerEndpoint)
+        var modelId = TestConfiguration.HuggingFace.EmbeddingModelId ?? SentenceTransformerModelId;
+
+        var kernel = new KernelBuilder()
+                .WithHuggingFaceTextEmbeddingGenerationService(modelId, SentenceTransformerEndpoint)
+                // Alternative way, using OpenAI embeddings
                 //.WithOpenAITextEmbeddingGenerationService(
                 //    apiKey: TestConfiguration.OpenAI.ApiKey, 
                 //    modelId: TestConfiguration.OpenAI.EmbeddingModelId)
