@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// Class for storing event handler and event args for function events.
 /// </summary>
 /// <typeparam name="TEventArgs"></typeparam>
-public class EventHandlerWrapper<TEventArgs> where TEventArgs : SKEventArgs
+internal sealed class EventHandlerWrapper<TEventArgs> where TEventArgs : SKEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="EventHandlerWrapper{TEventArgs}"/> class.

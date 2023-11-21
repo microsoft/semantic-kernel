@@ -29,16 +29,16 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("email", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
             }),
             new SKPlugin("SummarizePlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
             }),
             new SKPlugin("WriterPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
             })
         };
 
@@ -118,7 +118,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -146,7 +146,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -175,7 +175,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("Global", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -211,7 +211,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -267,7 +267,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -295,7 +295,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("CodeSearch", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
             }),
         };
 
@@ -326,7 +326,7 @@ public class SequentialPlanParserTests
         {
             new SKPlugin("MockPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -364,7 +364,7 @@ public class SequentialPlanParserTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();

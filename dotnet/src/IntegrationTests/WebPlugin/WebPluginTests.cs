@@ -53,7 +53,7 @@ public sealed class WebPluginTests : IDisposable
         var searchFunctions = kernel.ImportPluginFromObject(plugin, "WebSearchEngine");
 
         // Act
-        KernelResult result = await kernel.RunAsync(
+        FunctionResult result = await kernel.RunAsync(
             prompt,
             searchFunctions["Search"]
         );

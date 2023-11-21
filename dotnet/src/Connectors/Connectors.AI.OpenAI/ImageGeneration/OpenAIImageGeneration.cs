@@ -49,7 +49,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>

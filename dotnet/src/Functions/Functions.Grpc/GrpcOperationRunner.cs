@@ -240,42 +240,24 @@ internal sealed class GrpcOperationRunner
     /// </summary>
     /// <param name="type">The protobuf data type name.</param>
     /// <returns>The .net type.</returns>
-    private static Type GetNetType(string type)
-    {
-        switch (type)
+    private static Type GetNetType(string type) =>
+        type switch
         {
-            case "TYPE_DOUBLE":
-                return typeof(double);
-            case "TYPE_FLOAT":
-                return typeof(float);
-            case "TYPE_INT64":
-                return typeof(long);
-            case "TYPE_UINT64":
-                return typeof(ulong);
-            case "TYPE_INT32":
-                return typeof(int);
-            case "TYPE_FIXED64":
-                return typeof(ulong);
-            case "TYPE_FIXED32":
-                return typeof(uint);
-            case "TYPE_BOOL":
-                return typeof(bool);
-            case "TYPE_STRING":
-                return typeof(string);
-            case "TYPE_BYTES":
-                return typeof(byte[]);
-            case "TYPE_UINT32":
-                return typeof(uint);
-            case "TYPE_SFIXED32":
-                return typeof(int);
-            case "TYPE_SFIXED64":
-                return typeof(long);
-            case "TYPE_SINT32":
-                return typeof(int);
-            case "TYPE_SINT64":
-                return typeof(long);
-            default:
-                throw new ArgumentException($"Unknown type {type}", nameof(type));
-        }
-    }
+            "TYPE_DOUBLE" => typeof(double),
+            "TYPE_FLOAT" => typeof(float),
+            "TYPE_INT64" => typeof(long),
+            "TYPE_UINT64" => typeof(ulong),
+            "TYPE_INT32" => typeof(int),
+            "TYPE_FIXED64" => typeof(ulong),
+            "TYPE_FIXED32" => typeof(uint),
+            "TYPE_BOOL" => typeof(bool),
+            "TYPE_STRING" => typeof(string),
+            "TYPE_BYTES" => typeof(byte[]),
+            "TYPE_UINT32" => typeof(uint),
+            "TYPE_SFIXED32" => typeof(int),
+            "TYPE_SFIXED64" => typeof(long),
+            "TYPE_SINT32" => typeof(int),
+            "TYPE_SINT64" => typeof(long),
+            _ => throw new ArgumentException($"Unknown type {type}", nameof(type)),
+        };
 }
