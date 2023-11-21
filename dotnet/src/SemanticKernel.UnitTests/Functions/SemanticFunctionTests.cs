@@ -155,7 +155,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -182,7 +182,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -205,7 +205,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -228,7 +228,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -254,8 +254,8 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction1 = SKFunction.FromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
-        var semanticFunction2 = SKFunction.FromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        var semanticFunction1 = SKFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
+        var semanticFunction2 = SKFunctionFactory.CreateFromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -294,7 +294,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -323,7 +323,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -346,7 +346,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
