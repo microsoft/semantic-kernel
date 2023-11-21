@@ -98,7 +98,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kerenel, SKContext context)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, SKContext context)
     {
         // Clone the context to avoid unexpected variable mutations from the inner function execution
         ContextVariables inputVariables = context.Variables.Clone();
@@ -111,7 +111,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            await kerenel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
+            await kernel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
