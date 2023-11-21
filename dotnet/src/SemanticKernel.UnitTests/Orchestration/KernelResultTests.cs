@@ -3,10 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Orchestration;
@@ -16,13 +13,11 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class KernelResultTests
 {
-    private readonly Mock<IAIServiceProvider> _serviceProvider = new();
-    private readonly Mock<IAIServiceSelector> _serviceSelector = new();
     private readonly SKContext _context;
 
     public KernelResultTests()
     {
-        this._context = new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
+        this._context = new SKContext();
     }
 
     [Fact]
