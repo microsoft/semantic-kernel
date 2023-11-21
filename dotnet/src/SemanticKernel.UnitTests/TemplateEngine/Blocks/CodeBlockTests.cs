@@ -205,7 +205,7 @@ public class CodeBlockTests
         var canary1 = string.Empty;
         var canary2 = string.Empty;
 
-        var function = SKFunction.FromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
         {
             canary0 = context!.Variables["input"];
             canary1 = context.Variables["var1"];
@@ -248,7 +248,7 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunction.FromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
         {
             canary = context!.Variables["input"];
         },
@@ -277,7 +277,7 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunction.FromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
         {
             canary = context!.Variables["input"];
         },
@@ -313,7 +313,7 @@ public class CodeBlockTests
         var foo = string.Empty;
         var baz = string.Empty;
 
-        var function = SKFunction.FromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
         {
             foo = context!.Variables["foo"];
             baz = context!.Variables["baz"];
