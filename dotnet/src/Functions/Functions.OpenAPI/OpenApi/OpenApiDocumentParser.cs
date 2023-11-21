@@ -346,55 +346,21 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        switch (value.PrimitiveType)
+        return value.PrimitiveType switch
         {
-            case PrimitiveType.Integer:
-                var intValue = (OpenApiInteger)value;
-                return intValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Long:
-                var longValue = (OpenApiLong)value;
-                return longValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Float:
-                var floatValue = (OpenApiFloat)value;
-                return floatValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Double:
-                var doubleValue = (OpenApiDouble)value;
-                return doubleValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.String:
-                var stringValue = (OpenApiString)value;
-                return stringValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Byte:
-                var byteValue = (OpenApiByte)value;
-                return Convert.ToBase64String(byteValue.Value);
-
-            case PrimitiveType.Binary:
-                var binaryValue = (OpenApiBinary)value;
-                return Encoding.UTF8.GetString(binaryValue.Value);
-
-            case PrimitiveType.Boolean:
-                var boolValue = (OpenApiBoolean)value;
-                return boolValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Date:
-                var dateValue = (OpenApiDate)value;
-                return dateValue.Value.ToString("o").Substring(0, 10);
-
-            case PrimitiveType.DateTime:
-                var dateTimeValue = (OpenApiDateTime)value;
-                return dateTimeValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            case PrimitiveType.Password:
-                var passwordValue = (OpenApiPassword)value;
-                return passwordValue.Value.ToString(CultureInfo.InvariantCulture);
-
-            default:
-                throw new SKException($"The value type - {value.PrimitiveType} is not supported.");
-        }
+            PrimitiveType.Integer => ((OpenApiInteger)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Long => ((OpenApiLong)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Float => ((OpenApiFloat)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Double => ((OpenApiDouble)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.String => ((OpenApiString)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Byte => Convert.ToBase64String(((OpenApiByte)value).Value),
+            PrimitiveType.Binary => Encoding.UTF8.GetString(((OpenApiBinary)value).Value),
+            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Date => ((OpenApiDate)value).Value.ToString("o").Substring(0, 10),
+            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Password => ((OpenApiPassword)value).Value.ToString(CultureInfo.InvariantCulture),
+            _ => throw new SKException($"The value type - {value.PrimitiveType} is not supported."),
+        };
     }
 
     /// <summary>
