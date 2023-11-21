@@ -370,7 +370,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext context, CancellationToken _) => kernel.GetCulture(), null);
+            return (static (Kernel kernel, SKContext context, CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
@@ -460,7 +460,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
                     try
                     {
-                        return parser(value, kernel.GetCulture());
+                        return parser(value, kernel.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
@@ -592,7 +592,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
             return (functionName, result, context, kernel) =>
             {
-                context.Variables.Update(formatter(result, kernel.GetCulture()));
+                context.Variables.Update(formatter(result, kernel.Culture));
                 return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, result));
             };
         }
@@ -611,7 +611,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
                 var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
-                context.Variables.Update(taskResultFormatter(taskResult, kernel.GetCulture()));
+                context.Variables.Update(taskResultFormatter(taskResult, kernel.Culture));
                 return new FunctionResult(functionName, context, taskResult);
             };
         }
@@ -630,7 +630,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
                 var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
-                context.Variables.Update(asTaskResultFormatter(taskResult, kernel.GetCulture()));
+                context.Variables.Update(asTaskResultFormatter(taskResult, kernel.Culture));
                 return new FunctionResult(functionName, context, taskResult);
             };
         }

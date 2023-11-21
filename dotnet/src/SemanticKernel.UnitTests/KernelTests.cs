@@ -577,10 +577,10 @@ public class KernelTests
         var culture = CultureInfo.GetCultureInfo(28);
 
         //Act
-        kernel.SetCulture(culture);
+        kernel.Culture = culture;
 
         //Assert
-        Assert.Equal(culture, kernel.GetCulture());
+        Assert.Equal(culture, kernel.Culture);
     }
 
     [Fact]
@@ -590,7 +590,7 @@ public class KernelTests
         var kernel = KernelBuilder.Create();
 
         //Act
-        var culture = kernel.GetCulture();
+        var culture = kernel.Culture;
 
         //Assert
         Assert.NotNull(culture);

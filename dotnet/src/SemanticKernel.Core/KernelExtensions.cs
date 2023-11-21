@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -362,42 +361,6 @@ public static class KernelExtensions
             requestSettings,
             functionName,
             description));
-    #endregion
-
-    #region Kernel.Data helper methods
-
-    private const string KernelCultureDataKey = "kernel.culture";
-
-    /// <summary>
-    /// Associate a culture with the kernel.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="culture">The culture.</param>
-    public static void SetCulture(this Kernel kernel, CultureInfo culture)
-    {
-        Verify.NotNull(kernel);
-        Verify.NotNull(culture);
-
-        kernel.Data[KernelCultureDataKey] = culture;
-    }
-
-    /// <summary>
-    /// Return culture associated with kernel. If no culture is associated with the kernel, the current culture is returned.
-    /// </summary>
-    /// <param name="kernel">The kernel</param>
-    /// <returns>The culture.</returns>
-    public static CultureInfo GetCulture(this Kernel kernel)
-    {
-        Verify.NotNull(kernel);
-
-        if (kernel.Data.TryGetValue(KernelCultureDataKey, out object value) && value is CultureInfo culture)
-        {
-            return culture;
-        }
-
-        return CultureInfo.CurrentCulture;
-    }
-
     #endregion
 
     /// <summary>

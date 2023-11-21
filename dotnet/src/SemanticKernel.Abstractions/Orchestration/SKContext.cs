@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
     /// <summary>
