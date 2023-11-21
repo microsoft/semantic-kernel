@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Anthropic;
 
@@ -83,7 +83,7 @@ public class AnthropicChatCompletion : IChatCompletion, ITextCompletion, IDispos
     private static string ToPrompt(ChatHistory chat)
     {
         var promptBuilder = new StringBuilder();
-        foreach (var message in chat.Messages.Where(message => message.Role == AuthorRole.User || message.Role == AuthorRole.Assistant))
+        foreach (var message in chat.Where(message => message.Role == AuthorRole.User || message.Role == AuthorRole.Assistant))
         {
             promptBuilder.AppendLine();
             promptBuilder.AppendLine();
@@ -91,7 +91,7 @@ public class AnthropicChatCompletion : IChatCompletion, ITextCompletion, IDispos
             promptBuilder.AppendLine(message.Content);
         }
 
-        if (chat.Messages.Count > 0 && chat.Messages.Last().Role != AuthorRole.Assistant)
+        if (chat.Count > 0 && chat.Last().Role != AuthorRole.Assistant)
         {
             promptBuilder.AppendLine();
             promptBuilder.AppendLine();
@@ -160,10 +160,17 @@ public class AnthropicChatCompletion : IChatCompletion, ITextCompletion, IDispos
     }
 
     /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+    /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
-        // instructions are ignored for Claude
-        return new ChatHistory();
+        var chat = new ChatHistory();
+        if (!string.IsNullOrWhiteSpace(instructions))
+        {
+            chat.AddSystemMessage(instructions!);
+        }
+        return chat;
     }
 
     /// <inheritdoc/>

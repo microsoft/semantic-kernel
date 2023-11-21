@@ -23,9 +23,9 @@ internal sealed class ChatResult : IChatResult, IChatStreamingResult, ITextResul
     public ModelResult ModelResult => new(this._response.Completion);
 
     /// <inheritdoc/>
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult((ChatMessageBase)new ChatMessage(AuthorRole.Assistant, this._response.Completion));
+        return Task.FromResult(new ChatMessage(AuthorRole.Assistant, this._response.Completion));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
@@ -43,7 +43,7 @@ internal sealed class ChatResult : IChatResult, IChatStreamingResult, ITextResul
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var _messages = new[] { new ChatMessage(AuthorRole.Assistant, this._response.Completion) };
         foreach (var _message in _messages)
