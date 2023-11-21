@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -187,63 +186,64 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
     }
 
-    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    public async Task<StreamingFunctionResult<T>> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        var (cancelOrSkipRequested, renderedPrompt, textCompletion, defaultRequestSettings) = await this.PrepareInvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
-        if (cancelOrSkipRequested)
-        {
-            yield break;
-        }
-
         StringBuilder fullCompletion = new();
-        IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        var (cancelOrSkipRequested, renderedPrompt, textCompletion, defaultRequestSettings) = await this.PrepareInvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        var connectorResult = await textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
 
-        // Manually handling the enumeration to properly log any exception
-        bool moreItems;
-        do
+        var streamingFunctionResult = new StreamingFunctionResult<T>(this.Name, context, RetrieveStreamingSource, connectorResult)
         {
-            T? genericChunk = default;
-            try
-            {
-                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (moreItems)
-                {
-                    genericChunk = enumerator.Current;
-                    fullCompletion.Append(genericChunk);
+            Metadata = { { SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt } }
+        };
 
-                    // Check if genericChunk is a StreamingResultChunk and update the context
-                    if (genericChunk is StreamingResultChunk resultChunk)
+        async IAsyncEnumerable<T> RetrieveStreamingSource()
+        {
+            if (cancelOrSkipRequested)
+            {
+                yield break;
+            }
+
+            IAsyncEnumerator<T> enumerator = connectorResult.GetAsyncEnumerator(cancellationToken);
+
+            // Manually handling the enumeration to properly log any exception
+            bool moreItems;
+            do
+            {
+                T? genericChunk = default;
+                try
+                {
+                    moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                    if (moreItems)
                     {
-                        // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
-                        resultChunk.Context = context;
+                        genericChunk = enumerator.Current;
+                        fullCompletion.Append(genericChunk);
                     }
                 }
-            }
-            catch (Exception ex) when (!ex.IsCriticalException())
-            {
-                this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
-                throw;
-            }
+                catch (Exception ex) when (!ex.IsCriticalException())
+                {
+                    this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
+                    throw;
+                }
 
-            if (moreItems && genericChunk is not null)
-            {
-                yield return genericChunk;
-            }
-        } while (moreItems);
+                if (moreItems && genericChunk is not null)
+                {
+                    yield return genericChunk;
+                }
+            } while (moreItems);
 
-        // Update the result with the completion
-        context.Variables.Update(fullCompletion.ToString());
+            // Update the result with the completion
+            context.Variables.Update(fullCompletion.ToString());
 
-        var result = new FunctionResult(this.Name, context, fullCompletion.ToString());
+            this.CallFunctionInvoked(context, renderedPrompt!);
+            // There is no post cancellation check to override the result as the stream data was already sent.
+        }
 
-        result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-        this.CallFunctionInvoked(result, context, renderedPrompt);
-        // There is no post cancellation check to override the result as the stream data was already sent.
+        return new StreamingFunctionResult<T>(this.Name, context, RetrieveStreamingSource, connectorResult);
     }
 
     /// <summary>
@@ -315,6 +315,14 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         };
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
+
+    /// <summary>
+    /// Handles the FunctionInvoked event
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <param name="prompt">Prompt used by the function</param>
+    private void CallFunctionInvoked(SKContext context, string prompt)
+        => this.CallFunctionInvoked(new FunctionResult(this.Name, context), context, prompt);
 
     /// <summary>
     /// Handles the FunctionInvoked event

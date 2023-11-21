@@ -622,7 +622,7 @@ repeat:
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
-    public static async IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private static async IAsyncEnumerable<T> InternalRunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = kernel.CreateNewContext(variables);
         var repeatRequested = false;
@@ -634,7 +634,8 @@ repeat:
             repeatRequested = false;
 
             var functionDetails = skFunction.GetMetadata();
-            await foreach (T update in skFunction.InvokeStreamingAsync<T>(kernel, context, null, cancellationToken).ConfigureAwait(false))
+            var result = skFunction.InvokeStreamingAsync<T>(kernel, context, null, cancellationToken);
+            await foreach (T update in result.ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -657,6 +658,27 @@ repeat:
             }
         }
         while (repeatRequested);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="kernel"></param>
+    /// <param name="skFunction"></param>
+    /// <param name="variables"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async StreamingFunctionResult<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, ContextVariables? variables, CancellationToken cancellationToken)
+    {
+        var functionDetails = skFunction.GetMetadata();
+        var context = kernel.CreateNewContext(variables);
+
+        var reference = InternalRunStreamingAsync<T>(kernel, skFunction, variables, cancellationToken);
+
+        var result = new StreamingFunctionResult<T>(skFunction.Name, context, reference, reference);
+
+        return result;
     }
 
     /// <summary>

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
@@ -46,12 +43,6 @@ public abstract class StreamingResultChunk
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
     public object? InnerResultChunk { get; }
-
-    /// <summary>
-    /// The current context associated the function call.
-    /// </summary>
-    [JsonIgnore]
-    internal SKContext? Context { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingResultChunk"/> class.
