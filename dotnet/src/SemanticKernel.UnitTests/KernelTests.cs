@@ -105,7 +105,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunction.FromMethod(() => functionInvocations++);
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -132,7 +132,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunction.FromMethod(() => functionInvocations++);
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -156,8 +156,8 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func1 = SKFunction.FromMethod(() => functionInvocations++);
-        ISKFunction func2 = SKFunction.FromMethod(() => functionInvocations++);
+        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -205,8 +205,8 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int func1Invocations = 0, func2Invocations = 0;
-        ISKFunction func1 = SKFunction.FromMethod(() => func1Invocations++, functionName: "func1");
-        ISKFunction func2 = SKFunction.FromMethod(() => func2Invocations++, functionName: "func2");
+        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => func1Invocations++, functionName: "func1");
+        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => func2Invocations++, functionName: "func2");
 
         var invoked = 0;
         var invoking = 0;
@@ -245,7 +245,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunction.FromMethod(() => functionInvocations++);
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -271,7 +271,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        ISKFunction func = SKFunction.FromMethod(() => { });
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -292,7 +292,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        ISKFunction func = SKFunction.FromMethod(() => { });
+        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -315,8 +315,8 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromMethod(() => "Result1", "Function1");
-        var function2 = SKFunction.FromMethod(() => "Result2", "Function2");
+        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
+        var function2 = SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2");
 
         // Act
         var result = await kernel.RunAsync(function1, function2);
@@ -332,7 +332,7 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        var function1 = SKFunction.FromMethod(() => "Result1", "Function1");
+        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
         const string ExpectedValue = "new result";
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
@@ -355,7 +355,7 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromMethod((string injectedVariable) => injectedVariable, "Function1");
+        var function1 = SKFunctionFactory.CreateFromMethod((string injectedVariable) => injectedVariable, "Function1");
         const string ExpectedValue = "injected value";
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
@@ -380,8 +380,8 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromMethod(() => "Result1", "Function1");
-        var function2 = SKFunction.FromMethod(() => "Result2", "Function2");
+        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
+        var function2 = SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2");
 
         int numberOfInvocations = 0;
         int repeatCount = 0;
@@ -414,9 +414,9 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunction.FromMethod((string input) => $"{input} Result1", "Function1");
-        var function2 = SKFunction.FromMethod((string input) => $"{input} Result2", "Function2");
-        var function3 = SKFunction.FromMethod((string input) => $"{input} Result3", "Function3");
+        var function1 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result1", "Function1");
+        var function2 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result2", "Function2");
+        var function3 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result3", "Function3");
 
         const int ExpectedInvocations = 2;
 
@@ -456,11 +456,11 @@ public class KernelTests
         // Arrange
         List<ISKFunction> functions = new()
         {
-            SKFunction.FromMethod(() => "Result1", "Function1"),
-            SKFunction.FromMethod(() => "Result2", "Function2"),
-            SKFunction.FromMethod(() => "Result3", "Function3"),
-            SKFunction.FromMethod(() => "Result4", "Function4"),
-            SKFunction.FromMethod(() => "Result5", "Function5")
+            SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => "Result3", "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => "Result4", "Function4"),
+            SKFunctionFactory.CreateFromMethod(() => "Result5", "Function5")
         };
 
         int numberOfInvocations = 0;
@@ -509,11 +509,11 @@ public class KernelTests
         // Arrange
         List<ISKFunction> functions = new()
         {
-            SKFunction.FromMethod(() => "Result1", "Function1"),
-            SKFunction.FromMethod(() => "Result2", "Function2"),
-            SKFunction.FromMethod(() => "Result3", "Function3"),
-            SKFunction.FromMethod(() => "Result4", "Function4"),
-            SKFunction.FromMethod(() => "Result5", "Function5")
+            SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => "Result3", "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => "Result4", "Function4"),
+            SKFunctionFactory.CreateFromMethod(() => "Result5", "Function5")
         };
 
         int numberOfInvocations = 0;
@@ -554,7 +554,7 @@ public class KernelTests
 
         var context = new SKContext(new ContextVariables());
 
-        var function = SKFunction.FromMethod(() => "fake result", "function");
+        var function = SKFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
         kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
