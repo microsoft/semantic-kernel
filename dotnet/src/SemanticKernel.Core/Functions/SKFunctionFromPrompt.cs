@@ -187,7 +187,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
     }
 
-    public async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -200,14 +200,18 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
 
         StringBuilder fullCompletion = new();
-        await foreach (StreamingResultChunk update in textCompletion.GetStreamingChunksAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (T genericChunk in textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false))
         {
-            fullCompletion.Append(update);
+            fullCompletion.Append(genericChunk);
 
-            // This currently is needed as plans need use it to update the variables created after the stream ends.
-            update.Context = context;
+            // Check if genericChunk is a StreamingResultChunk and update the context
+            if (genericChunk is StreamingResultChunk resultChunk)
+            {
+                // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
+                resultChunk.Context = context;
+            }
 
-            yield return update;
+            yield return genericChunk;
         }
 
         // Update the result with the completion

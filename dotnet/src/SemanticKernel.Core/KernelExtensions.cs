@@ -622,7 +622,7 @@ repeat:
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
-    public static async IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this Kernel kernel, ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, ContextVariables? variables, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = kernel.CreateNewContext(variables);
         var repeatRequested = false;
@@ -634,7 +634,7 @@ repeat:
             repeatRequested = false;
 
             var functionDetails = skFunction.GetMetadata();
-            await foreach (StreamingResultChunk update in skFunction.InvokeStreamingAsync(kernel, context, null, cancellationToken).ConfigureAwait(false))
+            await foreach (T update in skFunction.InvokeStreamingAsync<T>(kernel, context, null, cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -668,7 +668,7 @@ repeat:
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Result of the function composition</returns>
     public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this Kernel kernel, ISKFunction skFunction, string input, CancellationToken cancellationToken)
-        => kernel.RunStreamingAsync(skFunction, new ContextVariables(input), cancellationToken);
+        => kernel.RunStreamingAsync<StreamingResultChunk>(skFunction, new ContextVariables(input), cancellationToken);
 
     /// <summary>
     /// Run a function in streaming mode.
@@ -678,7 +678,7 @@ repeat:
     /// <param name="input">Input to process</param>
     /// <returns>Result of the function composition</returns>
     public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this Kernel kernel, ISKFunction skFunction, string input)
-        => kernel.RunStreamingAsync(skFunction, new ContextVariables(input), CancellationToken.None);
+        => kernel.RunStreamingAsync<StreamingResultChunk>(skFunction, new ContextVariables(input), CancellationToken.None);
 
     /// <summary>
     /// Run a function in streaming mode.
@@ -687,5 +687,35 @@ repeat:
     /// <param name="skFunction">Target function to run</param>
     /// <returns>Result of the function composition</returns>
     public static IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(this Kernel kernel, ISKFunction skFunction)
-        => kernel.RunStreamingAsync(skFunction, (ContextVariables?)null, CancellationToken.None);
+        => kernel.RunStreamingAsync<StreamingResultChunk>(skFunction, (ContextVariables?)null, CancellationToken.None);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, string input, CancellationToken cancellationToken)
+        => kernel.RunStreamingAsync<T>(skFunction, new ContextVariables(input), cancellationToken);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction, string input)
+        => kernel.RunStreamingAsync<T>(skFunction, new ContextVariables(input), CancellationToken.None);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="skFunction">Target function to run</param>
+    /// <returns>Result of the function composition</returns>
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, ISKFunction skFunction)
+        => kernel.RunStreamingAsync<T>(skFunction, (ContextVariables?)null, CancellationToken.None);
 }

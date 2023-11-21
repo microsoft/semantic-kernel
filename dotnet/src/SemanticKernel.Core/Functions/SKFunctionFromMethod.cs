@@ -151,11 +151,42 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var chunk in this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false))
+        {
+            if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
+            {
+                yield return (T)(object)chunk;
+                continue;
+            }
+
+            if (chunk is StreamingNativeResultChunk nativeChunk)
+            {
+                yield return (T)nativeChunk.Value;
+            }
+
+            throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+        }
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="ISKFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The kernel</param>
+    /// <param name="context">SK context</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    Kernel kernel,
+    SKContext context,
+    AIRequestSettings? requestSettings = null,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Invoke pre hook, and stop if skipping requested.
         this.CallFunctionInvoking(context);

@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Json.More;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
@@ -65,6 +68,25 @@ internal static class ISKFunctionExtensions
             };
 
         return payload;
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="ISKFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="function">Target function</param>
+    /// <param name="kernel">The kernel</param>
+    /// <param name="context">SK context</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public static IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+        this ISKFunction function,
+        Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return function.InvokeStreamingAsync<StreamingResultChunk>(kernel, context, requestSettings, cancellationToken);
     }
 
     private static string ConvertType(Type? type)

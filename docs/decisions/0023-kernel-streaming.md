@@ -106,7 +106,7 @@ public class ChatMessageChunk : StreamingResultChunk
 interface ITextCompletion + IChatCompletion
 {
     IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync();
-    // Garanteed abstraction to be used by the ISKFunction.RunStreamingAsync()
+    // Guaranteed abstraction to be used by the ISKFunction.RunStreamingAsync()
 
     IAsyncEnumerable<T> GetStreamingChunksAsync<T>();
     // Throw exception if T is not supported
