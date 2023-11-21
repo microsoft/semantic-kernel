@@ -15,10 +15,19 @@ public interface WritableContextVariables extends ContextVariables {
      * @param key variable name
      * @param content value to set
      * @return Context for fluent calls
+     * @apiNote Breaking change: s/String content/Object content/
      */
-    ContextVariables setVariable(String key, String content);
+    ContextVariables setVariable(String key, Object content);
 
-    ContextVariables appendToVariable(String key, String content);
+    /**
+     * Append to the variable's value
+     *
+     * @param key variable name
+     * @param content value to append
+     * @return Context for fluent calls
+     * @apiNote Breaking change: s/String content/Object content/
+     */
+    ContextVariables appendToVariable(String key, Object content);
 
     /**
      * Updates the main input text with the new value after a function is complete.
@@ -26,8 +35,9 @@ public interface WritableContextVariables extends ContextVariables {
      * @param content The new input value, for the next function in the pipeline, or as a result for
      *     the user if the pipeline reached the end.
      * @return The current instance
+     * @apiNote Breaking change: s/String content/Object content/
      */
-    ContextVariables update(String content);
+    ContextVariables update(Object content);
 
     /**
      * Updates the variables merging or overwriting in the new values.
@@ -46,7 +56,8 @@ public interface WritableContextVariables extends ContextVariables {
          *
          * @param map Existing variables
          * @return an instantiation of ContextVariables
+         * @apiNote Breaking change: s/String content/Object content/
          */
-        WritableContextVariables build(Map<String, String> map);
+        WritableContextVariables build(Map<String, Object> map);
     }
 }

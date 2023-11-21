@@ -26,7 +26,7 @@ public abstract class AbstractSKContext implements SKContext {
 
     @Nullable
     @Override
-    public String getResult() {
+    public Object getResult() {
         return getVariables().asMap().get(ContextVariables.MAIN_KEY);
     }
 

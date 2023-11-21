@@ -27,9 +27,10 @@ public interface SKContext extends Buildable {
      * in the variables.
      *
      * @return the "input" entry in the variables
+     * @apiNote Breaking change: s/String/Object/
      */
     @Nullable
-    String getResult();
+    Object getResult();
 
     /**
      * Return a copy of all variables within the context

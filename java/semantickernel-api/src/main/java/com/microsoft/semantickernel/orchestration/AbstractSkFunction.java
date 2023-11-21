@@ -1,6 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -9,17 +17,12 @@ import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /** Abstract implementation of the SKFunction interface. */
-public abstract class AbstractSkFunction<RequestConfiguration>
-        implements SKFunction<RequestConfiguration>, RegistrableSkFunction {
+public abstract class AbstractSkFunction
+        implements SKFunction, RegistrableSkFunction {
 
     private final List<ParameterView> parameters;
     private final String skillName;
@@ -84,11 +87,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         return skillsSupplier;
     }
 
+    /** @apiNote Breaking change: s/RequestConfiguration settings/Object settings/  */
     @Override
     public Mono<SKContext> invokeAsync(
             @Nullable String input,
             @Nullable SKContext context,
-            @Nullable RequestConfiguration settings) {
+            @Nullable Object settings) {
         if (context == null) {
             assertSkillSupplierRegistered();
 
@@ -113,9 +117,10 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         return invokeAsync(input, null, null);
     }
 
+    /** @apiNote Breaking change: s/RequestConfiguration settings/Object settings/ */
     @Override
     public Mono<SKContext> invokeAsync(
-            @Nullable SKContext context, @Nullable RequestConfiguration settings) {
+            @Nullable SKContext context, @Nullable Object settings) {
         if (context == null) {
             context =
                     SKBuilders.context()
@@ -135,9 +140,10 @@ public abstract class AbstractSkFunction<RequestConfiguration>
      * @param context The context.
      * @param settings The settings.
      * @return A mono of the context with the result.
+     * @apiNote Breaking change: s/RequestConfiguration settings/Object settings/
      */
     protected abstract Mono<SKContext> invokeAsyncInternal(
-            SKContext context, @Nullable RequestConfiguration settings);
+            SKContext context, @Nullable Object settings);
 
     @Override
     public String getSkillName() {

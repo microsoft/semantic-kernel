@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+import javax.annotation.Nullable;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.microsoft.semantickernel.builders.Buildable;
@@ -8,7 +10,7 @@ import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -30,8 +32,18 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
      *
      * @param instructions Optional chat instructions for the AI service
      * @return Chat object
+     * @apiNote Breaking change: s/@Nullable String instructions/String instructions/
      */
-    ChatHistoryType createNewChat(@Nullable String instructions);
+    ChatHistoryType createNewChat(String instructions);
+
+       /**
+     * Create a new empty chat instance
+     *
+     * @return Chat object
+     * @since 1.0.0
+     */
+    ChatHistoryType createNewChat();
+
 
     Flux<String> generateMessageStream(
             ChatHistoryType chatHistory, @Nullable ChatRequestSettings requestSettings);

@@ -24,8 +24,9 @@ public interface ContextVariables extends Buildable {
      * Get variables as a map
      *
      * @return Map of variables
+     * @apiNote Breaking change: s/Map<String,String>/Map<String,Object>/
      */
-    Map<String, String> asMap();
+    Map<String, Object> asMap();
 
     /**
      * Get a clone of the variables that can be modified
@@ -69,6 +70,7 @@ public interface ContextVariables extends Buildable {
          *
          * @param map Existing variables
          * @return an instantiation of ContextVariables
+         * @apiNote Breaking change: s/Map<String,String>/Map<String,Object>/
          */
         Builder withVariables(Map<String, Object> map);
 
@@ -78,6 +80,7 @@ public interface ContextVariables extends Buildable {
          * @param key variable name
          * @param value variable value
          * @return builder for fluent chaining
+         * @apiNote Breaking change: s/String value/Object value/
          */
         Builder withVariable(String key, Object value);
     }
@@ -87,7 +90,8 @@ public interface ContextVariables extends Buildable {
      *
      * @param key variable name
      * @return content of the variable
+     * @apiNote Breaking change: s/String get(String key)/Object get(String key)/
      */
     @Nullable
-    String get(String key);
+    Object get(String key);
 }

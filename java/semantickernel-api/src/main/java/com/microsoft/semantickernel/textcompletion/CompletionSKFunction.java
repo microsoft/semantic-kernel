@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
@@ -9,12 +13,11 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import java.util.List;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /** Semantic function for text completion */
-public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings>, Buildable {
+public interface CompletionSKFunction extends SKFunction, Buildable {
 
     /**
      * Method to aggregate partitioned results of a semantic function.
@@ -23,6 +26,7 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
      * @param context Semantic Kernel context
      * @return Aggregated results
      */
+    @Deprecated
     Mono<SKContext> aggregatePartitionedResultsAsync(
             List<String> partitionedInput, @Nullable SKContext context);
 

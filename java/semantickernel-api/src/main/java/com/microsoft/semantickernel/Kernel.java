@@ -53,6 +53,7 @@ public interface Kernel extends Buildable {
      *
      * @param pipeline List of functions
      * @return Result of the function composition
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
      */
     @Deprecated
     Mono<SKContext> runAsync(SKFunction... pipeline);
@@ -63,6 +64,7 @@ public interface Kernel extends Buildable {
      * @param input Input to process
      * @param pipeline List of functions
      * @return Result of the function composition
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
      */
     @Deprecated
     Mono<SKContext> runAsync(String input, SKFunction... pipeline);
@@ -73,9 +75,20 @@ public interface Kernel extends Buildable {
      * @param variables variables to initialise the context with
      * @param pipeline List of functions
      * @return Result of the function composition
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
      */
     @Deprecated
     Mono<SKContext> runAsync(ContextVariables variables, SKFunction... pipeline);
+
+    /**
+     * Run a pipeline composed of synchronous and asynchronous functions.
+     * @param streaming Whether to stream the results of the pipeline
+     * @param variables variables to initialise the context with
+     * @param pipeline List of functions
+     * @return Result of the function composition
+     * @since 1.0.0
+     */
+    Mono<SKContext> runAsync(boolean streaming, ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Register a semantic function on this kernel
@@ -101,12 +114,16 @@ public interface Kernel extends Buildable {
     <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
             throws KernelException;
 
-    /** Registers a semantic function on this kernel */
+    /** Registers a semantic function on this kernel 
+     * @apiNote Breaking change: s/<RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>/<FunctionType extends SKFunction>/
+    */
     @Deprecated
-    <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
+    <FunctionType extends SKFunction>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
 
-    /** Obtains a semantic function with the given name */
+    /** Obtains a semantic function with the given name 
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
+     */
     @Deprecated
     SKFunction getFunction(String skill, String function);
 

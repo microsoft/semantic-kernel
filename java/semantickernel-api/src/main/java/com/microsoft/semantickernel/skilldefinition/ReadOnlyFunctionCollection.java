@@ -1,16 +1,26 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
-import com.microsoft.semantickernel.orchestration.SKFunction;
 import java.util.List;
+
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.SKFunction;
 
 public interface ReadOnlyFunctionCollection {
 
     String getSkillName();
 
-    SKFunction<?> getFunction(String functionName);
+    /**
+     * Get function with the given name.
+     *
+     * @param functionName the name of the function to retrieve
+     * @return The given function
+     * @throws RuntimeException if the given entry is not of the expected type
+     * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
+     */
+    SKFunction getFunction(String functionName);
 
     /**
      * Get function with the given SKFunction type argument.
@@ -31,6 +41,7 @@ public interface ReadOnlyFunctionCollection {
 
     /**
      * @return An unmodifiable list of all functions
+     * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
      */
-    List<SKFunction<?>> getAll();
+    List<SKFunction> getAll();
 }

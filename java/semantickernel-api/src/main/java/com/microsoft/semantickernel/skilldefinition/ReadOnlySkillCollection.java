@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
+import java.util.Map;
+
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import java.util.Map;
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
 
 /**
  * Skill collection interface.
@@ -34,12 +36,17 @@ public interface ReadOnlySkillCollection extends Buildable {
 
     ReadOnlyFunctionCollection getAllFunctions();
 
-    /** Get function with name from the global scope */
+    /** Get function with name from the global scope 
+     * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
+     */
     @Nullable
-    <T extends SKFunction<?>> T getFunction(String functionName, @Nullable Class<T> functionType);
+    <T extends SKFunction> T getFunction(String functionName, @Nullable Class<T> functionType);
 
+    /**
+     * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
+     */
     @Nullable
-    <T extends SKFunction<?>> T getFunction(
+    <T extends SKFunction> T getFunction(
             String skillName, String funName, @Nullable Class<T> functionClazz);
 
     @Nullable

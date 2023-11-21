@@ -96,6 +96,7 @@ public class ChatHistory {
      *
      * @param content Message content
      * @since 1.0.0
+     * @
      */
     public void addUserMessage(String content) {
         this.messages.add(new Message(AuthorRoles.User, content));

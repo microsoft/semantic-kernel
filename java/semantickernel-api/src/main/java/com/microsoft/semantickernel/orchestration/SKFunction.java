@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Semantic Kernel callable function interface
+ * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
  */
 public interface SKFunction {
     /**
@@ -29,9 +30,11 @@ public interface SKFunction {
      * @param context Request context
      * @param settings Configuration of the request
      * @return an updated context with the result of the request
-    @CheckReturnValue
-    Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+     * @apiNote Breaking change: s/RequestConfiguration settings/Object settings/
      */
+    @CheckReturnValue
+    @Deprecated
+    Mono<SKContext> invokeAsync(String input, SKContext context, Object settings);
 
     /**
      * Invokes the function
@@ -72,9 +75,11 @@ public interface SKFunction {
      * @param context Request context
      * @param settings Configuration of the request
      * @return an updated context with the result of the request
+     * @apiNote Breaking change: s/RequestConfiguration settings/Object settings/
      */
     @CheckReturnValue
-    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+    @Deprecated
+     Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
 
     /**
      * @return The name of the skill that this function is within
