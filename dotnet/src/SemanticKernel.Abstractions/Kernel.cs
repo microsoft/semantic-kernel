@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Events;
@@ -89,18 +89,15 @@ public sealed class Kernel
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
     /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlySKPluginCollection? plugins = null,
-        CultureInfo? culture = null)
+        IReadOnlySKPluginCollection? plugins = null)
     {
         return new SKContext(
             variables,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
-            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
-            culture);
+            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked));
     }
 
     /// <summary>
@@ -119,6 +116,11 @@ public sealed class Kernel
 
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
+
+    /// <summary>
+    /// Dictionary for arbitrary/ambient data associated with the kernel.
+    /// </summary>
+    public IDictionary<string, object> Data { get; } = new Dictionary<string, object>();
 
     #region private ================================================================================
 

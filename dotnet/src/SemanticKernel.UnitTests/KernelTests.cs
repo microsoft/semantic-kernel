@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -565,6 +566,35 @@ public class KernelTests
         //Assert
         Assert.NotNull(result);
         Assert.Equal("fake result", result.GetValue<string>());
+    }
+
+    [Fact]
+    public void ItShouldBePossibleToSetAndGetCultureAssociatedWithKernel()
+    {
+        //Arrange
+        var kernel = KernelBuilder.Create();
+
+        var culture = CultureInfo.GetCultureInfo(28);
+
+        //Act
+        kernel.SetCulture(culture);
+
+        //Assert
+        Assert.Equal(culture, kernel.GetCulture());
+    }
+
+    [Fact]
+    public void CurrentCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
+    {
+        //Arrange
+        var kernel = KernelBuilder.Create();
+
+        //Act
+        var culture = kernel.GetCulture();
+
+        //Assert
+        Assert.NotNull(culture);
+        Assert.Equal(CultureInfo.CurrentCulture, culture);
     }
 
     public class MyPlugin
