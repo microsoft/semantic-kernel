@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -119,7 +120,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<ConnectorAsyncEnumerable<StreamingResultChunk>> GetStreamingChunksAsync(
+        string input,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
@@ -137,28 +141,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToString();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToByteArray();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(
+    public async Task<ConnectorAsyncEnumerable<T>> GetStreamingChunksAsync<T>(
         string input,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 

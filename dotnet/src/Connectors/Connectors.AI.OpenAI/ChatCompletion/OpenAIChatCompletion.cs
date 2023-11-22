@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -103,13 +104,13 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<ConnectorAsyncEnumerable<StreamingResultChunk>> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.GetStreamingChunksAsync<StreamingResultChunk>(input, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<ConnectorAsyncEnumerable<T>> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(input);
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);
