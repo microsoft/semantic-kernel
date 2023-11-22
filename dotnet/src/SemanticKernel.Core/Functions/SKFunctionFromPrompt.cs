@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromPrompt : KernelFunction
+internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
 
@@ -110,7 +110,7 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
 
-        return new SKFunctionFromPrompt(
+        return new KernelFunctionFromPrompt(
             template: promptTemplate,
             promptTemplateConfig: promptTemplateConfig,
             functionName: functionName,
@@ -123,8 +123,8 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
     public IReadOnlyList<SKParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetMetadataCore() =>
-        this._view ??=
+    protected override SKFunctionMetadata GetMetadataCore() =>
+        this._metadata ??=
         new SKFunctionMetadata(this.Name)
         {
             Description = this._promptTemplateConfig.Description,
@@ -189,7 +189,7 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
 
-    private SKFunctionFromPrompt(
+    private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
         string functionName,
@@ -200,15 +200,13 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(this.Parameters);
-
-        this.Name = functionName;
     }
 
     #region private
 
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private SKFunctionMetadata? _view;
+    private SKFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)

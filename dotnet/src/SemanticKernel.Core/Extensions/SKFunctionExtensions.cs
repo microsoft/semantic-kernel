@@ -2,7 +2,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -53,16 +52,4 @@ public static class SKFunctionExtensions
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
         => function.InvokeAsync(kernel, new ContextVariables(input), plugins, requestSettings, cancellationToken);
-
-    /// <summary>
-    /// Returns decorated instance of <see cref="KernelFunction"/> with enabled instrumentation.
-    /// </summary>
-    /// <param name="function">Instance of <see cref="KernelFunction"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static KernelFunction WithInstrumentation(this KernelFunction function, ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNull(function);
-
-        return new InstrumentedKernelFunction(function, loggerFactory);
-    }
 }

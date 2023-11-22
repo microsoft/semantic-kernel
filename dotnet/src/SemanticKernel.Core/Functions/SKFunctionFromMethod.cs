@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel;
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromMethod : KernelFunction
+internal sealed class KernelFunctionFromMethod : KernelFunction
 {
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -59,10 +59,10 @@ internal sealed class SKFunctionFromMethod : KernelFunction
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunctionFromPrompt)) ?? NullLogger.Instance;
+        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
-        var result = new SKFunctionFromMethod(
+        var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
             description ?? methodDetails.Description,
@@ -79,8 +79,8 @@ internal sealed class SKFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetMetadataCore() =>
-        this._view ??=
+    protected override SKFunctionMetadata GetMetadataCore() =>
+        this._metadata ??=
         new SKFunctionMetadata(this.Name)
         {
             Description = this.Description,
@@ -99,7 +99,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
         {
             // Invoke pre hook, and stop if skipping requested.
             this.CallFunctionInvoking(context);
-            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 if (this._logger.IsEnabled(LogLevel.Trace))
                 {
@@ -124,7 +124,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
             {
                 this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
                     this.Name,
-                    SKFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                    KernelFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
                     result.Value);
             }
 
@@ -194,7 +194,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<SKParameterMetadata> Parameters, SKReturnParameterMetadata ReturnParameter);
 
-    private SKFunctionFromMethod(
+    private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
@@ -210,9 +210,6 @@ internal sealed class SKFunctionFromMethod : KernelFunction
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
         this._returnParameter = returnParameter;
-
-        this.Name = functionName;
-        this.Description = description;
     }
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
@@ -347,7 +344,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
+                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
                 ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
@@ -863,7 +860,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
-    private SKFunctionMetadata? _view;
+    private SKFunctionMetadata? _metadata;
 
     #endregion
 }

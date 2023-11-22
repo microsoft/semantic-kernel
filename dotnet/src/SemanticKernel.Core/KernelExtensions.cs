@@ -146,7 +146,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
@@ -163,7 +163,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -181,7 +181,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
@@ -198,7 +198,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -562,13 +562,13 @@ repeat:
     /// <returns></returns>
     private static bool IsCancelRequested(KernelFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
     {
-        if (SKFunctionFromPrompt.IsInvokingCancelRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokingCancelRequested(context))
         {
             logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
         }
 
-        if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
         {
             logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
@@ -587,7 +587,7 @@ repeat:
     /// <returns></returns>
     private static bool IsSkipRequested(KernelFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
     {
-        if (SKFunctionFromPrompt.IsInvokingSkipRequested(context))
+        if (KernelFunctionFromPrompt.IsInvokingSkipRequested(context))
         {
             logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
             return true;
