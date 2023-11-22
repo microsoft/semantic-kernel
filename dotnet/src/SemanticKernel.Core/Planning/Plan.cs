@@ -272,13 +272,11 @@ public sealed class Plan : ISKFunction
             {
                 Description = stepDescription?.Description,
                 DefaultValue = stepDescription?.DefaultValue,
-                Type = stepDescription?.Type,
                 IsRequired = stepDescription?.IsRequired ?? false,
                 ParameterType = stepDescription?.ParameterType,
-                Schema = stepDescription?.Schema
+                Schema = stepDescription?.Schema,
             };
-        }
-        ).ToList();
+        }).ToList();
 
         return new(this.Name)
         {

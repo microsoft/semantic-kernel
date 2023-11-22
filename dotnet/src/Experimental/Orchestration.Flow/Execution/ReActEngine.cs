@@ -396,7 +396,8 @@ internal sealed class ReActEngine
         SKParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
         {
             Description = "The message to be shown to the user.",
-            Type = ParameterJsonType.String
+            ParameterType = typeof(string),
+            Schema = SKJsonSchema.Parse("{\"type\":\"string\"}"),
         };
 
         return new SKFunctionMetadata(Constants.StopAndPromptFunctionName)
