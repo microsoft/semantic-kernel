@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import openai
 
@@ -84,13 +84,17 @@ class OpenAITextCompletion(TextCompletionClientBase):
         response = await self._send_completion_request(prompt, request_settings, True)
 
         async for chunk in response:
+            parsed_choices = _parse_choices(chunk)
+            if parsed_choices is None:
+                continue
+            text, index = parsed_choices
             if request_settings.number_of_responses > 1:
                 for choice in chunk.choices:
                     completions = [""] * request_settings.number_of_responses
-                    completions[choice.index] = choice.text
+                    completions[index] = text
                     yield completions
             else:
-                yield chunk.choices[0].text
+                yield text
 
     async def _send_completion_request(
         self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
@@ -180,3 +184,15 @@ class OpenAITextCompletion(TextCompletionClientBase):
     @property
     def total_tokens(self) -> int:
         return self._total_tokens
+
+
+def _parse_choices(chunk) -> Optional[Tuple[str, int]]:
+    # From the Azure OpenAI API version 2023-06-01-preview,
+    # an empty 'choices' is now returned at the beginning of streaming responses.
+    # https://github.com/Azure/azure-rest-api-specs/pull/25880
+    if len(chunk.choices) == 0:
+        return None
+
+    text = chunk.choices[0].text
+    index = chunk.choices[0].index
+    return text, index

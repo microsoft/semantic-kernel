@@ -117,7 +117,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         # parse the completion text(s) and yield them
         async for chunk in response:
-            text, index = _parse_choices(chunk)
+            parsed_choices = _parse_choices(chunk)
+            if parsed_choices is None:
+                continue
+            text, index = parsed_choices
             # if multiple responses are requested, keep track of them
             if request_settings.number_of_responses > 1:
                 completions = [""] * request_settings.number_of_responses
@@ -175,7 +178,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         # parse the completion text(s) and yield them
         async for chunk in response:
-            text, index = _parse_choices(chunk)
+            parsed_choices = _parse_choices(chunk)
+            if parsed_choices is None:
+                continue
+            text, index = parsed_choices
             # if multiple responses are requested, keep track of them
             if request_settings.number_of_responses > 1:
                 completions = [""] * request_settings.number_of_responses
@@ -299,7 +305,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         return self._total_tokens
 
 
-def _parse_choices(chunk):
+def _parse_choices(chunk) -> Optional[Tuple[str, int]]:
+    # From the Azure OpenAI API version 2023-06-01-preview,
+    # an empty 'choices' is now returned at the beginning of streaming responses.
+    # https://github.com/Azure/azure-rest-api-specs/pull/25880
+    if len(chunk.choices) == 0:
+        return None
     message = ""
     if "role" in chunk.choices[0].delta:
         message += chunk.choices[0].delta.role + ": "
