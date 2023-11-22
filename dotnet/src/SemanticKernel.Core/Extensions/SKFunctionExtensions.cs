@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,7 +22,6 @@ public static class SKFunctionExtensions
     /// <param name="kernel">Kernel</param>
     /// <param name="variables">Input variables for the function</param>
     /// <param name="plugins">Collection of plugins that this function can access</param>
-    /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
@@ -31,11 +29,10 @@ public static class SKFunctionExtensions
         Kernel kernel,
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null,
-        CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var context = kernel.CreateNewContext(variables, plugins, culture);
+        var context = kernel.CreateNewContext(variables, plugins);
         return function.InvokeAsync(kernel, context, requestSettings, cancellationToken);
     }
 
@@ -46,7 +43,6 @@ public static class SKFunctionExtensions
     /// <param name="kernel">Kernel</param>
     /// <param name="input">Input string for the function</param>
     /// <param name="plugins">Collection of plugins that this function can access</param>
-    /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
@@ -54,10 +50,9 @@ public static class SKFunctionExtensions
         Kernel kernel,
         string input,
         IReadOnlySKPluginCollection? plugins = null,
-        CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), plugins, culture, requestSettings, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), plugins, requestSettings, cancellationToken);
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.
