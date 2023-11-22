@@ -79,14 +79,14 @@ internal static class ISKFunctionExtensions
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public static IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
         this ISKFunction function,
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return function.InvokeStreamingAsync<StreamingResultChunk>(kernel, context, requestSettings, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingContent>(kernel, context, requestSettings, cancellationToken);
     }
 
     private static string ConvertType(Type? type)

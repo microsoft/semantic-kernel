@@ -11,11 +11,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Method function streaming result chunk.
 /// </summary>
-public sealed class StreamingMethodResultChunk : StreamingResultChunk
+public sealed class StreamingMethodResultChunk : StreamingContent
 {
-    /// <inheritdoc/>
-    public override string Type => "method_result_chunk";
-
     /// <inheritdoc/>
     public override int ChoiceIndex => 0;
 

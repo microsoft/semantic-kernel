@@ -103,13 +103,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        return this.GetStreamingChunksAsync<StreamingResultChunk>(input, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(input);
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);

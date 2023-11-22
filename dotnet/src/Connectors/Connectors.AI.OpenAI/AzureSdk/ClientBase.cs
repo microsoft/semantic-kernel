@@ -154,14 +154,6 @@ public abstract class ClientBase
         }
     }
 
-    private protected IAsyncEnumerable<StreamingTextResultChunk> InternalGetTextStreamingUpdatesAsync(
-    string prompt,
-    AIRequestSettings? requestSettings,
-    CancellationToken cancellationToken = default)
-    {
-        return this.InternalGetTextStreamingUpdatesAsync<StreamingTextResultChunk>(prompt, requestSettings, cancellationToken);
-    }
-
     private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
         string prompt,
     AIRequestSettings? requestSettings,
@@ -192,7 +184,7 @@ public abstract class ClientBase
 
                 // If the provided T is an specialized class of StreamingResultChunk interface
                 if (typeof(T) == typeof(StreamingTextResultChunk) ||
-                    typeof(T) == typeof(StreamingResultChunk))
+                    typeof(T) == typeof(StreamingContent))
                 {
                     yield return (T)(object)new StreamingTextResultChunk(update, choiceIndex, update);
                     continue;
@@ -349,7 +341,7 @@ public abstract class ClientBase
 
                 // If the provided T is an specialized class of StreamingResultChunk interface
                 if (typeof(T) == typeof(StreamingChatResultChunk) ||
-                    typeof(T) == typeof(StreamingResultChunk))
+                    typeof(T) == typeof(StreamingContent))
                 {
                     yield return (T)(object)new StreamingChatResultChunk(chatMessage, choiceIndex);
                     continue;
@@ -359,14 +351,6 @@ public abstract class ClientBase
             }
             choiceIndex++;
         }
-    }
-
-    private protected IAsyncEnumerable<StreamingChatResultChunk> InternalGetChatStreamingUpdatesAsync(
-    IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
-    AIRequestSettings? requestSettings,
-    CancellationToken cancellationToken = default)
-    {
-        return this.InternalGetChatStreamingUpdatesAsync<StreamingChatResultChunk>(chat, requestSettings, cancellationToken);
     }
 
     /// <summary>

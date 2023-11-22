@@ -1,20 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
-/// Represents a single update to a streaming result.
+/// Represents a single update to a streaming content.
 /// </summary>
-public abstract class StreamingResultChunk
+public abstract class StreamingContent
 {
-    /// <summary>
-    /// Type of the chunk.
-    /// </summary>
-    public abstract string Type { get; }
-
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
     /// </summary>
@@ -40,25 +35,29 @@ public abstract class StreamingResultChunk
 
     /// <summary>
     /// Internal chunk object reference. (Breaking glass).
-    /// Each connector will have its own internal object representing the result chunk.
+    /// Each connector will have its own internal object representing the content chunk.
     /// </summary>
     /// <remarks>
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
-    public object? InnerResultChunk { get; }
+    public object? InnerContent { get; }
 
     /// <summary>
     /// The current context associated the function call.
     /// </summary>
-    [JsonIgnore]
     internal SKContext? Context { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingResultChunk"/> class.
+    /// The metadata associated the content.
     /// </summary>
-    /// <param name="innerResultChunk">Inner result chunk object reference</param>
-    protected StreamingResultChunk(object? innerResultChunk)
+    internal Dictionary<string, object>? Metadata { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingContent"/> class.
+    /// </summary>
+    /// <param name="innerContent">Inner content object reference</param>
+    protected StreamingContent(object? innerContent)
     {
-        this.InnerResultChunk = innerResultChunk;
+        this.InnerContent = innerContent;
     }
 }

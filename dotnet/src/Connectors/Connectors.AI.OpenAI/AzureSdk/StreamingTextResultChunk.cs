@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class StreamingTextResultChunk : StreamingResultChunk
+public class StreamingTextResultChunk : StreamingContent
 {
     /// <inheritdoc/>
     public override string Type => "openai_text_update";

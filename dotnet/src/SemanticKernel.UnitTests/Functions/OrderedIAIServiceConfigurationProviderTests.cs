@@ -212,7 +212,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -222,7 +222,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

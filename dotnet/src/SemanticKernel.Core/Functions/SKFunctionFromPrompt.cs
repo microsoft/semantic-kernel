@@ -216,7 +216,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
                     fullCompletion.Append(genericChunk);
 
                     // Check if genericChunk is a StreamingResultChunk and update the context
-                    if (genericChunk is StreamingResultChunk resultChunk)
+                    if (genericChunk is StreamingContent resultChunk)
                     {
                         // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
                         resultChunk.Context = context;

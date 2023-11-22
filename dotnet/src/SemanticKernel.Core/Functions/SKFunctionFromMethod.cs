@@ -159,7 +159,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     {
         await foreach (var chunk in this.InvokeStreamingAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false))
         {
-            if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
+            if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
             {
                 yield return (T)(object)chunk;
                 continue;
@@ -189,7 +189,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                 {
                     var chunk = enumerator.Current;
 
-                    if (typeof(T).IsSubclassOf(typeof(StreamingResultChunk)) || typeof(T) == typeof(StreamingResultChunk))
+                    if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
                     {
                         genericChunk = (T)(object)chunk;
                         continue;
@@ -228,7 +228,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public async IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(
+    public async IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
     Kernel kernel,
     SKContext context,
     AIRequestSettings? requestSettings = null,

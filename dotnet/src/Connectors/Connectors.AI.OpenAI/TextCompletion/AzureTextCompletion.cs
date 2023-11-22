@@ -100,13 +100,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        return this.InternalGetTextStreamingUpdatesAsync(input, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetTextStreamingUpdatesAsync<T>(input, requestSettings, cancellationToken);
     }

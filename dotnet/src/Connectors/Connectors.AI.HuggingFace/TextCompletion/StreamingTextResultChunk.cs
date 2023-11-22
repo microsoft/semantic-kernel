@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// <summary>
 /// StreamResponse class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
 /// </summary>
-public class StreamingTextResultChunk : StreamingResultChunk
+public class StreamingTextResultChunk : StreamingContent
 {
     /// <inheritdoc/>
     public override string Type { get; }

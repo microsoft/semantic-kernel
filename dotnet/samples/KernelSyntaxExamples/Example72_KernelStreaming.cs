@@ -56,7 +56,7 @@ public static class Example72_KernelStreaming
         await foreach (var update in kernel.RunStreamingAsync(funyParagraphFunction))
         {
             // You will be always able to know the type of the update by checking the Type property.
-            if (update.Type == "openai_chat_message_update" && update is StreamingChatResultChunk chatUpdate)
+            if (update is StreamingChatResultChunk chatUpdate)
             {
                 if (!roleDisplayed && chatUpdate.Role.HasValue)
                 {
@@ -89,7 +89,7 @@ public static class Example72_KernelStreaming
         // Native string value type streaming function
         await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeStreamingNativeFunction"], "My Value Type Streaming Function Input"))
         {
-            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate)
+            if (update is StreamingMethodResultChunk nativeUpdate)
             {
                 Console.Write(nativeUpdate.Value);
             }
@@ -104,7 +104,7 @@ public static class Example72_KernelStreaming
         await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeStreamingNativeFunction"], "My Complex Type Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
+            if (update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
             {
                 Console.WriteLine(Encoding.UTF8.GetString(myComplexType.Content));
             }
@@ -119,7 +119,7 @@ public static class Example72_KernelStreaming
         await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeNativeFunction"], "My Value Type Non Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate)
+            if (update is StreamingMethodResultChunk nativeUpdate)
             {
                 Console.WriteLine(nativeUpdate.Value);
             }
@@ -134,7 +134,7 @@ public static class Example72_KernelStreaming
         await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeNativeFunction"], "My Complex Type Non Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
+            if (update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
             {
                 Console.WriteLine($"Text: {myComplexType.Text}, Number: {myComplexType.Number}");
             }

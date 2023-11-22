@@ -11,11 +11,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
-public class StreamingChatResultChunk : StreamingResultChunk
+public class StreamingChatResultChunk : StreamingContent
 {
-    /// <inheritdoc/>
-    public override string Type => "openai_chat_message_update";
-
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
 

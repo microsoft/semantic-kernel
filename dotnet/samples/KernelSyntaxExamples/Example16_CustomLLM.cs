@@ -57,9 +57,9 @@ public class MyTextCompletionService : ITextCompletion
         }
     }
 
-    public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        return this.GetStreamingChunksAsync<StreamingResultChunk>(input, requestSettings, cancellationToken);
+        return this.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -70,7 +70,7 @@ public class MyTextCompletionService : ITextCompletion
         }
     }
 
-    public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (typeof(T) == typeof(MyStreamingResultChunk))
         {
@@ -80,10 +80,8 @@ public class MyTextCompletionService : ITextCompletion
     }
 }
 
-public class MyStreamingResultChunk : StreamingResultChunk
+public class MyStreamingResultChunk : StreamingContent
 {
-    public override string Type => "my_text_type";
-
     public override int ChoiceIndex => 0;
 
     public string Content { get; }
