@@ -33,7 +33,7 @@ public sealed class Program
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for the application activities.
     /// </summary>
-    private static readonly ActivitySource s_activitySource = new("ApplicationInsights.Example");
+    private static readonly ActivitySource s_activitySource = new("Telemetry.Example");
 
     /// <summary>
     /// The main entry point for the application.
@@ -45,7 +45,7 @@ public sealed class Program
 
         using var traceProvider = Sdk.CreateTracerProviderBuilder()
             .AddSource("Microsoft.SemanticKernel.*")
-            .AddSource("ApplicationInsights.Example")
+            .AddSource("Telemetry.Example")
             .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
             .Build();
 
