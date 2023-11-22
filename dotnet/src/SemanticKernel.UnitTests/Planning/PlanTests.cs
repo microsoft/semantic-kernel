@@ -337,13 +337,10 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new KernelFunctionMock
-        {
-            InvokeCoreDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
-            GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
-        };
+        static void method() => throw new ArgumentException("Error message");
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plan.AddSteps(mockFunction, mockFunction);
+        plan.AddSteps(function, function);
 
         // Act
         var cv = new ContextVariables(planInput);
@@ -363,13 +360,10 @@ public sealed class PlanTests
         var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new KernelFunctionMock
-        {
-            InvokeCoreDelegate = (_, _, _, _) => throw new ArgumentException("Error message"),
-            GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
-        };
+        static void method() => throw new ArgumentException("Error message");
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plan.AddSteps(new Plan(mockFunction), new Plan(mockFunction));
+        plan.AddSteps(new Plan(function), new Plan(function));
 
         // Act
         var cv = new ContextVariables(planInput);
@@ -433,7 +427,9 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal, new KernelFunctionMock(), new KernelFunctionMock());
+        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var plan = new Plan(goal, function1, function2);
 
         // Assert
         Assert.NotNull(plan);

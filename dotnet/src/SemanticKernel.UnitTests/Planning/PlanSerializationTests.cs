@@ -40,7 +40,9 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var expectedSteps = "\"steps\":[{";
-        var plan = new Plan(goal, new KernelFunctionMock(), new KernelFunctionMock());
+        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var plan = new Plan(goal, function1, function2);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -272,35 +274,20 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
+        var contextVariables = new ContextVariables(planInput);
+        contextVariables.Set("variables", "foo");
 
-        // Arrange
-        var returnContext = new SKContext(new ContextVariables(stepOutput)
-        );
-
-        var mockFunction = new KernelFunctionMock("functionName");
-        mockFunction.InvokeCoreDelegate = (k, c, s, ct) =>
+        static string method(SKContext context)
         {
-            c.Variables.TryGetValue("variables", out string? v);
-            returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            return Task.FromResult(new FunctionResult("functionName", returnContext));
+            context.Variables.TryGetValue("variables", out string? v);
+            return context.Variables.Input + v;
         };
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        mockFunction.GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
-        {
-            PluginName = "pluginName",
-            Parameters = new SKParameterMetadata[]
-            {
-                new("variables")
-            }
-        };
+        plan.AddSteps(function, function);
 
-        plan.AddSteps(mockFunction, mockFunction);
-
-        var cv = new ContextVariables(planInput);
-        cv.Set("variables", "foo");
-        plan = await this._kernel.StepAsync(cv, plan);
+        plan = await this._kernel.StepAsync(contextVariables, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -311,13 +298,13 @@ public sealed class PlanSerializationTests
         Assert.Contains("\"next_step_index\":1", serializedPlan1, StringComparison.OrdinalIgnoreCase);
 
         // Act
-        cv.Set("variables", "bar");
-        cv.Update(string.Empty);
-        plan = await this._kernel.StepAsync(cv, plan);
+        contextVariables.Set("variables", "bar");
+        contextVariables.Update(string.Empty);
+        plan = await this._kernel.StepAsync(contextVariables, plan);
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
+        Assert.Equal($"{planInput}foobar", plan.State.ToString());
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -335,34 +322,19 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
-
-        // Arrange
         var plugins = new SKPluginCollection();
 
-        var returnContext = new SKContext(new ContextVariables(stepOutput)
-        );
-
-        var mockFunction = new KernelFunctionMock("functionName");
-        mockFunction.InvokeCoreDelegate = (k, c, s, ct) =>
+        static string method(SKContext context)
         {
-            c.Variables.TryGetValue("variables", out string? v);
-            returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            return Task.FromResult(new FunctionResult("functionName", returnContext));
+            context.Variables.TryGetValue("variables", out string? v);
+            return context.Variables.Input + v;
         };
-        mockFunction.GetMetadataDelegate = () => new SKFunctionMetadata("functionName")
-        {
-            PluginName = "pluginName",
-            Parameters = new SKParameterMetadata[]
-            {
-                new("variables")
-            }
-        };
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plugins.Add(new SKPlugin("pluginName", new[] { mockFunction }));
+        plugins.Add(new SKPlugin("pluginName", new[] { function }));
 
-        plan.AddSteps(mockFunction, mockFunction);
+        plan.AddSteps(function, function);
 
         var serializedPlan = plan.ToJson();
 
@@ -390,7 +362,7 @@ public sealed class PlanSerializationTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
+        Assert.Equal($"{planInput}foobar", plan.State.ToString());
 
         // Act
         var serializedPlan2 = plan.ToJson();

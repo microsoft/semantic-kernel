@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
@@ -18,9 +17,9 @@ public sealed class SKFunctionExtensionTests
     [Fact]
     public static void GetTwoPartName()
     {
-        var mockFunction = new KernelFunctionMock(ToolName);
+        var function = SKFunctionFactory.CreateFromMethod(() => true, ToolName);
 
-        string qualifiedName = mockFunction.GetQualifiedName(PluginName);
+        string qualifiedName = function.GetQualifiedName(PluginName);
 
         Assert.Equal($"{PluginName}-{ToolName}", qualifiedName);
     }
@@ -35,19 +34,9 @@ public sealed class SKFunctionExtensionTests
         var requiredParam = new SKParameterMetadata("required") { IsRequired = true };
         var optionalParam = new SKParameterMetadata("optional");
         var parameters = new List<SKParameterMetadata> { requiredParam, optionalParam };
-        var functionView = new SKFunctionMetadata(ToolName)
-        {
-            PluginName = PluginName,
-            Description = FunctionDescription,
-            Parameters = parameters
-        };
+        var function = SKFunctionFactory.CreateFromMethod(() => true, ToolName, FunctionDescription, parameters);
 
-        var mockFunction = new KernelFunctionMock(ToolName, FunctionDescription)
-        {
-            GetMetadataDelegate = () => functionView,
-        };
-
-        var toolModel = mockFunction.ToToolModel(PluginName);
+        var toolModel = function.ToToolModel(PluginName);
         var properties = toolModel.Function?.Parameters.Properties;
         var required = toolModel.Function?.Parameters.Required;
 
