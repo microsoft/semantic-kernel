@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Semantic Kernel callable function abstract base class.
+/// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
 public abstract class KernelFunction
 {
