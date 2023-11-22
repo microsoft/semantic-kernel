@@ -22,5 +22,5 @@ public interface IAIServiceSelector
     /// <param name="context">Semantic Kernel context</param>
     /// <param name="skfunction">Semantic Kernel callable function interface</param>
     /// <returns></returns>
-    (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, KernelFunction skfunction) where T : IAIService;
 }

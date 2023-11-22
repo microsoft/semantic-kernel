@@ -162,7 +162,7 @@ public class SemanticFunctionTests
         {
             invoked++;
         };
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);
@@ -303,7 +303,7 @@ public class SemanticFunctionTests
             invoked++;
         };
 
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);

@@ -26,7 +26,7 @@ internal sealed class ReActEngine
     /// <summary>
     /// Re-Act function for flow execution
     /// </summary>
-    private readonly ISKFunction _reActFunction;
+    private readonly KernelFunction _reActFunction;
 
     /// <summary>
     /// The flow planner config
@@ -232,7 +232,7 @@ internal sealed class ReActEngine
         return actionContext;
     }
 
-    private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);

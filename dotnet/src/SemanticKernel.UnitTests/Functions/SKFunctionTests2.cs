@@ -898,7 +898,7 @@ public sealed class SKFunctionTests2
     {
         // Arrange
         var context = new SKContext(new ContextVariables(string.Empty));
-        ISKFunction func = SKFunctionFactory.CreateFromMethod((double input) => input * 2, functionName: "Test");
+        KernelFunction func = SKFunctionFactory.CreateFromMethod((double input) => input * 2, functionName: "Test");
         FunctionResult result;
 
         // Act/Assert
@@ -1068,7 +1068,7 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = new SKContext(new ContextVariables(string.Empty));
         Exception expected = new FormatException("expected");
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { throw expected; });
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { throw expected; });
 
         // Act
         Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, context));

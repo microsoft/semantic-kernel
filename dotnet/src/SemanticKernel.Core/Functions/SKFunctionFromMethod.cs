@@ -27,24 +27,24 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides factory methods for creating <see cref="ISKFunction"/> instances backed by a .NET method.
+/// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromMethod : ISKFunction
+internal sealed class SKFunctionFromMethod : KernelFunction
 {
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction Create(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction Create(
         MethodInfo method,
         object? target = null,
         string? functionName = null,
@@ -79,16 +79,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     }
 
     /// <inheritdoc/>
-    public string Name { get; }
-
-    /// <inheritdoc/>
-    public string Description { get; }
-
-    /// <inheritdoc/>
-    IEnumerable<AIRequestSettings> ISKFunction.ModelSettings => Enumerable.Empty<AIRequestSettings>();
-
-    /// <inheritdoc/>
-    public SKFunctionMetadata GetMetadata() =>
+    public override SKFunctionMetadata GetMetadataCore() =>
         this._view ??=
         new SKFunctionMetadata(this.Name)
         {
@@ -98,7 +89,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         };
 
     /// <inheritdoc/>
-    async Task<FunctionResult> ISKFunction.InvokeAsync(
+    protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings,
@@ -209,7 +200,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         string description,
         IReadOnlyList<SKParameterMetadata> parameters,
         SKReturnParameterMetadata returnParameter,
-        ILogger logger)
+        ILogger logger) : base(functionName, description)
     {
         Verify.ValidFunctionName(functionName);
 

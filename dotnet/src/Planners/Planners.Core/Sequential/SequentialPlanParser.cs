@@ -50,7 +50,7 @@ internal static class SequentialPlanParser
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getFunctionCallback, bool allowMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, KernelFunction?> getFunctionCallback, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
