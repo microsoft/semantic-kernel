@@ -78,7 +78,7 @@ internal sealed class SKFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetMetadata() =>
+    public override SKFunctionMetadata GetCoreMetadata() =>
         this._view ??=
         new SKFunctionMetadata(this.Name)
         {

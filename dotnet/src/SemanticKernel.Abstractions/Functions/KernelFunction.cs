@@ -37,9 +37,9 @@ public abstract class KernelFunction
     public string Description { get; protected set; }
 
     /// <summary>
-    /// Model request settings.
+    /// Gets the model request settings.
     /// </summary>
-    public IEnumerable<AIRequestSettings> ModelSettings { get; protected set; }
+    internal IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -72,12 +72,6 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    public abstract SKFunctionMetadata GetMetadata();
-
-    /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
@@ -85,12 +79,24 @@ public abstract class KernelFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected async virtual Task<FunctionResult> InvokeCoreAsync(
+    protected abstract Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the metadata describing the function.
+    /// </summary>
+    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
+    public SKFunctionMetadata GetMetadata()
     {
-        return await Task.FromResult(new FunctionResult(this.Name, context)).ConfigureAwait(false);
+        return this.GetCoreMetadata();
     }
+
+    /// <summary>
+    /// Gets the metadata describing the function.
+    /// </summary>
+    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
+    public abstract SKFunctionMetadata GetCoreMetadata();
 }

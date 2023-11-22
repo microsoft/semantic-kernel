@@ -232,7 +232,7 @@ public sealed class Plan : KernelFunction
     #region ISKFunction implementation
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetMetadata()
+    public override SKFunctionMetadata GetCoreMetadata()
     {
         if (this.Function is not null)
         {
