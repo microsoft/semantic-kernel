@@ -38,5 +38,7 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     /// <param name="function"><see cref="KernelFunction"/></param>
     /// <param name="service">Instance of <see cref="IAIService"/></param>
     /// <returns></returns>
+#pragma warning disable CA1716 // Identifiers should not match keywords
     protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, KernelFunction function, T service) where T : IAIService;
+#pragma warning restore CA1716
 }
