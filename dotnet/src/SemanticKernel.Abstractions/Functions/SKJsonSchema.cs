@@ -3,6 +3,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -12,8 +13,6 @@ namespace Microsoft.SemanticKernel;
 [JsonConverter(typeof(SKJsonSchema.JsonConverter))]
 public sealed class SKJsonSchema
 {
-    /// <summary><see cref="JsonSerializerOptions"/> to write human-readable JSON.</summary>
-    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
     /// <summary>The schema stored as a string.</summary>
     private string? _schemaAsString;
 
@@ -44,7 +43,7 @@ public sealed class SKJsonSchema
     public JsonElement RootElement { get; }
 
     /// <summary>Gets the JSON Schema as a string.</summary>
-    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, s_writeIndentedOptions);
+    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonOptionsCache.WriteIndented);
 
     /// <summary>Converter for reading/writing the schema.</summary>
     public sealed class JsonConverter : JsonConverter<SKJsonSchema>
