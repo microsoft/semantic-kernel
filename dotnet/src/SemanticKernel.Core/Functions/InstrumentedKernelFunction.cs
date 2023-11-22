@@ -48,8 +48,8 @@ internal sealed class InstrumentedKernelFunction : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetCoreMetadata() =>
-        this._function.GetCoreMetadata();
+    public override SKFunctionMetadata GetMetadataCore() =>
+        this._function.GetMetadataCore();
 
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)

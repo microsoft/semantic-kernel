@@ -123,7 +123,7 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
     public IReadOnlyList<SKParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetCoreMetadata() =>
+    public override SKFunctionMetadata GetMetadataCore() =>
         this._view ??=
         new SKFunctionMetadata(this.Name)
         {

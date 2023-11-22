@@ -91,12 +91,12 @@ public abstract class KernelFunction
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
     public SKFunctionMetadata GetMetadata()
     {
-        return this.GetCoreMetadata();
+        return this.GetMetadataCore();
     }
 
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    public abstract SKFunctionMetadata GetCoreMetadata();
+    public abstract SKFunctionMetadata GetMetadataCore();
 }
