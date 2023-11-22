@@ -85,20 +85,21 @@ Cons:
 
 ## Decision Outcome
 
-We decided to go with a combination of options 2 and 3: providing special helpers to invoke any function in the kernel, and custom system helpers to enable special utility logic or behavior. We believe that this approach provides the best balance between simplicity, expressiveness, flexibility, and functionality for the template engine and the users, as users can choose to extend or omit certain helpers to best suits their needs and preferences.
+We decided to go with a combination of options 2 and 3: providing special helpers to invoke any function in the kernel, and custom system helpers to enable special utility logic or behavior. We believe that this approach provides the best balance between simplicity, expressiveness, flexibility, and functionality for the template engine and the users.
 
 We also decided to follow some guidelines and best practices for designing and implementing the helpers, such as:
 
 - Documenting the purpose, syntax, parameters, and behavior of each helper, and providing examples and tests for them.
 - Naming the helpers in a clear and consistent way, and avoiding conflicts or confusion with the built-in Handlebars helpers or the kernel functions or variables.
-- Using the delimiter "`-`" for helpers registered to handle the kernel functions, to distinguish them from each other and from the system or built-in Handlebars helpers.
-- Supporting both positional and named arguments, as well as hash arguments, for passing parameters to the helpers, and validating the arguments for the required type and count.
+  - Using standalone function names for custom system helpers (i.e., json, set)
+  - Using the delimiter "`-`" for helpers registered to handle the kernel functions, to distinguish them from each other and from our system or built-in Handlebars helpers.
+- Supporting both positional and hash arguments, for passing parameters to the helpers, and validating the arguments for the required type and count.
 - Handling the output types, formats, and errors of the helpers, including complex types or JSON schemas.
 - Implementing the helpers in a performant and secure way, and avoiding any side effects or unwanted modifications to the template context or data.
 
 Effectively, there will be four buckets of helpers enabled in the Handlebars Template Engine:
 
-- Default helpers from the Handlebars library to enable loops and conditions (#if, #each, #with, #unless)
-- Functions in the kernel
-- Helpers helpful to prompt engineers (i.e., message, or)
-- Utility helpers that can be used to perform simple logic or transformations on the template data or arguments (i.e., set, get, json, concat, equals, range, array)
+1. Default helpers from the Handlebars library to enable loops and conditions (#if, #each, #with, #unless)
+2. Functions in the kernel
+3. Helpers helpful to prompt engineers (i.e., message, or)
+4. Utility helpers that can be used to perform simple logic or transformations on the template data or arguments (i.e., set, get, json, concat, equals, range, array)
