@@ -1,12 +1,14 @@
-﻿using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Ollama.TextCompletion;
 
-internal class OllamaTextResponse : ITextResult
+internal sealed class OllamaTextResponse : ITextResult
 {
     public ModelResult ModelResult { get; }
 
@@ -21,7 +23,7 @@ internal class OllamaTextResponse : ITextResult
     }
 }
 
-internal class OllamaTextStreamingResponse : ITextStreamingResult
+internal sealed class OllamaTextStreamingResponse : ITextStreamingResult
 {
     public ModelResult ModelResult { get; }
 
