@@ -100,12 +100,12 @@ public static class Example61_MultipleLLMs
         }
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
 
-        var skfunction = kernel.CreateFunctionFromPrompt(
+        var function = kernel.CreateFunctionFromPrompt(
             prompt,
             promptTemplateConfig,
             "HelloAI");
 
-        var result = await kernel.RunAsync(skfunction);
+        var result = await kernel.RunAsync(function);
         Console.WriteLine(result.GetValue<string>());
     }
 }

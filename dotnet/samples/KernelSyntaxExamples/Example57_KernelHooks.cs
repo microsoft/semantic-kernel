@@ -65,19 +65,19 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -112,7 +112,7 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
 
             if (e.TryGetRenderedPrompt(out var prompt))
             {
@@ -127,7 +127,7 @@ public static class Example57_KernelHooks
 
         void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Triggered");
             // Will be false for non semantic functions
             if (e.TryGetRenderedPrompt(out var prompt))
             {
@@ -200,7 +200,7 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -269,19 +269,19 @@ public static class Example57_KernelHooks
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            if (e.FunctionView.Name == "SkipMe")
+            if (e.FunctionMetadata.Name == "SkipMe")
             {
                 e.Skip();
-                Console.WriteLine($"Function {e.FunctionView.Name} will be skipped");
+                Console.WriteLine($"Function {e.FunctionMetadata.Name} will be skipped");
                 return;
             }
 
-            Console.WriteLine($"Function {e.FunctionView.Name} will not be skipped");
+            Console.WriteLine($"Function {e.FunctionMetadata.Name} will not be skipped");
         };
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
+            Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionMetadata.Name}");
         };
 
         var result = await kernel.RunAsync(
@@ -310,7 +310,7 @@ public static class Example57_KernelHooks
         var repeatTimes = 0;
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            Console.WriteLine($"\nFunction {e.FunctionView.Name} executed:");
+            Console.WriteLine($"\nFunction {e.FunctionMetadata.Name} executed:");
             Console.WriteLine($"Result: {e.SKContext.Variables.Input}");
 
             if (repeatTimes < 3)

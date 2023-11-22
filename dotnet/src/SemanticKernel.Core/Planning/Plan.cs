@@ -125,7 +125,6 @@ public sealed class Plan : KernelFunction
         IList<string> outputs,
         IReadOnlyList<Plan> steps) : base(name, description)
     {
-        this.Name = name;
         this.PluginName = pluginName;
         this.Description = description;
         this.NextStepIndex = nextStepIndex;
@@ -231,7 +230,7 @@ public sealed class Plan : KernelFunction
     #region ISKFunction implementation
 
     /// <inheritdoc/>
-    public override SKFunctionMetadata GetMetadataCore()
+    protected override SKFunctionMetadata GetMetadataCore()
     {
         if (this.Function is not null)
         {
@@ -288,7 +287,6 @@ public sealed class Plan : KernelFunction
 
             // Execute the step
             result = await this.Function
-                .WithInstrumentation(kernel.LoggerFactory)
                 .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
@@ -296,7 +294,7 @@ public sealed class Plan : KernelFunction
         else
         {
             this.CallFunctionInvoking(context);
-            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 return new FunctionResult(this.Name, context);
             }
@@ -326,7 +324,7 @@ public sealed class Plan : KernelFunction
             }
 
             this.CallFunctionInvoked(result, context);
-            if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
                 return new FunctionResult(this.Name, context, result.Value);
             }

@@ -132,7 +132,7 @@ public sealed class SKPlugin : ISKPlugin
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static ISKPlugin FromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
         FromObject(new T(), pluginName, loggerFactory);
@@ -144,7 +144,7 @@ public sealed class SKPlugin : ISKPlugin
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// Attributed methods must all have different names. Overloads are not supported.
     /// </remarks>
     public static ISKPlugin FromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)

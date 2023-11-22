@@ -216,7 +216,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "func1")
+            if (e.FunctionMetadata.Name == "func1")
             {
                 e.Skip();
             }
@@ -224,7 +224,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 
@@ -389,7 +389,7 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            if (args.FunctionView.Name == retryFunction && repeatCount < numberOfRepeats)
+            if (args.FunctionMetadata.Name == retryFunction && repeatCount < numberOfRepeats)
             {
                 args.Repeat();
                 repeatCount++;
@@ -425,7 +425,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            if (args.FunctionView.Name == skipFunction)
+            if (args.FunctionMetadata.Name == skipFunction)
             {
                 args.Skip();
             }
@@ -468,7 +468,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
             {
                 args.Cancel();
             }
@@ -522,7 +522,7 @@ public class KernelTests
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
             numberOfInvocations++;
-            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
             {
                 args.Cancel();
             }
