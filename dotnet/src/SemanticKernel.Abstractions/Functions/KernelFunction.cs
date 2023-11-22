@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -17,6 +21,18 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction
 {
+    /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
+    private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
+
+    /// <summary><see cref="Meter"/> for function-related metrics.</summary>
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+
+    /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
+    private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
+        name: "sk.function.duration",
+        unit: "s",
+        description: "Measures the duration of a function’s execution");
+
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -68,7 +84,42 @@ public abstract class KernelFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+
+        logger.LogInformation("Function invoking.");
+
+        TagList tags = new() { { "sk.function.name", this.Name } };
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>()); // Sensitive data, logging as trace, disabled by default
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            tags.Add("error.type", ex.GetType().FullName);
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
+            }
+            throw;
+        }
+        finally
+        {
+            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+            s_invocationDuration.Record(duration.TotalSeconds, in tags);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Function completed. Duration: {Duration}ms", duration.TotalMilliseconds);
+            }
+        }
     }
 
     /// <summary>
@@ -98,5 +149,5 @@ public abstract class KernelFunction
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    public abstract SKFunctionMetadata GetMetadataCore();
+    protected abstract SKFunctionMetadata GetMetadataCore();
 }

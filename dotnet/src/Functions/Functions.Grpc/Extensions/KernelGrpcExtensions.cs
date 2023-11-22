@@ -197,7 +197,7 @@ public static class KernelGrpcExtensions
     /// <param name="runner">gRPC operation runner.</param>
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
+    /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     private static KernelFunction CreateGrpcFunction(
         GrpcOperationRunner runner,
         GrpcOperation operation,
