@@ -198,7 +198,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("Foo Bar", result);
     }
 
-    // TODO [@teresaqhoang]: Add this back in when parameter view types are better supported. Currently, parameter type is null when it shouold be string.
+    // TODO [@teresaqhoang]: Add this back in when parameter metadata types are better supported. Currently, parameter type is null when it should be string.
     // [Fact]
     // public void ShouldRenderTemplateWithFunctionHelpersWithPositionalArguments()
     // {
