@@ -123,20 +123,20 @@ public static class ISKPluginExtensions
 
     /// <summary>Gets a collection of <see cref="SKFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
-    /// <returns>A list of views over every function in the plugins collection</returns>
+    /// <returns>A list of metadata over every function in the plugins collection</returns>
     public static IList<SKFunctionMetadata> GetFunctionsMetadata(this IEnumerable<ISKPlugin> plugins)
     {
         Verify.NotNull(plugins);
 
-        List<SKFunctionMetadata> views = new();
+        List<SKFunctionMetadata> metadata = new();
         foreach (ISKPlugin plugin in plugins)
         {
             foreach (KernelFunction function in plugin)
             {
-                views.Add(new SKFunctionMetadata(function.GetMetadata()) { PluginName = plugin.Name });
+                metadata.Add(new SKFunctionMetadata(function.GetMetadata()) { PluginName = plugin.Name });
             }
         }
 
-        return views;
+        return metadata;
     }
 }

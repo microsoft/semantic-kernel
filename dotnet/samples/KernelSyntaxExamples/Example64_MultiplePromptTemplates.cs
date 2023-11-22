@@ -55,7 +55,7 @@ public static class Example64_MultiplePromptTemplates
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
-        var skfunction = kernel.CreateFunctionFromPrompt(
+        var function = kernel.CreateFunctionFromPrompt(
             promptTemplate: prompt,
             functionName: "MyFunction",
             promptTemplateConfig: new PromptTemplateConfig()
@@ -70,7 +70,7 @@ public static class Example64_MultiplePromptTemplates
             { "name", "Bob" }
         };
 
-        var result = await kernel.RunAsync(skfunction, variables);
+        var result = await kernel.RunAsync(function, variables);
         Console.WriteLine(result.GetValue<string>());
     }
 }

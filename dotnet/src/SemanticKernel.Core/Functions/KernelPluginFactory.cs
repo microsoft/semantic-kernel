@@ -19,7 +19,8 @@ public static class KernelPluginFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods decorated with <see cref="SKFunctionAttribute"/> will be included in the plugin.
+    /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static ISKPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
         CreateFromObject(new T(), pluginName, loggerFactory);
@@ -31,8 +32,8 @@ public static class KernelPluginFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
-    /// Attributed methods must all have different names. Overloads are not supported.
+    /// Public methods decorated with <see cref="SKFunctionAttribute"/> will be included in the plugin.
+    /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static ISKPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
