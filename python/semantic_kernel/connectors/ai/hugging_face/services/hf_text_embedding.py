@@ -35,14 +35,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             model_id=model_id,
             log=log,
-            device=(
-                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-            ),
+            device=resolved_device,
             generator=sentence_transformers.SentenceTransformer(
-                model_name_or_path=self.model_id, device=self.device
+                model_name_or_path=model_id, device=resolved_device
             ),
         )
 
