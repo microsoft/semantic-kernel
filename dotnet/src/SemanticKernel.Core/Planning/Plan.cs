@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -161,12 +162,10 @@ public sealed class Plan : KernelFunction
     /// </summary>
     /// <param name="indented">Whether to emit indented JSON</param>
     /// <returns>Plan serialized using JSON format</returns>
-    public string ToJson(bool indented = false)
-    {
-        return indented ?
-            JsonSerializer.Serialize(this, s_writeIndentedOptions) :
+    public string ToJson(bool indented = false) =>
+        indented ?
+            JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) :
             JsonSerializer.Serialize(this);
-    }
 
     /// <summary>
     /// Adds one or more existing plans to the end of the current plan as steps.
@@ -672,8 +671,6 @@ public sealed class Plan : KernelFunction
 
     /// <summary>Deserialization options for including fields.</summary>
     private static readonly JsonSerializerOptions s_includeFieldsOptions = new() { IncludeFields = true };
-    /// <summary>Serialization options for writing indented.</summary>
-    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
 
     private KernelFunction? Function { get; set; }
 

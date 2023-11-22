@@ -232,11 +232,6 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
-    {
-        Converters = { new ReadOnlyMemoryConverter() }
-    };
-
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
         return
@@ -307,10 +302,10 @@ public class ChromaMemoryStore : IMemoryStore
 
     private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], s_jsonSerializerOptions) : string.Empty;
+        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], JsonOptionsCache.Default) : string.Empty;
 
         return
-            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, ChromaMemoryStore.s_jsonSerializerOptions) ??
+            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, JsonOptionsCache.Default) ??
             throw new SKException("Unable to deserialize memory record metadata.");
     }
 

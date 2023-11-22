@@ -17,12 +17,10 @@ public class OpenAIRequestSettingsConverterTests
     public void ItDeserialisesOpenAIRequestSettingsWithCorrectDefaults()
     {
         // Arrange
-        JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = "{}";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -41,8 +39,6 @@ public class OpenAIRequestSettingsConverterTests
     public void ItDeserialisesOpenAIRequestSettingsWithSnakeCaseNaming()
     {
         // Arrange
-        JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = @"{
   ""temperature"": 0.7,
   ""top_p"": 0.7,
@@ -56,7 +52,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -75,8 +71,6 @@ public class OpenAIRequestSettingsConverterTests
     public void ItDeserialisesOpenAIRequestSettingsWithPascalCaseNaming()
     {
         // Arrange
-        JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = @"{
   ""Temperature"": 0.7,
   ""TopP"": 0.7,
@@ -90,7 +84,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);
