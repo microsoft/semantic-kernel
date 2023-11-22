@@ -210,9 +210,6 @@ internal sealed class SKFunctionFromMethod : KernelFunction
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
         this._returnParameter = returnParameter;
-
-        this.Name = functionName;
-        this.Description = description;
     }
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)

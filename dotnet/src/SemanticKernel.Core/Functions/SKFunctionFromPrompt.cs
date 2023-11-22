@@ -200,8 +200,6 @@ internal sealed class SKFunctionFromPrompt : KernelFunction
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(this.Parameters);
-
-        this.Name = functionName;
     }
 
     #region private
