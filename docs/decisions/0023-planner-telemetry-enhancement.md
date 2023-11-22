@@ -1,7 +1,7 @@
 ---
 status: { proposed }
 contact: { TaoChenOSU }
-date: { 2023-11-18 }
+date: { 2023-11-21 }
 deciders: alliscode, dmytrostruk, markwallace, SergeyMenshykh, stephentoub
 consulted: {}
 informed: {}
@@ -30,13 +30,17 @@ Contoso is a company that is developing an AI application using SK.
 
 ## Out of scope
 
-1. We focus on Application Insights. Although other telemetry service options are supported technically, we will not cover possible ways of setting them up in this ADR.
+1. We provide an example on how to send telemetry to Application Insights. Although other telemetry service options are supported technically, we will not cover possible ways of setting them up in this ADR.
 2. This ADR does not seek to modify the current instrumentation design in SK.
 
 ## Decision Drivers
 
 - The framework should be telemetry service agnostic.
 - Enabling and disabling specific telemetry items should require minimum effort.
+
+## Difficulties
+
+- SK currently produces metrics for token usage. However, they are not categorized. Thus, there is no way for developers to know the toke usage used by different operations.
 
 ## Considered Options
 
@@ -48,9 +52,11 @@ Contoso is a company that is developing an AI application using SK.
     - Use tags in activities to record custom information.
     - Use baggage in activities to more easily correlate dependencies.
     - Use metrics to continuously monitor performance.
+    - Use tags in metrics to categorize metrics.
   - Logging & Metrics
     - Use logging to record custom information for individual operations.
     - Use metrics to continuously monitor performance.
+    - Use tags in metrics to categorize metrics.
 
 ## Decision Outcome
 
@@ -70,7 +76,7 @@ For more information, please refer to the following ADRs:
 1. [Kernel Hooks Phase 1](./0005-kernel-hooks-phase1.md)
 2. [Kernel Hooks Phase 2](./0018-kernel-hooks-phase2.md)
 
-This approach will automatically inject default callbacks that sends telemetry data to Application Insights to all functions when the feature is turned on.
+This approach will automatically inject default callbacks that sends telemetry data to a telemetry service for all functions when the feature is turned on.
 
 Pros:
 
@@ -82,6 +88,8 @@ Cons:
 2. Does not provide the full trace detail.
 3. Difficult to create a telemetry service agnostic solution.
 
+> Note: With distributed tracing and function hook already set up in SK, it's up to the developers to log additional information as telemetry, provided that the information is available in the hooks.
+
 ### Distributed tracing
 
 Distributed tracing is a diagnostic technique that can localize failures and performance bottlenecks within distributed applications. .Net has native support to add distributed tracing in your libraries and .Net libraries are also instrumented to produce distributed tracing information automatically.
@@ -91,6 +99,7 @@ For more information, please refer to this document: [.Net distributed tracing](
 Overall pros:
 
 1. Native .Net support and the kernel has set this up.
+2. Telemetry service agnostic.
 
 Overall cons:
 
@@ -142,44 +151,30 @@ if (activity?.GetBaggageItem("Operation") is not null)
 }
 ```
 
-In an application that uses SK and Application Insights:
+In an application that uses SK and sends telemetry to Application Insights:
 
 ```csharp
-var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
+using var traceProvider = Sdk.CreateTracerProviderBuilder()
+  .AddSource("Microsoft.SemanticKernel.*")
+  .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
+  .Build();
 
-// For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
-void activityStarted(Activity activity)
+using var meterProvider = Sdk.CreateMeterProviderBuilder()
+  .AddMeter("Microsoft.SemanticKernel.*")
+  .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
+  .Build();
+
+using var loggerFactory = LoggerFactory.Create(builder =>
 {
-  var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
-  operation.Telemetry.Type = activity.Kind.ToString();
-
-  operations.TryAdd(activity.SpanId.ToString(), operation);
-}
-
-// We also need to manually stop Application Insights operation when Activity entity is stopped.
-void activityStopped(Activity activity)
-{
-  if (operations.TryRemove(activity.SpanId.ToString(), out var operation))
+  // Add OpenTelemetry as a logging provider
+  builder.AddOpenTelemetry(options =>
   {
-    activity.Tags.ToList().ForEach(tag =>
-    {
-      // Add the tags to Application Insights telemetry operations as properties.
-      operation.Telemetry.Properties.Add(tag.Key, tag.Value);
-    });
-    telemetryClient.StopOperation(operation);
-  }
-}
-
-// Subscribe to all traces in Semantic Kernel
-activityListener.ShouldListenTo =
-  activitySource => activitySource.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordinal);
-
-activityListener.Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData;
-activityListener.SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData;
-activityListener.ActivityStarted = activityStarted;
-activityListener.ActivityStopped = activityStopped;
-
-ActivitySource.AddActivityListener(activityListener);
+    options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
+    // Format log messages. This is default to false.
+    options.IncludeFormattedMessage = true;
+  });
+  builder.SetMinimumLevel(MinLogLevel);
+});
 ```
 
 The above produces dependency information similar to the screenshot below:
@@ -188,16 +183,15 @@ The above produces dependency information similar to the screenshot below:
 
 <img src="./images/0022-dependency-in-application-insights-client-base.png" alt="Example model calling dependency generated in Application Insights" width="400"/>
 
-Cons:
-
-1. Easy to add custom data.
-2. Semi-structured data organized by tags (later saved as custom dimensions for Application Insights).
-3. Automatically correlated from parent to chid items. Baggage makes it even easier for querying.
-
 Pros:
 
+1. Easy to add custom data.
+2. Semi-structured data organized by tags.
+3. Automatically correlated from parent to chid items. Baggage makes it even easier for querying.
+
+Cons:
+
 1. Everything has to a string.
-2. Developers may have to creation a new container for each activity depending on the service used.
 
 #### Log
 
@@ -212,7 +206,6 @@ The above produces trace information similar to the screenshot below:
 Cons:
 
 1. More contexture information.
-2. Custom data is automatically organized in custom dimensions in Application Insights.
 
 Pros:
 
