@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -27,6 +28,7 @@ public sealed class HandlebarsPlanner
     public Stopwatch Stopwatch { get; } = new();
 
     private readonly Kernel _kernel;
+    private readonly ILogger _logger;
 
     private readonly HandlebarsPlannerConfig _config;
 
@@ -41,16 +43,27 @@ public sealed class HandlebarsPlanner
     {
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-    /// <summary>
-    /// Create a plan for a goal.
-    /// </summary>
-    /// <param name="goal">The goal to create a plan for.</param>
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The plan.</returns>
-    /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
-    public async Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="SKException">A plan could not be created.</exception>
+    public Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(goal);
+
+        return PlannerInstrumentation.CreatePlanAsync(
+            createPlanAsync: static (HandlebarsPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            planToString: static (HandlebarsPlan plan) => plan.ToString(),
+            this, goal, this._logger, cancellationToken);
+    }
+
+    private async Task<HandlebarsPlan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken = default)
     {
         var availableFunctions = this.GetAvailableFunctionsManual(cancellationToken);
         var handlebarsTemplate = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions);
