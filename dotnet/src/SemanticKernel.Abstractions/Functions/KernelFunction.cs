@@ -18,8 +18,13 @@ namespace Microsoft.SemanticKernel;
 public abstract class KernelFunction
 {
     /// <summary>
-    /// Name of the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
+    /// Gets the name of the function.
     /// </summary>
+    /// <remarks>
+    /// The name is used anywhere the function needs to be identified, such as in plans describing what functions
+    /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
+    /// handled in an ordinal case-insensitive manner.
+    /// </remarks>
     public string Name { get; protected set; }
 
     /// <summary>
