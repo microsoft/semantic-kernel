@@ -59,7 +59,7 @@ public static class SKFunctionFactory
         IEnumerable<SKParameterMetadata>? parameters = null,
         SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        SKFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
     #endregion
 
     #region FromPrompt
@@ -82,7 +82,7 @@ public static class SKFunctionFactory
         string? functionName = null,
         string? description = null,
         ILoggerFactory? loggerFactory = null) =>
-        SKFunctionFromPrompt.Create(promptTemplate, requestSettings, functionName, description, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, requestSettings, functionName, description, loggerFactory);
 
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
@@ -99,7 +99,7 @@ public static class SKFunctionFactory
         string? functionName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
@@ -114,7 +114,7 @@ public static class SKFunctionFactory
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
         ILoggerFactory? loggerFactory = null) =>
-        SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
 
     /// <summary>
     /// Create a semantic function instance, given a prompt function model.
@@ -136,7 +136,7 @@ public static class SKFunctionFactory
         var promptTemplateConfig = PromptTemplateConfig.ToPromptTemplateConfig(promptFunctionModel);
         var promptTemplate = factory.Create(promptFunctionModel.Template, promptTemplateConfig);
 
-        return SKFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, promptFunctionModel.Name, loggerFactory);
+        return KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, promptFunctionModel.Name, loggerFactory);
     }
     #endregion
 }

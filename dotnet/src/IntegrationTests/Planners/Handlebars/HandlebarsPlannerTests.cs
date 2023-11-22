@@ -55,7 +55,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [RetryTheory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin")]
+    [InlineData("Outline a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
