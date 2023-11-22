@@ -234,8 +234,11 @@ public class SKParameterMetadataExtensionsTests
         // Act
         var result = jsonProperties.ToJsonString();
 
+        // Ensure that the line endings are consistent across different dotnet versions
+        result = result.Replace("\r\n", "\n", StringComparison.InvariantCulture);
+
         // Assert
-        var expected = "{\r\n  \"name\": \"Alice\",\r\n  \"age\": 25\r\n}";
+        var expected = "{\n  \"name\": \"Alice\",\n  \"age\": 25\n}";
         Assert.Equal(expected, result);
     }
 
