@@ -23,8 +23,12 @@ public abstract class KernelFunction
     public string Name { get; protected set; }
 
     /// <summary>
-    /// Function description. The description is used in combination with embeddings when searching relevant functions.
+    /// Gets a description of the function.
     /// </summary>
+    /// <remarks>
+    /// The description may be supplied to a model in order to elaborate on the function's purpose,
+    /// in case it may be beneficial for the model to recommend invoking the function.
+    /// </remarks>
     public string Description { get; protected set; }
 
     /// <summary>
