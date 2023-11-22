@@ -70,7 +70,7 @@ public abstract class KernelFunction
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    abstract public SKFunctionMetadata GetMetadata();
+    public abstract SKFunctionMetadata GetMetadata();
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
