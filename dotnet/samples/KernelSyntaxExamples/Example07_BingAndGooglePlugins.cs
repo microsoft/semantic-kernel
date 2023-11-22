@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
@@ -153,7 +154,7 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
+            var information = await promptTemplate.RenderAsync(kernel, new ContextVariables());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);

@@ -160,10 +160,8 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -187,10 +185,8 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $myVar}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -220,10 +216,8 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -236,10 +230,9 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
-        var context = new SKContext(this._variables);
 
         // Act
-        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, context));
+        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, this._variables));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -268,10 +261,8 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -315,10 +306,8 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
@@ -345,10 +334,8 @@ public sealed class KernelPromptTemplateTests
 
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);

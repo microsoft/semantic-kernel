@@ -106,7 +106,7 @@ public class StepwisePlanner : IPlanner
             return context;
         }
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context, cancellationToken).ConfigureAwait(false);
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context.Variables, cancellationToken).ConfigureAwait(false);
 
         if (aiService is null)
         {
@@ -307,16 +307,16 @@ public class StepwisePlanner : IPlanner
 
     #region setup helpers
 
-    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, ContextVariables variables, CancellationToken cancellationToken)
     {
-        string userManual = await this.GetUserManualAsync(kernel, question, context, cancellationToken).ConfigureAwait(false);
-        string userQuestion = await this.GetUserQuestionAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+        string userManual = await this.GetUserManualAsync(kernel, question, variables, cancellationToken).ConfigureAwait(false);
+        string userQuestion = await this.GetUserQuestionAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
-        var systemContext = this._kernel.CreateNewContext();
+        var systemVariables = new ContextVariables();
 
-        systemContext.Variables.Set("suffix", this.Config.Suffix);
-        systemContext.Variables.Set("functionDescriptions", userManual);
-        string systemMessage = await this.GetSystemMessageAsync(kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        systemVariables.Set("suffix", this.Config.Suffix);
+        systemVariables.Set("functionDescriptions", userManual);
+        string systemMessage = await this.GetSystemMessageAsync(kernel, systemVariables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(userQuestion);
@@ -342,19 +342,19 @@ public class StepwisePlanner : IPlanner
         return chatHistory;
     }
 
-    private async Task<string> GetUserManualAsync(Kernel kernel, string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<string> GetUserManualAsync(Kernel kernel, string question, ContextVariables variables, CancellationToken cancellationToken)
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
-        context.Variables.Set("functionDescriptions", descriptions);
+        variables.Set("functionDescriptions", descriptions);
         var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
-        return await promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+        return await promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task<string> GetUserQuestionAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
+    private Task<string> GetUserQuestionAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
 
-    private Task<string> GetSystemMessageAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
+    private Task<string> GetSystemMessageAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
 
     #endregion setup helpers
 
