@@ -21,8 +21,8 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
     kernel.add_text_completion_service(
         "text_completion",
         sk_oai.AzureChatCompletion(
-            deployment_name=deployment_name, 
-            endpoint=endpoint, 
+            deployment_name=deployment_name,
+            endpoint=endpoint,
             api_key=api_key,
         ),
     )

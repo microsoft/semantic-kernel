@@ -29,8 +29,8 @@ async def test_azure_e2e_text_completion_with_skill(
     kernel.add_text_completion_service(
         "text_completion",
         sk_oai.AzureTextCompletion(
-            deployment_name=deployment_name, 
-            endpoint=endpoint, 
+            deployment_name=deployment_name,
+            endpoint=endpoint,
             api_key=api_key,
         ),
     )
@@ -72,8 +72,8 @@ async def test_oai_text_stream_completion_with_skills(
     kernel.add_text_completion_service(
         "text_completion",
         sk_oai.AzureTextCompletion(
-            deployment_name=deployment_name, 
-            endpoint=endpoint, 
+            deployment_name=deployment_name,
+            endpoint=endpoint,
             api_key=api_key,
         ),
     )

@@ -74,18 +74,22 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             if settings.number_of_responses > 1:
                 completions = [""] * settings.number_of_responses
                 for choice in partial.choices:
-                    if hasattr(choice, 'delta') and hasattr(choice.delta, 'content'):  # Chat completion
+                    if hasattr(choice, "delta") and hasattr(
+                        choice.delta, "content"
+                    ):  # Chat completion
                         completions[choice.index] = choice.delta.content
-                    elif hasattr(choice, 'text'):  # Text completion
+                    elif hasattr(choice, "text"):  # Text completion
                         completions[choice.index] = choice.text
                 if any(completions):
                     yield completions
             else:
-                if hasattr(partial.choices[0], 'delta') and hasattr(partial.choices[0].delta, 'content'):  # Chat completion
+                if hasattr(partial.choices[0], "delta") and hasattr(
+                    partial.choices[0].delta, "content"
+                ):  # Chat completion
                     content = partial.choices[0].delta.content
                     if content:
                         yield content
-                elif hasattr(partial.choices[0], 'text'):  # Text completion
+                elif hasattr(partial.choices[0], "text"):  # Text completion
                     text = partial.choices[0].text
                     if text.strip():  # Exclude empty or whitespace-only text
                         yield text

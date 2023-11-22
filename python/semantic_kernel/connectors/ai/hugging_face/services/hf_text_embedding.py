@@ -35,7 +35,9 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        resolved_device = (
+            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        )
         super().__init__(
             model_id=model_id,
             log=log,
