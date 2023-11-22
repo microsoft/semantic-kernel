@@ -255,7 +255,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Function execution parameters.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
+    /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
