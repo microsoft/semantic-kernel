@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -302,51 +301,31 @@ internal sealed class HandlebarsTemplateEngineExtensions
         });
     }
 
-    private static bool IsNumericType(string typeStr)
+    private static bool IsNumericType(Type? type) =>
+        type is not null &&
+        Type.GetTypeCode(type) is
+            TypeCode.SByte or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or
+            TypeCode.Byte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or
+            TypeCode.Double or TypeCode.Single or
+            TypeCode.Decimal;
+
+    private static bool TryParseAnyNumber(string? input) =>
+        // Check if input can be parsed as any of these numeric types.
+        // We only need to check the largest types, as if they fail, the smaller types will also fail.
+        long.TryParse(input, out _) ||
+        ulong.TryParse(input, out _) ||
+        double.TryParse(input, out _) ||
+        decimal.TryParse(input, out _);
+
+    private static double CastToNumber(object number)
     {
-        Type? type = string.IsNullOrEmpty(typeStr) ? Type.GetType(typeStr) : null;
-
-        if (type == null)
+        try
         {
-            return false;
+            return Convert.ToDouble(number, CultureInfo.CurrentCulture);
         }
-
-        return Type.GetTypeCode(type) switch
+        catch (FormatException)
         {
-            TypeCode.Byte or TypeCode.Decimal or TypeCode.Double or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.SByte or TypeCode.Single or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 => true,
-            _ => false,
-        };
-    }
-
-    private static bool TryParseAnyNumber(string input)
-    {
-        // Check if input can be parsed as any of these numeric types  
-        return int.TryParse(input, out _)
-            || double.TryParse(input, out _)
-            || float.TryParse(input, out _)
-            || long.TryParse(input, out _)
-            || decimal.TryParse(input, out _)
-            || short.TryParse(input, out _)
-            || byte.TryParse(input, out _)
-            || sbyte.TryParse(input, out _)
-            || ushort.TryParse(input, out _)
-            || uint.TryParse(input, out _)
-            || ulong.TryParse(input, out _);
-    }
-
-    private static double CastToNumber(object? number)
-    {
-        if (number is int numberInt)
-        {
-            return numberInt;
-        }
-        else if (number is decimal numberDecimal)
-        {
-            return (double)numberDecimal;
-        }
-        else
-        {
-            return double.Parse(number!.ToString()!, CultureInfo.InvariantCulture);
+            return Convert.ToDouble(number, CultureInfo.InvariantCulture);
         }
     }
 
@@ -358,19 +337,23 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// Handlebar argument type is an object (this covers complex types).
     /// Function parameter is a generic type.
     /// </summary>
-    /// <param name="functionMetadataType">Function parameter type</param>
-    /// <param name="handlebarArgumentType">Handlebar argument type</param>
-    /// <param name="handlebarArgValue">Handlebar argument value</param>
-    /// <returns></returns>
-    private static bool IsExpectedParameterType(string functionMetadataType, string handlebarArgumentType, object handlebarArgValue)
+    /// <param name="parameterType">Function parameter type</param>
+    /// <param name="argument">Handlebar argument </param>
+    private static bool IsExpectedParameterType(SKParameterMetadata parameterType, object argument)
     {
-        var isValidNumericType = IsNumericType(functionMetadataType) && IsNumericType(handlebarArgumentType);
-        if (IsNumericType(functionMetadataType) && !IsNumericType(handlebarArgumentType))
+        if (parameterType.ParameterType == argument.GetType() ||
+            argument.GetType() == typeof(object))
         {
-            isValidNumericType = TryParseAnyNumber(handlebarArgValue.ToString());
+            return true;
         }
 
-        return handlebarArgumentType == functionMetadataType || isValidNumericType || handlebarArgumentType == "object";
+        bool parameterIsNumeric =
+            (parameterType.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number") ||
+            IsNumericType(parameterType.ParameterType);
+
+        return
+            parameterIsNumeric &&
+            (IsNumericType(argument?.GetType()) || TryParseAnyNumber(argument?.ToString()));
     }
 
     /// <summary>
@@ -408,21 +391,21 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <exception cref="SKException">Thrown when a required parameter is missing.</exception>
     private static void ProcessPositionalArguments(SKFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
     {
-        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired == true).ToList();
+        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
         if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)
         {
             var argIndex = 0;
             foreach (var arg in handlebarArgs)
             {
                 var param = functionMetadata.Parameters[argIndex];
-                if (param.Type == null || arg.GetType() == typeof(object) || IsExpectedParameterType(param.Type.ToString(), arg.GetType().Name, arg))
+                if (IsExpectedParameterType(param, arg))
                 {
                     variables[param.Name] = handlebarArgs[argIndex];
                     argIndex++;
                 }
                 else
                 {
-                    throw new SKException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.Type} but received {handlebarArgs[argIndex].GetType()}.");
+                    throw new SKException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarArgs[argIndex].GetType()}.");
                 }
             }
         }
