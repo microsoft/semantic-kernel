@@ -8,9 +8,15 @@ from test_utils import retry
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
+def get_aoai_chat_api_versions():
+    api_versions = os.environ["AzureOpenAIChat__APIVersions"]
+    return api_versions.split(",")
+
+
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api_version", get_aoai_chat_api_versions())
 async def test_azure_e2e_chat_completion_with_skill(
-    setup_tldr_function_for_oai_models, get_aoai_config
+    setup_tldr_function_for_oai_models, get_aoai_config, api_version
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
@@ -28,7 +34,7 @@ async def test_azure_e2e_chat_completion_with_skill(
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key, api_version),
     )
 
     # Create the semantic function
@@ -48,8 +54,9 @@ async def test_azure_e2e_chat_completion_with_skill(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api_version", get_aoai_chat_api_versions())
 async def test_oai_chat_stream_service_with_skills(
-    setup_tldr_function_for_oai_models, get_aoai_config
+    setup_tldr_function_for_oai_models, get_aoai_config, api_version
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
@@ -67,7 +74,7 @@ async def test_oai_chat_stream_service_with_skills(
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key, api_version),
     )
 
     # Create the semantic function
