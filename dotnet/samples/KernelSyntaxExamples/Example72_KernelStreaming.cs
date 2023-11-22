@@ -25,7 +25,7 @@ public static class Example72_KernelStreaming
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
-    public static async Task RunAsync(CancellationToken cancellationToken)
+    public static async Task RunAsync()
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -46,28 +46,14 @@ public static class Example72_KernelStreaming
                 apiKey: apiKey)
             .Build();
 
-        // Function defined using few-shot design pattern
-        string promptTemplate = @"
-Generate a creative reason or excuse for the given event.
-Be creative and be funny. Let your imagination run wild.
-
-Event: I am running late.
-Excuse: I was being held ransom by giraffe gangsters.
-
-Event: I haven't been to the gym for a year
-Excuse: I've been too busy training my pet dragon.
-
-Event: {{$input}}
-";
-
-        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var funyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var roleDisplayed = false;
 
         Console.WriteLine("\n===  Semantic Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
-        await foreach (var update in kernel.RunStreamingAsync(excuseFunction, "I missed the F1 final race", cancellationToken))
+        await foreach (var update in kernel.RunStreamingAsync(funyParagraphFunction))
         {
             // You will be always able to know the type of the update by checking the Type property.
             if (update.Type == "openai_chat_message_update" && update is StreamingChatResultChunk chatUpdate)
@@ -87,68 +73,68 @@ Event: {{$input}}
 
         var plugin = kernel.ImportPluginFromObject(new MyNativePlugin(), "MyNativePlugin");
 
-        await NativeFunctionStreamingValueTypeAsync(kernel, plugin, cancellationToken);
+        await NativeFunctionStreamingValueTypeAsync(kernel, plugin);
 
-        await NativeFunctionStreamingComplexTypeAsync(kernel, plugin, cancellationToken);
+        await NativeFunctionStreamingComplexTypeAsync(kernel, plugin);
 
-        await NativeFunctionValueTypeAsync(kernel, plugin, cancellationToken);
+        await NativeFunctionValueTypeAsync(kernel, plugin);
 
-        await NativeFunctionComplexTypeAsync(kernel, plugin, cancellationToken);
+        await NativeFunctionComplexTypeAsync(kernel, plugin);
     }
 
-    private static async Task NativeFunctionStreamingValueTypeAsync(Kernel kernel, ISKPlugin plugin, CancellationToken cancellationToken)
+    private static async Task NativeFunctionStreamingValueTypeAsync(Kernel kernel, ISKPlugin plugin)
     {
         Console.WriteLine("\n\n=== Native Streaming Functions - Streaming (Value Type) ===\n");
 
         // Native string value type streaming function
-        await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeStreamingNativeFunction"], "My Value Type Streaming Function Input", cancellationToken))
+        await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeStreamingNativeFunction"], "My Value Type Streaming Function Input"))
         {
-            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate)
+            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate)
             {
                 Console.Write(nativeUpdate.Value);
             }
         }
     }
 
-    private static async Task NativeFunctionStreamingComplexTypeAsync(Kernel kernel, ISKPlugin plugin, CancellationToken cancellationToken)
+    private static async Task NativeFunctionStreamingComplexTypeAsync(Kernel kernel, ISKPlugin plugin)
     {
         Console.WriteLine("\n\n=== Native Streaming Functions - Streaming (Complex Type) ===\n");
 
         // Native complex type streaming function
-        await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeStreamingNativeFunction"], "My Complex Type Streaming Function Input", cancellationToken))
+        await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeStreamingNativeFunction"], "My Complex Type Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
+            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyStreamingBlock myComplexType)
             {
                 Console.WriteLine(Encoding.UTF8.GetString(myComplexType.Content));
             }
         }
     }
 
-    private static async Task NativeFunctionValueTypeAsync(Kernel kernel, ISKPlugin plugin, CancellationToken cancellationToken)
+    private static async Task NativeFunctionValueTypeAsync(Kernel kernel, ISKPlugin plugin)
     {
         Console.WriteLine("\n=== Native Non-Streaming Functions - Streaming (Value Type) ===\n");
 
         // Native functions that don't support streaming and return value types can be executed with the streaming API's but the behavior will not be streamlike.
-        await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeNativeFunction"], "My Value Type Non Streaming Function Input", cancellationToken))
+        await foreach (var update in kernel.RunStreamingAsync(plugin["MyValueTypeNativeFunction"], "My Value Type Non Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate)
+            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate)
             {
                 Console.WriteLine(nativeUpdate.Value);
             }
         }
     }
 
-    private static async Task NativeFunctionComplexTypeAsync(Kernel kernel, ISKPlugin plugin, CancellationToken cancellationToken)
+    private static async Task NativeFunctionComplexTypeAsync(Kernel kernel, ISKPlugin plugin)
     {
         Console.WriteLine("\n=== Native Non-Streaming Functions - Streaming (Complex Type) ===\n");
 
         // Native functions that don't support streaming and return complex types can be executed with the streaming API's but the behavior will not be streamlike.
-        await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeNativeFunction"], "My Complex Type Non Streaming Function Input", cancellationToken))
+        await foreach (var update in kernel.RunStreamingAsync(plugin["MyComplexTypeNativeFunction"], "My Complex Type Non Streaming Function Input"))
         {
             // the complex type will be available thru the Value property of the native update abstraction.
-            if (update.Type == "native_result_update" && update is StreamingNativeResultChunk nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
+            if (update.Type == "method_result_chunk" && update is StreamingMethodResultChunk nativeUpdate && nativeUpdate.Value is MyCustomType myComplexType)
             {
                 Console.WriteLine($"Text: {myComplexType.Text}, Number: {myComplexType.Number}");
             }

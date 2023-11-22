@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -66,24 +65,6 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     public IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetTextStreamingUpdatesAsync(input, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToString();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToByteArray();
-        }
     }
 
     /// <inheritdoc/>

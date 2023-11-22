@@ -137,24 +137,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToString();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update.ToByteArray();
-        }
-    }
-
-    /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingChunksAsync<T>(
         string input,
         AIRequestSettings? requestSettings = null,

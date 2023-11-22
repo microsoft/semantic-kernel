@@ -9,18 +9,18 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Native function streaming result update.
+/// Method function streaming result chunk.
 /// </summary>
-public sealed class StreamingNativeResultChunk : StreamingResultChunk
+public sealed class StreamingMethodResultChunk : StreamingResultChunk
 {
     /// <inheritdoc/>
-    public override string Type => "native_result_update";
+    public override string Type => "method_result_chunk";
 
     /// <inheritdoc/>
     public override int ChoiceIndex => 0;
 
     /// <summary>
-    /// Native object value that represents the update
+    /// Method object value that represents the chunk
     /// </summary>
     public object Value { get; }
 
@@ -43,10 +43,10 @@ public sealed class StreamingNativeResultChunk : StreamingResultChunk
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingNativeResultChunk"/> class.
+    /// Initializes a new instance of the <see cref="StreamingMethodResultChunk"/> class.
     /// </summary>
     /// <param name="innerResultChunk">Underlying object that represents the chunk</param>
-    public StreamingNativeResultChunk(object innerResultChunk) : base(innerResultChunk)
+    public StreamingMethodResultChunk(object innerResultChunk) : base(innerResultChunk)
     {
         this.Value = innerResultChunk;
     }
