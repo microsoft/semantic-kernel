@@ -12,17 +12,17 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Extension methods for <see cref="ChatHistory"/> class.
 /// </summary>
-internal static class ChatHistoryExtensions
+public static class ChatHistoryExtensions
 {
     /// <summary>
     /// Returns the number of tokens in the chat history.
     /// </summary>
-    // <param name="chatHistory">The chat history.</param>
-    // <param name="additionalMessage">An additional message to include in the token count.</param>
-    // <param name="skipStart">The index to start skipping messages.</param>
-    // <param name="skipCount">The number of messages to skip.</param>
-    // <param name="tokenCounter">The token counter to use.</param>
-    internal static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TextChunker.TokenCounter? tokenCounter = null)
+    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="additionalMessage">An additional message to include in the token count.</param>
+    /// <param name="skipStart">The index to start skipping messages.</param>
+    /// <param name="skipCount">The number of messages to skip.</param>
+    /// <param name="tokenCounter">The token counter to use.</param>
+    public static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TextChunker.TokenCounter? tokenCounter = null)
     {
         return tokenCounter is null ?
             Default(chatHistory, additionalMessage, skipStart, skipCount) :

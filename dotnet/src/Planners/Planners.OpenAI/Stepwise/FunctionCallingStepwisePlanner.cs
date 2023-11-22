@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -41,12 +42,15 @@ public sealed class FunctionCallingStepwisePlanner
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
 
-        // Set up Config with default values and excluded plugins
+        // Set up Config and prompt templates
         this.Config = config ?? new();
-        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
-
         this._initialPlanPrompt = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.InitialPlanPrompt.txt");
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
+
+        this._requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
+
+        // Set max tokens on request settings. Should be minimum of model settings max tokens and planner config max completion tokens
+        this._requestSettings.MaxTokens = Math.Min(this.Config.MaxCompletionTokens, this._requestSettings.MaxTokens ?? int.MaxValue);
 
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
@@ -69,7 +73,9 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* request settings */, cancellationToken).ConfigureAwait(false));
+        this._requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
+        this.ValidateTokenCount(chatHistoryForPlan);
+        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, this._requestSettings, cancellationToken).ConfigureAwait(false));
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -153,21 +159,17 @@ public sealed class FunctionCallingStepwisePlanner
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
-        var requestSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings, cancellationToken).ConfigureAwait(false))[0];
+        // Prepare request settings with functions
+        this._requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        this._requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+
+        this.ValidateTokenCount(chatHistory); // TODO: factor in request settings / functions
+        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, this._requestSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
         return await this._kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
-    }
-
-    private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
-    {
-        var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
-        return requestSettings;
     }
 
     private async Task<ChatHistory> BuildChatHistoryForInitialPlanAsync(
@@ -272,6 +274,15 @@ public sealed class FunctionCallingStepwisePlanner
         return resultStr;
     }
 
+    private void ValidateTokenCount(ChatHistory chatHistory)
+    {
+        var tokenCount = chatHistory.GetTokenCount();
+        if (tokenCount >= this.Config.MaxPromptTokens)
+        {
+            throw new SKException("ChatHistory is too long to get a completion. Try reducing the available functions.");
+        }
+    }
+
     /// <summary>
     /// The configuration for the StepwisePlanner
     /// </summary>
@@ -281,6 +292,7 @@ public sealed class FunctionCallingStepwisePlanner
     private readonly Kernel _kernel;
     private readonly IChatCompletion _chatCompletion;
     private readonly ILogger? _logger;
+    private readonly OpenAIRequestSettings _requestSettings;
 
     /// <summary>
     /// The prompt (system message) used to generate the initial set of steps to perform.
@@ -296,11 +308,6 @@ public sealed class FunctionCallingStepwisePlanner
     /// The prompt renderer to use for the system step
     /// </summary>
     private readonly KernelPromptTemplateFactory _promptTemplateFactory;
-
-    /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
-    /// </summary>
-    private const string RestrictedPluginName = "OpenAIFunctionsStepwisePlanner_Excluded";
 
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
