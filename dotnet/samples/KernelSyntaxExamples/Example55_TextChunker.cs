@@ -170,19 +170,12 @@ known as coral polyps.";
     };
 
     private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
-    {
-        switch (counterType)
+        counterType switch
         {
-            case TokenCounterType.SharpToken:
-                return (string input) => SharpTokenTokenCounter(input);
-            case TokenCounterType.MicrosoftML:
-                return (string input) => MicrosoftMLTokenCounter(input);
-            case TokenCounterType.DeepDev:
-                return (string input) => DeepDevTokenCounter(input);
-            case TokenCounterType.MicrosoftMLRoberta:
-                return (string input) => MicrosoftMLRobertaTokenCounter(input);
-            default:
-                throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null);
-        }
-    };
+            TokenCounterType.SharpToken => (string input) => SharpTokenTokenCounter(input),
+            TokenCounterType.MicrosoftML => (string input) => MicrosoftMLTokenCounter(input),
+            TokenCounterType.DeepDev => (string input) => DeepDevTokenCounter(input),
+            TokenCounterType.MicrosoftMLRoberta => (string input) => MicrosoftMLRobertaTokenCounter(input),
+            _ => throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null),
+        };
 }
