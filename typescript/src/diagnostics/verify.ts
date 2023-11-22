@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import fs from 'fs';
+import * as fs from 'fs';
 import { ParameterView } from '../registry';
 
 export class Verify {

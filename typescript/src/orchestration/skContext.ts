@@ -105,11 +105,11 @@ export class SKContext {
     public func(skillName: string, functionName: string): ISKFunction {
         Verify.notNull(this.registry, "The functions registry hasn't been set");
 
-        if (this.registry?.hasNativeFunction(skillName, functionName)) {
-            return this.registry?.getNativeFunction(skillName, functionName);
+        if (this.registry!.hasNativeFunction(skillName, functionName)) {
+            return this.registry!.getNativeFunction(skillName, functionName);
         }
 
-        return this.registry.getSemanticFunction(skillName, functionName);
+        return this.registry!.getSemanticFunction(skillName, functionName);
     }
 
     /**

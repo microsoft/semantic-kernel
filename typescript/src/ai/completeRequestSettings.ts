@@ -33,7 +33,7 @@ export class CompleteRequestSettings {
             presencePenalty: config.presence_penalty,
             frequencyPenalty: config.frequency_penalty,
             maxTokens: config.max_tokens,
-            stopSequences: config.stop_sequences,
+            stopSequences: config.stop_sequences || [],
         };
     }
 
@@ -43,6 +43,6 @@ export class CompleteRequestSettings {
         settings.presencePenalty = config.presence_penalty;
         settings.frequencyPenalty = config.frequency_penalty;
         settings.maxTokens = config.max_tokens;
-        settings.stopSequences = config.stop_sequences;
+        settings.stopSequences = config.stop_sequences || [];
     }
 }

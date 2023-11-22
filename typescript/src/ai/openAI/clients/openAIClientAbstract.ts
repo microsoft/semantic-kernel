@@ -56,7 +56,6 @@ export abstract class OpenAIClientAbstract {
 
     // Explicit finalizer called by IDisposable
     public dispose(): void {
-        this.httpClient = undefined;
         Object.freeze(this);
     }
 

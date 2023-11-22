@@ -33,12 +33,12 @@ export interface IPromptTemplateConfig {
 
 export class PromptTemplateConfig {
     public static compact(config: IPromptTemplateConfig): IPromptTemplateConfig {
-        if (config.completion.stop_sequences.length === 0) {
-            config.completion.stop_sequences = undefined;
+        if (!config.completion.stop_sequences) {
+            config.completion.stop_sequences = [];
         }
 
-        if (config.default_backends.length === 0) {
-            config.default_backends = undefined;
+        if (!config.default_backends) {
+            config.default_backends = [];
         }
 
         return config;

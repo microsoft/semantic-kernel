@@ -5,7 +5,7 @@
 
 import { Verify } from '../../../diagnostics';
 import { ILogger } from '../../../utils/logger';
-import { CompleteRequestSettings } from '../../completeRequestSettings';
+import { CompleteRequestSettings, ICompleteRequestSettings } from '../../completeRequestSettings';
 import { ITextCompletionClient } from '../../iTextCompletionClient';
 import { OpenAIClientAbstract } from '../clients';
 
@@ -25,17 +25,17 @@ export class OpenAITextCompletion extends OpenAIClientAbstract implements ITextC
         this.httpClient.defaults.headers.Authorization = `Bearer ${apiKey}`;
 
         if (organization !== undefined && organization !== null && organization !== '') {
-            this.HTTPClient.defaults.headers['OpenAI-Organization'] = organization;
+            this.httpClient.defaults.headers['OpenAI-Organization'] = organization;
         }
     }
 
-    public async completeAsync(text: string, requestSettings: CompleteRequestSettings): Promise<string> {
+    public async completeAsync(text: string, requestSettings: ICompleteRequestSettings): Promise<string> {
         Verify.notNull(requestSettings, 'Completion settings cannot be empty');
 
         const url = `${OpenAITextCompletion.OpenaiEndpoint}/engines/${this._modelId}/completions`;
-        this.Log.logDebug(`Sending OpenAI completion request to ${url}`);
+        this.log.debug(`Sending OpenAI completion request to ${url}`);
 
-        if (requestSettings.MaxTokens < 1) {
+        if (requestSettings.maxTokens < 1) {
             throw new AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 `MaxTokens ${requestSettings.MaxTokens} is not valid, the value must be greater than zero`
