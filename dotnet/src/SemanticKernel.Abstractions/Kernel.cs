@@ -98,6 +98,45 @@ public sealed class Kernel
     }
 
     /// <summary>
+    /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
+    /// </summary>
+    /// <remarks>
+    /// The current instance is unmodified by this operation. The new <see cref="Kernel"/> will be initialized with:
+    /// <list type="bullet">
+    /// <item>
+    /// The same <see cref="IAIServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.ServiceProvider"/>.</item>
+    /// <item>The same <see cref="IAIServiceSelector"/> reference as is returned by the current instance's <see cref="Kernel.ServiceSelector"/>.</item>
+    /// <item>The same <see cref="IDelegatingHandlerFactory"/> reference as is returned by the current instance's <see cref="Kernel.HttpHandlerFactory"/>.</item>
+    /// <item>The same <see cref="ILoggerFactory"/> reference as is returned by the current instance's <see cref="Kernel.LoggerFactory"/>.</item>
+    /// <item>
+    /// A new <see cref="ISKPluginCollection"/> instance initialized with the same <see cref="ISKPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
+    /// </item>
+    /// <item>
+    /// All of the delegates registered with each event. Delegates are immutable (every time an additional delegate is added or removed, a new one is created),
+    /// so changes to the new instance's event delegates will not affect the current instance's event delegates, and vice versa.
+    /// </item>
+    /// <item>
+    /// A new <see cref="IDictionary{TKey, TValue}"/> containing all of the key/value pairs from the current instance's <see cref="Kernel.Data"/> dictionary.
+    /// Any changes made to the new instance's dictionary will not affect the current instance's dictionary, and vice versa.
+    /// </item>
+    /// <item>The same <see cref="CultureInfo"/> reference as is returned by the current instance's <see cref="Kernel.Culture"/>.</item>
+    /// </list>
+    /// </remarks>
+    public Kernel Clone() =>
+        new(this.ServiceProvider,
+            ((ICollection<ISKPlugin>)this.Plugins) is { Count: > 0 } ? new SKPluginCollection(this.Plugins) : null,
+            this.ServiceSelector,
+            this.HttpHandlerFactory,
+            this.LoggerFactory)
+        {
+            FunctionInvoking = this.FunctionInvoking,
+            FunctionInvoked = this.FunctionInvoked,
+            _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
+            _culture = this._culture,
+        };
+
+    /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
