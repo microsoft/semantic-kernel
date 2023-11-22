@@ -103,7 +103,7 @@ public sealed class SequentialPlanner : IPlanner
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
     /// </summary>
-    private readonly ISKFunction _functionFlowFunction;
+    private readonly KernelFunction _functionFlowFunction;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

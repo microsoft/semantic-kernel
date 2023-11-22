@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Text;
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Represents JSON Schema for describing types used in <see cref="ISKFunction"/>s.</summary>
+/// <summary>Represents JSON Schema for describing types used in <see cref="KernelFunction"/>s.</summary>
 [JsonConverter(typeof(SKJsonSchema.JsonConverter))]
 public sealed class SKJsonSchema
 {

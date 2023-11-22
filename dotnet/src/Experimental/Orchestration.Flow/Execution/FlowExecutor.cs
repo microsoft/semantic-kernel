@@ -89,12 +89,12 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// Check repeat step function
     /// </summary>
-    private readonly ISKFunction _checkRepeatStepFunction;
+    private readonly KernelFunction _checkRepeatStepFunction;
 
     /// <summary>
     /// Check start step function
     /// </summary>
-    private readonly ISKFunction _checkStartStepFunction;
+    private readonly KernelFunction _checkStartStepFunction;
 
     internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
     {
@@ -432,7 +432,7 @@ internal class FlowExecutor : IFlowExecutor
         return await this.CheckRepeatOrStartStepAsync(context, this._checkRepeatStepFunction, sessionId, $"{nextStepId}_CheckRepeatStep", input).ConfigureAwait(false);
     }
 
-    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, ISKFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
+    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, KernelFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
     {
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
         if (chatHistory != null)
@@ -686,7 +686,7 @@ internal class FlowExecutor : IFlowExecutor
         throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private static ISKFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private static KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);

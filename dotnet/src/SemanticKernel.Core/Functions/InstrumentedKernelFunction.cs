@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -17,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>Instrumented function that surrounds the invocation of another function with logging and metrics.</summary>
-internal sealed class InstrumentedSKFunction : ISKFunction
+internal sealed class InstrumentedKernelFunction : KernelFunction
 {
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
@@ -32,37 +31,28 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         description: "Measures the duration of a function’s execution");
 
     /// <summary>Wrapped function instance.</summary>
-    private readonly ISKFunction _function;
+    private readonly KernelFunction _function;
 
     /// <summary>Logger to use for logging activities.</summary>
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
+    /// Initialize a new instance of the <see cref="InstrumentedKernelFunction"/> class.
     /// </summary>
-    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="function">Instance of <see cref="KernelFunction"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public InstrumentedSKFunction(ISKFunction function, ILoggerFactory? loggerFactory = null)
+    public InstrumentedKernelFunction(KernelFunction function, ILoggerFactory? loggerFactory = null) : base(function.Name, function.Description, function.ModelSettings)
     {
         this._function = function;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(function.Name) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
-    public string Name => this._function.Name;
+    public override SKFunctionMetadata GetMetadataCore() =>
+        this._function.GetMetadataCore();
 
     /// <inheritdoc/>
-    public string Description => this._function.Description;
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
-
-    /// <inheritdoc/>
-    public SKFunctionMetadata GetMetadata() =>
-        this._function.GetMetadata();
-
-    /// <inheritdoc/>
-    async Task<FunctionResult> ISKFunction.InvokeAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+    protected override async Task<FunctionResult> InvokeCoreAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
 

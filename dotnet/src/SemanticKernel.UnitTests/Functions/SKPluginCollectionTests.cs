@@ -192,7 +192,7 @@ public class SKPluginCollectionTests
         Assert.Same(plugin1["Function2"], c.GetFunction(null, "Function2"));
         Assert.Same(plugin2["Function3"], c.GetFunction(null, "Function3"));
 
-        Assert.True(c.TryGetFunction("name1", "Function1", out ISKFunction? func));
+        Assert.True(c.TryGetFunction("name1", "Function1", out KernelFunction? func));
         Assert.Same(plugin1["Function1"], func);
 
         Assert.False(c.TryGetFunction("name2", "Function1", out func));
