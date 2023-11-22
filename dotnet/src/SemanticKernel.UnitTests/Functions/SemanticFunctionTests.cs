@@ -263,7 +263,7 @@ public class SemanticFunctionTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "SkipMe")
+            if (e.FunctionMetadata.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -271,7 +271,7 @@ public class SemanticFunctionTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 

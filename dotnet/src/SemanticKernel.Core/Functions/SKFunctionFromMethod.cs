@@ -241,7 +241,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         List<SKParameterMetadata> stringParameterViews = new();
         var parameters = method.GetParameters();
 
-        // Get marshaling funcs for parameters and build up the parameter views.
+        // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameterFuncs = new Func<Kernel, SKContext, CancellationToken, object?>[parameters.Length];
         bool sawFirstParameter = false, hasKernelParam = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
@@ -326,7 +326,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         // Handle special types based on SKContext data. These can each show up at most once in the method signature,
         // with the Kernel or/and the SKContext itself or the primary data from it mapped directly into the method's parameter.
-        // They do not get parameter views as they're not supplied from context variables.
+        // They do not get parameter metadata as they're not supplied from context variables.
 
         if (type == typeof(Kernel))
         {

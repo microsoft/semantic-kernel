@@ -38,11 +38,11 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (ISKPlugin plugin in kernel.Plugins)
         {
-            foreach (KernelFunction skfunction in plugin)
+            foreach (KernelFunction function in plugin)
             {
-                handlebars.RegisterHelper($"{plugin.Name}_{skfunction.Name}", (writer, hcontext, parameters) =>
+                handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = skfunction.InvokeAsync(kernel, executionContext).GetAwaiter().GetResult();
+                    var result = function.InvokeAsync(kernel, executionContext).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.GetValue<string>());
                 });
             }
