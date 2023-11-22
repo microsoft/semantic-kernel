@@ -99,7 +99,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         this._apiKey = apiKey;
@@ -554,12 +554,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
     private static MemoryRecordMetadata ToMetadata(WeaviateObject weaviateObject)
     {
-        if (weaviateObject.Properties == null)
-        {
-#pragma warning disable CA2208
-            throw new ArgumentNullException(nameof(weaviateObject.Properties));
-#pragma warning restore CA2208
-        }
+        Verify.NotNull(weaviateObject.Properties, "weaviateObject.Properties");
 
         return new(
             false,

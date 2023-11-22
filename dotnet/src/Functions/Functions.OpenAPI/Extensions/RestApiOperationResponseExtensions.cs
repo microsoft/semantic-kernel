@@ -35,21 +35,13 @@ public static class RestApiOperationResponseExtensions
             return true;
         }
 
-        switch (response.ContentType)
+        return response.ContentType switch
         {
-            case "application/json":
-                return ValidateJson(response);
-
-            case "application/xml":
-                return ValidateXml(response);
-
-            case "text/plain":
-            case "text/html":
-                return ValidateTextHtml(response);
-
-            default:
-                return true;
-        }
+            "application/json" => ValidateJson(response),
+            "application/xml" => ValidateXml(response),
+            "text/plain" or "text/html" => ValidateTextHtml(response),
+            _ => true,
+        };
     }
 
     private static bool ValidateJson(RestApiOperationResponse response)

@@ -86,21 +86,12 @@ internal sealed class CodeTokenizer
         // 1 char only edge case
         if (text.Length == 1)
         {
-            switch (nextChar)
+            blocks.Add(nextChar switch
             {
-                case Symbols.VarPrefix:
-                    blocks.Add(new VarBlock(text, this._loggerFactory));
-                    break;
-
-                case Symbols.DblQuote:
-                case Symbols.SglQuote:
-                    blocks.Add(new ValBlock(text, this._loggerFactory));
-                    break;
-
-                default:
-                    blocks.Add(new FunctionIdBlock(text, this._loggerFactory));
-                    break;
-            }
+                Symbols.VarPrefix => new VarBlock(text, this._loggerFactory),
+                Symbols.DblQuote or Symbols.SglQuote => new ValBlock(text, this._loggerFactory),
+                _ => new FunctionIdBlock(text, this._loggerFactory),
+            });
 
             return blocks;
         }
