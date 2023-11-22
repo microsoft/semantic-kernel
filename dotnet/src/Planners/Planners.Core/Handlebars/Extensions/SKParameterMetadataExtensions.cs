@@ -6,10 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Planning.Handlebars.Models;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Handlebars.Extensions;
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 #pragma warning restore IDE0130
 
 internal static class SKParameterMetadataExtensions
