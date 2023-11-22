@@ -903,22 +903,22 @@ public sealed class SKFunctionTests2
 
         // Act/Assert
 
-        context.Culture = new CultureInfo("fr-FR");
+        this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12,34"); // tries first to parse with the specified culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24,68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("fr-FR");
+        this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12.34"); // falls back to invariant culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24,68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("en-US");
+        this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12.34"); // works with current culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24.68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("en-US");
+        this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12,34"); // not parsable with current or invariant culture
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(this._kernel, context));
     }
