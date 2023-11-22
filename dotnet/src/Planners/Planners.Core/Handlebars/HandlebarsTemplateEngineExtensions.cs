@@ -10,6 +10,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Orchestration;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -66,11 +67,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
-        SKFunctionMetadata functionView,
+        SKFunctionMetadata functionMetadata,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
-        string fullyResolvedFunctionName = functionView.PluginName + ReservedNameDelimiter + functionView.Name;
+        string fullyResolvedFunctionName = functionMetadata.PluginName + ReservedNameDelimiter + functionMetadata.Name;
 
         handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
@@ -79,75 +80,23 @@ internal sealed class HandlebarsTemplateEngineExtensions
             {
                 if (arguments[0].GetType() == typeof(HashParameterDictionary))
                 {
-                    // Process hash arguments
-                    var handlebarArgs = arguments[0] as IDictionary<string, object>;
-
-                    // Prepare the input parameters for the function
-                    foreach (var param in functionView.Parameters)
-                    {
-                        var fullyQualifiedParamName = functionView.Name + ReservedNameDelimiter + param.Name;
-                        var value = handlebarArgs != null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
-
-                        if (value != null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
-                        {
-                            variables[param.Name] = value;
-                        }
-                        else if (param.IsRequired)
-                        {
-                            throw new SKException($"Parameter {param.Name} is required for function {functionView.Name}.");
-                        }
-                    }
+                    ProcessHashArguments(functionMetadata, variables, arguments[0] as IDictionary<string, object>);
                 }
                 else
                 {
-                    // Process positional arguments
-                    var requiredParameters = functionView.Parameters.Where(p => p.IsRequired).ToList();
-                    if (arguments.Length >= requiredParameters.Count && arguments.Length <= functionView.Parameters.Count)
-                    {
-                        var argIndex = 0;
-                        foreach (var arg in arguments)
-                        {
-                            var param = functionView.Parameters[argIndex];
-                            if (IsExpectedParameterType(param, arg))
-                            {
-                                variables[param.Name] = arguments[argIndex];
-                                argIndex++;
-                            }
-                            else
-                            {
-                                throw new SKException($"Invalid parameter type for function {functionView.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arguments[argIndex].GetType()}.");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        throw new SKException($"Invalid parameter count for function {functionView.Name}. {arguments.Length} were specified but {functionView.Parameters.Count} are required.");
-                    }
+                    ProcessPositionalArguments(functionMetadata, variables, arguments);
                 }
             }
-
-            foreach (var v in variables)
+            else if (functionMetadata.Parameters.Any(p => p.IsRequired))
             {
-                var varString = v.Value?.ToString() ?? "";
-                if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
-                {
-                    executionContext.Variables[v.Key] = varString;
-                }
-                else
-                {
-                    executionContext.Variables.Add(v.Key, varString);
-                }
+                throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
             }
 
-            // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
-            KernelFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
+            InitializeContextVariables(variables, executionContext);
+            KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            FunctionResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-
-            // Write the result to the template
-            return result.GetValue<object?>();
+            // Invoke the function and write the result to the template
+            return InvokeSKFunction(kernel, function, executionContext, cancellationToken);
         });
     }
 
@@ -156,6 +105,34 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Dictionary<string, object?> variables
     )
     {
+        // Not exposed as a helper to the model, used for initial prompt rendering only.
+        handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var isAtLeastOneTruthy = false;
+            foreach (var arg in arguments)
+            {
+                if (arg is not null)
+                {
+                    isAtLeastOneTruthy = true;
+                }
+            }
+
+            return isAtLeastOneTruthy;
+        });
+
+        handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            SKParameterMetadata parameter = (SKParameterMetadata)arguments[0];
+            return parameter.GetSchemaTypeName();
+        });
+
+        handlebarsInstance.RegisterHelper("getSchemaReturnTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            SKReturnParameterMetadata parameter = (SKReturnParameterMetadata)arguments[0];
+            var functionName = arguments[1].ToString();
+            return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
+        });
+
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             // Convert all the arguments to an array
@@ -211,7 +188,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             object? left = arguments[0];
             object? right = arguments[1];
 
-            return left == right || (left != null && left.Equals(right));
+            return left == right || (left is not null && left.Equals(right));
         });
 
         handlebarsInstance.RegisterHelper("lessThan", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -351,13 +328,16 @@ internal sealed class HandlebarsTemplateEngineExtensions
         }
     }
 
-    /*
-     * Type check will pass if:
-     * Types are an exact match.
-     * Handlebar argument is any kind of numeric type if function parameter requires a numeric type.
-     * Handlebar argument type is an object (this covers complex types).
-     * Function parameter is a generic type.
-     */
+    /// <summary>
+    /// Checks if handlebars argument is a valid type for the function parameter.
+    /// Must satisfy one of the following:
+    /// Types are an exact match.
+    /// Handlebar argument is any kind of numeric type if function parameter requires a numeric type.
+    /// Handlebar argument type is an object (this covers complex types).
+    /// Function parameter is a generic type.
+    /// </summary>
+    /// <param name="parameterType">Function parameter type</param>
+    /// <param name="argument">Handlebar argument </param>
     private static bool IsExpectedParameterType(SKParameterMetadata parameterType, object argument)
     {
         if (parameterType.ParameterType == argument.GetType() ||
@@ -373,5 +353,114 @@ internal sealed class HandlebarsTemplateEngineExtensions
         return
             parameterIsNumeric &&
             (IsNumericType(argument?.GetType()) || TryParseAnyNumber(argument?.ToString()));
+    }
+
+    /// <summary>
+    /// Processes the hash arguments passed to a Handlebars helper function.
+    /// </summary>
+    /// <param name="functionMetadata">SKFunctionMetadata for the function being invoked.</param>
+    /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
+    /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
+    /// <exception cref="SKException">Thrown when a required parameter is missing.</exception>
+    private static void ProcessHashArguments(SKFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
+    {
+        // Prepare the input parameters for the function
+        foreach (var param in functionMetadata.Parameters)
+        {
+            var fullyQualifiedParamName = functionMetadata.Name + ReservedNameDelimiter + param.Name;
+            var value = handlebarArgs is not null && (handlebarArgs.TryGetValue(param.Name, out var val) || handlebarArgs.TryGetValue(fullyQualifiedParamName, out val)) ? val : null;
+
+            if (value is not null && (handlebarArgs?.ContainsKey(param.Name) == true || handlebarArgs?.ContainsKey(fullyQualifiedParamName) == true))
+            {
+                variables[param.Name] = value;
+            }
+            else if (param.IsRequired)
+            {
+                throw new SKException($"Parameter {param.Name} is required for function {functionMetadata.Name}.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes the positional arguments passed to a Handlebars helper function.
+    /// </summary>
+    /// <param name="functionMetadata">SKFunctionMetadata for the function being invoked.</param>
+    /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
+    /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
+    /// <exception cref="SKException">Thrown when a required parameter is missing.</exception>
+    private static void ProcessPositionalArguments(SKFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
+    {
+        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
+        if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)
+        {
+            var argIndex = 0;
+            foreach (var arg in handlebarArgs)
+            {
+                var param = functionMetadata.Parameters[argIndex];
+                if (IsExpectedParameterType(param, arg))
+                {
+                    variables[param.Name] = handlebarArgs[argIndex];
+                    argIndex++;
+                }
+                else
+                {
+                    throw new SKException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarArgs[argIndex].GetType()}.");
+                }
+            }
+        }
+        else
+        {
+            throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarArgs.Length} were specified but {functionMetadata.Parameters.Count} are required.");
+        }
+    }
+
+    /// <summary>
+    /// Initializes the variables in the SK function context with the variables maintained by the Handlebars template engine.
+    /// </summary>
+    /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
+    /// <param name="executionContext">The execution context of the SK function.</param>
+    private static void InitializeContextVariables(Dictionary<string, object?> variables, SKContext executionContext)
+    {
+        foreach (var v in variables)
+        {
+            var value = v.Value ?? "";
+            var varString = !SKParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
+            if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
+            {
+                executionContext.Variables[v.Key] = varString;
+            }
+            else
+            {
+                executionContext.Variables.Add(v.Key, varString);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Invokes an SK function and returns a typed result, if specified.
+    /// </summary>
+    private static object? InvokeSKFunction(
+        Kernel kernel,
+        KernelFunction function,
+        SKContext executionContext,
+        CancellationToken cancellationToken = default)
+    {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+
+        // If return type is complex, serialize the object so it can be deserialized with expected class properties.
+        // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
+        var returnType = function.GetMetadata().ReturnParameter.ParameterType;
+        var resultAsObject = result.GetValue<object?>();
+
+        if (returnType is not null && !SKParameterMetadataExtensions.IsPrimitiveOrStringType(returnType))
+        {
+            var serializedResult = JsonSerializer.Serialize(resultAsObject);
+            resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
+        }
+
+        // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
+        return resultAsObject;
     }
 }
