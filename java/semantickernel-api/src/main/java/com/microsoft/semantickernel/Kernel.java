@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
@@ -241,5 +242,13 @@ public interface Kernel extends Buildable {
         @Deprecated
         Builder withMemoryStorageAndTextEmbeddingGeneration(
                 MemoryStore storage, TextEmbeddingGeneration embeddingGenerator);
+
+        /**
+         * Add plugins to the kernel to be built.
+         * @param plugins Plugins to add.
+         * @return Updated kernel builder including the plugins.
+         * @since 1.0.0
+         */
+        Builder withPlugins(Plugin... plugins);
     }
 }
