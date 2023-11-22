@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner : IPlanner
+public sealed class ActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string PluginName = "this";
@@ -92,11 +92,25 @@ public sealed class ActionPlanner : IPlanner
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-    /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="SKException">A plan could not be created.</exception>
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
 
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (ActionPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            static (Plan plan) => plan.ToSafePlanString(),
+            this, goal, this._logger, cancellationToken);
+    }
+
+    private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
+    {
         this._context.Variables.Update(goal);
 
         FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
