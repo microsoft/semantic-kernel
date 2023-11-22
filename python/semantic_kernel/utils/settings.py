@@ -231,6 +231,7 @@ def redis_settings_from_dot_env() -> str:
 
     return connection_string
 
+
 def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
     """
     Reads the Azure AI Search environment variables for the .env file.
