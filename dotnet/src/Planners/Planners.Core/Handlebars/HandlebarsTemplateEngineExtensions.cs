@@ -93,7 +93,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
 
             InitializeContextVariables(variables, executionContext);
-            ISKFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
+            KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
             return InvokeSKFunction(kernel, function, executionContext, cancellationToken);
@@ -441,7 +441,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// </summary>
     private static object? InvokeSKFunction(
         Kernel kernel,
-        ISKFunction function,
+        KernelFunction function,
         SKContext executionContext,
         CancellationToken cancellationToken = default)
     {
