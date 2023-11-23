@@ -766,7 +766,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -815,10 +815,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
-        Assert.Null(result);
+        Assert.NotNull(result);
         Assert.Equal(expectedInvokingHandlerInvocations, invokingCalls);
         Assert.Equal(expectedInvokedHandlerInvocations, invokedCalls);
 
@@ -837,7 +837,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 2;
-        var expectedInvokedHandlerInvocations = 0;
+        var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -864,7 +864,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -890,7 +890,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 2;
-        var expectedInvokedHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -917,7 +917,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -945,7 +945,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 3;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -972,7 +972,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -1029,7 +1029,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -1057,7 +1057,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -1084,7 +1084,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync("PlanInput", plan);
+        var result = await sut.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);

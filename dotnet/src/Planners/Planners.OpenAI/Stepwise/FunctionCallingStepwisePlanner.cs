@@ -124,7 +124,7 @@ public sealed class FunctionCallingStepwisePlanner
                 try
                 {
                     // Execute function and add to result to chat history
-                    var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
+                    var result = (await this._kernel.RunAsync(pluginFunction, funcContext, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                     chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
                 }
                 catch (SKException)

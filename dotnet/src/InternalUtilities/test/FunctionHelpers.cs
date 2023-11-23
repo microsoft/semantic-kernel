@@ -27,6 +27,6 @@ internal static class FunctionHelpers
             context.Variables.Set(pair.Name, pair.Value.ToString());
         }
 
-        return kernel.RunAsync(context.Variables, plugin[methodName]);
+        return kernel.RunAsync(plugin[methodName], context.Variables);
     }
 }

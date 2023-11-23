@@ -306,18 +306,17 @@ public sealed class Plan : KernelFunction
             while (this.HasNextStep)
             {
                 AddVariablesToContext(this.State, context);
+
                 var stepResult = await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
-                // If a step was cancelled before invocation
-                // Return the last result state of the plan.
-                if (stepResult is null)
+                if (stepResult.IsCancellationRequested)
                 {
-                    if (invokingEventArgs.IsSkipRequested)
-                    {
-                        continue;
-                    }
+                    break;
+                }
 
-                    return result;
+                if (stepResult.IsSkipRequested)
+                {
+                    continue;
                 }
 
                 this.UpdateContextWithOutputs(context);
@@ -327,8 +326,6 @@ public sealed class Plan : KernelFunction
             }
 
             var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result);
-
-            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
         }
 
         return result;
@@ -367,7 +364,7 @@ public sealed class Plan : KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult?> InternalInvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -378,11 +375,6 @@ public sealed class Plan : KernelFunction
 
             // Execute the step
             var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-            if (result is null)
-            {
-                // Step was cancelled
-                return null;
-            }
 
             // TODO: Revise this line later in the context of the complex type support initiative.
             // Currently, this line has an issue where the ToString method uses CurrentCulture instead of the culture configured on the kernel.
