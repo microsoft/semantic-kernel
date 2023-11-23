@@ -98,15 +98,19 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         try
         {
             // Invoke pre hook, and stop if skipping requested.
-            this.CallFunctionInvoking(context);
-            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
                 if (this._logger.IsEnabled(LogLevel.Trace))
                 {
                     this._logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
                 }
 
-                return new FunctionResult(this.Name, context);
+                return new FunctionResult(this.Name, context)
+                {
+                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
+                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                };
             }
 
             if (this._logger.IsEnabled(LogLevel.Trace))
@@ -118,15 +122,18 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             var result = await this._function(null, requestSettings, kernel, context, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post hook.
-            result = this.CallFunctionInvoked(result, context);
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
                 this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
                     this.Name,
-                    KernelFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                    invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
                     result.Value);
             }
+
+            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
+            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
             return result;
         }
@@ -140,34 +147,28 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
     }
 
-    private void CallFunctionInvoking(SKContext context)
+    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
     {
-        var eventWrapper = context.FunctionInvokingHandler;
-        if (eventWrapper?.Handler is EventHandler<FunctionInvokingEventArgs> handler)
-        {
-            eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
-            handler(this, eventWrapper.EventArgs);
-        }
+        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
+        kernel.OnFunctionInvoking(eventArgs);
+        return eventArgs;
     }
 
-    private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
     {
-        var eventWrapper = context.FunctionInvokedHandler;
-        if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        if (kernel.OnFunctionInvoked(eventArgs))
         {
-            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-            handler(this, eventWrapper.EventArgs);
-
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Variables.Input)
+            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
-                Metadata = eventWrapper.EventArgs.Metadata
+                Metadata = eventArgs.Metadata
             };
         }
 
-        return result;
+        return (eventArgs, result);
     }
 
     /// <summary>

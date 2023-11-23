@@ -522,12 +522,12 @@ repeat:
 
                 functionResult = await function.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (IsCancelRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsCancelRequested(functionResult, function, pipelineStepCount, logger))
                 {
                     break;
                 }
 
-                if (IsSkipRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsSkipRequested(functionResult, function, pipelineStepCount, logger))
                 {
                     continue;
                 }
@@ -535,7 +535,7 @@ repeat:
                 // Only non-stop results are considered as Kernel results
                 allFunctionResults.Add(functionResult!);
 
-                if (IsRepeatRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsRepeatRequested(functionResult, function, pipelineStepCount, logger))
                 {
                     goto repeat;
                 }
@@ -555,22 +555,16 @@ repeat:
     /// <summary>
     /// Checks if the handler requested to cancel the function execution.
     /// </summary>
+    /// <param name="result">Function result</param>
     /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
     /// <param name="pipelineStepCount">Current pipeline step</param>
     /// <param name="logger">The logger.</param>
     /// <returns></returns>
-    private static bool IsCancelRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
+    private static bool IsCancelRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
     {
-        if (KernelFunctionFromPrompt.IsInvokingCancelRequested(context))
+        if (result.IsCancellationRequested)
         {
-            logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
-        {
-            logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
+            logger.LogInformation("Execution was cancelled for pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
             return true;
         }
 
@@ -580,14 +574,14 @@ repeat:
     /// <summary>
     /// Checks if the handler requested to skip the function execution.
     /// </summary>
+    /// <param name="result">Function result</param>
     /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
     /// <param name="pipelineStepCount">Current pipeline step</param>
     /// <param name="logger">The logger.</param>
     /// <returns></returns>
-    private static bool IsSkipRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
+    private static bool IsSkipRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
     {
-        if (KernelFunctionFromPrompt.IsInvokingSkipRequested(context))
+        if (result.IsSkipRequested)
         {
             logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
             return true;
@@ -599,14 +593,14 @@ repeat:
     /// <summary>
     /// Checks if the handler requested to repeat the function execution.
     /// </summary>
+    /// <param name="result">Function result</param>
     /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
     /// <param name="pipelineStepCount">Current pipeline step</param>
     /// <param name="logger">The logger.</param>
     /// <returns></returns>
-    private static bool IsRepeatRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
+    private static bool IsRepeatRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
     {
-        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
+        if (result.IsRepeatRequested)
         {
             logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
             return true;
