@@ -501,35 +501,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             };
         }
 
-        // SKContext, either synchronous (SKContext) or asynchronous (Task<SKContext> / ValueTask<SKContext>).
-
-        if (returnType == typeof(SKContext))
-        {
-            return static (functionName, result, _, kernel) =>
-            {
-                var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context.Variables.Input));
-            };
-        }
-
-        if (returnType == typeof(Task<SKContext>))
-        {
-            return static async (functionName, result, _, __) =>
-            {
-                var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context.Variables.Input);
-            };
-        }
-
-        if (returnType == typeof(ValueTask<SKContext>))
-        {
-            return static async (functionName, result, _, __) =>
-            {
-                var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName);
-            };
-        }
-
         // string (which is special as no marshaling is required), either synchronous (string) or asynchronous (Task<string> / ValueTask<string>)
 
         if (returnType == typeof(string))

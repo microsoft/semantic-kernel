@@ -610,7 +610,7 @@ public class KernelTests
         }
 
         [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
+        public async Task ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
         {
             await Task.Delay(0);
 
@@ -623,8 +623,6 @@ public class KernelTests
             {
                 context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
-
-            return context;
         }
     }
 

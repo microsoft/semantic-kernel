@@ -107,10 +107,10 @@ public class StepwisePlanner
     /// <param name="question">The question to answer</param>
     /// <param name="context">The context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The context with the result</returns>
+    /// <returns>The result</returns>
     /// <exception cref="SKException">No AIService available for getting completions.</exception>
     [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
-    public async Task<SKContext> ExecutePlanAsync(
+    public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
         SKContext context,
@@ -119,7 +119,7 @@ public class StepwisePlanner
         if (string.IsNullOrEmpty(question))
         {
             context.Variables.Update("Question not found.");
-            return context;
+            return "Question not found.";
         }
 
         ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context.Variables, cancellationToken).ConfigureAwait(false);
@@ -146,7 +146,7 @@ public class StepwisePlanner
             return this.ParseResult(actionText);
         }
 
-        SKContext? TryGetFinalAnswer(SystemStep step, int iterations, SKContext context)
+        string? TryGetFinalAnswer(SystemStep step, int iterations, SKContext context)
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
@@ -160,7 +160,7 @@ public class StepwisePlanner
                 // Add additional results to the context
                 AddExecutionStatsToContext(stepsTaken, context, iterations);
 
-                return context;
+                return context.Variables.Input;
             }
 
             return null;
@@ -284,10 +284,10 @@ public class StepwisePlanner
             var nextStep = await GetNextStepAsync().ConfigureAwait(false);
 
             // If final answer is available, we're done, return the context
-            var finalContext = TryGetFinalAnswer(nextStep, i + 1, context);
-            if (finalContext is not null)
+            var answer = TryGetFinalAnswer(nextStep, i + 1, context);
+            if (answer is not null)
             {
-                return finalContext;
+                return answer;
             }
 
             // If we have an observation before running the action, continue to the next iteration
@@ -318,7 +318,7 @@ public class StepwisePlanner
         AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
         context.Variables.Update(NoFinalAnswerFoundMessage);
 
-        return context;
+        return NoFinalAnswerFoundMessage;
     }
 
     #region setup helpers

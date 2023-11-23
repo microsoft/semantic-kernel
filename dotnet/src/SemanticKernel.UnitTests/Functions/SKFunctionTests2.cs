@@ -241,20 +241,19 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        async Task<SKContext> TestAsync(SKContext context)
+        async Task TestAsync(SKContext context)
         {
             await Task.Delay(0);
             invocationCount++;
             s_actual = s_expected;
             context.Variables.Update("foo");
             context.Variables["canary"] = s_expected;
-            return context;
         }
 
         var context = new SKContext(new ContextVariables(string.Empty));
 
         // Act
-        Func<SKContext, Task<SKContext>> method = TestAsync;
+        Func<SKContext, Task> method = TestAsync;
         var function = SKFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
@@ -265,7 +264,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("foo", context.Variables.Input);
-        Assert.Equal("foo", result.GetValue<string>());
+        Assert.Null(result.GetValue<string>());
     }
 
     [Fact]
@@ -497,81 +496,28 @@ public sealed class SKFunctionTests2
         Assert.Equal("new data", result.GetValue<string>());
     }
 
-    //[Fact]
-    //public async Task ItSupportsStaticStringContextTaskContextAsync()
-    //{
-    //    // Arrange
-    //    static Task<SKContext> Test(string input, SKContext context)
-    //    {
-    //        s_actual = s_expected;
-    //        context.Variables["canary"] = s_expected;
-    //        context.Variables.Update("x y z");
+    [Fact]
+    public async Task ItSupportsStaticContextValueTaskContextAsync()
+    {
+        // Arrange
+        static ValueTask Test(string input, SKContext context)
+        {
+            context.Variables.Update(input + "abc");
 
-    //        var newContext = context.Clone();
-    //        newContext.Variables.Clear();
+            return new ValueTask();
+        }
 
-    //        // This value should overwrite "x y z". Contexts are merged.
-    //        newContext.Variables.Update("new data");
-    //        newContext.Variables["canary2"] = "222";
+        var context = new SKContext(new ContextVariables("test"));
 
-    //        return Task.FromResult(newContext);
-    //    }
+        // Act
+        var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        Assert.NotNull(function);
 
-    //    var oldContext = new SKContext(new ContextVariables(string.Empty));
-    //    oldContext.Variables["legacy"] = "something";
+        FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
-    //    // Act
-    //    var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
-    //    Assert.NotNull(function);
-
-    //    FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
-    //    var newContext = result.Context;
-
-    //    // Assert
-    //    Assert.Equal(s_expected, s_actual);
-
-    //    Assert.True(oldContext.Variables.ContainsKey("canary"));
-    //    Assert.False(oldContext.Variables.ContainsKey("canary2"));
-
-    //    Assert.False(newContext.Variables.ContainsKey("canary"));
-    //    Assert.True(newContext.Variables.ContainsKey("canary2"));
-
-    //    Assert.Equal(s_expected, oldContext.Variables["canary"]);
-    //    Assert.Equal("222", newContext.Variables["canary2"]);
-
-    //    Assert.True(oldContext.Variables.ContainsKey("legacy"));
-    //    Assert.False(newContext.Variables.ContainsKey("legacy"));
-
-    //    Assert.Equal("x y z", oldContext.Variables.Input);
-    //    Assert.Equal("new data", newContext.Variables.Input);
-
-    //    Assert.Equal("new data", result.GetValue<string>());
-    //}
-
-    //[Fact]
-    //public async Task ItSupportsStaticContextValueTaskContextAsync()
-    //{
-    //    // Arrange
-    //    static ValueTask<SKContext> Test(string input, SKContext context)
-    //    {
-    //        // This value should overwrite "x y z". Contexts are merged.
-    //        var newCx = context.Clone();
-    //        newCx.Variables.Update(input + "abc");
-
-    //        return new ValueTask<SKContext>(newCx);
-    //    }
-
-    //    var oldContext = new SKContext(new ContextVariables("test"));
-
-    //    // Act
-    //    var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
-    //    Assert.NotNull(function);
-
-    //    FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
-
-    //    // Assert
-    //    Assert.Equal("testabc", result.Context.Variables.Input);
-    //}
+        // Assert
+        Assert.Equal("testabc", context.Variables.Input);
+    }
 
     [Fact]
     public async Task ItSupportsStaticStringTaskAsync()

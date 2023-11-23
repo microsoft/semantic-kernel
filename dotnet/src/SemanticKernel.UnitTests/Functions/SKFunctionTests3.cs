@@ -88,13 +88,12 @@ public sealed class SKFunctionTests3
         context.Variables["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
-        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        async Task ExecuteAsync(SKContext contextIn)
         {
             Assert.Equal("NO", contextIn.Variables["done"]);
             contextIn.Variables["canary"] = "YES";
 
             await Task.Delay(0);
-            return contextIn;
         }
 
         // Act
@@ -123,13 +122,12 @@ public sealed class SKFunctionTests3
         //       This scenario is used for gRPC functions.
         string variableOutsideTheFunction = "foo";
 
-        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        async Task ExecuteAsync(SKContext contextIn)
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
             contextIn.Variables["canary"] = "YES";
 
             await Task.Delay(0);
-            return contextIn;
         }
 
         // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
@@ -232,10 +230,9 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public async Task<SKContext> Type07Async(SKContext context)
+        public async Task Type07Async(SKContext context)
         {
             await Task.Delay(0);
-            return context;
         }
 
         [SKFunction]
@@ -298,10 +295,9 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public async Task<SKContext> Type14Async(string input, SKContext context)
+        public async Task Type14Async(string input, SKContext context)
         {
             await Task.Delay(0);
-            return context;
         }
 
         [SKFunction]
@@ -342,10 +338,9 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public async ValueTask<SKContext> ReturnsValueTaskContextAsync(SKContext context)
+        public async ValueTask ReturnsValueTaskContextAsync(SKContext context)
         {
             await Task.Delay(0);
-            return context;
         }
 
         [SKFunction]
