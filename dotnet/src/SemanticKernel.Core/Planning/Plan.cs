@@ -100,7 +100,7 @@ public sealed class Plan : KernelFunction
     /// <param name="function">The function to execute.</param>
     public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings)
     {
-        this.SetFunction(function);
+        this.Function = function;
     }
 
     /// <summary>
@@ -126,7 +126,6 @@ public sealed class Plan : KernelFunction
         IReadOnlyList<Plan> steps) : base(name, description)
     {
         this.PluginName = pluginName;
-        this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
         this.Parameters = parameters;
@@ -471,7 +470,7 @@ public sealed class Plan : KernelFunction
 
             if (plugins.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
-                plan.SetFunction(planFunction);
+                plan.Function = planFunction;
             }
             else if (requireFunctions)
             {
@@ -654,13 +653,6 @@ public sealed class Plan : KernelFunction
         }
 
         return stepVariables;
-    }
-
-    private void SetFunction(KernelFunction function)
-    {
-        this.Function = function;
-        this.Name = function.Name;
-        this.Description = function.Description;
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
