@@ -121,7 +121,7 @@ public static class Example40_DIContainer
 
             var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await this._kernel.RunAsync(ask, summarizePlugin["Summarize"]);
+            var result = await this._kernel.RunAsync(summarizePlugin["Summarize"], ask);
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }

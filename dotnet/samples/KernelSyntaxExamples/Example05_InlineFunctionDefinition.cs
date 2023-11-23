@@ -51,10 +51,10 @@ Event: {{$input}}
 
         var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
+        var result = await kernel.RunAsync(excuseFunction, "I missed the F1 final race");
         Console.WriteLine(result.GetValue<string>());
 
-        result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
+        result = await kernel.RunAsync(excuseFunction, "sorry I forgot your birthday");
         Console.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });

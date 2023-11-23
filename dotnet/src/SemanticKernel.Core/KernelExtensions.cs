@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -364,6 +363,46 @@ public static class KernelExtensions
             description));
     #endregion
 
+    #region RunAsync
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        return kernel.RunAsync(function, new ContextVariables(), cancellationToken);
+    }
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        var contextVariables = new ContextVariables();
+        contextVariables.Update(input);
+
+        return kernel.RunAsync(function, contextVariables, cancellationToken);
+    }
+
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
@@ -375,97 +414,14 @@ public static class KernelExtensions
     public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         KernelFunction function,
-        ContextVariables? variables = null,
+        ContextVariables variables,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return kernel.RunAsync(variables ?? new(), cancellationToken, function);
-    }
+        var context = kernel.CreateNewContext(variables);
 
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        ContextVariables variables,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+        return function.InvokeAsync(kernel, context, requestSettings: null, cancellationToken);
     }
 
     /// <summary>
@@ -488,123 +444,7 @@ public static class KernelExtensions
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.RunAsync(function, variables, cancellationToken);
+        return kernel.RunAsync(function, variables ?? new(), cancellationToken);
     }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    /// <inheritdoc/>
-    public static async Task<FunctionResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params KernelFunction[] pipeline)
-    {
-        var context = kernel.CreateNewContext(variables);
-
-        FunctionResult? functionResult = null;
-
-        int pipelineStepCount = 0;
-        var allFunctionResults = new List<FunctionResult>();
-
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
-
-        foreach (KernelFunction function in pipeline)
-        {
-repeat:
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var functionDetails = function.GetMetadata();
-
-                functionResult = await function.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (IsCancelRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    break;
-                }
-
-                if (IsSkipRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    continue;
-                }
-
-                // Only non-stop results are considered as Kernel results
-                allFunctionResults.Add(functionResult!);
-
-                if (IsRepeatRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    goto repeat;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Function {Function} call fail during pipeline step {Step} with error {Error}:", function.Name, pipelineStepCount, ex.Message);
-                throw;
-            }
-
-            pipelineStepCount++;
-        }
-
-        return allFunctionResults.LastOrDefault();
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to cancel the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsCancelRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsCancellationRequested)
-        {
-            logger.LogInformation("Execution was cancelled for pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to skip the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsSkipRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsSkipRequested)
-        {
-            logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to repeat the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsRepeatRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsRepeatRequested)
-        {
-            logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-        return false;
-    }
+    #endregion
 }
