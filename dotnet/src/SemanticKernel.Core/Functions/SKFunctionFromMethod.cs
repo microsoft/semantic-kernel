@@ -162,49 +162,52 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         IAsyncEnumerator<object> enumerator = this._streamingFunction(null, requestSettings, kernel, context, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-        T? genericChunk = default;
-        bool moreItems;
+        T? genericChunk;
+        bool moreChunks;
 
         // Manually handling the enumeration to properly log any exception
         do
         {
+            genericChunk = default;
             try
             {
-                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                if (moreItems)
+                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+
+                if (moreChunks)
                 {
                     var chunk = enumerator.Current;
 
                     if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
                     {
                         genericChunk = (T)(object)chunk;
-                        continue;
                     }
-
-                    if (chunk is StreamingMethodContent nativeChunk)
+                    else if (chunk is StreamingMethodContent nativeChunk)
                     {
+                        // If the provided T is not a specialization of StreamingContent interface, cast the function value as is to the T
                         genericChunk = (T)nativeChunk.Value;
-                        continue;
                     }
-
-                    throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+                    else
+                    {
+                        throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
+                    }
                 }
             }
             catch (Exception e)
             {
                 if (this._logger.IsEnabled(LogLevel.Error))
                 {
-                    this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
+                    this._logger.LogError(e, "Function {Name} streaming execution failed: {Error}", this.Name, e.Message);
                 }
                 throw;
             }
 
-            if (moreItems && genericChunk is not null)
+            if (moreChunks && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreItems);
+        } while (moreChunks);
 
         var result = this.CallFunctionInvoked(context);
 
