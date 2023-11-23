@@ -269,27 +269,14 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             }
 
             var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-
-            // If the provided T is the response type, return the response as is (Breaking Glass) option 1
-            if (typeof(T) == chatWithDataResponse.GetType())
-            {
-                yield return (T)(object)chatWithDataResponse;
-                continue;
-            }
-
+            var responseMetadata = this.GetResponseMetadata(response);
             foreach (var choice in chatWithDataResponse.Choices)
             {
                 // If the provided T is an specialized class of StreamingContent interface
                 if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index);
-                    continue;
-                }
-
-                if (typeof(T) == choice.GetType())
-                {
-                    yield return (T)(object)choice;
+                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index, responseMetadata);
                     continue;
                 }
 
@@ -306,8 +293,18 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 {
                     yield return (T)(object)result;
                 }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
             }
         }
+    }
+
+    private Dictionary<string, object> GetResponseMetadata(HttpResponseMessage response)
+    {
+        return new Dictionary<string, object>()
+        {
+            { nameof(HttpResponseMessage), response },
+        };
     }
 
     private T DeserializeResponse<T>(string body)

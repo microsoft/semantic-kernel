@@ -169,13 +169,7 @@ public abstract class ClientBase
             () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
         using StreamingCompletions streamingChatCompletions = response.Value;
-
-        var metadata = new Dictionary<string, object>()
-        {
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
-        };
+        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
 
         int choiceIndex = 0;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
@@ -193,7 +187,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingTextContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, metadata);
+                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, responseMetadata);
                     continue;
                 }
 
@@ -201,6 +195,16 @@ public abstract class ClientBase
             }
             choiceIndex++;
         }
+    }
+
+    private static Dictionary<string, object> GetResponseMetadata(StreamingCompletions streamingChatCompletions)
+    {
+        return new Dictionary<string, object>()
+        {
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+        };
     }
 
     /// <summary>

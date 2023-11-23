@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
@@ -38,23 +39,10 @@ public class StreamingChatContent : StreamingContent
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
-    /// <param name="chatMessage">Original Connector Azure Message update representation</param>
-    /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatContent(AzureOpenAIChatMessage chatMessage, int resultIndex) : base(chatMessage)
-    {
-        this.ChoiceIndex = resultIndex;
-        this.FunctionCall = chatMessage.InnerChatMessage?.FunctionCall;
-        this.Content = chatMessage.Content;
-        this.Role = new AuthorRole(chatMessage.Role.ToString());
-        this.Name = chatMessage.InnerChatMessage?.Name;
-    }
-
-    /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatContent"/> class.
-    /// </summary>
     /// <param name="chatMessage">Internal Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex) : base(chatMessage)
+    /// <param name="metadata">Additional metadata</param>
+    public StreamingChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex, Dictionary<string, object> metadata) : base(chatMessage, metadata)
     {
         this.ChoiceIndex = resultIndex;
         this.FunctionCall = chatMessage.FunctionCall;

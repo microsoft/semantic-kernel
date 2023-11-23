@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -28,7 +29,8 @@ public sealed class StreamingChatWithDataContent : StreamingContent
     /// </summary>
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="resultIndex">Index of the choice</param>
-    internal StreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int resultIndex) : base(choice)
+    /// <param name="metadata">Additional metadata</param>
+    internal StreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int resultIndex, Dictionary<string, object> metadata) : base(choice, metadata)
     {
         this.ChoiceIndex = resultIndex;
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
