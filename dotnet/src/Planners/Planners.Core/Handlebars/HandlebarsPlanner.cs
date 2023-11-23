@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -17,11 +18,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlanner
 {
-    /// <summary>
-    /// The key for the available kernel functions.
-    /// </summary>
-    public const string AvailableKernelFunctionsKey = "AVAILABLE_KERNEL_FUNCTIONS";
-
     /// <summary>
     /// Gets the stopwatch used for measuring planning time.
     /// </summary>
@@ -31,8 +27,6 @@ public sealed class HandlebarsPlanner
     private readonly ILogger _logger;
 
     private readonly HandlebarsPlannerConfig _config;
-
-    private readonly HashSet<HandlebarsParameterTypeView> _parameterTypes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -65,23 +59,21 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken = default)
     {
-        var availableFunctions = this.GetAvailableFunctionsManual(cancellationToken);
-        var handlebarsTemplate = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions);
+        var availableFunctions = this.GetAvailableFunctionsManual(out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
+        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
         var chatCompletion = this._kernel.GetService<IChatCompletion>();
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
-        MatchCollection matches = Regex.Matches(handlebarsTemplate, pattern, RegexOptions.Singleline);
+        MatchCollection matches = Regex.Matches(createPlanPrompt, pattern, RegexOptions.Singleline);
 
         // Add the chat history to the chat
-        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(handlebarsTemplate, chatCompletion);
+        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt, chatCompletion);
 
         // Get the chat completion results
-        var completionResults = await chatCompletion.GetChatCompletionsAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var completionMessage = await completionResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
+        var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
         var resultContext = this._kernel.CreateNewContext();
-        resultContext.Variables.Update(completionMessage.Content);
+        resultContext.Variables.Update(completionResults);
 
         if (resultContext.Variables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
@@ -95,26 +87,91 @@ public sealed class HandlebarsPlanner
             throw new SKException("Could not find the plan in the results");
         }
 
-        var template = match.Groups[2].Value.Trim(); // match.Success ? match.Groups[2].Value.Trim() : resultContext.Result;
+        var planTemplate = match.Groups[2].Value.Trim();
 
-        template = template.Replace("compare.equal", "equal");
-        template = template.Replace("compare.lessThan", "lessThan");
-        template = template.Replace("compare.greaterThan", "greaterThan");
-        template = template.Replace("compare.lessThanOrEqual", "lessThanOrEqual");
-        template = template.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
-        template = template.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.equal", "equal");
+        planTemplate = planTemplate.Replace("compare.lessThan", "lessThan");
+        planTemplate = planTemplate.Replace("compare.greaterThan", "greaterThan");
+        planTemplate = planTemplate.Replace("compare.lessThanOrEqual", "lessThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
+        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
 
-        template = MinifyHandlebarsTemplate(template);
-        return new HandlebarsPlan(this._kernel, template);
+        planTemplate = MinifyHandlebarsTemplate(planTemplate);
+        return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
-    private List<SKFunctionMetadata> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
+    private List<SKFunctionMetadata> GetAvailableFunctionsManual(
+        out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        out Dictionary<string, string> complexParameterSchemas,
+        CancellationToken cancellationToken = default)
     {
-        return this._kernel.Plugins.GetFunctionsMetadata()
+        complexParameterTypes = new();
+        complexParameterSchemas = new();
+        var availableFunctions = this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
             .ToList();
+
+        var functionsMetadata = new List<SKFunctionMetadata>();
+        foreach (var skFunction in availableFunctions)
+        {
+            // Extract any complex parameter types for isolated render in prompt template
+            var parametersMetadata = new List<SKParameterMetadata>();
+            foreach (var parameter in skFunction.Parameters)
+            {
+                var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
+                parametersMetadata.Add(paramToAdd);
+            }
+
+            var returnParameter = skFunction.ReturnParameter.ToSKParameterMetadata(skFunction.Name);
+            returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
+
+            // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
+            var functionMetadata = new SKFunctionMetadata(skFunction.Name)
+            {
+                PluginName = skFunction.PluginName,
+                Description = skFunction.Description,
+                Parameters = parametersMetadata,
+                ReturnParameter = returnParameter.ToSKReturnParameterMetadata()
+            };
+            functionsMetadata.Add(functionMetadata);
+        }
+
+        return functionsMetadata;
+    }
+
+    // Extract any complex types or schemas for isolated render in prompt template
+    private SKParameterMetadata SetComplexTypeDefinition(
+        SKParameterMetadata parameter,
+        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        Dictionary<string, string> complexParameterSchemas)
+    {
+        // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
+        if (parameter.ParameterType is not null)
+        {
+            // Async return type - need to extract the actual return type and override ParameterType property
+            var type = parameter.ParameterType;
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                parameter = new(parameter) { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
+            }
+
+            complexParameterTypes.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeMetadata());
+        }
+        else if (parameter.Schema is not null)
+        {
+            // Parse the schema to extract any primitive types and set in ParameterType property instead
+            var parsedParameter = parameter.ParseJsonSchema();
+            if (parsedParameter.Schema is not null)
+            {
+                complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+            }
+
+            parameter = parsedParameter;
+        }
+
+        return parameter;
     }
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletion chatCompletion)
@@ -147,15 +204,21 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(Kernel kernel, string goal, List<SKFunctionMetadata> availableFunctions)
+    private string GetHandlebarsTemplate(
+        Kernel kernel, string goal,
+        List<SKFunctionMetadata> availableFunctions,
+        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        Dictionary<string, string> complexParameterSchemas)
     {
-        var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
+        var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
                 { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
-                { "complexTypeDefinitions", this._parameterTypes.Count > 0 && this._parameterTypes.Any(p => p.IsComplexType) ? this._parameterTypes.Where(p => p.IsComplexType) : null},
+                { "allowLoops", this._config.AllowLoops },
+                { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
+                { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
                 { "lastPlan", this._config.LastPlan },
                 { "lastError", this._config.LastError }
             };
