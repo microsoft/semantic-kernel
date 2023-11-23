@@ -142,23 +142,24 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
-
             var serviceSelector = kernel.ServiceSelector;
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
             Verify.NotNull(textCompletion);
 
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context, renderedPrompt);
-            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+            this.CallPromptRendering(kernel, context, requestSettings ?? defaultRequestSettings);
+
+            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+
+            var renderedEventArgs = this.CallPromptRendered(kernel, context, renderedPrompt);
+            if (renderedEventArgs.CancelToken.IsCancellationRequested)
             {
                 return new FunctionResult(this.Name, context)
                 {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                    IsCancellationRequested = true
                 };
             }
 
-            renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(invokingEventArgs, renderedPrompt);
+            renderedPrompt = renderedEventArgs.RenderedPrompt;
 
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -172,10 +173,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
-            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
-            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
             return result;
         }
@@ -237,16 +234,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="context">Execution context</param>
-    /// <param name="renderedPrompt">Rendered prompt</param>
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context, string renderedPrompt)
+    /// <param name="requestSetings"></param>
+    private PromptRenderingEventArgs CallPromptRendering(Kernel kernel, SKContext context, AIRequestSettings? requestSetings)
     {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context)
-        {
-            Metadata = {
-                [SKEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt
-            }
-        };
-        kernel.OnFunctionInvoking(eventArgs);
+        var eventArgs = new PromptRenderingEventArgs(this.GetMetadata(), context, requestSetings);
+        kernel.OnPromptRendering(eventArgs);
         return eventArgs;
     }
 
@@ -255,42 +247,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// </summary>
     /// <param name="kernel"></param>
     /// <param name="context">Execution context</param>
-    /// <param name="result">Current function result</param>
-    /// <param name="prompt">Prompt used by the function</param>
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result, string prompt)
+    /// <param name="renderedPrompt">Rendered prompt</param>
+    private PromptRenderedEventArgs CallPromptRendered(Kernel kernel, SKContext context, string renderedPrompt)
     {
-        result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
-
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-        if (kernel.OnFunctionInvoked(eventArgs))
-        {
-            // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
-            {
-                // Updates the eventArgs metadata during invoked handler execution
-                // will reflect in the result metadata
-                Metadata = eventArgs.Metadata
-            };
-        }
-
-        return (eventArgs, result);
-    }
-
-    /// <summary>
-    /// Try to get the prompt from the event args metadata.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <param name="defaultPrompt">Default prompt if none is found in metadata</param>
-    /// <returns></returns>
-    private string GetPromptFromEventArgsMetadataOrDefault(FunctionInvokingEventArgs eventArgs, string defaultPrompt)
-    {
-        if (!eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
-        {
-            return defaultPrompt;
-        }
-
-        // If prompt key exists and was modified to null default to an empty string
-        return renderedPromptFromMetadata?.ToString() ?? string.Empty;
+        var eventArgs = new PromptRenderedEventArgs(this.GetMetadata(), context, renderedPrompt);
+        kernel.OnPromptRendered(eventArgs);
+        return eventArgs;
     }
 
     /// <summary>Create a random, valid function name.</summary>

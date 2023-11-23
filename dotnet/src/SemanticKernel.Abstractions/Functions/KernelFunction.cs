@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -87,18 +88,51 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        logger.LogInformation("Function invoking.");
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Function {Name} invoking.", this.Name);
+        }
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
+            // Invoke pre hook, and stop if skipping requested.
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
+                }
+
+                return new FunctionResult(this.Name, context)
+                {
+                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
+                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                };
+            }
+
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>()); // Sensitive data, logging as trace, disabled by default
+                logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>());
             }
+
+            // Invoke the post hook.
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
+
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
+                    this.Name,
+                    invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
+                    result.Value);
+            }
+
+            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
+            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
             return result;
         }
@@ -150,4 +184,30 @@ public abstract class KernelFunction
     /// </summary>
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
     protected abstract SKFunctionMetadata GetMetadataCore();
+
+    #region private
+    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
+    {
+        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
+        kernel.OnFunctionInvoking(eventArgs);
+        return eventArgs;
+    }
+
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
+    {
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        if (kernel.OnFunctionInvoked(eventArgs))
+        {
+            // Apply any changes from the event handlers to final result.
+            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
+            {
+                // Updates the eventArgs metadata during invoked handler execution
+                // will reflect in the result metadata
+                Metadata = eventArgs.Metadata
+            };
+        }
+
+        return (eventArgs, result);
+    }
+    #endregion
 }

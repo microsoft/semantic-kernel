@@ -90,6 +90,16 @@ public sealed class Kernel
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
     /// </summary>
     /// <param name="aiServiceProvider">The <see cref="IAIServiceProvider"/> used to query for services available through the kernel.</param>
@@ -208,6 +218,28 @@ public sealed class Kernel
         if (this.FunctionInvoked != null)
         {
             this.FunctionInvoked.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+
+    internal bool OnPromptRendering(PromptRenderingEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.PromptRendering != null)
+        {
+            this.PromptRendering.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+
+    internal bool OnPromptRendered(PromptRenderedEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.PromptRendered != null)
+        {
+            this.PromptRendered.Invoke(this, eventArgs);
             handled = true;
         }
         return handled;
