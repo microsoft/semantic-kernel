@@ -41,7 +41,7 @@ public abstract class KernelFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name { get; protected set; }
+    public string Name { get; }
 
     /// <summary>
     /// Gets a description of the function.
@@ -50,7 +50,7 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description { get; protected set; }
+    public string Description { get; }
 
     /// <summary>
     /// Gets the model request settings.
