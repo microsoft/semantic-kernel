@@ -31,7 +31,7 @@ public class MultipleModelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
-        ISKFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        KernelFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
         await kernel.RunAsync(func);

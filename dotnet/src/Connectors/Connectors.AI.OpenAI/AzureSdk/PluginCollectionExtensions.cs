@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public static class PluginCollectionExtensions
 {
     /// <summary>
-    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="ISKFunction"/> and populate <see cref="ContextVariables"/> with its parameters.
+    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="ContextVariables"/> with its parameters.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <param name="response">The <see cref="OpenAIFunctionResponse"/> object.</param>
@@ -21,7 +21,7 @@ public static class PluginCollectionExtensions
     public static bool TryGetFunctionAndContext(
         this IReadOnlySKPluginCollection plugins,
         OpenAIFunctionResponse response,
-        [NotNullWhen(true)] out ISKFunction? availableFunction,
+        [NotNullWhen(true)] out KernelFunction? availableFunction,
         [NotNullWhen(true)] out ContextVariables? availableContext)
     {
         availableFunction = null;

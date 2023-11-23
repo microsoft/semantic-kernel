@@ -22,14 +22,11 @@ internal static class FormStyleParameterSerializer
     {
         const string ArrayType = "array";
 
-        if (parameter is null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        Verify.NotNull(parameter);
 
         if (parameter.Style != RestApiOperationParameterStyle.Form)
         {
-            throw new SKException($"Unexpected Rest Api operation parameter style - `{parameter.Style}`");
+            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
         }
 
         // Handling parameters of array type.

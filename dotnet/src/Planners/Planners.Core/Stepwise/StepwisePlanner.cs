@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <remarks>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
 /// </remarks>
-public class StepwisePlanner : IPlanner
+public class StepwisePlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
@@ -67,22 +68,37 @@ public class StepwisePlanner : IPlanner
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-    /// <inheritdoc />
-    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="SKException">A plan could not be created.</exception>
+    public Plan CreatePlan(string goal)
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        Plan plan = new(this._nativeFunctions["ExecutePlan"]);
-        plan.PluginName = RestrictedPluginName;
+        Task<Plan> task = PlannerInstrumentation.CreatePlanAsync(
+            static (StepwisePlanner planner, string goal, CancellationToken _) =>
+            {
+                Plan plan = new(planner._nativeFunctions["ExecutePlan"])
+                {
+                    PluginName = RestrictedPluginName,
+                    Outputs = { "stepCount", "functionCount", "stepsTaken", "iterations" },
+                };
+                plan.Parameters.Set("question", goal);
+                return Task.FromResult(plan);
+            },
+            static (Plan plan) => plan.ToSafePlanString(),
+            this, goal, this._logger, CancellationToken.None);
 
-        plan.Parameters.Set("question", goal);
-
-        plan.Outputs.Add("stepCount");
-        plan.Outputs.Add("functionCount");
-        plan.Outputs.Add("stepsTaken");
-        plan.Outputs.Add("iterations");
-
-        return Task.FromResult(plan);
+        // The instrumentation doesn't do any asynchronous work other than invoke the supplied callback,
+        // which we know will complete synchronously, so we can safely use GetResult without incurring
+        // blocking as the operation will have already completed by the time the call returns.
+        Debug.Assert(task.IsCompleted);
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+        return task.GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002
     }
 
     /// <summary>
@@ -622,7 +638,7 @@ public class StepwisePlanner : IPlanner
 
     // Context used to access the list of functions in the kernel
     private readonly Kernel _kernel;
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Planner native functions

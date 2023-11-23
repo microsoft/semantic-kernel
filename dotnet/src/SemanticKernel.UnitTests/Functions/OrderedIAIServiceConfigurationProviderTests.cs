@@ -19,12 +19,12 @@ public class OrderedIAIServiceConfigurationProviderTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var skfunction = SKFunctionFactory.CreateFromPrompt("Hello AI");
+        var function = SKFunctionFactory.CreateFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, kernel.CreateNewContext(), skfunction));
+        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, kernel.CreateNewContext(), function));
     }
 
     [Fact]
@@ -33,11 +33,11 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithAIService<IAIService>("service1", new AIService()).Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<IAIService>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<IAIService>(kernel, context, function);
 
         // Assert
         Assert.NotNull(aiService);
@@ -50,11 +50,11 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>("service1", new TextCompletion()).Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.NotNull(aiService);
@@ -71,11 +71,11 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "service2" };
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -92,12 +92,12 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "service3" };
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction));
+        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function));
     }
 
     [Fact]
@@ -109,11 +109,11 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
             .Build();
         var context = kernel.CreateNewContext();
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI");
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -131,11 +131,11 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings();
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -152,11 +152,11 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var context = kernel.CreateNewContext();
         var requestSettings = new AIRequestSettings() { ServiceId = "" };
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -182,11 +182,11 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
         }
-        var skfunction = kernel.CreateFunctionFromPrompt("Hello AI", promptTemplateConfig: new PromptTemplateConfig() { ModelSettings = modelSettings });
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", promptTemplateConfig: new PromptTemplateConfig() { ModelSettings = modelSettings });
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, skfunction);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, function);
 
         // Assert
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>(expectedServiceId), aiService);
