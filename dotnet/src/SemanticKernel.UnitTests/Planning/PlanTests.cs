@@ -357,7 +357,6 @@ public sealed class PlanTests
 
         // Arrange
         var logger = new Mock<ILogger>();
-        var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         static void method() => throw new ArgumentException("Error message");
@@ -1160,10 +1159,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         return method.Method;
     }
 
-    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(ISKPluginCollection? plugins = null)
+    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<ISKPlugin>? plugins = null)
     {
-        plugins ??= new Mock<ISKPluginCollection>().Object;
-
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
