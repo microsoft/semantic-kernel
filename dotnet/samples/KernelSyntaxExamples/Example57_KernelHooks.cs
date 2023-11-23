@@ -39,10 +39,6 @@ public static class Example57_KernelHooks
         await BeforeInvokeCancellationAsync();
 
         await AfterInvokeCancellationAsync();
-
-        await SkippingFunctionsAsync();
-
-        await RepeatFunctionsAsync();
     }
 
     private static async Task GetUsageAsync()
@@ -88,7 +84,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(Input, excuseFunction);
+        var result = await kernel.RunAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -140,7 +136,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoked += MyPostHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(Input, excuseFunction);
+        var result = await kernel.RunAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -248,86 +244,5 @@ public static class Example57_KernelHooks
         var result = await kernel.RunAsync(secondFunction);
         Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
-    }
-
-    private static async Task SkippingFunctionsAsync()
-    {
-        Console.WriteLine("\n======== Skipping a Function in the Pipeline ========\n");
-
-        Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
-
-        var skipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Skipping",
-            functionName: "SkipMe");
-
-        var dontSkipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Handlers",
-            functionName: "DontSkipMe");
-
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            if (e.FunctionMetadata.Name == "SkipMe")
-            {
-                e.Skip();
-                Console.WriteLine($"Function {e.FunctionMetadata.Name} will be skipped");
-                return;
-            }
-
-            Console.WriteLine($"Function {e.FunctionMetadata.Name} will not be skipped");
-        };
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionMetadata.Name}");
-        };
-
-        var result = await kernel.RunAsync(
-            skipMeFunction,
-            dontSkipMeFunction);
-
-        Console.WriteLine($"Final result: {result.GetValue<string>()}");
-    }
-
-    private static async Task RepeatFunctionsAsync()
-    {
-        Console.WriteLine("\n======== Repeating a Function in the Pipeline ========");
-
-        Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
-
-        var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
-
-        var repeatMeFunction = kernel.CreateFunctionFromPrompt("Write a sentence about {{$input}}",
-            functionName: "RepeatMe");
-
-        var repeatTimes = 0;
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            Console.WriteLine($"\nFunction {e.FunctionMetadata.Name} executed:");
-            Console.WriteLine($"Result: {e.SKContext.Variables.Input}");
-
-            if (repeatTimes < 3)
-            {
-                // Flag the Kernel to repeat the function
-                e.Repeat();
-
-                // Redefine the input variable to repeat the function
-                e.SKContext.Variables.Update(repeatSubjects.Dequeue());
-
-                repeatTimes++;
-                Console.WriteLine("Repeat requested!");
-
-                return;
-            }
-        };
-
-        await kernel.RunAsync("Repetition", repeatMeFunction);
     }
 }

@@ -24,9 +24,7 @@ public static class Example03_Variables
         var variables = new ContextVariables("Today is: ");
         variables.Set("day", DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture));
 
-        FunctionResult result = await kernel.RunAsync(variables,
-            textPlugin["AppendDay"],
-            textPlugin["Uppercase"]);
+        var result = await kernel.RunAsync(textPlugin["AppendDay"], variables);
 
         Console.WriteLine(result.GetValue<string>());
     }

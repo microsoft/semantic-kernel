@@ -32,7 +32,7 @@ public static class Example21_ChatGptPlugins
         contextVariables.Set("<parameter-name>", "<parameter-value>");
 
         //Run
-        var functionResult = await kernel.RunAsync(contextVariables, plugin["<function-name>"]);
+        var functionResult = await kernel.RunAsync(plugin["<function-name>"], contextVariables);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 

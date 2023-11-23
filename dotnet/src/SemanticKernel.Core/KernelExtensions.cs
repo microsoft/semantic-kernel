@@ -364,6 +364,46 @@ public static class KernelExtensions
             description));
     #endregion
 
+    #region RunAsync
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        return kernel.RunAsync(function, new ContextVariables(), cancellationToken);
+    }
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        var contextVariables = new ContextVariables();
+        contextVariables.Update(input);
+
+        return kernel.RunAsync(function, contextVariables, cancellationToken);
+    }
+
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
@@ -375,97 +415,14 @@ public static class KernelExtensions
     public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         KernelFunction function,
-        ContextVariables? variables = null,
+        ContextVariables variables,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return kernel.RunAsync(variables ?? new(), cancellationToken, function);
-    }
+        var context = kernel.CreateNewContext(variables);
 
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        ContextVariables variables,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+        return function.InvokeAsync(kernel, context, requestSettings: null, cancellationToken);
     }
 
     /// <summary>
@@ -488,7 +445,7 @@ public static class KernelExtensions
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.RunAsync(function, variables, cancellationToken);
+        return kernel.RunAsync(function, variables ?? new(), cancellationToken);
     }
 
     /// <summary>
@@ -551,6 +508,31 @@ repeat:
 
         return allFunctionResults.LastOrDefault();
     }
+    #endregion
+
+    #region RunStreamingAsync
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The target kernel</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, kernel.CreateNewContext(variables), null, cancellationToken);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
+        => kernel.RunStreamingAsync<StreamingContent>(function, variables ?? new ContextVariables(), CancellationToken.None);
+    #endregion
 
     /// <summary>
     /// Checks if the handler requested to cancel the function execution.
@@ -607,26 +589,4 @@ repeat:
         }
         return false;
     }
-
-    /// <summary>
-    /// Run a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">The target kernel</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, kernel.CreateNewContext(variables), null, cancellationToken);
-
-    /// <summary>
-    /// Run a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">Target kernel</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
-        => kernel.RunStreamingAsync<StreamingContent>(function, variables ?? new ContextVariables(), CancellationToken.None);
 }
