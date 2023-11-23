@@ -36,7 +36,7 @@ public static class Example71_AssistantDelegation
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                new SKPluginCollection { plugin });
+                new[] { plugin });
 
         var parrotAssistant =
             await AssistantBuilder.FromDefinitionAsync(
@@ -59,7 +59,7 @@ public static class Example71_AssistantDelegation
             "Can you talk like pirate?",
             "Thank you");
 
-        ISKPluginCollection Import(params IAssistant[] assistants)
+        IEnumerable<ISKPlugin> Import(params IAssistant[] assistants)
         {
             var plugins = new SKPluginCollection();
 

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -102,23 +101,6 @@ public static class ISKPluginExtensions
 
         func = null;
         return false;
-    }
-
-    /// <summary>Adds a collection of plugins to this plugin collection.</summary>
-    /// <param name="destination">The collection to which <paramref name="plugins"/> should be added.</param>
-    /// <param name="plugins">The plugins to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="ISKPlugin.Name"/>.</exception>
-    /// <exception cref="ArgumentException">A plugin with the same name as a plugin in <paramref name="plugins"/> already exists in the collection.</exception>
-    public static void AddRange(this ISKPluginCollection destination, IEnumerable<ISKPlugin> plugins)
-    {
-        Verify.NotNull(destination);
-        Verify.NotNull(plugins);
-
-        foreach (ISKPlugin plugin in plugins)
-        {
-            destination.Add(plugin);
-        }
     }
 
     /// <summary>Gets a collection of <see cref="SKFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>

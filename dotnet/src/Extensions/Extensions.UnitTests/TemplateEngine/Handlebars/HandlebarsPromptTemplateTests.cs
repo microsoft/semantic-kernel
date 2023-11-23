@@ -5,13 +5,10 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
-using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.TemplateEngine.PromptTemplateConfig;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
@@ -21,21 +18,12 @@ public sealed class HandlebarsPromptTemplateTests
     private readonly HandlebarsPromptTemplateFactory _factory;
     private readonly Kernel _kernel;
     private readonly ContextVariables _variables;
-    private readonly Mock<IReadOnlySKPluginCollection> _functions;
-    private readonly ITestOutputHelper _logger;
-    private readonly Mock<IAIServiceProvider> _serviceProvider;
-    private readonly Mock<IAIServiceSelector> _serviceSelector;
 
-    public HandlebarsPromptTemplateTests(ITestOutputHelper testOutputHelper)
+    public HandlebarsPromptTemplateTests()
     {
-        this._logger = testOutputHelper;
         this._factory = new HandlebarsPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._kernel = new KernelBuilder().Build();
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
-
-        this._functions = new Mock<IReadOnlySKPluginCollection>();
-        this._serviceProvider = new Mock<IAIServiceProvider>();
-        this._serviceSelector = new Mock<IAIServiceSelector>();
     }
 
     [Fact]
