@@ -79,7 +79,6 @@ public static class Example40_DIContainer
         var collection = new ServiceCollection();
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
         collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
-        collection.AddTransient<ISKPluginCollection, SKPluginCollection>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 

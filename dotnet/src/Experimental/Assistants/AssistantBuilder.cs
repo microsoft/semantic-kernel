@@ -155,7 +155,10 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithPlugins(IEnumerable<ISKPlugin> plugins)
     {
-        this._plugins.AddRange(plugins);
+        foreach (ISKPlugin plugin in plugins)
+        {
+            this._plugins.Add(plugin);
+        }
 
         return this;
     }

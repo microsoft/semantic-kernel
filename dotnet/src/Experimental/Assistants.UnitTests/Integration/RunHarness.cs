@@ -97,7 +97,7 @@ public sealed class RunHarness
                 apiKey: TestConfig.OpenAIApiKey,
                 model: TestConfig.SupportedGpt35TurboModel,
                 definitionPath: "Templates/GameAssistant.yaml",
-                plugins: new SKPluginCollection { gamePlugin }).ConfigureAwait(true);
+                plugins: new[] { gamePlugin }).ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
