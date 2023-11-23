@@ -234,10 +234,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="context">Execution context</param>
-    /// <param name="requestSetings"></param>
-    private PromptRenderingEventArgs CallPromptRendering(Kernel kernel, SKContext context, AIRequestSettings? requestSetings)
+    /// <param name="requestSettings">Request settings</param>
+    private PromptRenderingEventArgs CallPromptRendering(Kernel kernel, SKContext context, AIRequestSettings? requestSettings)
     {
-        var eventArgs = new PromptRenderingEventArgs(this.GetMetadata(), context, requestSetings);
+        var eventArgs = new PromptRenderingEventArgs(this.GetMetadata(), context, requestSettings);
         kernel.OnPromptRendering(eventArgs);
         return eventArgs;
     }
