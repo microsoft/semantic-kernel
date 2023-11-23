@@ -173,7 +173,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
-            var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
             result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
             result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
@@ -257,19 +257,23 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="context">Execution context</param>
     /// <param name="result">Current function result</param>
     /// <param name="prompt">Prompt used by the function</param>
-    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result, string prompt)
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result, string prompt)
     {
         result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
 
         var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
-            // Updates the eventArgs metadata during invoked handler execution
-            // will reflect in the result metadata
-            result.Metadata = eventArgs.Metadata;
+            // Apply any changes from the event handlers to final result.
+            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
+            {
+                // Updates the eventArgs metadata during invoked handler execution
+                // will reflect in the result metadata
+                Metadata = eventArgs.Metadata
+            };
         }
 
-        return eventArgs;
+        return (eventArgs, result);
     }
 
     /// <summary>
@@ -291,58 +295,5 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
-
-    /*
-    /// <summary>
-    /// Default implementation to identify if a function was cancelled or skipped.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingCancelOrSkipRequested(FunctionInvokingEventArgs eventArgs) =>
-        IsInvokingCancelRequested(eventArgs) || IsInvokingSkipRequested(eventArgs);
-
-    /// <summary>
-    /// Default implementation to identify if a function was skipped.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingSkipRequested(FunctionInvokingEventArgs eventArgs) =>
-        eventArgs?.IsSkipRequested == true;
-
-    /// <summary>
-    /// Default implementation to identify if a function was cancelled in the pre hook.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokingCancelRequested(FunctionInvokingEventArgs eventArgs) =>
-        eventArgs?.CancelToken.IsCancellationRequested == true;
-
-    /// <summary>
-    /// Default implementation to identify if a function was cancelled in the post hook.
-    /// </summary>
-    /// <param name="eventArgs">Function invoked event args</param>
-    /// <returns>True if it was cancelled or skipped</returns>
-    internal static bool IsInvokedCancelRequested(FunctionInvokedEventArgs eventArgs) =>
-        eventArgs?.CancelToken.IsCancellationRequested == true;
-    */
-
-    private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
-    {
-        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig) =>
-            new NullPromptTemplate(templateString);
-
-        private sealed class NullPromptTemplate : IPromptTemplate
-        {
-            private readonly string _templateText;
-
-            public NullPromptTemplate(string templateText) => this._templateText = templateText;
-
-            public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
-
-            public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
-                Task.FromResult(this._templateText);
-        }
-    }
-
     #endregion
 }
