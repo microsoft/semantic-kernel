@@ -207,6 +207,16 @@ public abstract class ClientBase
         };
     }
 
+    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletions streamingChatCompletions)
+    {
+        return new Dictionary<string, object>()
+        {
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+        };
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -338,6 +348,7 @@ public abstract class ClientBase
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
+        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
 
         int choiceIndex = 0;
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
@@ -354,7 +365,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex);
+                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex, responseMetadata);
                     continue;
                 }
 

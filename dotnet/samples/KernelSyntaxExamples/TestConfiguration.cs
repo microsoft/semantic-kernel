@@ -114,7 +114,6 @@ public sealed class TestConfiguration
     {
         public string ApiKey { get; set; }
         public string ModelId { get; set; }
-        public string StreamingModelId { get; set; }
     }
 
     public class PineconeConfig

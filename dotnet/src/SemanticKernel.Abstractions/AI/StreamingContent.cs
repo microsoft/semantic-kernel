@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.AI;
 
@@ -46,11 +45,6 @@ public abstract class StreamingContent
     /// </remarks>
     /// <returns>Byte array representation of the chunk</returns>
     public abstract byte[] ToByteArray();
-
-    /// <summary>
-    /// The current context associated the function call.
-    /// </summary>
-    internal SKContext? Context { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingContent"/> class.

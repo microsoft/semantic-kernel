@@ -13,7 +13,6 @@ public static class Example20_HuggingFace
 {
     public static async Task RunAsync()
     {
-        await RunInferenceApiStreamingExampleAsync();
         await RunInferenceApiExampleAsync();
         await RunLlamaExampleAsync();
     }
@@ -22,9 +21,6 @@ public static class Example20_HuggingFace
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>
     /// </summary>
-    /// <remarks>
-    /// Tested models: google/flan-t5-xxl
-    /// </remarks>
     private static async Task RunInferenceApiExampleAsync()
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
@@ -41,32 +37,6 @@ public static class Example20_HuggingFace
         var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
 
         Console.WriteLine(result.GetValue<string>());
-    }
-
-    /// <summary>
-    /// This example uses HuggingFace Inference API to access hosted models.
-    /// More information here: <see href="https://huggingface.co/inference-api"/>
-    /// </summary>
-    /// <remarks>
-    /// Tested models: HuggingFaceH4/zephyr-7b-beta
-    /// </remarks>
-    private static async Task RunInferenceApiStreamingExampleAsync()
-    {
-        Console.WriteLine("\n======== HuggingFace Inference API Streaming example ========\n");
-
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletionService(
-                model: TestConfiguration.HuggingFace.StreamingModelId,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
-            .Build();
-
-        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Why is streaming important?");
-
-        await foreach (var chunk in kernel.RunStreamingAsync(questionAnswerFunction))
-        {
-            Console.Write(chunk);
-        }
     }
 
     /// <summary>

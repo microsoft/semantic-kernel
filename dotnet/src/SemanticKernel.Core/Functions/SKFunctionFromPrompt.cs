@@ -168,7 +168,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             var result = new FunctionResult(this.Name, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
-            result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
             result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
@@ -196,49 +195,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 
         StringBuilder fullCompletion = new();
-        IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
-
-        // Manually handling the enumeration to properly log any exception
-        bool hasNextChunk;
-        do
+        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken))
         {
-            T? genericChunk = default;
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (hasNextChunk)
-                {
-                    genericChunk = enumerator.Current;
-                    fullCompletion.Append(genericChunk);
-
-                    // Check if genericChunk is a StreamingResultChunk and update the context
-                    if (genericChunk is StreamingContent resultChunk)
-                    {
-                        // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
-                        resultChunk.Context = context;
-                    }
-                }
-            }
-            catch (Exception ex) when (!ex.IsCriticalException())
-            {
-                this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
-                throw;
-            }
-
-            if (hasNextChunk && genericChunk is not null)
-            {
-                yield return genericChunk;
-            }
-        } while (hasNextChunk);
+            cancellationToken.ThrowIfCancellationRequested();
+            fullCompletion.Append(genericChunk);
+        }
 
         // Update the result with the completion
         context.Variables.Update(fullCompletion.ToString());
-
-        var result = new FunctionResult(this.Name, context, fullCompletion.ToString());
-
-        result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
         this.CallFunctionInvoked(kernel, context, null, renderedPrompt);
         // There is no post cancellation check to override the result as the stream data was already sent.
@@ -333,23 +297,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 
         return (eventArgs, result);
-    }
-
-    /// <summary>
-    /// Try to get the prompt from the event args metadata.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <param name="defaultPrompt">Default prompt if none is found in metadata</param>
-    /// <returns></returns>
-    private string GetPromptFromEventArgsMetadataOrDefault(FunctionInvokingEventArgs eventArgs, string defaultPrompt)
-    {
-        if (!eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
-        {
-            return defaultPrompt;
-        }
-
-        // If prompt key exists and was modified to null default to an empty string
-        return renderedPromptFromMetadata?.ToString() ?? string.Empty;
     }
 
     /// <summary>Create a random, valid function name.</summary>

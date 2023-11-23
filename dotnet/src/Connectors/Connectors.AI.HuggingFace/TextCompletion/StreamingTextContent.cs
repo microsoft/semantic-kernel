@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
@@ -16,32 +15,21 @@ public class StreamingTextContent : StreamingContent
     public override int ChoiceIndex { get; }
 
     /// <summary>
-    /// Complete generated text
-    /// Only available when the generation is finished
+    /// Text associated to the update
     /// </summary>
-    public string? GeneratedText { get; set; }
-
-    /// <summary>
-    /// Optional Generation details
-    /// Only available when the generation is finished
-    /// </summary>
-    public string? Details { get; set; }
-
-    /// <summary>
-    /// Token details
-    /// </summary>
-    public TokenContentModel Token { get; set; }
+    public string Content { get; }
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
-    /// <param name="jsonChunk">JsonElement representation of the chunk</param>
-    public StreamingTextContent(JsonElement jsonChunk) : base(jsonChunk)
+    /// <param name="text">Text update</param>
+    /// <param name="resultIndex">Index of the choice</param>
+    /// <param name="innerContentObject">Inner chunk object</param>
+    /// <param name="metadata">Metadata information</param>
+    public StreamingTextContent(string text, int resultIndex, object? innerContentObject = null, Dictionary<string, object>? metadata = null) : base(innerContentObject, metadata)
     {
-        this.ChoiceIndex = 0;
-        this.GeneratedText = jsonChunk.GetProperty("generated_text").GetString();
-        this.Details = jsonChunk.GetProperty("details").GetString();
-        this.Token = JsonSerializer.Deserialize<TokenContentModel>(jsonChunk.GetProperty("token").GetRawText())!;
+        this.ChoiceIndex = resultIndex;
+        this.Content = text;
     }
 
     /// <inheritdoc/>
@@ -53,37 +41,6 @@ public class StreamingTextContent : StreamingContent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Token?.Text ?? string.Empty;
-    }
-
-    /// <summary>
-    /// Token class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
-    /// </summary>
-    public record TokenContentModel
-    {
-        /// <summary>
-        /// Id of the token
-        /// </summary>
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Text associated to the Token
-        /// </summary>
-        [JsonPropertyName("text")]
-        public string? Text { get; set; }
-
-        /// <summary>
-        /// Log probability of the token
-        /// </summary>
-        [JsonPropertyName("logprob")]
-        public decimal LogProb { get; set; }
-
-        /// <summary>
-        /// Is the token a special token?
-        /// Can be used to ignore tokens when concatenating
-        /// </summary>
-        [JsonPropertyName("special")]
-        public bool Special { get; set; }
+        return this.Content;
     }
 }

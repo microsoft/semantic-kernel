@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -100,14 +99,16 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var result in this.InternalGetStreamingContentAsync(input, cancellationToken).ConfigureAwait(false))
+        foreach (var result in await this.ExecuteGetCompletionsAsync(input, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // Gets the non streaming content and returns as one complete result
+            var content = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
 
             // If the provided T is a string, return the completion as is
             if (typeof(T) == typeof(string))
             {
-                yield return (T)(object)(result.Token?.Text ?? string.Empty);
+                yield return (T)(object)content;
                 continue;
             }
 
@@ -115,8 +116,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             if (typeof(T) == typeof(StreamingTextContent) ||
                 typeof(T) == typeof(StreamingContent))
             {
-                yield return (T)(object)result;
+                yield return (T)(object)new StreamingTextContent(content, 1, result);
             }
+
+            throw new NotSupportedException($"Type {typeof(T)} is not supported");
         }
     }
 
@@ -152,47 +155,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
 
         return completionResponse.ConvertAll(c => new TextCompletionResult(c));
-    }
-
-    private async IAsyncEnumerable<StreamingTextContent> InternalGetStreamingContentAsync(string text, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var completionRequest = new TextCompletionRequest
-        {
-            Input = text,
-            Stream = true
-        };
-
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
-
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        if (!string.IsNullOrEmpty(this._apiKey))
-        {
-            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        }
-
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream);
-
-        const string ServerEventPayloadPrefix = "data:";
-        while (!reader.EndOfStream)
-        {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
-
-            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
-            {
-                body = body.Substring(ServerEventPayloadPrefix.Length);
-            }
-
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                continue;
-            }
-
-            JsonElement contentObject = JsonSerializer.Deserialize<JsonElement>(body);
-
-            yield return new StreamingTextContent(contentObject);
-        }
     }
 
     /// <summary>

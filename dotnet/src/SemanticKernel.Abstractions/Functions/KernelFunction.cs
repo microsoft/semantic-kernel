@@ -147,62 +147,23 @@ public abstract class KernelFunction
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         StringBuilder fullCompletion = new();
-        IAsyncEnumerator<T> enumerator = this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-        // Manually handling the enumeration to properly log any exception
-        bool hasNextChunk;
-        do
+        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken))
         {
-            T? genericChunk = default;
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (hasNextChunk)
-                {
-                    genericChunk = enumerator.Current;
-                    fullCompletion.Append(genericChunk);
-                    // Check if genericChunk is a StreamingResultChunk and update the context
-                    if (genericChunk is StreamingContent resultChunk)
-                    {
-                        // This currently is needed so plans can get the context from the chunks to update the variables generated when the stream ends.
-                        resultChunk.Context = context;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                tags.Add("error.type", ex.GetType().FullName);
-                if (logger.IsEnabled(LogLevel.Error))
-                {
-                    logger.LogError(ex, "Function streaming failed. Error: {Message}", ex.Message);
-                }
-
-                LogCompleted(logger, tags, startingTimestamp);
-                throw;
-            }
-
-            if (hasNextChunk && genericChunk is not null)
-            {
-                yield return genericChunk;
-            }
-        } while (hasNextChunk);
+            fullCompletion.Append(genericChunk);
+            yield return genericChunk;
+        }
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Function streaming succeeded. Result: {Result}", fullCompletion); // Sensitive data, logging as trace, disabled by default
         }
 
-        LogCompleted(logger, tags, startingTimestamp);
-
-        static void LogCompleted(ILogger logger, TagList tags, long startingTimestamp)
+        TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+        s_invocationDuration.Record(duration.TotalSeconds, in tags);
+        if (logger.IsEnabled(LogLevel.Information))
         {
-            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-            s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function streaming completed. Duration: {Duration}ms", duration.TotalMilliseconds);
-            }
+            logger.LogInformation("Function streaming completed. Duration: {Duration}ms", duration.TotalMilliseconds);
         }
     }
 

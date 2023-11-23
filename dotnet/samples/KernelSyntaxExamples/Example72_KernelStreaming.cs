@@ -28,7 +28,7 @@ public static class Example72_KernelStreaming
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
             Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
-            return;j
+            return;
         }
 
         Kernel kernel = new KernelBuilder()

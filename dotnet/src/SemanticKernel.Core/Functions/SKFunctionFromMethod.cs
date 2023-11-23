@@ -65,7 +65,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
-            methodDetails.StreamingFunc,
             methodDetails.Name,
             description ?? methodDetails.Description,
             parameters?.ToList() ?? methodDetails.Parameters,
@@ -156,75 +155,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
-        if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+        var functionResult = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        if (functionResult.Value is T)
         {
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Function {Name} cancelled or skipped prior to invocation streaming.", this.Name);
-            }
-
-            yield break;
+            yield return (T)functionResult.Value;
         }
-
-        IAsyncEnumerator<object> enumerator = this._streamingFunction(null, requestSettings, kernel, context, cancellationToken).GetAsyncEnumerator(cancellationToken);
-
-        T? genericChunk;
-        bool hasNextChunk;
-
-        // Manually handling the enumeration to properly log any exception
-        do
+        else if (functionResult.Value is not null)
         {
-            genericChunk = default;
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
-
-                if (hasNextChunk)
-                {
-                    var chunk = enumerator.Current;
-
-                    if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
-                    {
-                        genericChunk = (T)(object)chunk;
-                    }
-                    else if (chunk is StreamingMethodContent nativeChunk)
-                    {
-                        // If the provided T is not a specialization of StreamingContent interface, cast the function value as is to the T
-                        genericChunk = (T)nativeChunk.Value;
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Streaming result chunk of type {typeof(T)} is not supported.");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                {
-                    this._logger.LogError(e, "Function {Name} streaming execution failed: {Error}", this.Name, e.Message);
-                }
-                throw;
-            }
-
-            if (hasNextChunk && genericChunk is not null)
-            {
-                yield return genericChunk;
-            }
-        } while (hasNextChunk);
-
-        // Invoke the post hook.
-        var (invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context);
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Function {Name} invocation streaming {Completion}: {Result}",
-                this.Name,
-                invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
-                result.Value);
+            yield return (T)(object)new StreamingMethodContent(functionResult.Value);
         }
     }
 
@@ -269,25 +207,16 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         SKContext context,
         CancellationToken cancellationToken);
 
-    private delegate IAsyncEnumerable<StreamingMethodContent> ImplementationStreamingFunc(
-        ITextCompletion? textCompletion,
-        AIRequestSettings? requestSettingsk,
-        Kernel kernel,
-        SKContext context,
-        CancellationToken cancellationToken);
-
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<SKParameterMetadata> _parameters;
     private readonly SKReturnParameterMetadata _returnParameter;
-    private readonly ImplementationStreamingFunc _streamingFunction;
     private readonly ILogger _logger;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, ImplementationStreamingFunc StreamingFunc, List<SKParameterMetadata> Parameters, SKReturnParameterMetadata ReturnParameter);
+    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<SKParameterMetadata> Parameters, SKReturnParameterMetadata ReturnParameter);
 
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
-        ImplementationStreamingFunc implementationStreamingFunc,
         string functionName,
         string description,
         IReadOnlyList<SKParameterMetadata> parameters,
@@ -299,7 +228,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         this._logger = logger;
 
         this._function = implementationFunc;
-        this._streamingFunction = implementationStreamingFunc;
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
         this._returnParameter = returnParameter;
@@ -371,76 +299,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return returnFunc(functionName!, result, context, kernel);
         }
 
-        // Create the streaming func
-        async IAsyncEnumerable<StreamingMethodContent> StreamingFunction(
-            ITextCompletion? text,
-            AIRequestSettings? requestSettings,
-            Kernel kernel,
-            SKContext context,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            // Create the arguments.
-            object?[] args = parameterFuncs!.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
-            for (int i = 0; i < args.Length; i++)
-            {
-                args[i] = parameterFuncs[i](kernel, context, cancellationToken);
-            }
-
-            if (IsAsyncEnumerable(method, out var enumeratedTypes))
-            {
-                // Invoke the method to get the IAsyncEnumerable<T> instance
-                object asyncEnumerable = method.Invoke(target, args);
-                if (asyncEnumerable == null)
-                {
-                    yield break;
-                }
-
-                // Get the method for GetAsyncEnumerator()
-                MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
-                    .MakeGenericType(enumeratedTypes)
-                    .GetMethod("GetAsyncEnumerator");
-
-                // Get the IAsyncEnumerator<T> type
-                Type asyncEnumeratorType = typeof(IAsyncEnumerator<>).MakeGenericType(enumeratedTypes);
-
-                // Invoke GetAsyncEnumerator() to get the IAsyncEnumerator<T> instance
-                object asyncEnumerator = getAsyncEnumeratorMethod.Invoke(asyncEnumerable, new object[] { cancellationToken });
-
-                // Get the MoveNextAsync() and Current properties
-                MethodInfo moveNextAsyncMethod = asyncEnumeratorType.GetMethod("MoveNextAsync");
-                PropertyInfo currentProperty = asyncEnumeratorType.GetProperty("Current");
-
-                // Iterate over the items
-                while (await ((ValueTask<bool>)moveNextAsyncMethod.Invoke(asyncEnumerator, null)).ConfigureAwait(false))
-                {
-                    object currentItem = currentProperty.GetValue(asyncEnumerator);
-
-                    yield return new StreamingMethodContent(currentItem);
-                }
-            }
-            else
-            {
-                // When streaming is requested for a non-streaming native method, it returns just one result
-                object? result = method.Invoke(target, args);
-
-                if (result is not null)
-                {
-                    var functionResult = await returnFunc(functionName!, result, context, kernel).ConfigureAwait(false);
-
-                    // The enumeration will only return if there's actually a result.
-                    if (functionResult.Value is not null)
-                    {
-                        yield return new StreamingMethodContent(functionResult.Value);
-                    }
-                }
-            }
-        }
-
         // And return the details.
         return new MethodDetails
         {
             Function = Function,
-            StreamingFunc = StreamingFunction,
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
@@ -471,20 +333,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             }
         }
 
-        return false;
-    }
-
-    private static bool IsAsyncEnumerable(MethodInfo method, out Type[] enumeratedTypes)
-    {
-        Type returnType = method.ReturnType;
-
-        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
-        {
-            enumeratedTypes = returnType.GetGenericArguments();
-            return true;
-        }
-
-        enumeratedTypes = Array.Empty<Type>();
         return false;
     }
 
