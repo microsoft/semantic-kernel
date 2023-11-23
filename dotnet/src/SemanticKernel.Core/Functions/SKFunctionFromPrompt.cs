@@ -261,11 +261,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
 
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
+            result = new FunctionResult(this.Name, eventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata

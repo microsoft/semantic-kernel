@@ -439,7 +439,7 @@ public sealed class Plan : KernelFunction
 
     private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
     {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
             // Updates the eventArgs metadata during invoked handler execution will reflect in the result metadata

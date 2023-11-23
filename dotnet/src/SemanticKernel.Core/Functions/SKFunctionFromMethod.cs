@@ -156,11 +156,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
     {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext.Variables.Input)
+            result = new FunctionResult(this.Name, eventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
