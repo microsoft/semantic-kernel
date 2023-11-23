@@ -159,11 +159,19 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (functionResult.Value is T)
         {
             yield return (T)functionResult.Value;
+            yield break;
         }
-        else if (functionResult.Value is not null)
+
+        if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
         {
-            yield return (T)(object)new StreamingMethodContent(functionResult.Value);
+            if (functionResult.Value is not null)
+            {
+                yield return (T)(object)new StreamingMethodContent(functionResult.Value);
+            }
+            yield break;
         }
+
+        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(T)}");
     }
 
     private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)

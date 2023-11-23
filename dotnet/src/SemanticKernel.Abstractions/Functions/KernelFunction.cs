@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -99,9 +98,9 @@ public abstract class KernelFunction
         {
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
 
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>()); // Sensitive data, logging as trace, disabled by default
+                logger.LogTrace("Function succeeded.");
             }
 
             return result;
@@ -145,28 +144,13 @@ public abstract class KernelFunction
 
         logger.LogInformation("Function invoking streaming.");
 
-        TagList tags = new() { { "sk.function.name", this.Name } };
-        long startingTimestamp = Stopwatch.GetTimestamp();
-
-        StringBuilder fullCompletion = new();
-
         await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken))
         {
-            fullCompletion.Append(genericChunk);
             yield return genericChunk;
         }
 
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function streaming succeeded. Result: {Result}", fullCompletion); // Sensitive data, logging as trace, disabled by default
-        }
-
-        TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-        s_invocationDuration.Record(duration.TotalSeconds, in tags);
-        if (logger.IsEnabled(LogLevel.Information))
-        {
-            logger.LogInformation("Function streaming completed. Duration: {Duration}ms", duration.TotalMilliseconds);
-        }
+        // No logging is done here since there is no guarantee that this line will be hit
+        // (Only if the caller consumes the whole enumeration)
     }
 
     /// <summary>

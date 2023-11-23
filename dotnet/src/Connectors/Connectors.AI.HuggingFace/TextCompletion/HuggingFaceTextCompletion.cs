@@ -95,11 +95,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string input,
+        string prompt,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (var result in await this.ExecuteGetCompletionsAsync(input, cancellationToken).ConfigureAwait(false))
+        foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
             // Gets the non streaming content and returns as one complete result
