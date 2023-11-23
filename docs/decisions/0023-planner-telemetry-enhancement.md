@@ -11,7 +11,7 @@ informed: {}
 
 ## Context and Problem Statement
 
-It would be extremely beneficial for applications using Semantic Kernel' planning features to be able to continuously monitor the performance of planners and plans.
+It would be extremely beneficial for applications using Semantic Kernel's planning features to be able to continuously monitor the performance of planners and plans.
 
 ## Scenarios
 
@@ -32,31 +32,111 @@ Contoso is a company that is developing an AI application using SK.
 
 1. We provide an example on how to send telemetry to Application Insights. Although other telemetry service options are supported technically, we will not cover possible ways of setting them up in this ADR.
 2. This ADR does not seek to modify the current instrumentation design in SK.
+3. We do not consider services that do not return token usage.
 
 ## Decision Drivers
 
 - The framework should be telemetry service agnostic.
 - Enabling and disabling specific telemetry items should require minimum effort.
 
-## Difficulties
-
-- SK currently produces metrics for token usage. However, they are not categorized. Thus, there is no way for developers to know the toke usage used by different operations.
+- The following metrics should be emitted by SK:
+  - Input token usage for prompt
+    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Service ID | Model ID | Value |
+      |---|---|---|---|---|
+      | Function | WritePoem | | GPT-3.5-Turbo | 40
+      | Function | TellJoke | | GPT-4 | 50
+      | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 30
+      | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 100
+  - Output token usage for prompt
+    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Service ID | Model ID | Value |
+      |---|---|---|---|---|
+      | Function | WritePoem | | GPT-3.5-Turbo | 40
+      | Function | TellJoke | | GPT-4 | 50
+      | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 30
+      | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 100
+  - Model request time for prompt
+    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Service ID | Model ID | Value |
+      |---|---|---|---|---|
+      | Function | WritePoem | | GPT-3.5-Turbo | 0.5
+      | Function | TellJoke | | GPT-4 | 0.5m
+      | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 0.3m
+      | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 1m
+  - Aggregated execution time for functions
+    - Description: A function can consist of multiple prompts. The execution time of a function is the duration from start to end of a function's `invoke` call.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Value |
+      |---|---|---|
+      | Function | WritePoem | 1m
+      | Function | TellJoke | 1m
+      | Function | WriteAndTellJoke | 1.5m
+      | Planner | CreateHandlebarsPlan | 2m
+  - Success count for planners
+    - Description: A planner run is considered successful when it generates a valid plan.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Fail | Success
+      |---|---|---|---|
+      | Planner | CreateHandlebarsPlan | 5 | 95
+      | Planner | CreateHSequentialPlan | 20 | 80
+  - Success count for plans
+    - Description: A plan execution is considered successful when all steps in the plan are executed successfully.
+    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Example:
+      | ComponentType | ComponentName | Fail | Success
+      |---|---|---|---|
+      | Plan | HandlebarsPlan | 5 | 95
+      | Plan | SequentialPlan | 20 | 80
 
 ## Considered Options
 
 - Function hooks
   - Inject logic to functions that will get executed before or after a function is invoked.
-- Distributed tracing
-  - Activity tags & Metrics
-    - Use activities to record individual operations.
-    - Use tags in activities to record custom information.
-    - Use baggage in activities to more easily correlate dependencies.
-    - Use metrics to continuously monitor performance.
-    - Use tags in metrics to categorize metrics.
-  - Logging & Metrics
-    - Use logging to record custom information for individual operations.
-    - Use metrics to continuously monitor performance.
-    - Use tags in metrics to categorize metrics.
+- Instrumentation
+  - Logging
+  - Metrics
+  - Traces
+
+## Other Considerations
+
+SK currently tracks token usage metrics in connectors; however, these metrics are not categorized. Consequently, developers cannot determine token usage for different operations. To address this issue, we propose the following two approaches:
+
+- Bottom-up: Propagate token usage information from connectors back to the functions, along with model results.
+- Top-down: Propagate function information down to the connectors, enabling them to tag metric items with function information.
+
+We have decided to implement the bottom-up approach for the following reasons:
+
+1. SK is already configured to propagate token usage information from connectors via `ModelResult`. We simply need to extend the list of items that get propagated, such as model information.
+2. Currently, SK does not have a method for passing function information down to the connector level. Although we considered using [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/#:~:text=In%20OpenTelemetry%2C%20Baggage%20is%20contextual%20information%20that%E2%80%99s%20passed,available%20to%20any%20span%20created%20within%20that%20trace.) as a means of propagating information downward, experts from the OpenTelemetry team advised against this approach due to security concerns.
+
+With the bottom-up approach, we need to add model information to `IResultBase`:
+
+```csharp
+/// <summary>
+/// Interface for model results
+/// </summary>
+public interface IResultBase
+{
+  /// <summary>
+  /// Model name or Id
+  /// </summary>
+  string Model { get; }
+
+  /// <summary>
+  /// Gets the model result data.
+  /// </summary>
+  ModelResult ModelResult { get; }
+}
+```
 
 ## Decision Outcome
 
@@ -70,25 +150,25 @@ Tests can be added to make sure that all the expected telemetry items are in pla
 
 ### Function hooks
 
-Function hooks allow developers to inject logic to kernel that will be executed before or after a function is invoked. Example use cases include logging the function input before a function is invoked, and logging results after the function returns.
+Function hooks allow developers to inject logic to the kernel that will be executed before or after a function is invoked. Example use cases include logging the function input before a function is invoked, and logging results after the function returns.
 For more information, please refer to the following ADRs:
 
 1. [Kernel Hooks Phase 1](./0005-kernel-hooks-phase1.md)
 2. [Kernel Hooks Phase 2](./0018-kernel-hooks-phase2.md)
 
-This approach will automatically inject default callbacks that sends telemetry data to a telemetry service for all functions when the feature is turned on.
+We can inject, during function registration, default callbacks to log critical information for all functions.
 
 Pros:
 
-1. Maximum exposure and flexibility to the developers. i.e. App developers can very easily what additional information is needed for individual functions by adding more callbacks.
+1. Maximum exposure and flexibility to the developers. i.e. App developers can very easily log additional information for individual functions by adding more callbacks.
 
 Cons:
 
-1. Does not use the existing System.Diagnostic framework that has been set up in the kernel. i.e. InstrumentedSKFunction, InstrumentedPlan, and InstrumentedPlanner.
-2. Does not provide the full trace detail.
-3. Difficult to create a telemetry service agnostic solution.
+1. Does not create metrics and need additional works to aggregate results.
+2. Relying only on logs does not provide trace details.
+3. Logs are modified more frequently, which could lead an unstable implementation and require extra maintenance.
 
-> Note: With distributed tracing and function hook already set up in SK, it's up to the developers to log additional information as telemetry, provided that the information is available in the hooks.
+> Note: with distributed tracing already implemented in SK, developers can create custom telemetry within the hooks, which will be sent to the telemetry service once configured, as long as the information is available in the hooks. However, telemetry items created inside the hooks will not be correlated to the functions, as they are outside the scope of the functions.
 
 ### Distributed tracing
 
@@ -98,60 +178,69 @@ For more information, please refer to this document: [.Net distributed tracing](
 
 Overall pros:
 
-1. Native .Net support and the kernel has set this up.
-2. Telemetry service agnostic.
+1. Native .Net support.
+2. Distributed tracing is already implemented in SK. We just need to add more telemetry.
+3. Telemetry service agnostic with [OpenTelemetry](https://opentelemetry.io/docs/what-is-opentelemetry/).
 
 Overall cons:
 
-1. Less flexibility for app developers to add custom traces and metrics.
+1. Less flexibility for app developers consuming SK as a library to add custom traces and metrics.
 
-#### Metrics
+#### Logging
 
-Pros:
-
-1. Easy to use for continuous monitoring.
-2. Has been set up in SK.
-
-Cons: No additional cons identified given the scope of this document.
-
-#### Activity tags & baggage
+Logs will be used to record interesting events while the code is running.
 
 ```csharp
-// In the instrumented planner
-activity?.AddBaggage("Operation", $"{PlannerType}.CreatePlan");
+this._logger.LogInformation("{PlannerType}: Received planning request.", PlannerType, plan.ToPlanString());
+this._logger.LogInformation("{PlannerType}: Successfully created plan.", PlannerType, plan.ToPlanString());
+```
 
-try
-{
-  ...
-  // If planner runs successfully
-  activity?.AddTag("Status", "Success");
+#### [Metrics](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics)
 
-  // If it's in debugging mode
-  // Due to privacy concerns, we need to make certain telemetry items optional.
-  activity?.AddTag("Goal", goal);
-  activity?.AddTag("Plan", plan.ToSafePlanString());
-  activity?.AddTag("ExecutionTime", duration);
-}
-catch(...)
+Metrics will be used to record measurements overtime.
+
+```csharp
+// Create a meter for grouping instruments
+Meter s_meter = new("Microsoft.SemanticKernel.Planning");
+
+// Create an instrument
+Counter<int> s_promptTokensCounter =
+    s_meter.CreateCounter<int>(
+        name: "tokens.prompt",
+        unit: "{token}",
+        description: "Number of prompt tokens used");
+
+// Add a measurement
+s_promptTokensCounter.Add(
+  usage.PromptTokens,
+  new KeyValuePair<string, object>("ComponentType", "Planner"),
+  new KeyValuePair<string, object>("ComponentName", "CreateHandlebarsPlan")
+);
+```
+
+#### [Traces](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing)
+
+Activities are used to track dependencies through an application, correlating work done by other components, and form a tree of activities known as a trace.
+
+```csharp
+ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
+
+// Create and start an activity
+using var activity = s_activitySource.StartActivity("CreateHandlebarsPlan");
+
+// Use tags to store information useful for diagnostics
+activity?.SetTag("tokens.prompt", usage.PromptTokens);
+activity?.SetTag("tokens.completion", usage.CompletionTokens);
+// Duration is recorded within the activity. Timer is automatically stopped when the activity object is disposed.
+
+if (config.IncludeSensitiveInfo)
 {
-  // If planner fails
-  activity?.AddTag("Status", "Failed");
+  activity?.SetTag("goal", goal);
+  activity?.SetTag("steps", plan.ToPlanString());
 }
 ```
 
-```csharp
-// In Connectors.AI.OpenAI ClientBase.cs
-private static readonly ActivitySource s_activitySource = new(typeof(ClientBase).FullName);
-
-// In internal GetTextResults and GetChatResults calls
-using var activity = s_activitySource.StartActivity($"{this.GetType().Name}.GetTextResults");
-if (activity?.GetBaggageItem("Operation") is not null)
-{
-    activity?.AddTag("Operation", activity.GetBaggageItem("Operation"));
-}
-```
-
-In an application that uses SK and sends telemetry to Application Insights:
+## Example of how an application would send the telemetry to Application Insights
 
 ```csharp
 using var traceProvider = Sdk.CreateTracerProviderBuilder()
@@ -176,43 +265,3 @@ using var loggerFactory = LoggerFactory.Create(builder =>
   builder.SetMinimumLevel(MinLogLevel);
 });
 ```
-
-The above produces dependency information similar to the screenshot below:
-
-<img src="./images/0022-dependency-in-application-insights-create-plan.png" alt="Example create plan dependency generated in Application Insights" width="400"/>
-
-<img src="./images/0022-dependency-in-application-insights-client-base.png" alt="Example model calling dependency generated in Application Insights" width="400"/>
-
-Pros:
-
-1. Easy to add custom data.
-2. Semi-structured data organized by tags.
-3. Automatically correlated from parent to chid items. Baggage makes it even easier for querying.
-
-Cons:
-
-1. Everything has to a string.
-
-#### Log
-
-```csharp
-this._logger.LogTrace("{PlannerType}: Created plan with details: \n {Plan}", PlannerType, plan.ToPlanString());
-```
-
-The above produces trace information similar to the screenshot below:
-
-<img src="./images/0022-trace-in-application-insights.png" alt="Example trace generated in Application Insights" width="400"/>
-
-Cons:
-
-1. More contexture information.
-
-Pros:
-
-1. Logs are modified more frequently.
-2. Log configuration will affect what telemetry the libraries produce.
-3. More difficult to correlate telemetry items during query time.
-
-## More Information
-
-The current design of the instrumented planner does not allow token usages to be propagated upward for instrumentation. Thus, we need to correlate planner operations and model call operations.
