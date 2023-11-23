@@ -753,7 +753,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     }
 
     [Fact]
-    public async Task ConPlanStepsTriggerKernelEventsAsync()
+    public async Task CanPlanStepsTriggerKernelEventsAsync()
     {
         List<KernelFunction> functions = new();
 
@@ -868,7 +868,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 2;
-        var expectedInvokedHandlerInvocations = 0;
+        var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -911,7 +911,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
 
         // Aborting at any step of a plan, will invalidate the full plan result
-        Assert.Null(result.Value);
+        Assert.Equal("PlanInput", result.Value);
     }
 
     [Fact]
@@ -921,7 +921,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 2;
-        var expectedInvokedHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -966,7 +966,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Aborting in invoked of the first step will abort the result and
         // the plan will render no result as no step succeeded previously.
-        Assert.Null(result.Value);
+        Assert.Equal("PlanInput", result.Value);
     }
 
     [Fact]
@@ -976,7 +976,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 2;
+        var expectedInvokedHandlerInvocations = 3;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -1088,7 +1088,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
         var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 1;
+        var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();

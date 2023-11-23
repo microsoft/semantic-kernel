@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
@@ -98,7 +97,7 @@ public sealed class Plan : KernelFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
-    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings)
+    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings, invokeEventHandlers: false)
     {
         this.Function = function;
     }
@@ -292,16 +291,6 @@ public sealed class Plan : KernelFunction
         }
         else
         {
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
-            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
-            {
-                return new FunctionResult(this.Name, context)
-                {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
-                };
-            }
-
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
@@ -310,14 +299,13 @@ public sealed class Plan : KernelFunction
 
                 // If a step was cancelled before invocation
                 // Return the last result state of the plan.
-                if (stepResult is null)
+                if (stepResult is null || stepResult.IsCancellationRequested)
                 {
-                    if (invokingEventArgs.IsSkipRequested)
-                    {
-                        continue;
-                    }
-
                     return result;
+                }
+                if (stepResult.IsSkipRequested)
+                {
+                    continue;
                 }
 
                 this.UpdateContextWithOutputs(context);
@@ -325,10 +313,6 @@ public sealed class Plan : KernelFunction
                 result = new FunctionResult(this.Name, context, context.Variables.Input);
                 this.UpdateFunctionResultWithOutputs(result);
             }
-
-            var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result);
-
-            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
         }
 
         return result;
@@ -425,25 +409,6 @@ public sealed class Plan : KernelFunction
         }
 
         throw new InvalidOperationException("There isn't a next step");
-    }
-
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
-    {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
-        kernel.OnFunctionInvoking(eventArgs);
-        return eventArgs;
-    }
-
-    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
-    {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-        if (kernel.OnFunctionInvoked(eventArgs))
-        {
-            // Updates the eventArgs metadata during invoked handler execution will reflect in the result metadata
-            result.Metadata = eventArgs.Metadata;
-        }
-
-        return eventArgs;
     }
 
     /// <summary>
