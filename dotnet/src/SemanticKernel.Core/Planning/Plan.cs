@@ -300,7 +300,7 @@ public sealed class Plan : KernelFunction
 
                 // If a step was cancelled before invocation
                 // Return the last result state of the plan.
-                if (stepResult is null || stepResult.IsCancellationRequested)
+                if (stepResult.IsCancellationRequested)
                 {
                     return result;
                 }

@@ -223,21 +223,15 @@ public sealed class Kernel
         return handled;
     }
 
-    internal bool OnPromptRendering(PromptRenderingEventArgs eventArgs)
+    internal void OnPromptRendering(PromptRenderingEventArgs eventArgs)
     {
-        bool handled = false;
-        if (this.PromptRendering != null)
-        {
-            this.PromptRendering.Invoke(this, eventArgs);
-            handled = true;
-        }
-        return handled;
+        this.PromptRendering?.Invoke(this, eventArgs);
     }
 
     internal bool OnPromptRendered(PromptRenderedEventArgs eventArgs)
     {
         bool handled = false;
-        if (this.PromptRendered != null)
+        if (this.PromptRendered is not null)
         {
             this.PromptRendered.Invoke(this, eventArgs);
             handled = true;
