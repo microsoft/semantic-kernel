@@ -9,7 +9,7 @@
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit"
+      "source.fixAll": true
     }
   },
   "editor.bracketPairColorization.enabled": true,
@@ -77,7 +77,7 @@
     "editor.formatOnSave": false,
     "editor.tabSize": 4,
     "editor.codeActionsOnSave": {
-      "source.fixAll": "never"
+      "source.fixAll": false
     },
   },
   "emeraldwalk.runonsave": {
@@ -90,11 +90,5 @@
   },
   "java.debug.settings.onBuildFailureProceed": true,
   "java.compile.nullAnalysis.mode": "disabled",
-  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
-  "[typescript][typescriptreact]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit",
-      "source.fixAll": "explicit"
-    }
-  }
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
 }

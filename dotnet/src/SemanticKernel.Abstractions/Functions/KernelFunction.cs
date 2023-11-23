@@ -156,6 +156,7 @@ public abstract class KernelFunction
             T? genericChunk = default;
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
                 if (moreChunks)
                 {

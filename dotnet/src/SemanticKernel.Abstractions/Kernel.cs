@@ -165,10 +165,7 @@ public sealed class Kernel
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null)
     {
-        return new SKContext(
-            variables,
-            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
-            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked));
+        return new SKContext(variables);
     }
 
     /// <summary>
@@ -192,6 +189,30 @@ public sealed class Kernel
         this._data ??
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
+
+    #region internal ===============================================================================
+    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.FunctionInvoking != null)
+        {
+            this.FunctionInvoking.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+
+    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.FunctionInvoked != null)
+        {
+            this.FunctionInvoked.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+    #endregion
 
     #region private ================================================================================
 
