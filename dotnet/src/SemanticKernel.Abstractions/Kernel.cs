@@ -16,16 +16,6 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Semantic kernel class.
-/// The kernel provides a function collection to define native and semantic functions, an orchestrator to execute a list of functions.
-/// Semantic functions are automatically rendered and executed using an internal prompt template rendering engine.
-/// Future versions will allow to:
-/// * customize the rendering engine
-/// * include branching logic in the functions pipeline
-/// * persist execution state for long running pipelines
-/// * distribute pipelines over a network
-/// * RPC functions and secure environments, eventArgs.g. sandboxing and credentials management
-/// * auto-generate pipelines given a higher level goal
 /// Provides state for use throughout a Semantic Kernel workload.
 /// </summary>
 /// <remarks>
