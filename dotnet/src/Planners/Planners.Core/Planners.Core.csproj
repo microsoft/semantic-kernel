@@ -52,10 +52,7 @@
     <EmbeddedResource Include="Stepwise\Plugin\StepwiseStep\skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Handlebars\skPrompt.handlebars">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Handlebars\NoLoops\skPrompt.handlebars">
+    <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

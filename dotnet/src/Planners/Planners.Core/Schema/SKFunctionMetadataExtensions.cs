@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Extensions for functions views.
+/// Extensions for function metadata.
 /// </summary>
 internal static class SKFunctionMetadataExtensions
 {

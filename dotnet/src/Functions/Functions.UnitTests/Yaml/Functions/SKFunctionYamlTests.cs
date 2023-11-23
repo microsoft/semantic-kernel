@@ -12,14 +12,14 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
+        var function = SKFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
 
         // Assert
-        Assert.NotNull(skfunction);
-        Assert.Equal("SayHello", skfunction.Name);
-        Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
-        Assert.Equal(2, skfunction.GetMetadata().Parameters.Count);
-        //Assert.Equal(0, skfunction.ModelSettings.Count);
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
+        Assert.Equal(2, function.GetMetadata().Parameters.Count);
+        //Assert.Equal(0, function.ModelSettings.Count);
     }
 
     [Fact]
@@ -27,12 +27,12 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.FromPromptYaml(this._yaml);
+        var function = SKFunctionYaml.FromPromptYaml(this._yaml);
 
         // Assert
-        Assert.NotNull(skfunction);
-        Assert.Equal("SayHello", skfunction.Name);
-        Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
     }
 
     [Fact]
@@ -40,13 +40,13 @@ public class SKFunctionYamlTests
     {
         // Arrange
         // Act
-        var skfunction = SKFunctionYaml.FromPromptYaml(this._yamlWithCustomSettings);
+        var function = SKFunctionYaml.FromPromptYaml(this._yamlWithCustomSettings);
 
         // Assert
-        Assert.NotNull(skfunction);
-        Assert.Equal("SayHello", skfunction.Name);
-        Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
-        Assert.Equal(2, skfunction.GetMetadata().Parameters.Count);
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
+        Assert.Equal(2, function.GetMetadata().Parameters.Count);
     }
 
     private readonly string _yamlNoModelSettings = @"

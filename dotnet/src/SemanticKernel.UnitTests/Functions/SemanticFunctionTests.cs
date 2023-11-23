@@ -162,7 +162,7 @@ public class SemanticFunctionTests
         {
             invoked++;
         };
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);
@@ -263,7 +263,7 @@ public class SemanticFunctionTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "SkipMe")
+            if (e.FunctionMetadata.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -271,7 +271,7 @@ public class SemanticFunctionTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 
@@ -303,7 +303,7 @@ public class SemanticFunctionTests
             invoked++;
         };
 
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);

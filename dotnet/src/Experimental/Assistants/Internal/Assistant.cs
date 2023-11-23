@@ -114,7 +114,7 @@ internal sealed class Assistant : IAssistant
     }
 
     /// <summary>
-    /// Marshal thread run through <see cref="ISKFunction"/> interface.
+    /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>

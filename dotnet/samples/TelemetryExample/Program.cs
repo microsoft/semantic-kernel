@@ -67,9 +67,7 @@ public sealed class Program
         });
 
         var kernel = GetKernel(loggerFactory);
-        var planner = GetSequentialPlanner(kernel, loggerFactory);
-        // var planner = GetActionPlanner(kernel, loggerFactory);
-        // var planner = GetStepwisePlanner(kernel, loggerFactory);
+        var planner = GetSequentialPlanner(kernel);
 
         using var activity = s_activitySource.StartActivity("Main");
 
@@ -111,26 +109,22 @@ public sealed class Program
         return kernel;
     }
 
-    private static IPlanner GetSequentialPlanner(
+    private static SequentialPlanner GetSequentialPlanner(
         Kernel kernel,
-        ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
+        return new SequentialPlanner(kernel, plannerConfig);
     }
 
-    private static IPlanner GetActionPlanner(
-        Kernel kernel,
-        ILoggerFactory loggerFactory)
+    private static ActionPlanner GetActionPlanner(Kernel kernel)
     {
-        return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
+        return new ActionPlanner(kernel);
     }
 
-    private static IPlanner GetStepwisePlanner(
+    private static StepwisePlanner GetStepwisePlanner(
         Kernel kernel,
-        ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)
     {
@@ -140,6 +134,6 @@ public sealed class Program
             MaxTokens = maxTokens
         };
 
-        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
+        return new StepwisePlanner(kernel, plannerConfig);
     }
 }

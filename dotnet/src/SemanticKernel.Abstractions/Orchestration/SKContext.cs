@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
-using System.Globalization;
 using Microsoft.SemanticKernel.Events;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -9,18 +7,8 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
-    /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    public CultureInfo Culture
-    {
-        get => this._culture;
-        set => this._culture = value ?? CultureInfo.CurrentCulture;
-    }
-
     /// <summary>
     /// User variables
     /// </summary>
@@ -42,15 +30,12 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
     /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
-    /// <param name="culture">Culture related to the context</param>
     internal SKContext(
         ContextVariables? variables = null,
         EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
-        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null,
-        CultureInfo? culture = null)
+        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null)
     {
         this.Variables = variables ?? new();
-        this._culture = culture ?? CultureInfo.CurrentCulture;
         this.FunctionInvokingHandler = invokingWrapper;
         this.FunctionInvokedHandler = invokedWrapper;
     }
@@ -74,25 +59,6 @@ public sealed class SKContext
         return new SKContext(
             variables ?? this.Variables.Clone(),
             this.FunctionInvokingHandler,
-            this.FunctionInvokedHandler,
-            this.Culture);
-    }
-
-    /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay
-    {
-        get
-        {
-            string display = this.Variables.DebuggerDisplay;
-
-            display += $", Culture = {this.Culture.EnglishName}";
-
-            return display;
-        }
+            this.FunctionInvokedHandler);
     }
 }

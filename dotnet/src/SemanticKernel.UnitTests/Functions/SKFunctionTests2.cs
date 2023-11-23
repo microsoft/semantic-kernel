@@ -898,27 +898,27 @@ public sealed class SKFunctionTests2
     {
         // Arrange
         var context = new SKContext(new ContextVariables(string.Empty));
-        ISKFunction func = SKFunctionFactory.CreateFromMethod((double input) => input * 2, functionName: "Test");
+        KernelFunction func = SKFunctionFactory.CreateFromMethod((double input) => input * 2, functionName: "Test");
         FunctionResult result;
 
         // Act/Assert
 
-        context.Culture = new CultureInfo("fr-FR");
+        this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12,34"); // tries first to parse with the specified culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24,68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("fr-FR");
+        this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12.34"); // falls back to invariant culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24,68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("en-US");
+        this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12.34"); // works with current culture
         result = await func.InvokeAsync(this._kernel, context);
         Assert.Equal("24.68", result.Context.Variables.Input);
 
-        context.Culture = new CultureInfo("en-US");
+        this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12,34"); // not parsable with current or invariant culture
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(this._kernel, context));
     }
@@ -1068,7 +1068,7 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = new SKContext(new ContextVariables(string.Empty));
         Exception expected = new FormatException("expected");
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { throw expected; });
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { throw expected; });
 
         // Act
         Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, context));

@@ -17,17 +17,17 @@ public static class SKPluginExtensions
 {
     #region AddFunctionFromMethod
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="SKPlugin"/>.
+    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="SKPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction AddFunctionFromMethod(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction AddFunctionFromMethod(
         this SKPlugin plugin,
         Delegate method,
         string? functionName = null,
@@ -38,25 +38,25 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+        KernelFunction function = SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method, and adds it to the <see cref="SKPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction AddFunctionFromMethod(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction AddFunctionFromMethod(
         this SKPlugin plugin,
         MethodInfo method,
         object? target = null,
@@ -68,7 +68,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+        KernelFunction function = SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -89,7 +89,7 @@ public static class SKPluginExtensions
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction AddFunctionFromPrompt(
+    public static KernelFunction AddFunctionFromPrompt(
         this SKPlugin plugin,
         string promptTemplate,
         AIRequestSettings? requestSettings = null,
@@ -99,7 +99,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, loggerFactory);
+        KernelFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -113,7 +113,7 @@ public static class SKPluginExtensions
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static ISKFunction AddFunctionFromPrompt(
+    public static KernelFunction AddFunctionFromPrompt(
         this SKPlugin plugin,
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
@@ -123,7 +123,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
+        KernelFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -137,7 +137,7 @@ public static class SKPluginExtensions
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction AddFunctionFromPrompt(
+    public static KernelFunction AddFunctionFromPrompt(
         this SKPlugin plugin,
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
@@ -146,7 +146,7 @@ public static class SKPluginExtensions
     {
         Verify.NotNull(plugin);
 
-        ISKFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
+        KernelFunction function = SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
