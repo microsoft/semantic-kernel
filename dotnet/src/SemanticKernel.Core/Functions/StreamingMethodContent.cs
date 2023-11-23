@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Method function streaming result chunk.
 /// </summary>
-public sealed class StreamingMethodResultChunk : StreamingContent
+public sealed class StreamingMethodContent : StreamingContent
 {
     /// <inheritdoc/>
     public override int ChoiceIndex => 0;
@@ -40,11 +40,11 @@ public sealed class StreamingMethodResultChunk : StreamingContent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingMethodResultChunk"/> class.
+    /// Initializes a new instance of the <see cref="StreamingMethodContent"/> class.
     /// </summary>
-    /// <param name="innerResultChunk">Underlying object that represents the chunk</param>
-    public StreamingMethodResultChunk(object innerResultChunk) : base(innerResultChunk)
+    /// <param name="innerContent">Underlying object that represents the chunk</param>
+    public StreamingMethodContent(object innerContent) : base(innerContent)
     {
-        this.Value = innerResultChunk;
+        this.Value = innerContent;
     }
 }

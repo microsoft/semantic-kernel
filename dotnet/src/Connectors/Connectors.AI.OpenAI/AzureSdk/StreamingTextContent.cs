@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.AI;
 
@@ -8,11 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class StreamingTextResultChunk : StreamingContent
+public class StreamingTextContent : StreamingContent
 {
-    /// <inheritdoc/>
-    public override string Type => "openai_text_update";
-
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
 
@@ -22,12 +20,13 @@ public class StreamingTextResultChunk : StreamingContent
     public string Content { get; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingTextResultChunk"/> class.
+    /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
     /// <param name="text">Text update</param>
     /// <param name="resultIndex">Index of the choice</param>
-    /// <param name="innerChunkObject">Inner chunk object</param>
-    public StreamingTextResultChunk(string text, int resultIndex, object? innerChunkObject = null) : base(innerChunkObject)
+    /// <param name="innerContentObject">Inner chunk object</param>
+    /// <param name="metadata">Metadata information</param>
+    public StreamingTextContent(string text, int resultIndex, object? innerContentObject = null, Dictionary<string, object>? metadata = null) : base(innerContentObject, metadata)
     {
         this.ChoiceIndex = resultIndex;
         this.Content = text;

@@ -49,44 +49,23 @@ public class MyTextCompletionService : ITextCompletion
         yield return new MyTextCompletionStreamingResult();
     }
 
-    public async IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken))
-        {
-            yield return update.ToByteArray();
-        }
-    }
-
-    public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        return this.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
-    }
-
-    public async IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in this.GetStreamingChunksAsync(input, requestSettings, cancellationToken))
-        {
-            yield return update.ToString();
-        }
-    }
-
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (typeof(T) == typeof(MyStreamingResultChunk))
+        if (typeof(T) == typeof(MyStreamingContent))
         {
-            yield return (T)(object)new MyStreamingResultChunk("llm content update 1");
-            yield return (T)(object)new MyStreamingResultChunk("llm content update 2");
+            yield return (T)(object)new MyStreamingContent("llm content update 1");
+            yield return (T)(object)new MyStreamingContent("llm content update 2");
         }
     }
 }
 
-public class MyStreamingResultChunk : StreamingContent
+public class MyStreamingContent : StreamingContent
 {
     public override int ChoiceIndex => 0;
 
     public string Content { get; }
 
-    public MyStreamingResultChunk(string content) : base(content)
+    public MyStreamingContent(string content) : base(content)
     {
         this.Content = content;
     }

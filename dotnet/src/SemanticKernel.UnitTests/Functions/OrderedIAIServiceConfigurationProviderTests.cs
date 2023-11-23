@@ -221,11 +221,6 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             throw new NotImplementedException();
         }
-
-        public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
     }
     #endregion
 }

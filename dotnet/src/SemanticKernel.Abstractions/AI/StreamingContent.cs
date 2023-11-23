@@ -16,6 +16,20 @@ public abstract class StreamingContent
     public abstract int ChoiceIndex { get; }
 
     /// <summary>
+    /// Internal chunk object reference. (Breaking glass).
+    /// Each connector will have its own internal object representing the content chunk.
+    /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
+    public object? InnerContent { get; }
+
+    /// <summary>
+    /// The metadata associated with the content.
+    /// </summary>
+    public Dictionary<string, object>? Metadata { get; }
+
+    /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
     /// </summary>
     /// <remarks>
@@ -34,30 +48,18 @@ public abstract class StreamingContent
     public abstract byte[] ToByteArray();
 
     /// <summary>
-    /// Internal chunk object reference. (Breaking glass).
-    /// Each connector will have its own internal object representing the content chunk.
-    /// </summary>
-    /// <remarks>
-    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
-    /// </remarks>
-    public object? InnerContent { get; }
-
-    /// <summary>
     /// The current context associated the function call.
     /// </summary>
     internal SKContext? Context { get; set; }
 
     /// <summary>
-    /// The metadata associated the content.
-    /// </summary>
-    internal Dictionary<string, object>? Metadata { get; set; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="StreamingContent"/> class.
     /// </summary>
     /// <param name="innerContent">Inner content object reference</param>
-    protected StreamingContent(object? innerContent)
+    /// <param name="metadata"></param>
+    protected StreamingContent(object? innerContent, Dictionary<string, object>? metadata = null)
     {
         this.InnerContent = innerContent;
+        this.Metadata = metadata ?? new();
     }
 }

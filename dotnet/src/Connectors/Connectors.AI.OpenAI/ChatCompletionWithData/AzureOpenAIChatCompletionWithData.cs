@@ -119,24 +119,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        var chat = this.PrepareChatHistory(input, chatRequestSettings);
-
-        var resultIndex = 0;
-        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false))
-        {
-            await foreach (var message in result.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
-            {
-                yield return new StreamingChatResultChunk((AzureOpenAIChatMessage)message, resultIndex);
-            }
-            resultIndex++;
-        }
-    }
-
-    /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string input,
         AIRequestSettings? requestSettings = null,
@@ -295,11 +277,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                // If the provided T is an specialized class of StreamingResultChunk interface
-                if (typeof(T) == typeof(StreamingChatResultChunk) ||
+                // If the provided T is an specialized class of StreamingContent interface
+                if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatWithDataResultChunk(choice, choice.Index);
+                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index);
                     continue;
                 }
 

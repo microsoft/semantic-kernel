@@ -200,7 +200,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
 
         StringBuilder fullCompletion = new();
-        IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingChunksAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         // Manually handling the enumeration to properly log any exception
         bool moreItems;

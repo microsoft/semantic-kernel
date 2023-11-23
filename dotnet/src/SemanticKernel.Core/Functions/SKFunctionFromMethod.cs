@@ -165,7 +165,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                 continue;
             }
 
-            if (chunk is StreamingMethodResultChunk nativeChunk)
+            if (chunk is StreamingMethodContent nativeChunk)
             {
                 yield return (T)nativeChunk.Value;
             }
@@ -195,7 +195,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                         continue;
                     }
 
-                    if (chunk is StreamingMethodResultChunk nativeChunk)
+                    if (chunk is StreamingMethodContent nativeChunk)
                     {
                         genericChunk = (T)nativeChunk.Value;
                         continue;
@@ -321,7 +321,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         SKContext context,
         CancellationToken cancellationToken);
 
-    private delegate IAsyncEnumerable<StreamingMethodResultChunk> ImplementationStreamingFunc(
+    private delegate IAsyncEnumerable<StreamingMethodContent> ImplementationStreamingFunc(
         ITextCompletion? textCompletion,
         AIRequestSettings? requestSettingsk,
         Kernel kernel,
@@ -429,7 +429,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         }
 
         // Create the streaming func
-        async IAsyncEnumerable<StreamingMethodResultChunk> StreamingFunction(
+        async IAsyncEnumerable<StreamingMethodContent> StreamingFunction(
             ITextCompletion? text,
             AIRequestSettings? requestSettings,
             Kernel kernel,
@@ -472,7 +472,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                 {
                     object currentItem = currentProperty.GetValue(asyncEnumerator);
 
-                    yield return new StreamingMethodResultChunk(currentItem);
+                    yield return new StreamingMethodContent(currentItem);
                 }
             }
             else
@@ -487,7 +487,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                     // The enumeration will only return if there's actually a result.
                     if (functionResult.Value is not null)
                     {
-                        yield return new StreamingMethodResultChunk(functionResult.Value);
+                        yield return new StreamingMethodContent(functionResult.Value);
                     }
                 }
             }

@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
-public class StreamingChatResultChunk : StreamingContent
+public class StreamingChatContent : StreamingContent
 {
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
@@ -37,11 +37,11 @@ public class StreamingChatResultChunk : StreamingContent
     public string? Name { get; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
+    /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
     /// <param name="chatMessage">Original Connector Azure Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultChunk(AzureOpenAIChatMessage chatMessage, int resultIndex) : base(chatMessage)
+    public StreamingChatContent(AzureOpenAIChatMessage chatMessage, int resultIndex) : base(chatMessage)
     {
         this.ChoiceIndex = resultIndex;
         this.FunctionCall = chatMessage.InnerChatMessage?.FunctionCall;
@@ -51,11 +51,11 @@ public class StreamingChatResultChunk : StreamingContent
     }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
+    /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
     /// <param name="chatMessage">Internal Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
-    public StreamingChatResultChunk(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex) : base(chatMessage)
+    public StreamingChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex) : base(chatMessage)
     {
         this.ChoiceIndex = resultIndex;
         this.FunctionCall = chatMessage.FunctionCall;
@@ -65,14 +65,8 @@ public class StreamingChatResultChunk : StreamingContent
     }
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray()
-    {
-        return Encoding.UTF8.GetBytes(this.ToString());
-    }
+    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize(this);
-    }
+    public override string ToString() => this.Content ?? string.Empty;
 }

@@ -10,11 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// <summary>
 /// StreamResponse class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
 /// </summary>
-public class StreamingTextResultChunk : StreamingContent
+public class StreamingTextContent : StreamingContent
 {
-    /// <inheritdoc/>
-    public override string Type { get; }
-
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
 
@@ -33,20 +30,18 @@ public class StreamingTextResultChunk : StreamingContent
     /// <summary>
     /// Token details
     /// </summary>
-    public TokenChunkModel Token { get; set; }
+    public TokenContentModel Token { get; set; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingTextResultChunk"/> class.
+    /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
-    /// <param name="type">Type of the chunk</param>
     /// <param name="jsonChunk">JsonElement representation of the chunk</param>
-    public StreamingTextResultChunk(string type, JsonElement jsonChunk) : base(jsonChunk)
+    public StreamingTextContent(JsonElement jsonChunk) : base(jsonChunk)
     {
-        this.Type = type;
         this.ChoiceIndex = 0;
         this.GeneratedText = jsonChunk.GetProperty("generated_text").GetString();
         this.Details = jsonChunk.GetProperty("details").GetString();
-        this.Token = JsonSerializer.Deserialize<TokenChunkModel>(jsonChunk.GetProperty("token").GetRawText())!;
+        this.Token = JsonSerializer.Deserialize<TokenContentModel>(jsonChunk.GetProperty("token").GetRawText())!;
     }
 
     /// <inheritdoc/>
@@ -64,7 +59,7 @@ public class StreamingTextResultChunk : StreamingContent
     /// <summary>
     /// Token class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>
     /// </summary>
-    public record TokenChunkModel
+    public record TokenContentModel
     {
         /// <summary>
         /// Id of the token

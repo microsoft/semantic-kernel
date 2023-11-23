@@ -170,6 +170,13 @@ public abstract class ClientBase
 
         using StreamingCompletions streamingChatCompletions = response.Value;
 
+        var metadata = new Dictionary<string, object>()
+        {
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+        };
+
         int choiceIndex = 0;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
@@ -182,11 +189,11 @@ public abstract class ClientBase
                     continue;
                 }
 
-                // If the provided T is an specialized class of StreamingResultChunk interface
-                if (typeof(T) == typeof(StreamingTextResultChunk) ||
+                // If the provided T is an specialized class of StreamingContent interface
+                if (typeof(T) == typeof(StreamingTextContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingTextResultChunk(update, choiceIndex, update);
+                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, metadata);
                     continue;
                 }
 
@@ -340,10 +347,10 @@ public abstract class ClientBase
                 }
 
                 // If the provided T is an specialized class of StreamingResultChunk interface
-                if (typeof(T) == typeof(StreamingChatResultChunk) ||
+                if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatResultChunk(chatMessage, choiceIndex);
+                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex);
                     continue;
                 }
 

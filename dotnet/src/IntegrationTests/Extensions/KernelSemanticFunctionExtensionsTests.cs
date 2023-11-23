@@ -82,20 +82,6 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         {
             throw new NotImplementedException(); // TODO
         }
-        public IAsyncEnumerable<byte[]> GetByteStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IAsyncEnumerable<string> GetStringStreamingUpdatesAsync(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 
         public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {

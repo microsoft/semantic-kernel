@@ -93,21 +93,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingContent> GetStreamingChunksAsync(
-        string input,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string input,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var result in this.InternalGetStreamingChunksAsync(input, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this.InternalGetStreamingContentAsync(input, cancellationToken).ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -118,8 +109,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
                 continue;
             }
 
-            // If the provided T is an specialized class of StreamingResultChunk interface
-            if (typeof(T) == typeof(StreamingTextResultChunk) ||
+            // If the provided T is an specialized class of StreamingContent interface
+            if (typeof(T) == typeof(StreamingTextContent) ||
                 typeof(T) == typeof(StreamingContent))
             {
                 yield return (T)(object)result;
@@ -161,7 +152,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
 
-    private async IAsyncEnumerable<StreamingTextResultChunk> InternalGetStreamingChunksAsync(string text, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingTextContent> InternalGetStreamingContentAsync(string text, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var completionRequest = new TextCompletionRequest
         {
@@ -196,9 +187,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
                 continue;
             }
 
-            JsonElement chunkObject = JsonSerializer.Deserialize<JsonElement>(body);
+            JsonElement contentObject = JsonSerializer.Deserialize<JsonElement>(body);
 
-            yield return new StreamingTextResultChunk("hugging-text-stream=chunk", chunkObject);
+            yield return new StreamingTextContent(contentObject);
         }
     }
 

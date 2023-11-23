@@ -13,25 +13,22 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
-public sealed class StreamingChatWithDataResultChunk : StreamingContent
+public sealed class StreamingChatWithDataContent : StreamingContent
 {
-    /// <inheritdoc/>
-    public override string Type => "openai_chat_message_update";
-
     /// <inheritdoc/>
     public override int ChoiceIndex { get; }
 
     /// <summary>
     /// Chat message abstraction
     /// </summary>
-    public SemanticKernel.AI.ChatCompletion.ChatMessage ChatMessage { get; }
+    public ChatMessage ChatMessage { get; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="StreamingChatResultChunk"/> class.
+    /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="resultIndex">Index of the choice</param>
-    internal StreamingChatWithDataResultChunk(ChatWithDataStreamingChoice choice, int resultIndex) : base(choice)
+    internal StreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int resultIndex) : base(choice)
     {
         this.ChoiceIndex = resultIndex;
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);

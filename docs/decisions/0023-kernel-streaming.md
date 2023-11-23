@@ -39,13 +39,13 @@ Using dedicated streaming interfaces that allow the sk developer to get the stre
 
 This approach also exposes dedicated interfaces in the kernel and functions to use streaming making it clear to the sk developer what is the type of data being returned in IAsyncEnumerable format.
 
-`ITextCompletion` and `IChatCompletion` will have new APIs to get `byte[]` and `string` streaming data directly as well as the specialized `StreamingResultChunk` return.
+`ITextCompletion` and `IChatCompletion` will have new APIs to get `byte[]` and `string` streaming data directly as well as the specialized `StreamingContent` return.
 
-The sk developer will be able to specify a generic type to the `Kernel.RunStreamingAsync<T>()` and `ISKFunction.StreamingInvokeAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingResultChunk.
+The sk developer will be able to specify a generic type to the `Kernel.RunStreamingAsync<T>()` and `ISKFunction.InvokeStreamingAsync<T>` to get the streaming data. If the type is not specified, the Kernel and Functions will return the data as StreamingContent.
 
 If the type is not specified or if the string representation cannot be cast, an exception will be thrown.
 
-If the type specified is `StreamingResultChunk`, `string` or `byte[]` no error will be thrown as the connectors will have interface methods that guarantee the data to be given in at least those types.
+If the type specified is `StreamingContent` or another any type supported by the connector no error will be thrown.
 
 ## User Experience Goal
 
@@ -58,118 +58,169 @@ await foreach(string update in kernel.RunStreamingAsync<byte[]>(function, variab
 // Getting a String as Streaming data from Kernel
 await foreach(string update in kernel.RunStreamingAsync<string>(function, variables))
 
-// Getting a StreamingResultChunk as Streaming data from Kernel
-await foreach(StreamingResultChunk update in kernel.RunStreamingAsync<StreamingResultChunk>(variables, function))
+// Getting a StreamingContent as Streaming data from Kernel
+await foreach(StreamingContent update in kernel.RunStreamingAsync<StreamingContent>(variables, function))
 // OR
-await foreach(StreamingResultChunk update in kernel.RunStreamingAsync(function, variables)) // defaults to Generic above)
+await foreach(StreamingContent update in kernel.RunStreamingAsync(function, variables)) // defaults to Generic above)
 {
     Console.WriteLine(update);
 }
 ```
 
+Abstraction class for any stream content, connectors will be responsible to provide the specialized type of `StreamingContent` which will contain the data as well as any metadata related to the streaming result.
+
 ```csharp
 
-// Depending on the underlying function model and connector used the streaming
-// data will be of a specialization of StreamingResultChunk exposing useful
-// properties including Type, the raw data in byte[] and string representation.
-abstract class StreamingResultChunk
+public abstract class StreamingContent
 {
-    public abstract string Type { get; }
+    public abstract int ChoiceIndex { get; }
 
-    // In a scenario of multiple results, this represents zero-based index of the result in the streaming sequence
-    public abstract int ResultIndex { get; }
-
+    /// Returns a string representation of the chunk content
     public abstract override string ToString();
+
+    /// Abstract byte[] representation of the chunk content in a way it could be composed/appended with previous chunk contents.
+    /// Depending on the nature of the underlying type, this method may be more efficient than <see cref="ToString"/>.
     public abstract byte[] ToByteArray();
 
-    public abstract object Contents { get; }
-}
+    /// Internal chunk content object reference. (Breaking glass).
+    /// Each connector will have its own internal object representing the content chunk content.
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    public object? InnerContent { get; }
 
-// Specialization example of a ChatMessageChunk
-public class ChatMessageChunk : StreamingResultChunk
-{
-    public override string Type => "openai_chatmessage_chunk";
-    public override string ToString() => Value.ToString(); // Value to be appended or the whole object?
-    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(Value);
+    /// The metadata associated with the content.
+    public Dictionary<string, object>? Metadata { get; set; }
 
-    public string Message { get; }
-    public string Role { get; }
+    /// The current context associated the function call.
+    internal SKContext? Context { get; set; }
 
-    public ChatMessageChunk(string message, string role, int resultIndex = 0)
+    /// <param name="innerContent">Inner content object reference</param>
+    protected StreamingContent(object? innerContent)
     {
-        Message = message;
-        Role = role;
-        ResultIndex = resultIndex;
+        this.InnerContent = innerContent;
     }
 }
+```
 
+Specialization example of a StreamingChatContent
+
+```csharp
+//
+public class StreamingChatContent : StreamingContent
+{
+    public override int ChoiceIndex { get; }
+    public FunctionCall? FunctionCall { get; }
+    public string? Content { get; }
+    public AuthorRole? Role { get; }
+    public string? Name { get; }
+
+    public StreamingChatContent(AzureOpenAIChatMessage chatMessage, int resultIndex) : base(chatMessage)
+    {
+        this.ChoiceIndex = resultIndex;
+        this.FunctionCall = chatMessage.InnerChatMessage?.FunctionCall;
+        this.Content = chatMessage.Content;
+        this.Role = new AuthorRole(chatMessage.Role.ToString());
+        this.Name = chatMessage.InnerChatMessage?.Name;
+    }
+
+    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
+    public override string ToString() => this.Content ?? string.Empty;
+}
+```
+
+`IChatCompletion` and `ITextCompletion` interfaces will have new APIs to get a generic streaming content data.
+
+```csharp
 interface ITextCompletion + IChatCompletion
 {
-    IAsyncEnumerable<StreamingResultChunk> GetStreamingChunksAsync();
-    // Guaranteed abstraction to be used by the ISKFunction.RunStreamingAsync()
+    IAsyncEnumerable<T> GetStreamingContentAsync<T>(...);
 
-    IAsyncEnumerable<T> GetStreamingChunksAsync<T>();
     // Throw exception if T is not supported
-    // Initially connectors
 }
 
 interface IKernel
 {
-    // When the developer provides a T, the Kernel will try to get the streaming data as T
-    IAsyncEnumerable<StreamingResultChunk> RunStreamingAsync(ContextVariables variables, ISKFunction function);
-
-    // Extension generic method to get from type <T>
+    // Get streaming function content of T
     IAsyncEnumerable<T> RunStreamingAsync<T>(ContextVariables variables, ISKFunction function);
-}
-
-public class StreamingFunctionResult : IAsyncEnumerable<StreamingResultChunk>
-{
-
 }
 
 interface ISKFunction
 {
-    // When the developer provides a T, the Kernel will try to get the streaming data as T
-    IAsyncEnumerable<StreamingResultChunk> InvokeStreamingAsync(SKContext context);
-
-    // Extension generic method to get from type <T>
+    // Get streaming function content of T
     IAsyncEnumerable<T> InvokeStreamingAsync<T>(SKContext context);
 }
 ```
 
-## Semantic Functions Behavior
+## Prompt/Semantic Functions Behavior
 
-When Semantic Functions are invoked using the Streaming API, they will attempt to use the Connectors streaming implementation. The connector will be responsible to provide the specialized type of `StreamingResultChunk` as well as to keep the API streaming working (streaming the single complete result) even when the backend don't support it.
+When Prompt Functions are invoked using the Streaming API, they will attempt to use the Connectors streaming implementation.
+The connector will be responsible to provide the specialized type of `StreamingContent` and even if the underlying backend API don't support streaming the output will be one streamingcontent with the whole data.
 
-## Native Functions Behavior
+## Method/Native Functions Behavior
 
-NativeFunctions will support StreamingResults automatically with a StreamingNativeResultUpdate wrapping the object returned in the iterator.
+Method Functions will support `StreamingContent` automatically with as a `StreamingMethodContent` wrapping the object returned in the iterator.
 
-If NativeFunctions are already IAsyncEnumerable methods, the result will be automatically wrapped in the StreamingNativeResultUpdate keeping the streaming behavior and the overall abstraction consistent.
+```csharp
+public sealed class StreamingMethodContent : StreamingContent
+{
+    public override int ChoiceIndex => 0;
 
-If NativeFunctions don't return IAsyncEnumerable, the result will be wrapped in a StreamingNativeResultUpdate and the result will be returned as a single result.
+    /// Method object value that represents the content chunk
+    public object Value { get; }
+
+    /// Default implementation
+    public override byte[] ToByteArray()
+    {
+        if (this.Value is byte[])
+        {
+            // If the method value is byte[] we return it directly
+            return (byte[])this.Value;
+        }
+
+        // By default if a native value is not byte[] we output the UTF8 string representation of the value
+        return Encoding.UTF8.GetBytes(this.Value?.ToString());
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return this.Value.ToString();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingMethodContent"/> class.
+    /// </summary>
+    /// <param name="innerContent">Underlying object that represents the chunk</param>
+    public StreamingMethodContent(object innerContent) : base(innerContent)
+    {
+        this.Value = innerContent;
+    }
+}
+```
+
+If a MethodFunction is returning an `IAsyncEnumerable` each enumerable result will be automatically wrapped in the `StreamingMethodContent` keeping the streaming behavior and the overall abstraction consistent.
+
+When a MethodFunction is not an `IAsyncEnumerable`, the complete result will be wrapped in a `StreamingMethodContent` and will be returned as a single item.
 
 ## Pros
 
 1. All the User Experience Goal section options will be possible.
 2. Kernel and Functions implementations will be able to stream data of any type, not limited to text
-3. The sk developer will be able to provide the type it expects from the `GetStreamingResultAsync<T>` method.
-4. The above will allow the sk developer to get the streaming data in a generic way, including `string`, `byte array`, or the `StreamingResultChunk` abstraction directly from the connector.
-
-5. IChatCompletion, IKernel and ISKFunction
+3. The sk developer will be able to provide the streaming content type it expects from the `GetStreamingContentAsync<T>` method.
+4. Sk developer will be able to get streaming from the Kernel, Functions and Connectors with the same result type.
 
 ## Cons
 
-1. If the sk developer wants to use the specialized type of `StreamingResultChunk` he will need to know what the connector is being used to use the correct **StreamingResultChunk extension method** or to provide directly type in `<T>`.
-2. Connectors will have greater responsibility to provide the correct type of `StreamingResultChunk` for the connector being used and implementations for both byte[] and string streaming data.
+1. If the sk developer wants to use the specialized type of `StreamingContent` he will need to know what the connector is being used to use the correct **StreamingContent extension method** or to provide directly type in `<T>`.
+2. Connectors will have greater responsibility to support the correct special types of `StreamingContent`.
 
 ### Option 2 - Dedicated Streaming Interfaces (Returning a Class)
 
-This option includes all the suggestions from Option 1 with the only change being that the interfaces now instead of returning an `IAsyncEnumerable<T>` will return `StreamingFunctionResult<T>` which also implements `IAsyncEnumerable<T>`
+All changes from option 1 with the small difference below:
 
-Connectors will have a streaming connector class representation that will have any data related to the request as well as a breaking glass reference to the underlying connector object (response) if needed.
+- The Kernel and SKFunction streaming APIs interfaces will return `StreamingFunctionResult<T>` which also implements `IAsyncEnumerable<T>`
+- Connectors streaming APIs interfaces will return `StreamingConnectorContent<T>` which also implements `IAsyncEnumerable<T>`
 
-This abstraction is necessary to provide the extra connector information to the StreamingFunctionResult returned by KernelPromptFunctions.
+The `StreamingConnectorContent` class is needed for connectors as one way to pass any information relative to the request and not the chunk that can be used by the functions to fill `StreamingFunctionResult` metadata.
 
 ## User Experience Goal
 
@@ -180,64 +231,55 @@ Option 2 Biggest benefit:
 var streamingResult = await kernel.RunStreamingAsync(function);
 // Do something with streamingResult properties
 
-// Consuming the streamingResult:
-await foreach(StreamingResultChunk chunk in await streamingResult)
+// Consuming the streamingResult requires an extra await:
+await foreach(StreamingContent chunk content in await streamingResult)
 ```
 
-Using the other operations will be quite similar (extra `await` to get the iteratable streaming reference) if the sk developer don't want to check for the result properties
+Using the other operations will be quite similar (only needing an extra `await` to get the iterator)
 
-````csharp
+```csharp
 // Getting a Raw Streaming data from Kernel
 await foreach(string update in await kernel.RunStreamingAsync<byte[]>(function, variables))
 
 // Getting a String as Streaming data from Kernel
 await foreach(string update in await kernel.RunStreamingAsync<string>(function, variables))
 
-// Getting a StreamingResultChunk as Streaming data from Kernel
-await foreach(StreamingResultChunk update in await kernel.RunStreamingAsync<StreamingResultChunk>(variables, function))
+// Getting a StreamingContent as Streaming data from Kernel
+await foreach(StreamingContent update in await kernel.RunStreamingAsync<StreamingContent>(variables, function))
 // OR
-await foreach(StreamingResultChunk update in await kernel.RunStreamingAsync(function, variables)) // defaults to Generic above)
+await foreach(StreamingContent update in await kernel.RunStreamingAsync(function, variables)) // defaults to Generic above)
 {
     Console.WriteLine(update);
 }
+
 ```
+
+StreamingConnectorResult is a class that can store information regarding the result before the stream is consumed as well as any underlying object (breaking glass) that the stream consumes at the connector level.
 
 ```csharp
 
 public sealed class StreamingConnectorResult<T> : IAsyncEnumerable<T>
 {
-    private readonly IAsyncEnumerable<T> _streamingResultSource;
+    private readonly IAsyncEnumerable<T> _StreamingContentource;
 
-    /// <summary>
-    /// Internal object reference. (Breaking glass).
-    /// Each connector will have its own internal object representing the result.
-    /// </summary>
     public object? InnerResult { get; private set; } = null;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConnectorAsyncEnumerable{T}"/> class.
-    /// </summary>
-    /// <param name="streamingReference"></param>
-    /// <param name="innerConnectorResult"></param>
-    public ConnectorAsyncEnumerable(Func<IAsyncEnumerable<T>> streamingReference, object? innerConnectorResult)
+    public StreamingConnectorResult(Func<IAsyncEnumerable<T>> streamingReference, object? innerConnectorResult)
     {
-        this._streamingResultSource = streamingReference.Invoke();
+        this._StreamingContentource = streamingReference.Invoke();
         this.InnerResult = innerConnectorResult;
     }
 }
 
 interface ITextCompletion + IChatCompletion
 {
-    Task<StreamingConnectorResult<StreamingResultChunk>> GetStreamingChunksAsync();
-    // Guaranteed abstraction to be used by the ISKFunction.RunStreamingAsync()
-
-    Task<StreamingConnectorResult<T>> GetStreamingChunksAsync<T>();
+    Task<StreamingConnectorResult<T>> GetStreamingContentAsync<T>();
     // Throw exception if T is not supported
     // Initially connectors
 }
 ```
 
-StreamingFunctionResult is a class that can store information regarding the result before the stream is consumed as well as any underlying object (breaking glass) that the stream consumes.
+StreamingFunctionResult is a class that can store information regarding the result before the stream is consumed as well as any underlying object (breaking glass) that the stream consumes from Kernel and SKFunctions.
 
 ```csharp
 public sealed class StreamingFunctionResult<T> : IAsyncEnumerable<T>
@@ -270,9 +312,6 @@ public sealed class StreamingFunctionResult<T> : IAsyncEnumerable<T>
 
 interface ISKFunction
 {
-    // When the developer provides a T, the Kernel will try to get the streaming data as T
-    Task<StreamingFunctionResult<StreamingResultChunk>> InvokeStreamingAsync(...);
-
     // Extension generic method to get from type <T>
     Task<StreamingFunctionResult<T>> InvokeStreamingAsync<T>(...);
 }
@@ -300,12 +339,11 @@ static class KernelExtensions
 
 1. All cons from Option 1 +
 2. Added complexity as the IAsyncEnumerable cannot be passed directly in the method result demanding a delegate approach to be adapted inside of the Results that implements the IAsyncEnumerator.
-
+3. Added complexity where IDisposable is needed to be implemented in the Results to dispose the response object and the caller would need to handle the disposal of the result.
+4. As soon the caller gets a `StreamingFunctionResult` a network connection will be kept open until the caller implementation consume it (Enumerate over the `IAsyncEnumerable`).
 
 ## Decision Outcome
 
-Option 3
-Try to use the Task<StreamingFunctionResult> interface with a dumb StreamingFunctionResult which wraps all the logic
+Option 1 was chosen as the best option as small benefit of the Option 2 don't justify the complexity involved described in the Cons.
 
-## More Information
-````
+Was also decided that the Metadata related to a connector backend response can be added to the `StreamingContent.Metadata` property. This will allow the sk developer to get the metadata even without a `StreamingConnectorResult` or `StreamingFunctionResult`.

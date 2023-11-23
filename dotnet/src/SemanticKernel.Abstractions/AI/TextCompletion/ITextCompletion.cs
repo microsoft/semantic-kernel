@@ -38,11 +38,11 @@ public interface ITextCompletion : IAIService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get streaming results for the prompt and settings of a specific type.
-    /// Each modality may support for different types of streaming result.
+    /// Get asynchronous stream of the provided generic type.
+    /// Each modality may support for different types of streaming contents.
     /// </summary>
     /// <remarks>
-    /// Usage of this method may be more efficient if the connector has a dedicated API to return this result without extra allocations for StreamingResultChunk abstraction.
+    /// Usage of this method with value types may be more efficient if the connector supports it.
     /// </remarks>
     /// <exception cref="NotSupportedException">Throws if the specified type is not the same or fail to cast</exception>
     /// <param name="input">The prompt to complete.</param>
