@@ -56,7 +56,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
-        ISKPlugin plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
+        ISKPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
