@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
@@ -27,7 +28,7 @@ internal sealed class Assistant : IAssistant
     public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public ISKPluginCollection Plugins { get; }
+    public SKPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
@@ -67,7 +68,7 @@ internal sealed class Assistant : IAssistant
         OpenAIRestContext restContext,
         OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
@@ -84,11 +85,10 @@ internal sealed class Assistant : IAssistant
         AssistantModel model,
         OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
-        ISKPluginCollection? plugins = null)
+        IEnumerable<ISKPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
-        this.Plugins = plugins ?? new SKPluginCollection();
 
         var services = new AIServiceCollection();
         services.SetService<IChatCompletion>(chatService);

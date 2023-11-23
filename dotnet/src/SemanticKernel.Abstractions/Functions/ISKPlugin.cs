@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Represents a plugin that may be added to an <see cref="ISKPluginCollection"/>, which in turn may be added to Kernel.</summary>
+/// <summary>Represents a plugin that may be registered with a <see cref="Kernel"/>.</summary>
 /// <remarks>
-/// A plugin is named collections of functions. There is a many-to-many relationship between
+/// A plugin is named collection of functions. There is a many-to-many relationship between
 /// plugins and functions: a plugin may contain any number of functions, and a function may
 /// exist in any number of plugins.
 /// </remarks>

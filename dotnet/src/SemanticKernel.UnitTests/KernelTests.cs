@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -595,6 +596,45 @@ public class KernelTests
         //Assert
         Assert.NotNull(culture);
         Assert.Equal(CultureInfo.CurrentCulture, culture);
+    }
+
+    [Fact]
+    public void ItDeepClonesAllRelevantStateInClone()
+    {
+        // Kernel with all properties set
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+        var httpHandler = new Mock<IDelegatingHandlerFactory>();
+        var loggerFactory = new Mock<ILoggerFactory>();
+        var plugin = new SKPlugin("plugin1");
+        var plugins = new SKPluginCollection() { plugin };
+        Kernel kernel1 = new(serviceProvider.Object, plugins, serviceSelector.Object, httpHandler.Object, loggerFactory.Object);
+        kernel1.Data["key"] = "value";
+
+        // Clone and validate it
+        Kernel kernel2 = kernel1.Clone();
+        Assert.Same(kernel1.ServiceProvider, kernel2.ServiceProvider);
+        Assert.Same(kernel1.ServiceSelector, kernel2.ServiceSelector);
+        Assert.Same(kernel1.HttpHandlerFactory, kernel2.HttpHandlerFactory);
+        Assert.Same(kernel1.Culture, kernel2.Culture);
+        Assert.NotSame(kernel1.Data, kernel2.Data);
+        Assert.Equal(kernel1.Data.Count, kernel2.Data.Count);
+        Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Equal(kernel1.Plugins, kernel2.Plugins);
+
+        // Minimally configured kernel
+        Kernel kernel3 = new(serviceProvider.Object);
+
+        // Clone and validate it
+        Kernel kernel4 = kernel3.Clone();
+        Assert.Same(kernel3.ServiceProvider, kernel4.ServiceProvider);
+        Assert.Same(kernel3.ServiceSelector, kernel4.ServiceSelector);
+        Assert.Same(kernel3.HttpHandlerFactory, kernel4.HttpHandlerFactory);
+        Assert.NotSame(kernel3.Data, kernel4.Data);
+        Assert.Empty(kernel4.Data);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Empty(kernel4.Plugins);
     }
 
     public class MyPlugin
