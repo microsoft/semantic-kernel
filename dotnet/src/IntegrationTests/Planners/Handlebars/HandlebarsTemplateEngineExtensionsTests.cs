@@ -14,9 +14,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
-#pragma warning restore IDE0130
 
 public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
 {
@@ -198,23 +196,22 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("Foo Bar", result);
     }
 
-    // TODO [@teresaqhoang]: Add this back in when parameter metadata types are better supported. Currently, parameter type is null when it should be string.
-    // [Fact]
-    // public void ShouldRenderTemplateWithFunctionHelpersWithPositionalArguments()
-    // {
-    //     // Arrange
-    //     var kernel = this.InitializeKernel();
-    //     var executionContext = kernel.CreateNewContext();
-    //     var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
-    //     var variables = new Dictionary<string, object?>();
-    //     kernel.ImportFunctions(new Foo(), "Foo");
+    [Fact]
+    public void ShouldRenderTemplateWithFunctionHelpersWithPositionalArguments()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel();
+        var executionContext = kernel.CreateNewContext();
+        var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
+        var variables = new Dictionary<string, object?>();
+        kernel.ImportPluginFromObject(new Foo(), "Foo");
 
-    //     // Act
-    //     var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
+        // Act
+        var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
 
-    //     // Assert   
-    //     Assert.Equal("BazBar", result);
-    // }
+        // Assert   
+        Assert.Equal("BazBar", result);
+    }
 
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpersWitHashArguments()

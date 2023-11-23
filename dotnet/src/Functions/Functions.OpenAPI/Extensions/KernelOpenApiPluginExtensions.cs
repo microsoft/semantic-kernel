@@ -322,7 +322,7 @@ public static class KernelOpenApiPluginExtensions
         var parameters = restOperationParameters
             .Select(p => new SKParameterMetadata(p.AlternativeName ?? p.Name)
             {
-                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
+                Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
                 Schema = p.Schema ?? (p.Type is null ? null : SKJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
