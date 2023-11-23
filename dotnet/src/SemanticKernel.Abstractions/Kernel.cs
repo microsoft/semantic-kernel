@@ -51,7 +51,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
-    public ISKPluginCollection Plugins =>
+    public SKPluginCollection Plugins =>
         this._plugins ??
         Interlocked.CompareExchange(ref this._plugins, new SKPluginCollection(), null) ??
         this._plugins;
@@ -102,7 +102,7 @@ public sealed class Kernel
     /// </remarks>
     public Kernel(
         IAIServiceProvider aiServiceProvider,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         IAIServiceSelector? serviceSelector = null,
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
@@ -110,7 +110,7 @@ public sealed class Kernel
         Verify.NotNull(aiServiceProvider);
 
         this.ServiceProvider = aiServiceProvider;
-        this._plugins = plugins;
+        this._plugins = plugins is null ? null : new SKPluginCollection(plugins);
         this._serviceSelector = serviceSelector;
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -158,7 +158,7 @@ public sealed class Kernel
 
     private Dictionary<string, object?>? _data;
     private CultureInfo _culture = CultureInfo.CurrentCulture;
-    private ISKPluginCollection? _plugins;
+    private SKPluginCollection? _plugins;
     private IAIServiceSelector? _serviceSelector;
 
     #endregion

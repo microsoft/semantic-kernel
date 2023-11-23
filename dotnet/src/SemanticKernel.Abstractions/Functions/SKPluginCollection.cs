@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 [DebuggerTypeProxy(typeof(SKPluginCollection.TypeProxy))]
-public sealed class SKPluginCollection : ISKPluginCollection
+public sealed class SKPluginCollection : ICollection<ISKPlugin>, IReadOnlySKPluginCollection
 {
     /// <summary>The underlying dictionary of plugins.</summary>
     private readonly Dictionary<string, ISKPlugin> _plugins;
@@ -66,6 +66,22 @@ public sealed class SKPluginCollection : ISKPluginCollection
         Verify.NotNull(name, "plugin.Name");
 
         this._plugins.Add(name, plugin);
+    }
+
+    /// <summary>Adds a collection of plugins to this plugin collection.</summary>
+    /// <param name="plugins">The plugins to add.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="plugins"/> contains a null plugin.</exception>
+    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="ISKPlugin.Name"/>.</exception>
+    /// <exception cref="ArgumentException">A plugin with the same name as a plugin in <paramref name="plugins"/> already exists in the collection.</exception>
+    public void AddRange(IEnumerable<ISKPlugin> plugins)
+    {
+        Verify.NotNull(plugins);
+
+        foreach (ISKPlugin plugin in plugins)
+        {
+            this.Add(plugin);
+        }
     }
 
     /// <summary>Removes the specified plugin from the collection.</summary>
