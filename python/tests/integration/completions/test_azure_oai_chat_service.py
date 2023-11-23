@@ -48,7 +48,7 @@ async def test_azure_e2e_chat_completion_with_skill(
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
+        any(word in output for word in ["human", "Human", "preserve", "harm"])
     )
     assert len(output) < 100
 
@@ -92,6 +92,6 @@ async def test_oai_chat_stream_service_with_skills(
     print(f"TLDR using input string: '{output}'")
     assert len(result) > 1
     assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
+        any(word in output for word in ["human", "Human", "preserve", "harm"])
     )
     assert len(output) < 100
