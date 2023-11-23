@@ -20,30 +20,31 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides factory methods for creating <see cref="ISKFunction"/> instances backed by a .NET method.
+/// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromMethod : ISKFunction
+internal sealed class KernelFunctionFromMethod : KernelFunction
 {
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction Create(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction Create(
         MethodInfo method,
         object? target = null,
         string? functionName = null,
@@ -58,10 +59,10 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunctionFromPrompt)) ?? NullLogger.Instance;
+        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
-        var result = new SKFunctionFromMethod(
+        var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
             description ?? methodDetails.Description,
@@ -78,17 +79,8 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     }
 
     /// <inheritdoc/>
-    public string Name { get; }
-
-    /// <inheritdoc/>
-    public string Description { get; }
-
-    /// <inheritdoc/>
-    IEnumerable<AIRequestSettings> ISKFunction.ModelSettings => Enumerable.Empty<AIRequestSettings>();
-
-    /// <inheritdoc/>
-    public SKFunctionMetadata GetMetadata() =>
-        this._view ??=
+    protected override SKFunctionMetadata GetMetadataCore() =>
+        this._metadata ??=
         new SKFunctionMetadata(this.Name)
         {
             Description = this.Description,
@@ -97,7 +89,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         };
 
     /// <inheritdoc/>
-    async Task<FunctionResult> ISKFunction.InvokeAsync(
+    protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings,
@@ -107,7 +99,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             // Invoke pre hook, and stop if skipping requested.
             this.CallFunctionInvoking(context);
-            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 if (this._logger.IsEnabled(LogLevel.Trace))
                 {
@@ -132,7 +124,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             {
                 this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
                     this.Name,
-                    SKFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
+                    KernelFunctionFromPrompt.IsInvokedCancelRequested(context) ? "canceled" : "completed",
                     result.Value);
             }
 
@@ -181,13 +173,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
-    public override string ToString() => this.ToString(false);
-
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public string ToString(bool writeIndented) =>
-        JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
 
     #region private
 
@@ -200,8 +186,6 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         SKContext context,
         CancellationToken cancellationToken);
 
-    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
-    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<SKParameterMetadata> _parameters;
@@ -210,13 +194,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<SKParameterMetadata> Parameters, SKReturnParameterMetadata ReturnParameter);
 
-    private SKFunctionFromMethod(
+    private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
         IReadOnlyList<SKParameterMetadata> parameters,
         SKReturnParameterMetadata returnParameter,
-        ILogger logger)
+        ILogger logger) : base(functionName, description)
     {
         Verify.ValidFunctionName(functionName);
 
@@ -226,9 +210,6 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         this._parameters = parameters.ToArray();
         Verify.ParametersUniqueness(this._parameters);
         this._returnParameter = returnParameter;
-
-        this.Name = functionName;
-        this.Description = description;
     }
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
@@ -260,7 +241,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         List<SKParameterMetadata> stringParameterViews = new();
         var parameters = method.GetParameters();
 
-        // Get marshaling funcs for parameters and build up the parameter views.
+        // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameterFuncs = new Func<Kernel, SKContext, CancellationToken, object?>[parameters.Length];
         bool sawFirstParameter = false, hasKernelParam = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
@@ -278,7 +259,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         Verify.ParametersUniqueness(stringParameterViews);
 
         // Get marshaling func for the return value.
-        Func<string, object?, SKContext, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        Func<string, object?, SKContext, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
         ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, Kernel kernel, SKContext context, CancellationToken cancellationToken)
@@ -294,7 +275,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             object? result = Invoke(method, target, args);
 
             // Extract and return the result.
-            return returnFunc(functionName!, result, context);
+            return returnFunc(functionName!, result, context, kernel);
         }
 
         // And return the details.
@@ -345,7 +326,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         // Handle special types based on SKContext data. These can each show up at most once in the method signature,
         // with the Kernel or/and the SKContext itself or the primary data from it mapped directly into the method's parameter.
-        // They do not get parameter views as they're not supplied from context variables.
+        // They do not get parameter metadata as they're not supplied from context variables.
 
         if (type == typeof(Kernel))
         {
@@ -363,14 +344,14 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) :
+                ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
                 ((Kernel kernel, SKContext context, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext context, CancellationToken _) => context.Culture, null);
+            return (static (Kernel kernel, SKContext context, CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
@@ -460,7 +441,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
                     try
                     {
-                        return parser(value, context.Culture);
+                        return parser(value, kernel.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
@@ -489,7 +470,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
     /// </summary>
-    private static Func<string, object?, SKContext, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static Func<string, object?, SKContext, Kernel, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -498,13 +479,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(void))
         {
-            return static (functionName, result, context) =>
+            return static (functionName, result, context, _) =>
                 new ValueTask<FunctionResult>(new FunctionResult(functionName, context));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (functionName, result, context) =>
+            return async static (functionName, result, context, _) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
                 return new FunctionResult(functionName, context);
@@ -513,7 +494,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (functionName, result, context) =>
+            return async static (functionName, result, context, _) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
                 return new FunctionResult(functionName, context);
@@ -524,7 +505,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(SKContext))
         {
-            return static (functionName, result, _) =>
+            return static (functionName, result, _, kernel) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
                 return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Variables.Input));
@@ -533,7 +514,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(Task<SKContext>))
         {
-            return static async (functionName, result, _) =>
+            return static async (functionName, result, _, __) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 return new FunctionResult(functionName, context, context.Variables.Input);
@@ -542,7 +523,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(ValueTask<SKContext>))
         {
-            return static async (functionName, result, _) =>
+            return static async (functionName, result, _, __) =>
             {
                 var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 return new FunctionResult(functionName, context, context);
@@ -553,7 +534,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(string))
         {
-            return static (functionName, result, context) =>
+            return static (functionName, result, context, _) =>
             {
                 var resultString = (string?)result;
                 context.Variables.Update(resultString);
@@ -563,7 +544,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(Task<string>))
         {
-            return async static (functionName, result, context) =>
+            return async static (functionName, result, context, _) =>
             {
                 var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
@@ -573,7 +554,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
         if (returnType == typeof(ValueTask<string>))
         {
-            return async static (functionName, result, context) =>
+            return async static (functionName, result, context, _) =>
             {
                 var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
@@ -590,9 +571,9 @@ internal sealed class SKFunctionFromMethod : ISKFunction
                 throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
             }
 
-            return (functionName, result, context) =>
+            return (functionName, result, context, kernel) =>
             {
-                context.Variables.Update(formatter(result, context.Culture));
+                context.Variables.Update(formatter(result, kernel.Culture));
                 return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, result));
             };
         }
@@ -605,13 +586,13 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter &&
             GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo, string> taskResultFormatter)
         {
-            return async (functionName, result, context) =>
+            return async (functionName, result, context, kernel) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
                 var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
-                context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
+                context.Variables.Update(taskResultFormatter(taskResult, kernel.Culture));
                 return new FunctionResult(functionName, context, taskResult);
             };
         }
@@ -623,14 +604,14 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter &&
             GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo, string> asTaskResultFormatter)
         {
-            return async (functionName, result, context) =>
+            return async (functionName, result, context, kernel) =>
             {
                 Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
                 await task.ConfigureAwait(false);
 
                 var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
-                context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
+                context.Variables.Update(asTaskResultFormatter(taskResult, kernel.Culture));
                 return new FunctionResult(functionName, context, taskResult);
             };
         }
@@ -646,7 +627,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
             if (getAsyncEnumeratorMethod is not null)
             {
-                return (functionName, result, context) =>
+                return (functionName, result, context, _) =>
                 {
                     var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
@@ -879,7 +860,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
-    private SKFunctionMetadata? _view;
+    private SKFunctionMetadata? _metadata;
 
     #endregion
 }

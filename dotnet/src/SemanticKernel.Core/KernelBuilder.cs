@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
@@ -17,6 +18,7 @@ public sealed class KernelBuilder
     private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
     private readonly AIServiceCollection _aiServices = new();
     private IAIServiceSelector? _serviceSelector;
+    private CultureInfo? _culture;
 
     /// <summary>
     /// Create a new kernel instance
@@ -43,6 +45,11 @@ public sealed class KernelBuilder
             this._loggerFactory
         );
 #pragma warning restore CS8604 // Possible null reference argument.
+
+        if (this._culture != null)
+        {
+            instance.Culture = this._culture;
+        }
 
         return instance;
     }
@@ -142,6 +149,16 @@ public sealed class KernelBuilder
     public KernelBuilder WithAIServiceSelector(IAIServiceSelector serviceSelector)
     {
         this._serviceSelector = serviceSelector;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a culture to be used by the kernel.
+    /// </summary>
+    /// <param name="culture">The culture.</param>
+    public KernelBuilder WithCulture(CultureInfo culture)
+    {
+        this._culture = culture;
         return this;
     }
 }

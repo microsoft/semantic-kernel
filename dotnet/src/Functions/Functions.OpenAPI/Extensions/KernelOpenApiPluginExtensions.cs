@@ -258,8 +258,8 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
-    private static ISKFunction CreateRestApiFunction(
+    /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
+    private static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
@@ -322,11 +322,10 @@ public static class KernelOpenApiPluginExtensions
         var parameters = restOperationParameters
             .Select(p => new SKParameterMetadata(p.AlternativeName ?? p.Name)
             {
-                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
+                Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
-                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterJsonType(p.Type),
                 IsRequired = p.IsRequired,
-                Schema = p.Schema,
+                Schema = p.Schema ?? (p.Type is null ? null : SKJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();
 
