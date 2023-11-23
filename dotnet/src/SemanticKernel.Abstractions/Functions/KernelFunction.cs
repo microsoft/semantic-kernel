@@ -195,7 +195,7 @@ public abstract class KernelFunction
     protected abstract SKFunctionMetadata GetMetadataCore();
 
     #region private
-    private bool _invokeEventHandlers;
+    private readonly bool _invokeEventHandlers;
 
     private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
     {
