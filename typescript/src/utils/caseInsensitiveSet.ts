@@ -4,7 +4,7 @@
  */
 
 export class CaseInsensitiveSet<T> extends Set<T> {
-    public add(value: T): this {
+    public override add(value: T): this {
         if (typeof value === 'string') {
             value = value.toLowerCase() as any as T;
         }
@@ -12,7 +12,7 @@ export class CaseInsensitiveSet<T> extends Set<T> {
         return super.add(value);
     }
 
-    public has(value: T): boolean {
+    public override has(value: T): boolean {
         if (typeof value === 'string') {
             value = value.toLowerCase() as any as T;
         }
@@ -20,7 +20,7 @@ export class CaseInsensitiveSet<T> extends Set<T> {
         return super.has(value);
     }
 
-    public delete(value: T): boolean {
+    public override delete(value: T): boolean {
         if (typeof value === 'string') {
             value = value.toLowerCase() as any as T;
         }

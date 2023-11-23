@@ -4,7 +4,7 @@
  */
 
 export class CaseInsensitiveMap<T, U> extends Map<T, U> {
-    public set(key: T, value: U): this {
+    public override set(key: T, value: U): this {
         if (typeof key === 'string') {
             key = key.toLowerCase() as any as T;
         }
@@ -12,7 +12,7 @@ export class CaseInsensitiveMap<T, U> extends Map<T, U> {
         return super.set(key, value);
     }
 
-    public get(key: T): U | undefined {
+    public override get(key: T): U | undefined {
         if (typeof key === 'string') {
             key = key.toLowerCase() as any as T;
         }
@@ -20,7 +20,7 @@ export class CaseInsensitiveMap<T, U> extends Map<T, U> {
         return super.get(key);
     }
 
-    public has(key: T): boolean {
+    public override has(key: T): boolean {
         if (typeof key === 'string') {
             key = key.toLowerCase() as any as T;
         }
@@ -28,7 +28,7 @@ export class CaseInsensitiveMap<T, U> extends Map<T, U> {
         return super.has(key);
     }
 
-    public delete(key: T): boolean {
+    public override delete(key: T): boolean {
         if (typeof key === 'string') {
             key = key.toLowerCase() as any as T;
         }

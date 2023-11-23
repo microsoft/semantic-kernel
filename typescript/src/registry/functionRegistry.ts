@@ -123,7 +123,8 @@ export class FunctionRegistry implements IFunctionRegistry {
             for (const skill in this._functionsRegistry.keys) {
                 for (const f in this._functionsRegistry.get(skill)!.keys) {
                     if (this._functionsRegistry.get(skill)!.get(f)!.isSemantic) {
-                        result.addFunction(this._functionsRegistry!.get(skill)!.get(f)!.describe());
+                        const fn = this._functionsRegistry!.get(skill)!.get(f);
+                        fn && result.addFunction(fn);
                     }
                 }
             }
@@ -136,7 +137,8 @@ export class FunctionRegistry implements IFunctionRegistry {
         for (const skill in this._functionsRegistry.keys) {
             for (const f in this._functionsRegistry.get(skill)!.keys) {
                 if (!this._functionsRegistry.get(skill)!.get(f)!.isSemantic) {
-                    result.addFunction(this._functionsRegistry.get(skill)!.get(f)!.describe());
+                    const fn = this._functionsRegistry.get(skill)!.get(f);
+                    fn && result.addFunction(fn);
                 }
             }
         }

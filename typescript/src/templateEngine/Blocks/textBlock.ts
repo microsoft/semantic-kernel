@@ -13,16 +13,21 @@ import { Block, BlockTypes } from './block';
 export class TextBlock extends Block {
     constructor(content: string, log?: ILogger);
     constructor(text: string, startIndex: number, stopIndex: number, log: ILogger);
-    constructor(textOrContent: string, startIndexOrLog: number | ILogger, stopIndex?: number, log?: ILogger) {
+    constructor(
+        textOrContent: string,
+        startIndexOrLog: number | ILogger | undefined,
+        stopIndex?: number,
+        log?: ILogger
+    ) {
         super(typeof startIndexOrLog == 'object' ? startIndexOrLog : log);
         if (typeof startIndexOrLog == 'number') {
-            this.content = textOrContent.substring(startIndexOrLog, stopIndex - startIndexOrLog);
+            this.content = textOrContent.substring(startIndexOrLog, stopIndex);
         } else {
             this.content = textOrContent;
         }
     }
 
-    public get type(): BlockTypes {
+    public override get type(): BlockTypes {
         return BlockTypes.Text;
     }
 

@@ -11,6 +11,7 @@ import { IPromptTemplateEngine } from '../templateEngine';
 import { BlockTypes, VarBlock } from '../templateEngine/Blocks';
 import { IPromptTemplate } from './iPromptTemplate';
 import { IPromptTemplateConfig } from './promptTemplateConfig';
+import { IKernel } from '../iKernel';
 
 export class PromptTemplate implements IPromptTemplate {
     private readonly _template: string;
@@ -21,7 +22,7 @@ export class PromptTemplate implements IPromptTemplate {
     constructor(template: string, promptTemplateConfig: IPromptTemplateConfig, kernel: IKernel) {
         this._template = template;
         this._promptConfig = promptTemplateConfig;
-        this._templateEngine = kernel.PromptTemplateEngine;
+        this._templateEngine = kernel._promptTemplateEngine;
     }
 
     public getParameters(): ParameterView[] {

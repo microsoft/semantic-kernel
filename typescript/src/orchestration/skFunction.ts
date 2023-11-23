@@ -223,7 +223,7 @@ export class SKFunction implements ISKFunction {
     public invoke(context?: SKContext, settings?: ICompleteRequestSettings, log?: ILogger): Promise<SKContext> {
         if (!context) {
             log = log ?? new NullLogger();
-            context = new SKContext(new ContextVariables(''), null, log);
+            context = new SKContext(new ContextVariables(''), undefined, log);
         }
 
         return this.isSemantic ? this.invokeSemantic(context, settings) : this.invokeNative(context);
@@ -289,16 +289,24 @@ export class SKFunction implements ISKFunction {
         throw new Error('Invalid operation, the method requires a semantic function');
     }
 
+    private verifyAiBackend() {
+        if (!this._aiBackend) {
+            this._log.error('AI backend not set');
+            throw new Error('Error, AI backend not set or empty');
+        }
+    }
+
     // Run the semantic function
     private async invokeSemantic(context: SKContext, settings?: ICompleteRequestSettings): Promise<SKContext> {
         this.verifyIsSemantic();
+        this.verifyAiBackend();
 
         this.ensureContextHasRegistry(context);
 
         settings = settings ?? this._aiRequestSettings;
 
         const callable = this._function as SKSemanticFunctionSignature;
-        context.variables.update((await callable(this._aiBackend, settings, context)).variables);
+        context.variables.update((await callable(this._aiBackend!, settings, context)).variables);
         return context;
     }
 
@@ -321,7 +329,7 @@ export class SKFunction implements ISKFunction {
 
     private ensureContextHasRegistry(context: SKContext): void {
         // If the function is invoked manually, the user might have left out the registry
-        if (!context.registry) {
+        if (!context.registry && this._registry) {
             context.registry = this._registry;
         }
     }

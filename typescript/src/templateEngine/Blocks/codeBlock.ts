@@ -15,11 +15,11 @@ import { VarBlock } from './varBlock';
 export class CodeBlock extends Block {
     private _validated: boolean = false;
 
-    constructor(public content: string, log: ILogger) {
+    constructor(public override content: string, log: ILogger) {
         super(log);
     }
 
-    public get type(): BlockTypes {
+    public override get type(): BlockTypes {
         return BlockTypes.Code;
     }
 
@@ -76,7 +76,7 @@ export class CodeBlock extends Block {
         throw new Error('Code blocks rendering requires IFunctionRegistryReader. Incorrect method call.');
     }
 
-    public async renderCode(context: SKContext): Promise<string> {
+    public override async renderCode(context: SKContext): Promise<string> {
         if (!this._validated) {
             const { valid, error } = this.isValid();
             if (!valid) {

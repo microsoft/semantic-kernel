@@ -15,22 +15,22 @@ export interface IKernel {
     /**
      * Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
      */
-    config: KernelConfig;
+    readonly _config: KernelConfig;
 
     /**
      * App logger
      */
-    log: ILogger;
+    readonly _log: ILogger;
 
     /**
      * Reference to the engine rendering prompt templates
      */
-    promptTemplateEngine: IPromptTemplateEngine;
+    readonly _promptTemplateEngine: IPromptTemplateEngine;
 
     /**
      * Reference to the read-only registry containing all the imported functions
      */
-    functionRegistryReader: IFunctionRegistryReader;
+    readonly _functionRegistryReader: IFunctionRegistryReader;
 
     /**
      * Build and register a function in the internal registry, in a global generic skill.

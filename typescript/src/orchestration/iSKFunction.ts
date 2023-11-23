@@ -5,7 +5,7 @@
 
 import { ICompleteRequestSettings, ITextCompletionClient } from '../ai';
 import { ILogger } from '../utils/logger';
-import { IFunctionRegistryReader, FunctionView } from '../registry';
+import { IFunctionRegistryReader, FunctionView, IFunctionView } from '../registry';
 import { SKContext } from './skContext';
 
 /**

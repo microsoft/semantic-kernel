@@ -3,8 +3,8 @@
  * Licensed under the MIT License.
  */
 
+import { ISKFunction } from '../orchestration';
 import { CaseInsensitiveMap } from '../utils';
-import { IFunctionView } from './functionView';
 
 /**
  * Class used to copy and export data from the registry.
@@ -17,21 +17,21 @@ export class FunctionsView {
      * @remarks
      * Functions are grouped by skill name.
      */
-    public readonly semanticFunctions: CaseInsensitiveMap<string, IFunctionView[]> = new CaseInsensitiveMap();
+    public readonly semanticFunctions: CaseInsensitiveMap<string, ISKFunction[]> = new CaseInsensitiveMap();
 
     /**
      * Collection of native skill names and function views, including function parameters.
      * @remarks
      * Functions are grouped by skill name.
      */
-    public readonly nativeFunctions: CaseInsensitiveMap<string, IFunctionView[]> = new CaseInsensitiveMap();
+    public readonly nativeFunctions: CaseInsensitiveMap<string, ISKFunction[]> = new CaseInsensitiveMap();
 
     /**
      * Add a function to the list
      * @param view Function details
      * @returns Current instance
      */
-    public addFunction(view: IFunctionView): FunctionsView {
+    public addFunction(view: ISKFunction): FunctionsView {
         if (view.isSemantic) {
             if (!this.semanticFunctions.has(view.skillName)) {
                 this.semanticFunctions.set(view.skillName, []);

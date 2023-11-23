@@ -104,7 +104,7 @@ export class PromptTemplateEngine implements IPromptTemplateEngine {
         const MIN_CODE_BLOCK_LENGTH = EMPTY_CODE_BLOCK_LENGTH + 1;
 
         // Render NULL to ""
-        if (template === null) {
+        if (!template) {
             return [new TextBlock('', this._log)];
         }
 

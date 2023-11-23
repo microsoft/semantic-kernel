@@ -5,9 +5,11 @@
 
 import { Verify } from '../../../diagnostics';
 import { ILogger } from '../../../utils/logger';
-import { CompleteRequestSettings, ICompleteRequestSettings } from '../../completeRequestSettings';
+import { AIException } from '../../aiException';
+import { ICompleteRequestSettings } from '../../completeRequestSettings';
 import { ITextCompletionClient } from '../../iTextCompletionClient';
 import { OpenAIClientAbstract } from '../clients';
+import { IOpenAICompletionRequest } from '../httpSchema';
 
 export class OpenAITextCompletion extends OpenAIClientAbstract implements ITextCompletionClient {
     // 3P OpenAI REST API endpoint
@@ -38,23 +40,21 @@ export class OpenAITextCompletion extends OpenAIClientAbstract implements ITextC
         if (requestSettings.maxTokens < 1) {
             throw new AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                `MaxTokens ${requestSettings.MaxTokens} is not valid, the value must be greater than zero`
+                `MaxTokens ${requestSettings.maxTokens} is not valid, the value must be greater than zero`
             );
         }
 
-        const requestBody = JSON.stringify(
-            new OpenAICompletionRequest({
-                Prompt: text,
-                Temperature: requestSettings.Temperature,
-                TopP: requestSettings.TopP,
-                PresencePenalty: requestSettings.PresencePenalty,
-                FrequencyPenalty: requestSettings.FrequencyPenalty,
-                MaxTokens: requestSettings.MaxTokens,
-                Stop: requestSettings.StopSequences?.length > 0 ? requestSettings.StopSequences : null,
-            })
-        );
+        const requestBody = JSON.stringify({
+            prompt: text,
+            temperature: requestSettings.temperature,
+            top_p: requestSettings.topP,
+            presence_penalty: requestSettings.presencePenalty,
+            frequency_penalty: requestSettings.frequencyPenalty,
+            max_tokens: requestSettings.maxTokens,
+            stop: requestSettings.stopSequences?.length > 0 ? requestSettings.stopSequences : null,
+        } as IOpenAICompletionRequest);
 
-        return this.executeCompleteRequestAsync(url, requestBody);
+        return this.executeCompleteRequest(url, requestBody);
     }
 
     // Use this URL if you prefer passing the model ID in the request payload

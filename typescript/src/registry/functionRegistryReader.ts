@@ -22,7 +22,8 @@ export class FunctionRegistryReader implements IFunctionRegistryReader {
     public hasFunction(functionName: string): boolean;
     public hasFunction(skillName: string, functionName: string): boolean;
     public hasFunction(skillOrFunctionName: string, functionName?: string): boolean {
-        return this._functionRegistry.hasFunction(skillOrFunctionName, functionName);
+        if (functionName) return this._functionRegistry.hasFunction(skillOrFunctionName, functionName);
+        else return this._functionRegistry.hasFunction(skillOrFunctionName);
     }
 
     public hasSemanticFunction(skillName: string, functionName: string): boolean {
@@ -32,7 +33,8 @@ export class FunctionRegistryReader implements IFunctionRegistryReader {
     public hasNativeFunction(functionName: string): boolean;
     public hasNativeFunction(skillName: string, functionName: string): boolean;
     public hasNativeFunction(skillOrFunctionName: string, functionName?: string): boolean {
-        return this._functionRegistry.hasNativeFunction(skillOrFunctionName, functionName);
+        if (functionName) return this._functionRegistry.hasNativeFunction(skillOrFunctionName, functionName);
+        else return this._functionRegistry.hasNativeFunction(skillOrFunctionName);
     }
 
     public getSemanticFunction(skillName: string, functionName: string): ISKFunction {
@@ -42,7 +44,8 @@ export class FunctionRegistryReader implements IFunctionRegistryReader {
     public getNativeFunction(functionName: string): ISKFunction;
     public getNativeFunction(skillName: string, functionName: string): ISKFunction;
     public getNativeFunction(skillOrFunctionName: string, functionName?: string): ISKFunction {
-        return this._functionRegistry.getNativeFunction(skillOrFunctionName, functionName);
+        if (functionName) return this._functionRegistry.getNativeFunction(skillOrFunctionName, functionName);
+        else return this._functionRegistry.getNativeFunction(skillOrFunctionName);
     }
 
     public getFunctionsView(includeSemantic: boolean = true, includeNative: boolean = true): FunctionsView {
