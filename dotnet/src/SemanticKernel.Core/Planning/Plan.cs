@@ -292,10 +292,14 @@ public sealed class Plan : KernelFunction
         }
         else
         {
-            this.CallFunctionInvoking(context);
-            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
-                return new FunctionResult(this.Name, context);
+                return new FunctionResult(this.Name, context)
+                {
+                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
+                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                };
             }
 
             // loop through steps and execute until completion
@@ -308,7 +312,7 @@ public sealed class Plan : KernelFunction
                 // Return the last result state of the plan.
                 if (stepResult is null)
                 {
-                    if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
+                    if (invokingEventArgs.IsSkipRequested)
                     {
                         continue;
                     }
@@ -322,11 +326,9 @@ public sealed class Plan : KernelFunction
                 this.UpdateFunctionResultWithOutputs(result);
             }
 
-            this.CallFunctionInvoked(result, context);
-            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
-            {
-                return new FunctionResult(this.Name, context, result.Value);
-            }
+            var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result);
+
+            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
         }
 
         return result;
@@ -425,34 +427,23 @@ public sealed class Plan : KernelFunction
         throw new InvalidOperationException("There isn't a next step");
     }
 
-    private void CallFunctionInvoking(SKContext context)
+    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
     {
-        var eventWrapper = context.FunctionInvokingHandler;
-        if (eventWrapper?.Handler is null)
-        {
-            return;
-        }
-
-        eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
-        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
+        kernel.OnFunctionInvoking(eventArgs);
+        return eventArgs;
     }
 
-    private void CallFunctionInvoked(FunctionResult result, SKContext context)
+    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
     {
-        var eventWrapper = context.FunctionInvokedHandler;
-
-        // Not handlers registered, return the result as is
-        if (eventWrapper?.Handler is null)
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        if (kernel.OnFunctionInvoked(eventArgs))
         {
-            return;
+            // Updates the eventArgs metadata during invoked handler execution will reflect in the result metadata
+            result.Metadata = eventArgs.Metadata;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
-
-        // Updates the eventArgs metadata during invoked handler execution
-        // will reflect in the result metadata
-        result.Metadata = eventWrapper.EventArgs.Metadata;
+        return eventArgs;
     }
 
     /// <summary>

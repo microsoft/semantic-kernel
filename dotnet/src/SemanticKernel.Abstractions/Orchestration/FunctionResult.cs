@@ -18,6 +18,21 @@ public sealed class FunctionResult
     public string FunctionName { get; internal set; }
 
     /// <summary>
+    /// Return true if the function result is for a function that was cancelled.
+    /// </summary>
+    public bool IsCancellationRequested { get; internal set; }
+
+    /// <summary>
+    /// Return true if the function should be skipped.
+    /// </summary>
+    public bool IsSkipRequested { get; internal set; }
+
+    /// <summary>
+    /// Return true if the function should be repeated.
+    /// </summary>
+    public bool IsRepeatRequested { get; internal set; }
+
+    /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
     public Dictionary<string, object> Metadata

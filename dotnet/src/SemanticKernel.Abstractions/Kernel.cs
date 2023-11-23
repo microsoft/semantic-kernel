@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel;
 /// * include branching logic in the functions pipeline
 /// * persist execution state for long running pipelines
 /// * distribute pipelines over a network
-/// * RPC functions and secure environments, e.g. sandboxing and credentials management
+/// * RPC functions and secure environments, eventArgs.g. sandboxing and credentials management
 /// * auto-generate pipelines given a higher level goal
 /// </summary>
 public sealed class Kernel
@@ -107,10 +107,7 @@ public sealed class Kernel
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null)
     {
-        return new SKContext(
-            variables,
-            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
-            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked));
+        return new SKContext(variables);
     }
 
     /// <summary>
@@ -137,6 +134,30 @@ public sealed class Kernel
         this._data ??
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
+
+    #region internal ===============================================================================
+    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.FunctionInvoking != null)
+        {
+            this.FunctionInvoking.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+
+    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    {
+        bool handled = false;
+        if (this.FunctionInvoked != null)
+        {
+            this.FunctionInvoked.Invoke(this, eventArgs);
+            handled = true;
+        }
+        return handled;
+    }
+    #endregion
 
     #region private ================================================================================
 
