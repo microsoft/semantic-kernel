@@ -51,16 +51,16 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync(plugin["type07"], variables);
         await kernel.RunAsync(kernel.Plugins["test"]["type07"], variables);
 
-        await kernel.RunAsync(plugin["type08"], "");
+        await kernel.RunAsync(plugin["type08"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type08"]);
 
-        await kernel.RunAsync(plugin["type09"], "");
+        await kernel.RunAsync(plugin["type09"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type09"]);
 
-        await kernel.RunAsync(plugin["type10"], "");
+        await kernel.RunAsync(plugin["type10"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type10"]);
 
-        await kernel.RunAsync(plugin["type11"], "");
+        await kernel.RunAsync(plugin["type11"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type11"]);
 
         await kernel.RunAsync(plugin["type12"], variables);
