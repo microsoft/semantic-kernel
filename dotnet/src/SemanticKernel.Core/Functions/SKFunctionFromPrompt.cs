@@ -199,7 +199,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         // Manually handling the enumeration to properly log any exception
-        bool moreChunks;
+        bool hasNextChunk;
         do
         {
             T? genericChunk = default;
@@ -207,8 +207,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (moreChunks)
+                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (hasNextChunk)
                 {
                     genericChunk = enumerator.Current;
                     fullCompletion.Append(genericChunk);
@@ -227,11 +227,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 throw;
             }
 
-            if (moreChunks && genericChunk is not null)
+            if (hasNextChunk && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreChunks);
+        } while (hasNextChunk);
 
         // Update the result with the completion
         context.Variables.Update(fullCompletion.ToString());

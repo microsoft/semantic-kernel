@@ -170,7 +170,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         IAsyncEnumerator<object> enumerator = this._streamingFunction(null, requestSettings, kernel, context, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         T? genericChunk;
-        bool moreChunks;
+        bool hasNextChunk;
 
         // Manually handling the enumeration to properly log any exception
         do
@@ -180,9 +180,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
 
-                if (moreChunks)
+                if (hasNextChunk)
                 {
                     var chunk = enumerator.Current;
 
@@ -210,11 +210,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 throw;
             }
 
-            if (moreChunks && genericChunk is not null)
+            if (hasNextChunk && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreChunks);
+        } while (hasNextChunk);
 
         // Invoke the post hook.
         var (invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context);

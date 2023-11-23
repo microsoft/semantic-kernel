@@ -30,7 +30,7 @@ Needs to be clear for the sk developer when he is attempting to get streaming da
 - Streaming with plans will not be supported in this phase. Attempting to do so will throw an exception.
 - Kernel streaming will not support multiple functions (pipeline).
 - Input streaming will not be supported in this phase.
-- Skipping streaming functions will not be supported in this phase.
+- Post Hook Skipping, Repeat and Cancelling of streaming functions are not supported.
 
 ## Considered Options
 

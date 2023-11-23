@@ -131,7 +131,7 @@ public abstract class KernelFunction
     /// <param name="context">SK context</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A asynchronous list of streaming result chunks</returns>
+    /// <returns>A asynchronous list of streaming content chunks</returns>
     public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
@@ -150,15 +150,15 @@ public abstract class KernelFunction
         IAsyncEnumerator<T> enumerator = this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         // Manually handling the enumeration to properly log any exception
-        bool moreChunks;
+        bool hasNextChunk;
         do
         {
             T? genericChunk = default;
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (moreChunks)
+                hasNextChunk = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (hasNextChunk)
                 {
                     genericChunk = enumerator.Current;
                     fullCompletion.Append(genericChunk);
@@ -182,11 +182,11 @@ public abstract class KernelFunction
                 throw;
             }
 
-            if (moreChunks && genericChunk is not null)
+            if (hasNextChunk && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreChunks);
+        } while (hasNextChunk);
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
