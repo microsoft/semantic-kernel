@@ -497,81 +497,81 @@ public sealed class SKFunctionTests2
         Assert.Equal("new data", result.GetValue<string>());
     }
 
-    [Fact]
-    public async Task ItSupportsStaticStringContextTaskContextAsync()
-    {
-        // Arrange
-        static Task<SKContext> Test(string input, SKContext context)
-        {
-            s_actual = s_expected;
-            context.Variables["canary"] = s_expected;
-            context.Variables.Update("x y z");
+    //[Fact]
+    //public async Task ItSupportsStaticStringContextTaskContextAsync()
+    //{
+    //    // Arrange
+    //    static Task<SKContext> Test(string input, SKContext context)
+    //    {
+    //        s_actual = s_expected;
+    //        context.Variables["canary"] = s_expected;
+    //        context.Variables.Update("x y z");
 
-            var newContext = context.Clone();
-            newContext.Variables.Clear();
+    //        var newContext = context.Clone();
+    //        newContext.Variables.Clear();
 
-            // This value should overwrite "x y z". Contexts are merged.
-            newContext.Variables.Update("new data");
-            newContext.Variables["canary2"] = "222";
+    //        // This value should overwrite "x y z". Contexts are merged.
+    //        newContext.Variables.Update("new data");
+    //        newContext.Variables["canary2"] = "222";
 
-            return Task.FromResult(newContext);
-        }
+    //        return Task.FromResult(newContext);
+    //    }
 
-        var oldContext = new SKContext(new ContextVariables(string.Empty));
-        oldContext.Variables["legacy"] = "something";
+    //    var oldContext = new SKContext(new ContextVariables(string.Empty));
+    //    oldContext.Variables["legacy"] = "something";
 
-        // Act
-        var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
-        Assert.NotNull(function);
+    //    // Act
+    //    var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+    //    Assert.NotNull(function);
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
-        var newContext = result.Context;
+    //    FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
+    //    var newContext = result.Context;
 
-        // Assert
-        Assert.Equal(s_expected, s_actual);
+    //    // Assert
+    //    Assert.Equal(s_expected, s_actual);
 
-        Assert.True(oldContext.Variables.ContainsKey("canary"));
-        Assert.False(oldContext.Variables.ContainsKey("canary2"));
+    //    Assert.True(oldContext.Variables.ContainsKey("canary"));
+    //    Assert.False(oldContext.Variables.ContainsKey("canary2"));
 
-        Assert.False(newContext.Variables.ContainsKey("canary"));
-        Assert.True(newContext.Variables.ContainsKey("canary2"));
+    //    Assert.False(newContext.Variables.ContainsKey("canary"));
+    //    Assert.True(newContext.Variables.ContainsKey("canary2"));
 
-        Assert.Equal(s_expected, oldContext.Variables["canary"]);
-        Assert.Equal("222", newContext.Variables["canary2"]);
+    //    Assert.Equal(s_expected, oldContext.Variables["canary"]);
+    //    Assert.Equal("222", newContext.Variables["canary2"]);
 
-        Assert.True(oldContext.Variables.ContainsKey("legacy"));
-        Assert.False(newContext.Variables.ContainsKey("legacy"));
+    //    Assert.True(oldContext.Variables.ContainsKey("legacy"));
+    //    Assert.False(newContext.Variables.ContainsKey("legacy"));
 
-        Assert.Equal("x y z", oldContext.Variables.Input);
-        Assert.Equal("new data", newContext.Variables.Input);
+    //    Assert.Equal("x y z", oldContext.Variables.Input);
+    //    Assert.Equal("new data", newContext.Variables.Input);
 
-        Assert.Equal("new data", result.GetValue<string>());
-    }
+    //    Assert.Equal("new data", result.GetValue<string>());
+    //}
 
-    [Fact]
-    public async Task ItSupportsStaticContextValueTaskContextAsync()
-    {
-        // Arrange
-        static ValueTask<SKContext> Test(string input, SKContext context)
-        {
-            // This value should overwrite "x y z". Contexts are merged.
-            var newCx = context.Clone();
-            newCx.Variables.Update(input + "abc");
+    //[Fact]
+    //public async Task ItSupportsStaticContextValueTaskContextAsync()
+    //{
+    //    // Arrange
+    //    static ValueTask<SKContext> Test(string input, SKContext context)
+    //    {
+    //        // This value should overwrite "x y z". Contexts are merged.
+    //        var newCx = context.Clone();
+    //        newCx.Variables.Update(input + "abc");
 
-            return new ValueTask<SKContext>(newCx);
-        }
+    //        return new ValueTask<SKContext>(newCx);
+    //    }
 
-        var oldContext = new SKContext(new ContextVariables("test"));
+    //    var oldContext = new SKContext(new ContextVariables("test"));
 
-        // Act
-        var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
-        Assert.NotNull(function);
+    //    // Act
+    //    var function = SKFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+    //    Assert.NotNull(function);
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
+    //    FunctionResult result = await function.InvokeAsync(this._kernel, oldContext);
 
-        // Assert
-        Assert.Equal("testabc", result.Context.Variables.Input);
-    }
+    //    // Assert
+    //    Assert.Equal("testabc", result.Context.Variables.Input);
+    //}
 
     [Fact]
     public async Task ItSupportsStaticStringTaskAsync()
@@ -707,7 +707,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: input value", result.Context.Variables.Input);
+        Assert.Equal("Result: input value", context.Variables.Input);
     }
 
     [Fact]
@@ -724,7 +724,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: input value", result.Context.Variables.Input);
+        Assert.Equal("Result: input value", context.Variables.Input);
     }
 
     [Fact]
@@ -742,7 +742,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: 50", result.Context.Variables.Input);
+        Assert.Equal("Result: 50", context.Variables.Input);
     }
 
     [Fact]
@@ -760,7 +760,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: other value", result.Context.Variables.Input);
+        Assert.Equal("Result: other value", context.Variables.Input);
     }
 
     [Fact]
@@ -778,7 +778,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: input value", result.Context.Variables.Input);
+        Assert.Equal("Result: input value", context.Variables.Input);
     }
 
     [Fact]
@@ -795,7 +795,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("Result: True", result.Context.Variables.Input);
+        Assert.Equal("Result: True", context.Variables.Input);
     }
 
     [Fact]
@@ -819,7 +819,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("1 -2 1234 7e08cc00-1d71-4558-81ed-69929499dea1 Thu, 25 May 2023 20:17:30 GMT Monday", result.Context.Variables.Input);
+        Assert.Equal("1 -2 1234 7e08cc00-1d71-4558-81ed-69929499dea1 Thu, 25 May 2023 20:17:30 GMT Monday", context.Variables.Input);
     }
 
     [Fact]
@@ -837,7 +837,7 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("84", result.Context.Variables.Input);
+        Assert.Equal("84", context.Variables.Input);
     }
 
     [TypeConverter(typeof(MyCustomTypeConverter))]
@@ -862,10 +862,9 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = new SKContext(new ContextVariables("1"));
 
-        async Task AssertResult(Delegate d, SKContext context, string expected)
+        async Task AssertResult(Delegate d, SKContext context, string? expected)
         {
             var result = await SKFunctionFactory.CreateFromMethod(d, functionName: "Test")!.InvokeAsync(this._kernel, context);
-            context = result.Context;
 
             Assert.Equal(expected, context.Variables.Input);
         }
@@ -906,17 +905,17 @@ public sealed class SKFunctionTests2
         this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12,34"); // tries first to parse with the specified culture
         result = await func.InvokeAsync(this._kernel, context);
-        Assert.Equal("24,68", result.Context.Variables.Input);
+        Assert.Equal("24,68", context.Variables.Input);
 
         this._kernel.Culture = new CultureInfo("fr-FR");
         context.Variables.Update("12.34"); // falls back to invariant culture
         result = await func.InvokeAsync(this._kernel, context);
-        Assert.Equal("24,68", result.Context.Variables.Input);
+        Assert.Equal("24,68", context.Variables.Input);
 
         this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12.34"); // works with current culture
         result = await func.InvokeAsync(this._kernel, context);
-        Assert.Equal("24.68", result.Context.Variables.Input);
+        Assert.Equal("24.68", context.Variables.Input);
 
         this._kernel.Culture = new CultureInfo("en-US");
         context.Variables.Update("12,34"); // not parsable with current or invariant culture

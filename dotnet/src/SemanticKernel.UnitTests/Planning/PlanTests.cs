@@ -32,23 +32,6 @@ public sealed class PlanTests
     }
 
     [Fact]
-    public async Task CanExecutePlanAsync()
-    {
-        // Arrange
-        var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
-        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal);
-
-        // Act
-        var result = await plan.InvokeAsync(kernel, "Some input");
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Some input", result.Context.Variables.Input);
-        Assert.Null(result.GetValue<string>());
-    }
-
-    [Fact]
     public async Task CanExecutePlanWithContextAsync()
     {
         // Arrange
@@ -64,7 +47,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Some input", result.Context.Variables.Input);
+        Assert.Equal("Some input", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
 
         plan = new Plan(goal);
@@ -73,7 +56,7 @@ public sealed class PlanTests
         result = await plan.InvokeAsync(kernel, context);
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("other input", result.Context.Variables.Input);
+        Assert.Equal("other input", context.Variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 
@@ -103,7 +86,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result", result.Context.Variables.Input);
         Assert.Equal("fake result", result.GetValue<string>());
         Assert.Equal(planInput, actualInput);
     }
@@ -132,7 +114,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result", result.Context.Variables.Input);
         Assert.Equal("fake result", result.GetValue<string>());
     }
 
@@ -166,7 +147,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -200,7 +180,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -234,7 +213,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -470,7 +448,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
@@ -500,7 +477,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
@@ -526,7 +502,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
 
         plan = new Plan(function);
@@ -542,7 +517,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
     }
 
@@ -573,7 +547,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
 
         planStep = new Plan(function);
@@ -589,7 +562,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Medusa", result.GetValue<string>());
 
         planStep = new Plan(function);
@@ -606,7 +578,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Cleopatra", result.GetValue<string>());
     }
 
@@ -716,7 +687,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         var res = result.GetValue<string>();
         Assert.Equal(expected, result.GetValue<string>());
-        Assert.Equal(expected, result.Context.Variables.Input);
         Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_1", out var chapter1));
         Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_2", out var chapter2));
         Assert.True(result.TryGetMetadataValue<string>("CHAPTER_3", out var chapter3));
@@ -749,7 +719,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expected = @"Here is a payload '{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and foobar""}' for Function input.";
 
         // Assert
-        Assert.Equal(expected, result.Context.Variables.Input);
         Assert.Equal(expected, result.GetValue<string>());
     }
 

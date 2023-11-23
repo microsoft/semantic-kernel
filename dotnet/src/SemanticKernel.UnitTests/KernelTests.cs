@@ -347,7 +347,6 @@ public class KernelTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(ExpectedValue, result.GetValue<string>());
-        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
     }
 
     [Fact]
@@ -370,7 +369,6 @@ public class KernelTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(ExpectedValue, result.GetValue<string>());
-        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
     }
 
     [Theory]

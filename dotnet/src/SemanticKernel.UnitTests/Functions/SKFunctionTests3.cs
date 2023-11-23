@@ -108,7 +108,7 @@ public sealed class SKFunctionTests3
 
         // Assert
         Assert.Equal("YES", context.Variables["canary"]);
-        Assert.Equal("YES", result.Context.Variables["canary"]);
+        Assert.Equal("YES", context.Variables["canary"]);
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public sealed class SKFunctionTests3
         FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
-        Assert.Equal("YES", result.Context.Variables["canary"]);
+        Assert.Equal("YES", context.Variables["canary"]);
     }
 
     private sealed class InvalidPlugin

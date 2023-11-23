@@ -106,7 +106,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                     this._logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
                 }
 
-                return new FunctionResult(this.Name, context);
+                return new FunctionResult(this.Name);
             }
 
             if (this._logger.IsEnabled(LogLevel.Trace))
@@ -155,11 +155,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var eventWrapper = context.FunctionInvokedHandler;
         if (eventWrapper?.Handler is EventHandler<FunctionInvokedEventArgs> handler)
         {
-            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+            eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
             handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Variables.Input)
+            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
@@ -480,24 +480,24 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (returnType == typeof(void))
         {
             return static (functionName, result, context, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(functionName, context));
+                new ValueTask<FunctionResult>(new FunctionResult(functionName));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (functionName, result, context, _) =>
+            return async static (functionName, result, _, __) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context);
+                return new FunctionResult(functionName);
             };
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (functionName, result, context, _) =>
+            return async static (functionName, result, _, __) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context);
+                return new FunctionResult(functionName);
             };
         }
 
@@ -508,7 +508,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return static (functionName, result, _, kernel) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Variables.Input));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context.Variables.Input));
             };
         }
 
@@ -517,7 +517,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return static async (functionName, result, _, __) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context, context.Variables.Input);
+                return new FunctionResult(functionName, context.Variables.Input);
             };
         }
 
@@ -526,7 +526,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return static async (functionName, result, _, __) =>
             {
                 var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context, context);
+                return new FunctionResult(functionName);
             };
         }
 
@@ -538,7 +538,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = (string?)result;
                 context.Variables.Update(resultString);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, resultString));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, resultString));
             };
         }
 
@@ -548,7 +548,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
-                return new FunctionResult(functionName, context, resultString);
+                return new FunctionResult(functionName, resultString);
             };
         }
 
@@ -558,7 +558,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 context.Variables.Update(resultString);
-                return new FunctionResult(functionName, context, resultString);
+                return new FunctionResult(functionName, resultString);
             };
         }
 
@@ -574,7 +574,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (functionName, result, context, kernel) =>
             {
                 context.Variables.Update(formatter(result, kernel.Culture));
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, result));
             };
         }
 
@@ -593,7 +593,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
                 context.Variables.Update(taskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, context, taskResult);
+                return new FunctionResult(functionName, taskResult);
             };
         }
 
@@ -612,7 +612,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
                 context.Variables.Update(asTaskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, context, taskResult);
+                return new FunctionResult(functionName, taskResult);
             };
         }
 
@@ -633,10 +633,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
                     if (asyncEnumerator is not null)
                     {
-                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, asyncEnumerator));
+                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, asyncEnumerator));
                     }
 
-                    return new ValueTask<FunctionResult>(new FunctionResult(functionName, context));
+                    return new ValueTask<FunctionResult>(new FunctionResult(functionName));
                 };
             }
         }

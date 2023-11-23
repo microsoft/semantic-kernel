@@ -522,12 +522,12 @@ repeat:
 
                 functionResult = await function.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (IsCancelRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsCancelRequested(function, context, pipelineStepCount, logger))
                 {
                     break;
                 }
 
-                if (IsSkipRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsSkipRequested(function, context, pipelineStepCount, logger))
                 {
                     continue;
                 }
@@ -535,7 +535,7 @@ repeat:
                 // Only non-stop results are considered as Kernel results
                 allFunctionResults.Add(functionResult!);
 
-                if (IsRepeatRequested(function, functionResult.Context, pipelineStepCount, logger))
+                if (IsRepeatRequested(function, context, pipelineStepCount, logger))
                 {
                     goto repeat;
                 }

@@ -273,7 +273,7 @@ public sealed class Plan : KernelFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(this.Name, context);
+        var result = new FunctionResult(this.Name);
 
         if (this.Function is not null)
         {
@@ -288,14 +288,14 @@ public sealed class Plan : KernelFunction
             result = await this.Function
                 .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result);
+            this.UpdateFunctionResultWithOutputs(result, functionContext.Variables);
         }
         else
         {
             this.CallFunctionInvoking(context);
             if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
-                return new FunctionResult(this.Name, context);
+                return new FunctionResult(this.Name);
             }
 
             // loop through steps and execute until completion
@@ -318,14 +318,14 @@ public sealed class Plan : KernelFunction
 
                 this.UpdateContextWithOutputs(context);
 
-                result = new FunctionResult(this.Name, context, context.Variables.Input);
-                this.UpdateFunctionResultWithOutputs(result);
+                result = new FunctionResult(this.Name, context.Variables.Input);
+                this.UpdateFunctionResultWithOutputs(result, context.Variables);
             }
 
             this.CallFunctionInvoked(result, context);
             if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
-                return new FunctionResult(this.Name, context, result.Value);
+                return new FunctionResult(this.Name, result.Value);
             }
         }
 
@@ -382,7 +382,10 @@ public sealed class Plan : KernelFunction
                 return null;
             }
 
-            var resultValue = result.Context.Variables.Input.Trim();
+            // TODO: Revise this line later in the context of the complex type support initiative.
+            // Currently, this line has an issue where the ToString method uses CurrentCulture instead of the culture configured on the kernel.
+            // Consequently, it may produce unexpected results. For example, "24.68" might be returned on a machine with 'en-US' culture instead of "24,68"(right string for French culture) even though the 'fr-FR' culture is configured on the kernel.
+            var resultValue = result.ToString()?.Trim();
 
             #region Update State
 
@@ -405,7 +408,7 @@ public sealed class Plan : KernelFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Context.Variables.TryGetValue(item, out string? val))
+                if (context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -447,7 +450,7 @@ public sealed class Plan : KernelFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution
@@ -533,8 +536,9 @@ public sealed class Plan : KernelFunction
     /// Update the function result with the outputs from the current state.
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
+    /// <param name="variables">The context variables.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult, ContextVariables variables)
     {
         if (functionResult is null)
         {
@@ -547,7 +551,7 @@ public sealed class Plan : KernelFunction
             {
                 functionResult.Metadata[output] = value;
             }
-            else if (functionResult.Context.Variables.TryGetValue(output, out var val))
+            else if (variables.TryGetValue(output, out var val))
             {
                 functionResult.Metadata[output] = val;
             }

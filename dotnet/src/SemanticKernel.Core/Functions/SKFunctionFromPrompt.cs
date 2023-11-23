@@ -151,7 +151,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.CallFunctionInvoking(context, renderedPrompt);
             if (IsInvokingCancelOrSkipRequested(context))
             {
-                return new FunctionResult(this.Name, context);
+                return new FunctionResult(this.Name);
             }
 
             renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
@@ -164,7 +164,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            var result = new FunctionResult(this.Name, context, completion);
+            var result = new FunctionResult(this.Name, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
@@ -172,7 +172,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.CallFunctionInvoked(result, context, renderedPrompt);
             if (IsInvokedCancelRequested(context))
             {
-                result = new FunctionResult(this.Name, context, result.Value);
+                result = new FunctionResult(this.Name, result.Value);
             }
 
             return result;
@@ -270,7 +270,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return;
         }
 
-        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
 
         // Updates the eventArgs metadata during invoked handler execution

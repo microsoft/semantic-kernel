@@ -60,7 +60,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new SKContext(), value);
+        FunctionResult target = new("functionName", value);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -70,7 +70,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName", new SKContext());
+        FunctionResult target = new("functionName");
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -81,7 +81,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", new SKContext(), value);
+        FunctionResult target = new("functionName", value);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -100,7 +100,6 @@ public class FunctionResultTests
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
-        Assert.Equal(context, target.Context);
     }
 
     [Fact]
@@ -112,11 +111,10 @@ public class FunctionResultTests
         string value = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName, context, value);
+        FunctionResult target = new(functionName, value);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
-        Assert.Equal(context, target.Context);
         Assert.Equal(value, target.Value);
     }
 
@@ -125,7 +123,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new SKContext(), value);
+        FunctionResult target = new("functionName", value);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());
