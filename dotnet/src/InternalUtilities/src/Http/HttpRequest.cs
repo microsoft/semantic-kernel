@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Text;
@@ -41,7 +42,12 @@ internal static class HttpRequest
         HttpContent? content = null;
         if (payload is not null)
         {
-            return new StringContent(JsonSerializer.Serialize(payload, JsonOptionsCache.Default), Encoding.UTF8, "application/json");
+            byte[] utf8Bytes = payload is string s ?
+                Encoding.UTF8.GetBytes(s) :
+                JsonSerializer.SerializeToUtf8Bytes(payload, JsonOptionsCache.Default);
+
+            content = new ByteArrayContent(utf8Bytes);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         }
 
         return content;
