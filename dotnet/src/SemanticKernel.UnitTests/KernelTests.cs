@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -12,6 +13,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -105,14 +107,14 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
         };
-        List<ISKFunction> pipeline = new();
+        List<KernelFunction> pipeline = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             pipeline.Add(func);
@@ -132,7 +134,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -156,8 +158,8 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
-        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        KernelFunction func1 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        KernelFunction func2 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -205,8 +207,8 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int func1Invocations = 0, func2Invocations = 0;
-        ISKFunction func1 = SKFunctionFactory.CreateFromMethod(() => func1Invocations++, functionName: "func1");
-        ISKFunction func2 = SKFunctionFactory.CreateFromMethod(() => func2Invocations++, functionName: "func2");
+        KernelFunction func1 = SKFunctionFactory.CreateFromMethod(() => func1Invocations++, functionName: "func1");
+        KernelFunction func2 = SKFunctionFactory.CreateFromMethod(() => func2Invocations++, functionName: "func2");
 
         var invoked = 0;
         var invoking = 0;
@@ -215,7 +217,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "func1")
+            if (e.FunctionMetadata.Name == "func1")
             {
                 e.Skip();
             }
@@ -223,7 +225,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 
@@ -245,7 +247,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -253,7 +255,7 @@ public class KernelTests
             handlerInvocations++;
         };
 
-        List<ISKFunction> pipeline = new();
+        List<KernelFunction> pipeline = new();
         for (int i = 0; i < pipelineCount; i++)
         {
             pipeline.Add(func);
@@ -271,7 +273,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { });
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -292,7 +294,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(() => { });
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -388,7 +390,7 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            if (args.FunctionView.Name == retryFunction && repeatCount < numberOfRepeats)
+            if (args.FunctionMetadata.Name == retryFunction && repeatCount < numberOfRepeats)
             {
                 args.Repeat();
                 repeatCount++;
@@ -424,7 +426,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            if (args.FunctionView.Name == skipFunction)
+            if (args.FunctionMetadata.Name == skipFunction)
             {
                 args.Skip();
             }
@@ -454,7 +456,7 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        List<ISKFunction> functions = new()
+        List<KernelFunction> functions = new()
         {
             SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
             SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
@@ -467,7 +469,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
             {
                 args.Cancel();
             }
@@ -507,7 +509,7 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        List<ISKFunction> functions = new()
+        List<KernelFunction> functions = new()
         {
             SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
             SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
@@ -521,7 +523,7 @@ public class KernelTests
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
             numberOfInvocations++;
-            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
             {
                 args.Cancel();
             }
@@ -565,6 +567,74 @@ public class KernelTests
         //Assert
         Assert.NotNull(result);
         Assert.Equal("fake result", result.GetValue<string>());
+    }
+
+    [Fact]
+    public void ItShouldBePossibleToSetAndGetCultureAssociatedWithKernel()
+    {
+        //Arrange
+        var kernel = KernelBuilder.Create();
+
+        var culture = CultureInfo.GetCultureInfo(28);
+
+        //Act
+        kernel.Culture = culture;
+
+        //Assert
+        Assert.Equal(culture, kernel.Culture);
+    }
+
+    [Fact]
+    public void CurrentCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
+    {
+        //Arrange
+        var kernel = KernelBuilder.Create();
+
+        //Act
+        var culture = kernel.Culture;
+
+        //Assert
+        Assert.NotNull(culture);
+        Assert.Equal(CultureInfo.CurrentCulture, culture);
+    }
+
+    [Fact]
+    public void ItDeepClonesAllRelevantStateInClone()
+    {
+        // Kernel with all properties set
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+        var httpHandler = new Mock<IDelegatingHandlerFactory>();
+        var loggerFactory = new Mock<ILoggerFactory>();
+        var plugin = new SKPlugin("plugin1");
+        var plugins = new SKPluginCollection() { plugin };
+        Kernel kernel1 = new(serviceProvider.Object, plugins, serviceSelector.Object, httpHandler.Object, loggerFactory.Object);
+        kernel1.Data["key"] = "value";
+
+        // Clone and validate it
+        Kernel kernel2 = kernel1.Clone();
+        Assert.Same(kernel1.ServiceProvider, kernel2.ServiceProvider);
+        Assert.Same(kernel1.ServiceSelector, kernel2.ServiceSelector);
+        Assert.Same(kernel1.HttpHandlerFactory, kernel2.HttpHandlerFactory);
+        Assert.Same(kernel1.Culture, kernel2.Culture);
+        Assert.NotSame(kernel1.Data, kernel2.Data);
+        Assert.Equal(kernel1.Data.Count, kernel2.Data.Count);
+        Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Equal(kernel1.Plugins, kernel2.Plugins);
+
+        // Minimally configured kernel
+        Kernel kernel3 = new(serviceProvider.Object);
+
+        // Clone and validate it
+        Kernel kernel4 = kernel3.Clone();
+        Assert.Same(kernel3.ServiceProvider, kernel4.ServiceProvider);
+        Assert.Same(kernel3.ServiceSelector, kernel4.ServiceSelector);
+        Assert.Same(kernel3.HttpHandlerFactory, kernel4.HttpHandlerFactory);
+        Assert.NotSame(kernel3.Data, kernel4.Data);
+        Assert.Empty(kernel4.Data);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Empty(kernel4.Plugins);
     }
 
     public class MyPlugin

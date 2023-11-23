@@ -57,7 +57,7 @@ public interface IAssistant
     /// <summary>
     /// Tools defined for run execution.
     /// </summary>
-    public ISKPluginCollection Plugins { get; }
+    public SKPluginCollection Plugins { get; }
 
     /// <summary>
     /// Creates a new assistant chat thread.

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -28,12 +27,12 @@ public static class ISKPluginExtensions
     /// <param name="plugin">The plugin.</param>
     /// <param name="function">The function.</param>
     /// <returns>true if the plugin contains the specified function; otherwise, false.</returns>
-    public static bool Contains(this ISKPlugin plugin, ISKFunction function)
+    public static bool Contains(this ISKPlugin plugin, KernelFunction function)
     {
         Verify.NotNull(plugin);
         Verify.NotNull(function);
 
-        return plugin.TryGetFunction(function.Name, out ISKFunction? found) && found == function;
+        return plugin.TryGetFunction(function.Name, out KernelFunction? found) && found == function;
     }
 
     /// <summary>Gets whether the plugins collection contains a plugin with the specified name.</summary>
@@ -53,12 +52,12 @@ public static class ISKPluginExtensions
     /// <param name="pluginName">The name of the plugin storing the function.</param>
     /// <param name="functionName">The name of the function.</param>
     /// <returns>The function from the collection.</returns>
-    public static ISKFunction GetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName)
+    public static KernelFunction GetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
 
-        if (!TryGetFunction(plugins, pluginName, functionName, out ISKFunction? function))
+        if (!TryGetFunction(plugins, pluginName, functionName, out KernelFunction? function))
         {
             throw new KeyNotFoundException("The plugin collection does not contain a plugin and/or function with the specified names.");
         }
@@ -76,7 +75,7 @@ public static class ISKPluginExtensions
     /// If <paramref name="pluginName"/> is null or entirely whitespace, all plugins are searched for a function with the specified name,
     /// and the first one found is returned.
     /// </remarks>
-    public static bool TryGetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? func)
+    public static bool TryGetFunction(this IReadOnlySKPluginCollection plugins, string? pluginName, string functionName, [NotNullWhen(true)] out KernelFunction? func)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
@@ -104,39 +103,22 @@ public static class ISKPluginExtensions
         return false;
     }
 
-    /// <summary>Adds a collection of plugins to this plugin collection.</summary>
-    /// <param name="destination">The collection to which <paramref name="plugins"/> should be added.</param>
-    /// <param name="plugins">The plugins to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="ISKPlugin.Name"/>.</exception>
-    /// <exception cref="ArgumentException">A plugin with the same name as a plugin in <paramref name="plugins"/> already exists in the collection.</exception>
-    public static void AddRange(this ISKPluginCollection destination, IEnumerable<ISKPlugin> plugins)
-    {
-        Verify.NotNull(destination);
-        Verify.NotNull(plugins);
-
-        foreach (ISKPlugin plugin in plugins)
-        {
-            destination.Add(plugin);
-        }
-    }
-
     /// <summary>Gets a collection of <see cref="SKFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
-    /// <returns>A list of views over every function in the plugins collection</returns>
+    /// <returns>A list of metadata over every function in the plugins collection</returns>
     public static IList<SKFunctionMetadata> GetFunctionsMetadata(this IEnumerable<ISKPlugin> plugins)
     {
         Verify.NotNull(plugins);
 
-        List<SKFunctionMetadata> views = new();
+        List<SKFunctionMetadata> metadata = new();
         foreach (ISKPlugin plugin in plugins)
         {
-            foreach (ISKFunction function in plugin)
+            foreach (KernelFunction function in plugin)
             {
-                views.Add(new SKFunctionMetadata(function.GetMetadata()) { PluginName = plugin.Name });
+                metadata.Add(new SKFunctionMetadata(function.GetMetadata()) { PluginName = plugin.Name });
             }
         }
 
-        return views;
+        return metadata;
     }
 }

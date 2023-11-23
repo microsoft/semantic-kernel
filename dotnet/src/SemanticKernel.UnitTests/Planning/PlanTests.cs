@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -338,17 +337,14 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
+        static void method() => throw new ArgumentException("Error message");
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(function, function);
 
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -361,20 +357,16 @@ public sealed class PlanTests
 
         // Arrange
         var logger = new Mock<ILogger>();
-        var functions = new Mock<ISKPluginCollection>();
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<Kernel>(), It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Throws(new ArgumentException("Error message"));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(() => new SKFunctionMetadata("functionName"));
+        static void method() => throw new ArgumentException("Error message");
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(function), new Plan(function));
 
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -434,7 +426,9 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal, new Mock<ISKFunction>().Object, new Mock<ISKFunction>().Object);
+        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var plan = new Plan(goal, function1, function2);
 
         // Assert
         Assert.NotNull(plan);
@@ -761,7 +755,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     [Fact]
     public async Task ConPlanStepsTriggerKernelEventsAsync()
     {
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
 
         // Arrange
         [SKName("WritePoem")]
@@ -789,13 +783,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -836,7 +830,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
             e.Cancel();
@@ -844,7 +838,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -882,10 +876,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -893,7 +887,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -935,16 +929,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -990,16 +984,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
 
-            if (e.FunctionView.Name == "SendEmail")
+            if (e.FunctionMetadata.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1047,10 +1041,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Skip();
             }
@@ -1058,7 +1052,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -1102,10 +1096,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "SendEmail")
+            if (e.FunctionMetadata.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1113,7 +1107,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -1165,10 +1159,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         return method.Method;
     }
 
-    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(ISKPluginCollection? plugins = null)
+    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<ISKPlugin>? plugins = null)
     {
-        plugins ??= new Mock<ISKPluginCollection>().Object;
-
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 

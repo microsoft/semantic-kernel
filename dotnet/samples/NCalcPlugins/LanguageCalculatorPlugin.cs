@@ -26,7 +26,7 @@ namespace NCalcPlugins;
 /// </example>
 public class LanguageCalculatorPlugin
 {
-    private readonly ISKFunction _mathTranslator;
+    private readonly KernelFunction _mathTranslator;
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
