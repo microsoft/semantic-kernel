@@ -43,10 +43,10 @@ public static class Example43_GetModelResult
         Console.WriteLine();
 
         // Using the Kernel RunAsync
-        var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
-        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
+        var result = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
+        var modelResults = result.GetModelResults() ?? Enumerable.Empty<ModelResult>();
 
-        Console.WriteLine(kernelResult.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
         Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 

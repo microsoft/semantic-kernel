@@ -12,15 +12,16 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Standard Semantic Kernel callable plan.
-/// Plan is used to create trees of <see cref="ISKFunction"/>s.
+/// Plan is used to create trees of <see cref="KernelFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction
+public sealed class Plan : KernelFunction
 {
     /// <summary>
     /// State of the plan
@@ -60,34 +61,16 @@ public sealed class Plan : ISKFunction
     [JsonPropertyName("next_step_index")]
     public int NextStepIndex { get; private set; }
 
-    #region ISKFunction implementation
-
-    /// <inheritdoc/>
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
     /// <inheritdoc/>
     [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
-
-    /// <inheritdoc/>
-    [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
-
-    /// <inheritdoc/>
-    [JsonPropertyName("model_settings")]
-    public IEnumerable<AIRequestSettings> ModelSettings => this.Function?.ModelSettings ?? Array.Empty<AIRequestSettings>();
-
-    #endregion ISKFunction implementation
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
-    public Plan(string goal)
+    public Plan(string goal) : base(GetRandomPlanName(), goal)
     {
-        this.Name = GetRandomPlanName();
-        this.Description = goal;
         this.PluginName = nameof(Plan);
     }
 
@@ -96,7 +79,7 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
     /// <param name="steps">The steps to add.</param>
-    public Plan(string goal, params ISKFunction[] steps) : this(goal)
+    public Plan(string goal, params KernelFunction[] steps) : this(goal)
     {
         this.AddSteps(steps);
     }
@@ -115,9 +98,9 @@ public sealed class Plan : ISKFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
-    public Plan(ISKFunction function)
+    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings)
     {
-        this.SetFunction(function);
+        this.Function = function;
     }
 
     /// <summary>
@@ -140,11 +123,9 @@ public sealed class Plan : ISKFunction
         ContextVariables state,
         ContextVariables parameters,
         IList<string> outputs,
-        IReadOnlyList<Plan> steps)
+        IReadOnlyList<Plan> steps) : base(name, description)
     {
-        this.Name = name;
         this.PluginName = pluginName;
-        this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
         this.Parameters = parameters;
@@ -179,12 +160,10 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="indented">Whether to emit indented JSON</param>
     /// <returns>Plan serialized using JSON format</returns>
-    public string ToJson(bool indented = false)
-    {
-        return indented ?
-            JsonSerializer.Serialize(this, s_writeIndentedOptions) :
+    public string ToJson(bool indented = false) =>
+        indented ?
+            JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) :
             JsonSerializer.Serialize(this);
-    }
 
     /// <summary>
     /// Adds one or more existing plans to the end of the current plan as steps.
@@ -205,7 +184,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>
     /// When you add a new step to the current plan, it is executed after the previous step in the plan has completed. Each step can be a function call or another plan.
     /// </remarks>
-    public void AddSteps(params ISKFunction[] steps)
+    public void AddSteps(params KernelFunction[] steps)
     {
         this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
     }
@@ -250,7 +229,7 @@ public sealed class Plan : ISKFunction
     #region ISKFunction implementation
 
     /// <inheritdoc/>
-    public SKFunctionMetadata GetMetadata()
+    protected override SKFunctionMetadata GetMetadataCore()
     {
         if (this.Function is not null)
         {
@@ -273,13 +252,11 @@ public sealed class Plan : ISKFunction
             {
                 Description = stepDescription?.Description,
                 DefaultValue = stepDescription?.DefaultValue,
-                Type = stepDescription?.Type,
                 IsRequired = stepDescription?.IsRequired ?? false,
                 ParameterType = stepDescription?.ParameterType,
-                Schema = stepDescription?.Schema
+                Schema = stepDescription?.Schema,
             };
-        }
-        ).ToList();
+        }).ToList();
 
         return new(this.Name)
         {
@@ -290,7 +267,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -309,7 +286,6 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             result = await this.Function
-                .WithInstrumentation(kernel.LoggerFactory)
                 .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
@@ -317,7 +293,7 @@ public sealed class Plan : ISKFunction
         else
         {
             this.CallFunctionInvoking(context);
-            if (SKFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokingCancelOrSkipRequested(context))
             {
                 return new FunctionResult(this.Name, context);
             }
@@ -347,7 +323,7 @@ public sealed class Plan : ISKFunction
             }
 
             this.CallFunctionInvoked(result, context);
-            if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
+            if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
             {
                 return new FunctionResult(this.Name, context, result.Value);
             }
@@ -357,7 +333,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    protected override IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -411,15 +387,13 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-
-            var stepResult = result.FunctionResults.FirstOrDefault();
-            if (stepResult is null)
+            if (result is null)
             {
                 // Step was cancelled
                 return null;
             }
 
-            var resultValue = stepResult.Context.Variables.Input.Trim();
+            var resultValue = result.Context.Variables.Input.Trim();
 
             #region Update State
 
@@ -442,7 +416,7 @@ public sealed class Plan : ISKFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (stepResult.Context.Variables.TryGetValue(item, out string? val))
+                if (result.Context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -456,7 +430,7 @@ public sealed class Plan : ISKFunction
 
             this.NextStepIndex++;
 
-            return stepResult;
+            return result;
         }
 
         throw new InvalidOperationException("There isn't a next step");
@@ -516,7 +490,7 @@ public sealed class Plan : ISKFunction
 
             if (plugins.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
-                plan.SetFunction(planFunction);
+                plan.Function = planFunction;
             }
             else if (requireFunctions)
             {
@@ -701,21 +675,12 @@ public sealed class Plan : ISKFunction
         return stepVariables;
     }
 
-    private void SetFunction(ISKFunction function)
-    {
-        this.Function = function;
-        this.Name = function.Name;
-        this.Description = function.Description;
-    }
-
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
     /// <summary>Deserialization options for including fields.</summary>
     private static readonly JsonSerializerOptions s_includeFieldsOptions = new() { IncludeFields = true };
-    /// <summary>Serialization options for writing indented.</summary>
-    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
 
-    private ISKFunction? Function { get; set; }
+    private KernelFunction? Function { get; set; }
 
     private readonly List<Plan> _steps = new();
 

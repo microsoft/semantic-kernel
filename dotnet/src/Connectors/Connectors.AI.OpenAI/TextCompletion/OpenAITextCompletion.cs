@@ -35,7 +35,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>

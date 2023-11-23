@@ -41,18 +41,9 @@ internal static class HttpRequest
         HttpContent? content = null;
         if (payload is not null)
         {
-            return new StringContent(JsonSerializer.Serialize(payload, s_jsonSerializerOptions), Encoding.UTF8, "application/json");
+            return new StringContent(JsonSerializer.Serialize(payload, JsonOptionsCache.Default), Encoding.UTF8, "application/json");
         }
 
         return content;
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }

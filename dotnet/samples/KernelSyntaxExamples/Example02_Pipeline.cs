@@ -22,7 +22,7 @@ public static class Example02_Pipeline
         // Load plugin
         var textPlugin = kernel.ImportPluginFromObject<TextPlugin>();
 
-        KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
+        FunctionResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
             textPlugin["TrimStart"],
             textPlugin["TrimEnd"],
             textPlugin["Uppercase"]);

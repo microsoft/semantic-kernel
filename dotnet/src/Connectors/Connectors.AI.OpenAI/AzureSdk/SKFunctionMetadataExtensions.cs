@@ -12,18 +12,17 @@ public static class SKFunctionMetadataExtensions
     /// <summary>
     /// Convert a <see cref="SKFunctionMetadata"/> to an <see cref="OpenAIFunction"/>.
     /// </summary>
-    /// <param name="functionView">The <see cref="SKFunctionMetadata"/> object to convert.</param>
+    /// <param name="metadata">The <see cref="SKFunctionMetadata"/> object to convert.</param>
     /// <returns>An <see cref="OpenAIFunction"/> object.</returns>
-    public static OpenAIFunction ToOpenAIFunction(this SKFunctionMetadata functionView)
+    public static OpenAIFunction ToOpenAIFunction(this SKFunctionMetadata metadata)
     {
         var openAIParams = new List<OpenAIFunctionParameter>();
-        foreach (SKParameterMetadata param in functionView.Parameters)
+        foreach (SKParameterMetadata param in metadata.Parameters)
         {
             openAIParams.Add(new OpenAIFunctionParameter
             {
                 Name = param.Name,
-                Description = param.Description + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
-                Type = param.Type?.Name ?? "string",
+                Description = string.IsNullOrEmpty(param.DefaultValue) ? param.Description : $"{param.Description} (default value: {param.DefaultValue})",
                 IsRequired = param.IsRequired,
                 ParameterType = param.ParameterType,
                 Schema = param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType, param.Description),
@@ -32,14 +31,15 @@ public static class SKFunctionMetadataExtensions
 
         return new OpenAIFunction
         {
-            FunctionName = functionView.Name,
-            PluginName = functionView.PluginName ?? "",
-            Description = functionView.Description,
+            FunctionName = metadata.Name,
+            PluginName = metadata.PluginName ?? "",
+            Description = metadata.Description,
             Parameters = openAIParams,
             ReturnParameter = new OpenAIFunctionReturnParameter
             {
-                Description = functionView.ReturnParameter.Description,
-                Schema = functionView.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(functionView.ReturnParameter.ParameterType, functionView.ReturnParameter.Description),
+                Description = metadata.ReturnParameter.Description,
+                ParameterType = metadata.ReturnParameter.ParameterType,
+                Schema = metadata.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(metadata.ReturnParameter.ParameterType, metadata.ReturnParameter.Description),
             }
         };
     }

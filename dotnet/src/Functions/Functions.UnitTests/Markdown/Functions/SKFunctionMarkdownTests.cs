@@ -31,11 +31,11 @@ public class SKFunctionMarkdownTests
         var kernel = new KernelBuilder().Build();
 
         // Act
-        var skfunction = SKFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
+        var function = SKFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
 
         // Assert
-        Assert.NotNull(skfunction);
-        Assert.Equal("TellMeAbout", skfunction.Name);
+        Assert.NotNull(function);
+        Assert.Equal("TellMeAbout", function.Name);
     }
 
     private readonly string _markdown = @"

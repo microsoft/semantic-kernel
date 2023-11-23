@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SKFunctionFromPrompt : ISKFunction
+internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
 
@@ -41,7 +41,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static KernelFunction Create(
         string promptTemplate,
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
@@ -76,7 +76,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static KernelFunction Create(
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -100,7 +100,7 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction Create(
+    public static KernelFunction Create(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
@@ -112,21 +112,12 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
 
-        return new SKFunctionFromPrompt(
+        return new KernelFunctionFromPrompt(
             template: promptTemplate,
             promptTemplateConfig: promptTemplateConfig,
             functionName: functionName,
             loggerFactory: loggerFactory);
     }
-
-    /// <inheritdoc/>
-    public string Name { get; }
-
-    /// <inheritdoc/>
-    public string Description => this._promptTemplateConfig.Description;
-
-    /// <inheritdoc/>
-    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
 
     /// <summary>
     /// List of function parameters
@@ -134,8 +125,8 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     public IReadOnlyList<SKParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
     /// <inheritdoc/>
-    public SKFunctionMetadata GetMetadata() =>
-        this._view ??=
+    protected override SKFunctionMetadata GetMetadataCore() =>
+        this._metadata ??=
         new SKFunctionMetadata(this.Name)
         {
             Description = this._promptTemplateConfig.Description,
@@ -143,14 +134,12 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         };
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> InvokeAsync(
+    protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
-
         try
         {
             var (cancelOrSkipRequested, renderedPrompt, textCompletion, defaultRequestSettings) = await this.PrepareInvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
@@ -182,12 +171,12 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
+            this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
             throw;
         }
     }
 
-    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         SKContext context,
         AIRequestSettings? requestSettings = null,
@@ -203,14 +192,14 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
         IAsyncEnumerator<T> enumerator = textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
         // Manually handling the enumeration to properly log any exception
-        bool moreItems;
+        bool moreChunks;
         do
         {
             T? genericChunk = default;
             try
             {
-                moreItems = await enumerator.MoveNextAsync().ConfigureAwait(false);
-                if (moreItems)
+                moreChunks = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (moreChunks)
                 {
                     genericChunk = enumerator.Current;
                     fullCompletion.Append(genericChunk);
@@ -225,15 +214,15 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
+                this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
                 throw;
             }
 
-            if (moreItems && genericChunk is not null)
+            if (moreChunks && genericChunk is not null)
             {
                 yield return genericChunk;
             }
-        } while (moreItems);
+        } while (moreChunks);
 
         // Update the result with the completion
         context.Variables.Update(fullCompletion.ToString());
@@ -251,26 +240,24 @@ internal sealed class SKFunctionFromPrompt : ISKFunction
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
 
-    private SKFunctionFromPrompt(
+    private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
         string functionName,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, promptTemplateConfig.ModelSettings)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(this.Parameters);
-
-        this.Name = functionName;
     }
 
     #region private
 
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private SKFunctionMetadata? _view;
+    private SKFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
