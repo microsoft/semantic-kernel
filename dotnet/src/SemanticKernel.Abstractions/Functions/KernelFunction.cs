@@ -125,7 +125,7 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Invoke the <see cref="ISKFunction"/> in streaming mode.
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
     /// </summary>
     /// <param name="kernel">The kernel</param>
     /// <param name="context">SK context</param>
