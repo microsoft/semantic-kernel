@@ -61,7 +61,7 @@ public static class ChatCompletionExtensions
     }
 
     /// <summary>
-    /// Get asynchronous stream.of <see cref="StreamingContent"/>.
+    /// Get asynchronous stream of <see cref="StreamingContent"/>.
     /// </summary>
     /// <param name="chatCompletion">Chat completion target</param>
     /// <param name="input">The input string. (May be a JSON for complex objects, Byte64 for binary, will depend on the connector spec).</param>
