@@ -96,6 +96,8 @@ public abstract class KernelFunction
             logger.LogTrace("Function {Name} invoking.", this.Name);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try

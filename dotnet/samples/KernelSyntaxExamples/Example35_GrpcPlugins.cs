@@ -28,7 +28,7 @@ public static class Example35_GrpcPlugins
         contextVariables.Set("payload", "<gRPC-request-message-as-json>");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
+        var result = await kernel.RunAsync(plugin["<operation-name>"], contextVariables);
 
         Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
     }

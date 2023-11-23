@@ -29,28 +29,6 @@ public static class Example09_FunctionTypes
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // The kernel takes care of wiring the input appropriately
-        await kernel.RunAsync(
-            plugin["type01"],
-            plugin["type02"],
-            plugin["type03"],
-            plugin["type04"],
-            plugin["type05"],
-            plugin["type06"],
-            plugin["type07"],
-            plugin["type08"],
-            plugin["type09"],
-            plugin["type10"],
-            plugin["type11"],
-            plugin["type12"],
-            plugin["type13"],
-            plugin["type14"],
-            plugin["type15"],
-            plugin["type16"],
-            plugin["type17"],
-            plugin["type18"]
-        );
-
         // Using Kernel.RunAsync
         await kernel.RunAsync(plugin["type01"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type01"]);
@@ -62,31 +40,31 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync(kernel.Plugins["test"]["type03"]);
 
         await kernel.RunAsync(plugin["type04"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type04"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type04"], variables);
 
         await kernel.RunAsync(plugin["type05"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type05"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type05"], variables);
 
         await kernel.RunAsync(plugin["type06"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type06"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type06"], variables);
 
         await kernel.RunAsync(plugin["type07"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type07"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type07"], variables);
 
-        await kernel.RunAsync("", plugin["type08"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type08"]);
+        await kernel.RunAsync(plugin["type08"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type08"]);
 
-        await kernel.RunAsync("", plugin["type09"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type09"]);
+        await kernel.RunAsync(plugin["type09"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type09"]);
 
-        await kernel.RunAsync("", plugin["type10"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type10"]);
+        await kernel.RunAsync(plugin["type10"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type10"]);
 
-        await kernel.RunAsync("", plugin["type11"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type11"]);
+        await kernel.RunAsync(plugin["type11"]);
+        await kernel.RunAsync(kernel.Plugins["test"]["type11"]);
 
-        await kernel.RunAsync(variables, plugin["type12"]);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type12"]);
+        await kernel.RunAsync(plugin["type12"], variables);
+        await kernel.RunAsync(kernel.Plugins["test"]["type12"], variables);
 
         await kernel.RunAsync(plugin["type18"]);
         await kernel.RunAsync(kernel.Plugins["test"]["type18"]);
