@@ -377,7 +377,6 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.NotNull(function);
 
         return kernel.RunAsync(function, new ContextVariables(), cancellationToken);
     }
@@ -397,7 +396,6 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.NotNull(function);
 
         var contextVariables = new ContextVariables();
         contextVariables.Update(input);
@@ -420,7 +418,6 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.NotNull(function);
 
         var context = kernel.CreateNewContext(variables);
 
