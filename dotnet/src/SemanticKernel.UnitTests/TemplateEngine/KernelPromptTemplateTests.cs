@@ -8,10 +8,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Moq;
 using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,10 +21,7 @@ public sealed class KernelPromptTemplateTests
     private const string DateFormat = "M/d/yyyy";
     private readonly KernelPromptTemplateFactory _factory;
     private readonly ContextVariables _variables;
-    private readonly Mock<IReadOnlySKPluginCollection> _functions;
     private readonly ITestOutputHelper _logger;
-    private readonly Mock<IAIServiceProvider> _serviceProvider;
-    private readonly Mock<IAIServiceSelector> _serviceSelector;
     private readonly Kernel _kernel;
 
     public KernelPromptTemplateTests(ITestOutputHelper testOutputHelper)
@@ -34,9 +29,6 @@ public sealed class KernelPromptTemplateTests
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
-        this._functions = new Mock<IReadOnlySKPluginCollection>();
-        this._serviceProvider = new Mock<IAIServiceProvider>();
-        this._serviceSelector = new Mock<IAIServiceSelector>();
         this._kernel = KernelBuilder.Create();
     }
 

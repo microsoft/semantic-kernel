@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +31,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string template,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -42,7 +44,7 @@ public partial class AssistantBuilder
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
                 .WithDescription(assistantKernelModel.Description.Trim())
-                .WithPlugins(plugins ?? new SKPluginCollection())
+                .WithPlugins(plugins ?? Array.Empty<ISKPlugin>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -60,7 +62,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string definitionPath,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(definitionPath);
@@ -104,7 +106,7 @@ public partial class AssistantBuilder
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
