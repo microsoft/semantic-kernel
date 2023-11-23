@@ -313,11 +313,6 @@ public sealed class Plan : KernelFunction
                 result = new FunctionResult(this.Name, context, context.Variables.Input);
                 this.UpdateFunctionResultWithOutputs(result);
             }
-<<<<<<< HEAD
-=======
-
-            var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result);
->>>>>>> upstream
         }
 
         return result;
