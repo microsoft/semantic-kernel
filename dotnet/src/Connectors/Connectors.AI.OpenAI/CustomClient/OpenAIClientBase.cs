@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 
@@ -121,7 +123,7 @@ public abstract class OpenAIClientBase
 
     private protected T JsonDeserialize<T>(string responseJson)
     {
-        var result = Microsoft.SemanticKernel.Text.Json.Deserialize<T>(responseJson);
+        var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive);
         if (result is null)
         {
             throw new SKException("Response JSON parse error");

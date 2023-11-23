@@ -251,7 +251,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 
@@ -297,7 +297,7 @@ public sealed class KernelPromptTemplateTests
             return context.Variables.TryGetValue("myVar", out string? value) ? value : "";
         }
 
-        var functions = new List<ISKFunction>()
+        var functions = new List<KernelFunction>()
         {
             SKFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
             SKFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
@@ -324,7 +324,7 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
 

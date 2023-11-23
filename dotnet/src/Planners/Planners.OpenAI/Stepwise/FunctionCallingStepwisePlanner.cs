@@ -119,7 +119,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
 
             // Look up function in kernel
-            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
+            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? pluginFunction, out ContextVariables? funcContext))
             {
                 try
                 {

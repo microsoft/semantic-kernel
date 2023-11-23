@@ -11,7 +11,7 @@ namespace NCalcPlugins;
 /// </summary>
 public class SimpleCalculatorPlugin
 {
-    private readonly ISKFunction _mathTranslator;
+    private readonly KernelFunction _mathTranslator;
 
     private static readonly string[] s_stopSequences = new[] { "Problem:", "Solution:" };
 
