@@ -183,7 +183,7 @@ internal static class Example12_SequentialPlanner
             "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
             "he's not just an ordinary boy.";
 
-            var result = await kernel.RunAsync(restoredPlan, new(newInput));
+            var result = await kernel.RunAsync(restoredPlan, newInput);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());

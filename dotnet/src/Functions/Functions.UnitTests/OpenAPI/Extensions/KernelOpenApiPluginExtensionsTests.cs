@@ -178,44 +178,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
-    {
-        //Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
-
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-
-        var executionParameters = new OpenApiFunctionExecutionParameters
-        {
-            HttpClient = httpClient
-        };
-
-        var fakePlugin = new FakePlugin();
-
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportPluginFromObject(fakePlugin, "fakePlugin2");
-
-        var kernel = KernelBuilder.Create();
-
-        var arguments = new ContextVariables
-        {
-            { "secret-name", "fake-secret-name" },
-            { "api-version", "fake-api-version" }
-        };
-
-        //Act
-        var result = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
-
-        //Assert
-
-        Assert.NotNull(result);
-
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenAPI plugin in the pipeline since there's no direct access to the context.
-        Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
-    }
-
-    [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
         //Arrange
@@ -246,7 +208,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var result = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+        var result = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         //Assert
         Assert.NotNull(result);

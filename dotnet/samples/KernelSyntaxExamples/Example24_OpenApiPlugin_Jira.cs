@@ -82,7 +82,7 @@ public static class Example24_OpenApiPlugin_Jira
             contextVariables.Set("issueKey", "TEST-1");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
+            var result = await kernel.RunAsync(jiraFunctions["GetIssue"], contextVariables);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(
@@ -102,7 +102,7 @@ public static class Example24_OpenApiPlugin_Jira
             contextVariables.Set(RestApiOperation.PayloadArgumentName, "{\"body\": \"Here is a rad comment\"}");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
+            var result = await kernel.RunAsync(jiraFunctions["AddComment"], contextVariables);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(

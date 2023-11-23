@@ -70,8 +70,8 @@ public static class Example52_ApimAuth
 
         // Run
         var result = await kernel.RunAsync(
-            "I have no homework",
-            plugin["Excuses"]
+            plugin["Excuses"],
+            "I have no homework"
         );
         Console.WriteLine(result.GetValue<string>());
 
