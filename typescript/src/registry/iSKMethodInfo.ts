@@ -10,6 +10,7 @@ import { ParameterView } from './parameterView';
  * Extended function metadata added by decorators.
  */
 export interface ISKMethodInfo extends Function {
+    isSkFunction: boolean;
     hasSkFunctionAttribute: boolean;
     description: string;
     parameters: ParameterView[];

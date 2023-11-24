@@ -21,6 +21,7 @@ export function SKFunction(
         }
 
         const info = descriptor.value as ISKMethodInfo;
+        info.isSkFunction = true;
         info.hasSkFunctionAttribute = true;
         info.description = description;
         if (!Array.isArray(info.parameters)) {

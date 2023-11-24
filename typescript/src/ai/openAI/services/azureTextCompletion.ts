@@ -5,11 +5,9 @@
 
 import { Verify } from '../../../diagnostics';
 import { ILogger } from '../../../utils/logger';
-import { AIException } from '../../AIException';
 import { ICompleteRequestSettings } from '../../completeRequestSettings';
 import { ITextCompletionClient } from '../../iTextCompletionClient';
 import { AzureOpenAIClientAbstract } from '../clients';
-import { IOpenAICompletionRequest } from '../httpSchema';
 
 export class AzureTextCompletion extends AzureOpenAIClientAbstract implements ITextCompletionClient {
     private deploymentName: string;
