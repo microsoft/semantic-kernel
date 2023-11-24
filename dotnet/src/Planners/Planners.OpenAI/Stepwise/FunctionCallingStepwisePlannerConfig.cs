@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Configuration for Stepwise planner instances.
 /// </summary>
-public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
+public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfig
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCallingStepwisePlannerConfig"/>
