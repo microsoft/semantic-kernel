@@ -201,8 +201,6 @@ public abstract class ClientBase
     {
         return new Dictionary<string, object>()
         {
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
             { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
         };
     }
@@ -211,8 +209,6 @@ public abstract class ClientBase
     {
         return new Dictionary<string, object>()
         {
-            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
-            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
             { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
         };
     }
