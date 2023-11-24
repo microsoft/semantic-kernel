@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 
@@ -13,12 +14,30 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelFunctionArguments : Dictionary<string, string>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class.
+    /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class with the specified AI request settings.
     /// </summary>
-    /// <param name="requestSettings">The AI request settings.</param>
-    public KernelFunctionArguments(AIRequestSettings? requestSettings = null)
+    /// <param name="reqSettings">The AI request settings.</param>
+    public KernelFunctionArguments(AIRequestSettings? reqSettings = null) : base(StringComparer.OrdinalIgnoreCase)
     {
-        this.RequestSettings = requestSettings;
+        this.RequestSettings = reqSettings;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>
+    /// </summary>
+    /// <param name="source">The <see cref="IDictionary{TKey, TValue}"/> whose elements are copied the new <see cref="KernelFunctionArguments"/>.</param>
+    public KernelFunctionArguments(IDictionary<string, string> source) : this()
+    {
+        foreach (var x in source) { this[x.Key] = x.Value; }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class that contains AI request settings and elements copied from the specified <see cref="KernelFunctionArguments"/>
+    /// </summary>
+    /// <param name="other">The <see cref="KernelFunctionArguments"/> whose AI request setting and elements are copied to the new <see cref="KernelFunctionArguments"/>.</param>
+    public KernelFunctionArguments(KernelFunctionArguments other) : this(other as IDictionary<string, string>)
+    {
+        this.RequestSettings = other.RequestSettings;
     }
 
     /// <summary>
