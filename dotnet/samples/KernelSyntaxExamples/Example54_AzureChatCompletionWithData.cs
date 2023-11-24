@@ -67,16 +67,9 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingContentAsync<string>(chatHistory))
         {
-            await foreach (var message in result.GetStreamingChatMessageAsync())
-            {
-                // Output
-                // Ask: What are Emily and David studying?
-                // Response: They are passionate scientists who study glaciology,
-                // a branch of geology that deals with the study of ice and its effects.
-                Console.Write(message.Content);
-            }
+            Console.Write(word);
         }
 
         Console.WriteLine(Environment.NewLine);
