@@ -202,7 +202,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result, ContextVariables variables)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
         var functionInvoked = this.FunctionInvoked;
         if (functionInvoked is null)
@@ -210,7 +210,7 @@ public sealed class Kernel
             return null;
         }
 
-        var eventArgs = new FunctionInvokedEventArgs(function, result, variables);
+        var eventArgs = new FunctionInvokedEventArgs(function, result);
         functionInvoked.Invoke(this, eventArgs);
         return eventArgs;
     }

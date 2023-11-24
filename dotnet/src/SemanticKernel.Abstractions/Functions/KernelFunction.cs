@@ -231,7 +231,7 @@ public abstract class KernelFunction
     #region private
     private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)
     {
-        var eventArgs = kernel.OnFunctionInvoked(this, result, variables);
+        var eventArgs = kernel.OnFunctionInvoked(this, result);
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.

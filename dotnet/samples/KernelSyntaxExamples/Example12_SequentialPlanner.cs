@@ -20,8 +20,8 @@ internal static class Example12_SequentialPlanner
 {
     public static async Task RunAsync()
     {
-        //await PoetrySamplesAsync();
-        //await EmailSamplesWithRecallAsync();
+        await PoetrySamplesAsync();
+        await EmailSamplesWithRecallAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
         await PlanNotPossibleSampleAsync();
