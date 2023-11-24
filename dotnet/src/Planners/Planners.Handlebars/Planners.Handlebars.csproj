@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Handlebars.Net" />
     <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
