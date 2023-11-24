@@ -60,4 +60,10 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         this.LogActionDetails();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, requestSettings, cancellationToken);
+    }
 }

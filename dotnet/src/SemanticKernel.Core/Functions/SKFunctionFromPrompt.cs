@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,27 +139,22 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
-
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
-
-            var serviceSelector = kernel.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
-            Verify.NotNull(textCompletion);
-
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context, renderedPrompt);
+            var (invokingEventArgs, renderedPrompt, textCompletion, defaultRequestSettings) = await this.PrepareInvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
             if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
+                if (this._logger.IsEnabled(LogLevel.Trace))
+                {
+                    this._logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
+                }
+
                 return new FunctionResult(this.Name, context)
                 {
                     IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
                     IsSkipRequested = invokingEventArgs.IsSkipRequested
                 };
             }
-
-            renderedPrompt = this.GetPromptFromEventArgsMetadataOrDefault(invokingEventArgs, renderedPrompt);
 
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -171,7 +167,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             var result = new FunctionResult(this.Name, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
-            result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
             result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
@@ -181,9 +176,31 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Name} execution failed with error {Error}", this.Name, ex.Message);
+            this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
             throw;
         }
+    }
+
+    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+        Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var (invokingEventArgs, renderedPrompt, textCompletion, defaultRequestSettings) = await this.PrepareInvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+        {
+            yield break;
+        }
+
+        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return genericChunk;
+        }
+
+        // Invoked is not supported for streaming
+        // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
     /// <summary>
@@ -257,8 +274,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="context">Execution context</param>
     /// <param name="result">Current function result</param>
     /// <param name="prompt">Prompt used by the function</param>
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result, string prompt)
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult? result, string prompt)
     {
+        result ??= new FunctionResult(this.Name, context);
         result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
 
         var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
@@ -276,24 +294,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return (eventArgs, result);
     }
 
-    /// <summary>
-    /// Try to get the prompt from the event args metadata.
-    /// </summary>
-    /// <param name="eventArgs">Function invoking event args</param>
-    /// <param name="defaultPrompt">Default prompt if none is found in metadata</param>
-    /// <returns></returns>
-    private string GetPromptFromEventArgsMetadataOrDefault(FunctionInvokingEventArgs eventArgs, string defaultPrompt)
-    {
-        if (!eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
-        {
-            return defaultPrompt;
-        }
-
-        // If prompt key exists and was modified to null default to an empty string
-        return renderedPromptFromMetadata?.ToString() ?? string.Empty;
-    }
-
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
+
+    private async Task<(FunctionInvokingEventArgs InvokingEventArgs, string RenderedPrompt, ITextCompletion TextCompletion, AIRequestSettings? DefaultRequestSettings)> PrepareInvokeAsync(
+    Kernel kernel,
+    SKContext context,
+    AIRequestSettings? requestSettings,
+    CancellationToken cancellationToken)
+    {
+        this.AddDefaultValues(context.Variables);
+        string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+
+        var serviceSelector = kernel.ServiceSelector;
+        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
+        Verify.NotNull(textCompletion);
+
+        var invokingEventArgs = this.CallFunctionInvoking(kernel, context, renderedPrompt);
+
+        return (invokingEventArgs, renderedPrompt, textCompletion, defaultRequestSettings);
+    }
+
     #endregion
 }

@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -122,12 +119,151 @@ public class KernelTests
     }
 
     [Fact]
+    public async Task RunStreamingAsyncHandlesPreInvocationAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        var handlerInvocations = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            handlerInvocations++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function)) { }
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, handlerInvocations);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncHandlesPreInvocationWasCancelledAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        var handlerInvocations = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            handlerInvocations++;
+            e.Cancel();
+        };
+
+        // Act
+        int chunksCount = 0;
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+            chunksCount++;
+        }
+
+        // Assert
+        Assert.Equal(1, handlerInvocations);
+        Assert.Equal(0, functionInvocations);
+        Assert.Equal(0, chunksCount);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        var functions = sut.ImportPluginFromObject<MyPlugin>();
+
+        var invoked = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            e.Cancel();
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invoked++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(functions["GetAnyValue"]))
+        {
+        }
+
+        // Assert
+        Assert.Equal(0, invoked);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int funcInvocations = 0;
+        var function = SKFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
+
+        var invoked = 0;
+        var invoking = 0;
+        string invokedFunction = string.Empty;
+
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoking++;
+            if (e.FunctionMetadata.Name == "func1")
+            {
+                e.Skip();
+            }
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invokedFunction = e.FunctionMetadata.Name;
+            invoked++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+        }
+
+        // Assert
+        Assert.Equal(1, invoking);
+        Assert.Equal(0, invoked);
+        Assert.Equal(0, funcInvocations);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncHandlesPostInvocationAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        int handlerInvocations = 0;
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            handlerInvocations++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+        }
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, handlerInvocations);
+    }
+
+    [Fact]
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -143,29 +279,6 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
-    {
-        // Arrange
-        var sut = new KernelBuilder().Build();
-        int functionInvocations = 0;
-        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
-
-        int handlerInvocations = 0;
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            handlerInvocations++;
-            e.Cancel();
-        };
-
-        // Act
-        var result = await sut.RunAsync(function);
-
-        // Assert
-        Assert.Equal(1, handlerInvocations);
-        Assert.Equal(0, functionInvocations);
     }
 
     [Fact]
@@ -199,7 +312,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int funcInvocations = 0;
-        KernelFunction function = SKFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
+        var function = SKFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
 
         var invoked = 0;
         var invoking = 0;
@@ -235,7 +348,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -255,7 +368,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        KernelFunction function = SKFunctionFactory.CreateFromMethod(() => { });
+        var function = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -276,7 +389,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        KernelFunction function = SKFunctionFactory.CreateFromMethod(() => { });
+        var function = SKFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -476,21 +589,5 @@ public class KernelTests
 
             return context;
         }
-    }
-
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
-    {
-        var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
-
-        var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-
-        return (mockTextResult, mockTextCompletion);
-    }
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
     }
 }

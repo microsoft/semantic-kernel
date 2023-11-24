@@ -82,6 +82,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         {
             throw new NotImplementedException(); // TODO
         }
+
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal sealed class RedirectTextCompletionResult : ITextResult
