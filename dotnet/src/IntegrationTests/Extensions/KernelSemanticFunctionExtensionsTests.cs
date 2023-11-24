@@ -83,7 +83,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
             throw new NotImplementedException(); // TODO
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

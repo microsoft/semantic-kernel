@@ -49,7 +49,7 @@ public class MyTextCompletionService : ITextCompletion
         yield return new MyTextCompletionStreamingResult();
     }
 
-    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (typeof(T) == typeof(MyStreamingContent))
         {
