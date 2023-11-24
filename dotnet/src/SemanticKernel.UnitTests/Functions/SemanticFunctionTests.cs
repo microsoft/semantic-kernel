@@ -384,7 +384,7 @@ public class SemanticFunctionTests
         return mockTextCompletion;
     }
 
-    private class TestStreamingContent : StreamingContent
+    private sealed class TestStreamingContent : StreamingContent
     {
         public TestStreamingContent() : base(null)
         {
