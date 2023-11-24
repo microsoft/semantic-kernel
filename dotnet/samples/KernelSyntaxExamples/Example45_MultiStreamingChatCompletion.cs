@@ -15,8 +15,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 // ReSharper disable once InconsistentNaming
 public static class Example45_MultiStreamingChatCompletion
 {
-    private static readonly object s_lockObject = new();
-
     public static async Task RunAsync()
     {
         await AzureOpenAIMultiStreamingChatCompletionAsync();
@@ -76,29 +74,26 @@ public static class Example45_MultiStreamingChatCompletion
         var messagePerChoice = new Dictionary<int, string>();
         await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, requestSettings))
         {
-            lock (s_lockObject)
+            string newContent = string.Empty;
+            Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
+            if (!roleDisplayed.Contains(chatUpdate.ChoiceIndex) && chatUpdate.Role.HasValue)
             {
-                string newContent = string.Empty;
-                Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
-                if (!roleDisplayed.Contains(chatUpdate.ChoiceIndex) && chatUpdate.Role.HasValue)
-                {
-                    newContent = $"Role: {chatUpdate.Role.Value}\n";
-                    roleDisplayed.Add(chatUpdate.ChoiceIndex);
-                }
-
-                if (chatUpdate.Content is { Length: > 0 })
-                {
-                    newContent += chatUpdate.Content;
-                }
-
-                if (!messagePerChoice.ContainsKey(chatUpdate.ChoiceIndex))
-                {
-                    messagePerChoice.Add(chatUpdate.ChoiceIndex, string.Empty);
-                }
-                messagePerChoice[chatUpdate.ChoiceIndex] += newContent;
-
-                Console.Write(messagePerChoice[chatUpdate.ChoiceIndex]);
+                newContent = $"Role: {chatUpdate.Role.Value}\n";
+                roleDisplayed.Add(chatUpdate.ChoiceIndex);
             }
+
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                newContent += chatUpdate.Content;
+            }
+
+            if (!messagePerChoice.ContainsKey(chatUpdate.ChoiceIndex))
+            {
+                messagePerChoice.Add(chatUpdate.ChoiceIndex, string.Empty);
+            }
+            messagePerChoice[chatUpdate.ChoiceIndex] += newContent;
+
+            Console.Write(messagePerChoice[chatUpdate.ChoiceIndex]);
         }
     }
 
