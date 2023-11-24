@@ -79,7 +79,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.RunAsync(function, question);
+        var result = await kernel.InvokeAsync(function, question);
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
@@ -140,7 +140,7 @@ Answer: ";
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.RunAsync(oracle, new ContextVariables(questions)
+        var answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
         {
             ["externalInformation"] = string.Empty
         });
@@ -160,7 +160,7 @@ Answer: ";
             Console.WriteLine(information);
 
             // Run the semantic function again, now including information from Bing
-            answer = await kernel.RunAsync(oracle, new ContextVariables(questions)
+            answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
             {
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information

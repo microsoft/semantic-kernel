@@ -29,45 +29,45 @@ public static class Example09_FunctionTypes
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // Using Kernel.RunAsync
-        await kernel.RunAsync(plugin["type01"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type01"]);
+        // Using Kernel.InvokeAsync
+        await kernel.InvokeAsync(plugin["type01"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type01"]);
 
-        await kernel.RunAsync(plugin["type02"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type02"]);
+        await kernel.InvokeAsync(plugin["type02"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type02"]);
 
-        await kernel.RunAsync(plugin["type03"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type03"]);
+        await kernel.InvokeAsync(plugin["type03"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type03"]);
 
-        await kernel.RunAsync(plugin["type04"], variables);
-        await kernel.RunAsync(kernel.Plugins["test"]["type04"], variables);
+        await kernel.InvokeAsync(plugin["type04"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type04"], variables);
 
-        await kernel.RunAsync(plugin["type05"], variables);
-        await kernel.RunAsync(kernel.Plugins["test"]["type05"], variables);
+        await kernel.InvokeAsync(plugin["type05"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], variables);
 
-        await kernel.RunAsync(plugin["type06"], variables);
-        await kernel.RunAsync(kernel.Plugins["test"]["type06"], variables);
+        await kernel.InvokeAsync(plugin["type06"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], variables);
 
-        await kernel.RunAsync(plugin["type07"], variables);
-        await kernel.RunAsync(kernel.Plugins["test"]["type07"], variables);
+        await kernel.InvokeAsync(plugin["type07"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], variables);
 
-        await kernel.RunAsync(plugin["type08"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type08"]);
+        await kernel.InvokeAsync(plugin["type08"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
 
-        await kernel.RunAsync(plugin["type09"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type09"]);
+        await kernel.InvokeAsync(plugin["type09"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
 
-        await kernel.RunAsync(plugin["type10"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type10"]);
+        await kernel.InvokeAsync(plugin["type10"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type10"]);
 
-        await kernel.RunAsync(plugin["type11"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type11"]);
+        await kernel.InvokeAsync(plugin["type11"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type11"]);
 
-        await kernel.RunAsync(plugin["type12"], variables);
-        await kernel.RunAsync(kernel.Plugins["test"]["type12"], variables);
+        await kernel.InvokeAsync(plugin["type12"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type12"], variables);
 
-        await kernel.RunAsync(plugin["type18"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type18"]);
+        await kernel.InvokeAsync(plugin["type18"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type18"]);
     }
 }
 
@@ -110,7 +110,7 @@ public class LocalExamplePlugin
     [SKFunction]
     public async Task<string> Type06Async(Kernel kernel)
     {
-        var summary = await kernel.RunAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
         Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");
         return "";
     }

@@ -69,7 +69,7 @@ public static class Example52_ApimAuth
         var plugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
-        var result = await kernel.RunAsync(
+        var result = await kernel.InvokeAsync(
             plugin["Excuses"],
             "I have no homework"
         );

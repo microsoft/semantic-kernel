@@ -60,7 +60,7 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
@@ -87,7 +87,7 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
@@ -116,7 +116,7 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -140,7 +140,7 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
+        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
@@ -162,7 +162,7 @@ public class SemanticFunctionTests
         List<KernelFunction> functions = new();
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
@@ -185,7 +185,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function, input);
+        var result = await sut.InvokeAsync(function, input);
 
         // Assert
         Assert.True(invoked);
@@ -208,7 +208,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
@@ -235,7 +235,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -268,7 +268,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoking);
@@ -292,7 +292,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
@@ -316,7 +316,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -339,7 +339,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
