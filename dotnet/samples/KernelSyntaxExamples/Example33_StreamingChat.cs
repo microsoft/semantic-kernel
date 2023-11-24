@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -41,52 +41,19 @@ public static class Example33_StreamingChat
 
     private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
     {
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-
-        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
-        await MessageOutputAsync(chatHistory);
-
-        // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        await MessageOutputAsync(chatHistory);
-
-        // First bot assistant message
-        await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
-
-        // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        await MessageOutputAsync(chatHistory);
-
-        // Second bot assistant message
-        await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
-    }
-
-    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory, AuthorRole authorRole)
-    {
-        Console.Write($"{authorRole}: ");
-        string fullMessage = string.Empty;
-
-        await foreach (string message in chatGPT.GenerateMessageStreamAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Hi, I'm looking for book suggestions"))
         {
-            fullMessage += message;
-            Console.Write(message);
+            if (chatUpdate.Role.HasValue)
+            {
+                Console.WriteLine($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+            }
+
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                Console.WriteLine(chatUpdate.Content);
+            }
         }
 
         Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
-    }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private static Task MessageOutputAsync(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-
-        return Task.CompletedTask;
     }
 }

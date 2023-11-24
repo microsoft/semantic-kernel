@@ -20,7 +20,7 @@ public static class ChatCompletionExtensions
     /// <param name="cancellationToken">The asynchronous cancellation token (optional).</param>
     /// <remarks>This extension does not support multiple prompt results (only the first will be returned).</remarks>
     /// <returns>An asynchronous stream of the generated chat message in string format.</returns>
-    public static async IAsyncEnumerable<string> GenerateMessageStreamAsync(
+    public static async IAsyncEnumerable<string> GenerateMessageStreamAsync2(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,

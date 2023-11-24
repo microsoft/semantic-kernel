@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -15,8 +14,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 // ReSharper disable once InconsistentNaming
 public static class Example45_MultiStreamingChatCompletion
 {
-    private static readonly object s_lockObject = new();
-
     public static async Task RunAsync()
     {
         await AzureOpenAIMultiStreamingChatCompletionAsync();
@@ -68,36 +65,24 @@ public static class Example45_MultiStreamingChatCompletion
 
         PrepareDisplay();
 
-        List<Task> resultTasks = new();
-        int currentResult = 0;
-        await foreach (var completionResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Hi, I'm looking for 5 random title names for sci-fi books", requestSettings))
         {
-            resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
+            Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
+            if (chatUpdate.Role.HasValue)
+            {
+                Console.Write($"Role: {chatUpdate.Role.Value}\n");
+            }
+
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                Console.Write(chatUpdate.Content);
+            }
         }
 
         Console.WriteLine();
-
-        await Task.WhenAll(resultTasks.ToArray());
 
         Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();
-    }
-
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatStreamingResult result, int resultNumber, int linesPerResult)
-    {
-        string message = string.Empty;
-
-        await foreach (var chatMessage in result.GetStreamingChatMessageAsync())
-        {
-            string role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(chatMessage.Role.Label);
-            message += chatMessage.Content;
-
-            lock (s_lockObject)
-            {
-                Console.SetCursorPosition(0, (resultNumber * linesPerResult));
-                Console.Write($"{role}: {message}");
-            }
-        }
     }
 
     /// <summary>

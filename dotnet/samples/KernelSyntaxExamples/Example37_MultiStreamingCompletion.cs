@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -53,12 +54,12 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
-
-        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Write one paragraph about why AI is awesome"))
         {
-            Console.Write(message);
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                Console.Write(chatUpdate.Content);
+            }
         }
 
         Console.WriteLine();

@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /**
@@ -67,15 +68,11 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatWithDataContent>(chatHistory))
         {
-            await foreach (var message in result.GetStreamingChatMessageAsync())
+            if (chatUpdate.ChatMessage.Content is { Length: > 0 })
             {
-                // Output
-                // Ask: What are Emily and David studying?
-                // Response: They are passionate scientists who study glaciology,
-                // a branch of geology that deals with the study of ice and its effects.
-                Console.Write(message.Content);
+                Console.Write(chatUpdate.ChatMessage.Content);
             }
         }
 

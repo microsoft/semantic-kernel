@@ -36,17 +36,7 @@ public class MyTextCompletionService : ITextCompletion
 
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
-        this.ModelId = requestSettings?.ModelId;
-
-        return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
-        {
-            new MyTextCompletionStreamingResult()
-        });
-    }
-
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        yield return new MyTextCompletionStreamingResult();
+        throw new NotImplementedException();
     }
 
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -78,47 +68,6 @@ public class MyStreamingContent : StreamingContent
     public override string ToString()
     {
         return this.Content;
-    }
-}
-
-public class MyTextCompletionStreamingResult : ITextStreamingResult, ITextResult
-{
-    private readonly ModelResult _modelResult = new(new
-    {
-        Content = Text,
-        Message = "This is my model raw response",
-        Tokens = Text.Split(' ').Length
-    });
-
-    private const string Text = @" ..output from your custom model... Example:
-AI is awesome because it can help us solve complex problems, enhance our creativity,
-and improve our lives in many ways. AI can perform tasks that are too difficult,
-tedious, or dangerous for humans, such as diagnosing diseases, detecting fraud, or
-exploring space. AI can also augment our abilities and inspire us to create new forms
-of art, music, or literature. AI can also improve our well-being and happiness by
-providing personalized recommendations, entertainment, and assistance. AI is awesome";
-
-    public ModelResult ModelResult => this._modelResult;
-
-    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        // Forcing a 2 sec delay (Simulating custom LLM lag)
-        await Task.Delay(2000, cancellationToken);
-
-        return Text;
-    }
-
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        yield return Environment.NewLine;
-
-        // Your model logic here
-        var streamedOutput = Text.Split(' ');
-        foreach (string word in streamedOutput)
-        {
-            await Task.Delay(50, cancellationToken);
-            yield return $"{word} ";
-        }
     }
 }
 
@@ -193,7 +142,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (string message in textCompletion.CompleteStreamAsync(prompt, requestSettings))
+        await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, requestSettings))
         {
             Console.Write(message);
         }

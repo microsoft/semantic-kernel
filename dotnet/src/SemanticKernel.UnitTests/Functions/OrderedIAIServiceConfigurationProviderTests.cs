@@ -216,11 +216,6 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             throw new NotImplementedException();
         }
-
-        public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
     }
     #endregion
 }
