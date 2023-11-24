@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Represents arguments of <see cref="KernelFunction.InvokeAsync"/>  method.
+/// Represents arguments of <see cref="KernelFunction.InvokeAsync"/> and "Kernel.InvokeAsync" methods.
 /// </summary>
 public sealed class KernelFunctionArguments : Dictionary<string, string>
 {
