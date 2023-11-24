@@ -447,67 +447,6 @@ public static class KernelExtensions
 
         return kernel.RunAsync(function, variables ?? new(), cancellationToken);
     }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    /// <inheritdoc/>
-    public static async Task<FunctionResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params KernelFunction[] pipeline)
-    {
-        var context = kernel.CreateNewContext(variables);
-
-        FunctionResult? functionResult = null;
-
-        int pipelineStepCount = 0;
-        var allFunctionResults = new List<FunctionResult>();
-
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
-
-        foreach (KernelFunction function in pipeline)
-        {
-repeat:
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var functionDetails = function.GetMetadata();
-
-                functionResult = await function.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (IsCancelRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    break;
-                }
-
-                if (IsSkipRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    continue;
-                }
-
-                // Only non-stop results are considered as Kernel results
-                allFunctionResults.Add(functionResult!);
-
-                if (IsRepeatRequested(functionResult, function, pipelineStepCount, logger))
-                {
-                    goto repeat;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Function {Function} call fail during pipeline step {Step} with error {Error}:", function.Name, pipelineStepCount, ex.Message);
-                throw;
-            }
-
-            pipelineStepCount++;
-        }
-
-        return allFunctionResults.LastOrDefault();
-    }
     #endregion
 
     #region RunStreamingAsync

@@ -286,30 +286,6 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
-    {
-        // Arrange
-        var sut = new KernelBuilder().Build();
-        int functionInvocations = 0;
-        var function = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
-        var function2 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
-
-        int handlerInvocations = 0;
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            handlerInvocations++;
-            e.Cancel();
-        };
-
-        // Act
-        var result = await sut.RunAsync(new ContextVariables(), CancellationToken.None, new[] { function, function2 });
-
-        // Assert
-        Assert.Equal(1, handlerInvocations);
-        Assert.Equal(0, functionInvocations);
-    }
-
-    [Fact]
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
