@@ -13,7 +13,7 @@ using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class KernelPromptTemplateTests
 {
