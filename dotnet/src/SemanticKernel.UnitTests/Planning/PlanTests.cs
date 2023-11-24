@@ -797,7 +797,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -846,7 +846,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -895,7 +895,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -948,7 +948,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -1003,7 +1003,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -1060,7 +1060,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -1115,7 +1115,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         sut.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await sut.RunAsync(plan, "PlanInput");
+        var result = await sut.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);

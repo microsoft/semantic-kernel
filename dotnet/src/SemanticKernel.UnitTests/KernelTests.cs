@@ -54,7 +54,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(functions["GetAnyValue"], cancellationToken: cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.InvokeAsync(functions["GetAnyValue"], cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        var result = await kernel.RunAsync(kernel.Plugins.GetFunction("mySk", "GetAnyValue"), cancellationToken: cts.Token);
+        var result = await kernel.InvokeAsync(kernel.Plugins.GetFunction("mySk", "GetAnyValue"), cancellationToken: cts.Token);
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
@@ -114,7 +114,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -137,7 +137,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, handlerInvocations);
@@ -161,7 +161,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, handlerInvocations);
@@ -187,7 +187,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"]);
+        var result = await sut.InvokeAsync(functions["GetAnyValue"]);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -221,7 +221,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoking);
@@ -244,7 +244,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -266,7 +266,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -287,7 +287,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -302,7 +302,7 @@ public class KernelTests
         var function = SKFunctionFactory.CreateFromMethod(() => "Result", "Function1");
 
         // Act
-        var result = await kernel.RunAsync(function);
+        var result = await kernel.InvokeAsync(function);
 
         // Assert
         Assert.NotNull(result);
@@ -324,7 +324,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await kernel.RunAsync(function1);
+        var result = await kernel.InvokeAsync(function1);
 
         // Assert
         Assert.NotNull(result);
@@ -347,7 +347,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await kernel.RunAsync(function1);
+        var result = await kernel.InvokeAsync(function1);
 
         // Assert
         Assert.NotNull(result);
@@ -370,7 +370,7 @@ public class KernelTests
         kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         //Act
-        var result = await kernel.RunAsync("plugin", "function");
+        var result = await kernel.InvokeAsync("plugin", "function");
 
         //Assert
         Assert.NotNull(result);

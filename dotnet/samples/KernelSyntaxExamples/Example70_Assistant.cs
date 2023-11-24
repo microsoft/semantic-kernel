@@ -105,7 +105,7 @@ public static class Example70_Assistant
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await kernel.RunAsync(assistants.Single(), variables);
+        var result = await kernel.InvokeAsync(assistants.Single(), variables);
         var resultValue = result.GetValue<string>();
 
         var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
