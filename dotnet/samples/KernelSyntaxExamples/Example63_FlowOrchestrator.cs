@@ -24,7 +24,6 @@ using NCalcPlugins;
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example63_FlowOrchestrator
 {
