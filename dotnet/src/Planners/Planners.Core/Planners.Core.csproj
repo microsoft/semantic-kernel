@@ -17,41 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Action\skprompt.txt" />
-    <None Remove="Sequential\skprompt.txt" />
-    <None Remove="Stepwise\Plugin\RenderFunctionManual\config.json" />
-    <None Remove="Stepwise\Plugin\RenderFunctionManual\skprompt.txt" />
-    <None Remove="Stepwise\Plugin\RenderQuestion\config.json" />
-    <None Remove="Stepwise\Plugin\RenderQuestion\skprompt.txt" />
-    <None Remove="Stepwise\Plugin\StepwiseStep\config.json" />
-    <None Remove="Stepwise\Plugin\StepwiseStep\skprompt.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Action\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Sequential\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\RenderFunctionManual\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\RenderFunctionManual\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\RenderQuestion\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\RenderQuestion\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\StepwiseStep\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\Plugin\StepwiseStep\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -65,6 +30,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.AI" />
   </ItemGroup>
 
   <ItemGroup>

@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Planners.AI\Planners.AI.csproj" />
     <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
 
