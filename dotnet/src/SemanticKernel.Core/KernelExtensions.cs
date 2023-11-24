@@ -532,6 +532,28 @@ repeat:
     /// <returns>Streaming result of the function</returns>
     public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
         => kernel.RunStreamingAsync<StreamingContent>(function, variables ?? new ContextVariables(), CancellationToken.None);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The target kernel</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, kernel.CreateNewContext(new ContextVariables(input)), null, cancellationToken);
+
+    /// <summary>
+    /// Run a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => kernel.RunStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
     #endregion
 
     /// <summary>
