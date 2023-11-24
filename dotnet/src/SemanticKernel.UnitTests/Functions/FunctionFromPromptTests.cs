@@ -17,7 +17,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class SemanticFunctionTests
+public class FunctionFromPromptTests
 {
     [Fact]
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
@@ -349,19 +349,24 @@ public class SemanticFunctionTests
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
         // Arrange
-        var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(new TestStreamingContent());
+        var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
+            new TestStreamingContent("chunk1"),
+            new TestStreamingContent("chunk2"));
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = SKFunctionFactory.CreateFromPrompt(prompt);
         var variables = new ContextVariables("importance");
         var context = kernel.CreateNewContext(variables);
 
+        var chunkCount = 0;
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
         {
+            chunkCount++;
         }
 
         // Assert
+        Assert.Equal(2, chunkCount);
         mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
@@ -375,18 +380,21 @@ public class SemanticFunctionTests
         return (mockTextResult, mockTextCompletion);
     }
 
-    private Mock<ITextCompletion> SetupStreamingMocks<T>(T completionResult)
+    private Mock<ITextCompletion> SetupStreamingMocks<T>(params T[] completionResults)
     {
         var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(new List<T> { completionResult }));
+        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(completionResults));
 
         return mockTextCompletion;
     }
 
     private sealed class TestStreamingContent : StreamingContent
     {
-        public TestStreamingContent() : base(null)
+        private readonly string _content;
+
+        public TestStreamingContent(string content) : base(null)
         {
+            this._content = content;
         }
 
         public override int ChoiceIndex => 0;
@@ -398,7 +406,7 @@ public class SemanticFunctionTests
 
         public override string ToString()
         {
-            return string.Empty;
+            return this._content;
         }
     }
 
