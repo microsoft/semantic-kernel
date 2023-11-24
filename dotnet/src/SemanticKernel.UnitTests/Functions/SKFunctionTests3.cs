@@ -107,7 +107,7 @@ public sealed class SKFunctionTests3
 
         // Assert
         Assert.Equal("YES", variables["canary"]);
-        Assert.Equal("YES", variables["canary"]);
+        Assert.Equal("YES", result.Variables["canary"]);
     }
 
     [Fact]

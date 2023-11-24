@@ -72,16 +72,17 @@ public static class Example30_ChatWithPrompts
 
         // We need a kernel context to store some information to pass to the prompts and the list
         // of available plugins needed to render prompt templates.
-        var variables = new ContextVariables();
+        var variables = new ContextVariables
+        {
+            // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
+            ["selectedText"] = selectedText,
 
-        // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
-        variables["selectedText"] = selectedText;
+            // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
+            ["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture),
 
-        // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
-        variables["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
-
-        // This is the user message, store it in the variable used by 28-user-prompt.txt
-        variables["userMessage"] = "extract locations as a bullet point list";
+            // This is the user message, store it in the variable used by 28-user-prompt.txt
+            ["userMessage"] = "extract locations as a bullet point list"
+        };
 
         // Instantiate the prompt template factory, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
