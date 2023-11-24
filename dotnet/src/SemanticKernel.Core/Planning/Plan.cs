@@ -307,7 +307,7 @@ public sealed class Plan : KernelFunction
                     continue;
                 }
 
-                this.UpdateVariablesWithOutputs(variables);
+                this.UpdateContextWithOutputs(variables);
 
                 result = new FunctionResult(this.Name, variables, variables.Input);
                 this.UpdateFunctionResultWithOutputs(result);
