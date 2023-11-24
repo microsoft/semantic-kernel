@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,37 @@ public class MyTextCompletionService : ITextCompletion
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
+    }
+
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (typeof(T) == typeof(MyStreamingContent))
+        {
+            yield return (T)(object)new MyStreamingContent("llm content update 1");
+            yield return (T)(object)new MyStreamingContent("llm content update 2");
+        }
+    }
+}
+
+public class MyStreamingContent : StreamingContent
+{
+    public override int ChoiceIndex => 0;
+
+    public string Content { get; }
+
+    public MyStreamingContent(string content) : base(content)
+    {
+        this.Content = content;
+    }
+
+    public override byte[] ToByteArray()
+    {
+        return Encoding.UTF8.GetBytes(this.Content);
+    }
+
+    public override string ToString()
+    {
+        return this.Content;
     }
 }
 

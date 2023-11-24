@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -147,6 +148,37 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
     }
 
+    /// <inheritdoc/>
+    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+        Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
+        var functionResult = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        if (functionResult.Value is T)
+        {
+            yield return (T)functionResult.Value;
+            yield break;
+        }
+
+        // Supports the following provided T types for Method streaming
+        if (typeof(T) == typeof(StreamingContent) ||
+            typeof(T) == typeof(StreamingMethodContent))
+        {
+            if (functionResult.Value is not null)
+            {
+                yield return (T)(object)new StreamingMethodContent(functionResult.Value);
+            }
+            yield break;
+        }
+
+        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(T)}");
+
+        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
+    }
+
     private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
     {
         var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
@@ -154,8 +186,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         return eventArgs;
     }
 
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult? result = null)
     {
+        result ??= new FunctionResult(this.Name, context);
         var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
@@ -307,7 +340,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (t.IsGenericType)
         {
             t = t.GetGenericTypeDefinition();
-            if (t == typeof(Task<>) || t == typeof(ValueTask<>))
+            if (t == typeof(Task<>) || t == typeof(ValueTask<>) || t == typeof(IAsyncEnumerable<>))
             {
                 return true;
             }
