@@ -90,7 +90,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (var kvp in variables)
         {
-            result.Add(kvp.Key, kvp.Value);
+            result[kvp.Key] = kvp.Value;
         }
 
         return result;
