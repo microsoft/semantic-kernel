@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Planners.AI\Planners.AI.csproj" />
     <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
+    <ProjectReference Include="..\Planners.Handlebars\Planners.Handlebars.csproj" />
   </ItemGroup>
 
 </Project>

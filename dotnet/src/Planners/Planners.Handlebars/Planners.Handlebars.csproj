@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Planners.Core</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -13,21 +13,27 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Planners</Title>
-    <Description>Semantic Kernel Core Planners which include the Action, Sequential, and Stepwise planners.</Description>
+    <Description>Semantic Kernel Handlebars Planners.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.AI" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Handlebars.Net" />
     <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>
