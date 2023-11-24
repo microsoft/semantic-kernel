@@ -1,37 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using HandlebarsDotNet;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
-public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
+public sealed class HandlebarsTemplateEngineExtensionsTests
 {
-    public HandlebarsTemplateEngineExtensionsTests(ITestOutputHelper output)
-    {
-        this._logger = NullLoggerFactory.Instance;
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<HandlebarsTemplateEngineExtensionsTests>()
-            .Build();
-    }
-
     [Fact]
     public void ShouldRenderTemplateWithVariables()
     {
@@ -274,20 +252,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        // Arrange
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        Kernel kernel = new KernelBuilder()
-            .WithRetryBasic()
-            .WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
-                serviceId: azureOpenAIConfiguration.ServiceId,
-                setAsDefault: true)
-            .Build();
-
+        Kernel kernel = new KernelBuilder().Build();
         return kernel;
     }
 
@@ -297,37 +262,9 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         public string Bar() => "Bar";
 
         [SKFunction, Description("Return words concatenated")]
-        public string Combine([System.ComponentModel.Description("First word")] string x, [System.ComponentModel.Description("Second word")] string y) => y + x;
+        public string Combine([Description("First word")] string x, [Description("Second word")] string y) => y + x;
 
         [SKFunction, Description("Return number as string")]
-        public string StringifyInt([System.ComponentModel.Description("Number to stringify")] int x) => x.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private readonly ILoggerFactory _logger;
-    private readonly RedirectOutput _testOutputHelper;
-    private readonly IConfigurationRoot _configuration;
-
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~HandlebarsTemplateEngineExtensionsTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._logger is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        public string StringifyInt([Description("Number to stringify")] int x) => x.ToString(CultureInfo.InvariantCulture);
     }
 }

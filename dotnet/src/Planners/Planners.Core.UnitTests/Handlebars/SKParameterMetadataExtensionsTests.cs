@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public class SKParameterMetadataExtensionsTests
 {

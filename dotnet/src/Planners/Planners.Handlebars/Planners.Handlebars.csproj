@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Planners.OpenAI</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -13,23 +13,27 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Planners</Title>
-    <Description>Semantic Kernel OpenAI Planners.</Description>
+    <Description>Semantic Kernel Handlebars Planners.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Stepwise\InitialPlanPrompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Stepwise\StepPrompt.txt">
+    <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Handlebars.Net" />
+    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>
