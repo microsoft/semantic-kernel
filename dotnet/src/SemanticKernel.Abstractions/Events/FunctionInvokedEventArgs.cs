@@ -19,8 +19,8 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// </summary>
     /// <param name="metadata">Function metadata</param>
     /// <param name="result">Function result</param>
-    /// <param name="context">The context</param>
-    public FunctionInvokedEventArgs(SKFunctionMetadata metadata, FunctionResult result, SKContext context) : base(metadata, context)
+    /// <param name="variables">The context variables</param>
+    public FunctionInvokedEventArgs(SKFunctionMetadata metadata, FunctionResult result, ContextVariables variables) : base(metadata, variables)
     {
         this.Metadata = result.Metadata;
     }

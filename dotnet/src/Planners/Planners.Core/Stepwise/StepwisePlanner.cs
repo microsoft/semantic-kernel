@@ -105,7 +105,7 @@ public class StepwisePlanner
     /// Execute a plan
     /// </summary>
     /// <param name="question">The question to answer</param>
-    /// <param name="context">The context to use</param>
+    /// <param name="contextVariables">The context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result</returns>
     /// <exception cref="SKException">No AIService available for getting completions.</exception>
@@ -113,16 +113,16 @@ public class StepwisePlanner
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
-        SKContext context,
+        ContextVariables contextVariables,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
         {
-            context.Variables.Update("Question not found.");
+            contextVariables.Update("Question not found.");
             return "Question not found.";
         }
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context.Variables, cancellationToken).ConfigureAwait(false);
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, contextVariables, cancellationToken).ConfigureAwait(false);
 
         if (aiService is null)
         {
@@ -146,21 +146,21 @@ public class StepwisePlanner
             return this.ParseResult(actionText);
         }
 
-        string? TryGetFinalAnswer(SystemStep step, int iterations, SKContext context)
+        string? TryGetFinalAnswer(SystemStep step, int iterations, ContextVariables variables)
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
             {
                 this._logger?.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
 
-                context.Variables.Update(step.FinalAnswer);
+                variables.Update(step.FinalAnswer);
 
                 stepsTaken.Add(step);
 
                 // Add additional results to the context
-                AddExecutionStatsToContext(stepsTaken, context, iterations);
+                AddExecutionStatsToContextVariables(stepsTaken, variables, iterations);
 
-                return context.Variables.Input;
+                return variables.Input;
             }
 
             return null;
@@ -284,7 +284,7 @@ public class StepwisePlanner
             var nextStep = await GetNextStepAsync().ConfigureAwait(false);
 
             // If final answer is available, we're done, return the context
-            var answer = TryGetFinalAnswer(nextStep, i + 1, context);
+            var answer = TryGetFinalAnswer(nextStep, i + 1, contextVariables);
             if (answer is not null)
             {
                 return answer;
@@ -315,8 +315,8 @@ public class StepwisePlanner
             }
         }
 
-        AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        context.Variables.Update(NoFinalAnswerFoundMessage);
+        AddExecutionStatsToContextVariables(stepsTaken, contextVariables, this.Config.MaxIterations);
+        contextVariables.Update(NoFinalAnswerFoundMessage);
 
         return NoFinalAnswerFoundMessage;
     }
@@ -606,11 +606,11 @@ public class StepwisePlanner
         return false;
     }
 
-    private static void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
+    private static void AddExecutionStatsToContextVariables(List<SystemStep> stepsTaken, ContextVariables variables, int iterations)
     {
-        context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
-        context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
-        context.Variables.Set("iterations", iterations.ToString(CultureInfo.InvariantCulture));
+        variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
+        variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
+        variables.Set("iterations", iterations.ToString(CultureInfo.InvariantCulture));
 
         Dictionary<string, int> actionCounts = new();
         foreach (var step in stepsTaken)
@@ -626,7 +626,7 @@ public class StepwisePlanner
 
         var functionCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
-        context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
+        variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
 
     #region private

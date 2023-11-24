@@ -203,24 +203,22 @@ public sealed class Plan : KernelFunction
     /// </remarks>
     public Task<Plan> RunNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
-        var context = kernel.CreateNewContext(variables);
-
-        return this.InvokeNextStepAsync(kernel, context, cancellationToken);
+        return this.InvokeNextStepAsync(kernel, variables, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">Context to use</param>
+    /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
-            await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+            await this.InternalInvokeNextStepAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -269,7 +267,7 @@ public sealed class Plan : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
@@ -280,19 +278,19 @@ public sealed class Plan : KernelFunction
             // Merge state with the current context variables.
             // Then filter the variables to only those needed for the next step.
             // This is done to prevent the function from having access to variables that it shouldn't.
-            AddVariablesToContext(this.State, context);
-            var functionVariables = this.GetNextStepVariables(context.Variables, this);
-            var functionContext = context.Clone(functionVariables);
+            AddStateVariablesToContextVariables(this.State, variables);
+
+            var functionVariables = this.GetNextStepVariables(variables, this);
 
             // Execute the step
             result = await this.Function
-                .InvokeAsync(kernel, functionContext, requestSettings, cancellationToken)
+                .InvokeAsync(kernel, functionVariables, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result, functionContext.Variables);
+            this.UpdateFunctionResultWithOutputs(result, functionVariables);
         }
         else
         {
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, variables);
             if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
                 return new FunctionResult(this.Name)
@@ -305,9 +303,9 @@ public sealed class Plan : KernelFunction
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
-                AddVariablesToContext(this.State, context);
+                AddStateVariablesToContextVariables(this.State, variables);
 
-                var stepResult = await this.InternalInvokeNextStepAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+                var stepResult = await this.InternalInvokeNextStepAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
                 if (stepResult.IsCancellationRequested)
                 {
@@ -319,13 +317,13 @@ public sealed class Plan : KernelFunction
                     continue;
                 }
 
-                this.UpdateContextWithOutputs(context);
+                this.UpdateContextWithOutputs(variables);
 
-                result = new FunctionResult(this.Name, context.Variables.Input);
-                this.UpdateFunctionResultWithOutputs(result, context.Variables);
+                result = new FunctionResult(this.Name, variables.Input);
+                this.UpdateFunctionResultWithOutputs(result, variables);
             }
 
-            var invokedEventArgs = this.CallFunctionInvoked(kernel, context, result);
+            var invokedEventArgs = this.CallFunctionInvoked(kernel, variables, result);
         }
 
         return result;
@@ -360,18 +358,18 @@ public sealed class Plan : KernelFunction
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">Context to use</param>
+    /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
             var step = this.Steps[this.NextStepIndex];
 
             // Merge the state with the current context variables for step execution
-            var functionVariables = this.GetNextStepVariables(context.Variables, step);
+            var functionVariables = this.GetNextStepVariables(variables, step);
 
             // Execute the step
             var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
@@ -402,7 +400,7 @@ public sealed class Plan : KernelFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (context.Variables.TryGetValue(item, out string? val))
+                if (variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -422,16 +420,16 @@ public sealed class Plan : KernelFunction
         throw new InvalidOperationException("There isn't a next step");
     }
 
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
+    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, ContextVariables variables)
     {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
+        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), variables);
         kernel.OnFunctionInvoking(eventArgs);
         return eventArgs;
     }
 
-    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
+    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)
     {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, variables);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
             // Updates the eventArgs metadata during invoked handler execution will reflect in the result metadata
@@ -477,14 +475,14 @@ public sealed class Plan : KernelFunction
     /// <summary>
     /// Add any missing variables from a plan state variables to the context.
     /// </summary>
-    private static void AddVariablesToContext(ContextVariables vars, SKContext context)
+    private static void AddStateVariablesToContextVariables(ContextVariables vars, ContextVariables contextVariables)
     {
         // Loop through vars and add anything missing to context
         foreach (var item in vars)
         {
-            if (!context.Variables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
+            if (!contextVariables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
             {
-                context.Variables.Set(item.Key, item.Value);
+                contextVariables.Set(item.Key, item.Value);
             }
         }
     }
@@ -492,27 +490,27 @@ public sealed class Plan : KernelFunction
     /// <summary>
     /// Update the context with the outputs from the current step.
     /// </summary>
-    /// <param name="context">The context to update.</param>
-    /// <returns>The updated context.</returns>
-    private SKContext UpdateContextWithOutputs(SKContext context)
+    /// <param name="variables">The context variables to update.</param>
+    /// <returns>The updated context variables.</returns>
+    private ContextVariables UpdateContextWithOutputs(ContextVariables variables)
     {
         var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
-        context.Variables.Update(resultString);
+        variables.Update(resultString);
 
         // copy previous step's variables to the next step
         foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
         {
             if (this.State.TryGetValue(item, out string? val))
             {
-                context.Variables.Set(item, val);
+                variables.Set(item, val);
             }
             else
             {
-                context.Variables.Set(item, resultString);
+                variables.Set(item, resultString);
             }
         }
 
-        return context;
+        return variables;
     }
 
     /// <summary>

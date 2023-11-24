@@ -129,8 +129,6 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel, config: config);
 
-        var context = kernel.CreateNewContext();
-
         // Act
         var result = await planner.ListOfFunctionsAsync("goal");
 
@@ -151,8 +149,6 @@ public sealed class ActionPlannerTests
         config.ExcludedFunctions.Add("PullsList");
 
         var planner = new ActionPlanner(kernel, config: config);
-
-        var context = kernel.CreateNewContext();
 
         // Act
         var result = await planner.ListOfFunctionsAsync("goal");
@@ -180,7 +176,7 @@ public sealed class ActionPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<KernelFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();

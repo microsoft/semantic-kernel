@@ -84,14 +84,14 @@ public sealed class SKFunctionTests3
     public async Task ItCanImportNativeFunctionsAsync()
     {
         // Arrange
-        var context = new KernelBuilder().Build().CreateNewContext();
-        context.Variables["done"] = "NO";
+        var variables = new ContextVariables();
+        variables["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
-        async Task ExecuteAsync(SKContext contextIn)
+        async Task ExecuteAsync(ContextVariables contextIn)
         {
-            Assert.Equal("NO", contextIn.Variables["done"]);
-            contextIn.Variables["canary"] = "YES";
+            Assert.Equal("NO", contextIn["done"]);
+            contextIn["canary"] = "YES";
 
             await Task.Delay(0);
         }
@@ -103,29 +103,29 @@ public sealed class SKFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, variables);
 
         // Assert
-        Assert.Equal("YES", context.Variables["canary"]);
-        Assert.Equal("YES", context.Variables["canary"]);
+        Assert.Equal("YES", variables["canary"]);
+        Assert.Equal("YES", variables["canary"]);
     }
 
     [Fact]
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var context = new KernelBuilder().Build().CreateNewContext();
-        context.Variables["done"] = "NO";
+        var variables = new ContextVariables();
+        variables["done"] = "NO";
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
         //       This scenario is used for gRPC functions.
         string variableOutsideTheFunction = "foo";
 
-        async Task ExecuteAsync(SKContext contextIn)
+        async Task ExecuteAsync(ContextVariables variables)
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
-            contextIn.Variables["canary"] = "YES";
+            variables["canary"] = "YES";
 
             await Task.Delay(0);
         }
@@ -136,10 +136,10 @@ public sealed class SKFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, variables);
 
         // Assert
-        Assert.Equal("YES", context.Variables["canary"]);
+        Assert.Equal("YES", variables["canary"]);
     }
 
     private sealed class InvalidPlugin
@@ -155,7 +155,7 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public void Invalid3(SKContext context1, SKContext context2)
+        public void Invalid3(ContextVariables context1, ContextVariables context2)
         {
         }
 
@@ -201,36 +201,36 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public void Type04(SKContext context)
+        public void Type04(ContextVariables context)
         {
         }
 
         [SKFunction]
-        public void Type04Nullable(SKContext? context)
+        public void Type04Nullable(ContextVariables? variables)
         {
         }
 
         [SKFunction]
-        public string Type05(SKContext context)
+        public string Type05(ContextVariables context)
         {
             return "";
         }
 
         [SKFunction]
-        public string? Type05Nullable(SKContext? context)
+        public string? Type05Nullable(ContextVariables? variables)
         {
             return null;
         }
 
         [SKFunction]
-        public async Task<string> Type06Async(SKContext context)
+        public async Task<string> Type06Async(ContextVariables context)
         {
             await Task.Delay(0);
             return "";
         }
 
         [SKFunction]
-        public async Task Type07Async(SKContext context)
+        public async Task Type07Async(ContextVariables context)
         {
             await Task.Delay(0);
         }
@@ -272,30 +272,30 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public void Type11(string input, SKContext context)
+        public void Type11(string input, ContextVariables context)
         {
         }
 
         [SKFunction]
-        public void Type11Nullable(string? input = null, SKContext? context = null)
+        public void Type11Nullable(string? input = null, ContextVariables? variables = null)
         {
         }
 
         [SKFunction]
-        public string Type12(string input, SKContext context)
+        public string Type12(string input, ContextVariables context)
         {
             return "";
         }
 
         [SKFunction]
-        public async Task<string> Type13Async(string input, SKContext context)
+        public async Task<string> Type13Async(string input, ContextVariables context)
         {
             await Task.Delay(0);
             return "";
         }
 
         [SKFunction]
-        public async Task Type14Async(string input, SKContext context)
+        public async Task Type14Async(string input, ContextVariables context)
         {
             await Task.Delay(0);
         }
@@ -307,13 +307,13 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public async Task Type16Async(SKContext context)
+        public async Task Type16Async(ContextVariables context)
         {
             await Task.Delay(0);
         }
 
         [SKFunction]
-        public async Task Type17Async(string input, SKContext context)
+        public async Task Type17Async(string input, ContextVariables context)
         {
             await Task.Delay(0);
         }
@@ -338,7 +338,7 @@ public sealed class SKFunctionTests3
         }
 
         [SKFunction]
-        public async ValueTask ReturnsValueTaskContextAsync(SKContext context)
+        public async ValueTask ReturnsValueTaskContextAsync(ContextVariables context)
         {
             await Task.Delay(0);
         }

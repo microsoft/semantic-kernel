@@ -302,7 +302,7 @@ Do not expose the regex unless asked.
             string emailAddress,
             [SKName("answer")][Description("answer, which is going to be the email content")]
             string answer,
-            SKContext context)
+            ContextVariables variables)
         {
             var contract = new Email()
             {
@@ -312,7 +312,7 @@ Do not expose the regex unless asked.
 
             // for demo purpose only
             string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
-            context.Variables["email"] = emailPayload;
+            variables["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;
         }

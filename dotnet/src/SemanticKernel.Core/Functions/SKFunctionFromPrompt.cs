@@ -134,21 +134,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
+        this.AddDefaultValues(variables);
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Variables, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
             var serviceSelector = kernel.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);
             Verify.NotNull(textCompletion);
 
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context, renderedPrompt);
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, variables, renderedPrompt);
             if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
                 return new FunctionResult(this.Name)
@@ -164,7 +164,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
-            context.Variables.Update(completion);
+            variables.Update(completion);
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
@@ -173,7 +173,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result, renderedPrompt);
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, variables, result, renderedPrompt);
             result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
             result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
@@ -236,11 +236,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// Handles the FunctionInvoking event
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="context">Execution context</param>
+    /// <param name="variables">Context variables</param>
     /// <param name="renderedPrompt">Rendered prompt</param>
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context, string renderedPrompt)
+    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, ContextVariables variables, string renderedPrompt)
     {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context)
+        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), variables)
         {
             Metadata = {
                 [SKEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt
@@ -254,18 +254,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// Handles the FunctionInvoked event
     /// </summary>
     /// <param name="kernel"></param>
-    /// <param name="context">Execution context</param>
+    /// <param name="variables">Execution context variables</param>
     /// <param name="result">Current function result</param>
     /// <param name="prompt">Prompt used by the function</param>
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result, string prompt)
+    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result, string prompt)
     {
         result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
 
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, context);
+        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, variables);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.SKContext.Variables.Input)
+            result = new FunctionResult(this.Name, eventArgs.ContextVariables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata

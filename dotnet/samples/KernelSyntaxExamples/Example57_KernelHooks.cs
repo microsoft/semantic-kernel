@@ -160,12 +160,12 @@ public static class Example57_KernelHooks
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.SKContext.Variables.Input;
+            var originalOutput = e.ContextVariables.Input;
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.SKContext.Variables.Update(newOutput);
+            e.ContextVariables.Update(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;

@@ -320,7 +320,7 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            args.SKContext.Variables.Update(ExpectedValue);
+            args.ContextVariables.Update(ExpectedValue);
         };
 
         // Act
@@ -342,7 +342,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            args.SKContext.Variables["injectedVariable"] = ExpectedValue;
+            args.ContextVariables["injectedVariable"] = ExpectedValue;
         };
 
         // Act
@@ -359,8 +359,6 @@ public class KernelTests
         //Arrange
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
-
-        var context = new SKContext(new ContextVariables());
 
         var function = SKFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
@@ -458,7 +456,7 @@ public class KernelTests
         }
 
         [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
+        public async Task ReadFunctionCollectionAsync(ContextVariables variables, Kernel kernel)
         {
             await Task.Delay(0);
 
@@ -469,7 +467,7 @@ public class KernelTests
 
             foreach (var function in kernel.Plugins.GetFunctionsMetadata())
             {
-                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
+                variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
         }
     }

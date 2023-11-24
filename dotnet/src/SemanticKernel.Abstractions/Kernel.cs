@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -154,19 +153,6 @@ public sealed class Kernel
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <returns>SK context</returns>
-    public SKContext CreateNewContext(
-        ContextVariables? variables = null,
-        IReadOnlySKPluginCollection? plugins = null)
-    {
-        return new SKContext(variables);
-    }
 
     /// <summary>
     /// Gets a configured service from the service provider.

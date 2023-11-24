@@ -193,15 +193,15 @@ public class CodeBlockTests
         var canary1 = string.Empty;
         var canary2 = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
-            canary0 = context!.Variables["input"];
-            canary1 = context.Variables["var1"];
-            canary2 = context.Variables["var2"];
+            canary0 = localVariables["input"];
+            canary1 = localVariables["var1"];
+            canary2 = localVariables["var2"];
 
-            context.Variables["input"] = "overridden";
-            context.Variables["var1"] = "overridden";
-            context.Variables["var2"] = "overridden";
+            localVariables["input"] = "overridden";
+            localVariables["var1"] = "overridden";
+            localVariables["var2"] = "overridden";
         },
         "function");
 
@@ -235,9 +235,9 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
-            canary = context!.Variables["input"];
+            canary = localVariables["input"];
         },
         "function");
 
@@ -264,9 +264,9 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
-            canary = context!.Variables["input"];
+            canary = localVariables["input"];
         },
         "function");
 
@@ -300,10 +300,10 @@ public class CodeBlockTests
         var foo = string.Empty;
         var baz = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
-            foo = context!.Variables["foo"];
-            baz = context!.Variables["baz"];
+            foo = localVariables["foo"];
+            baz = localVariables["baz"];
         },
         "function");
 

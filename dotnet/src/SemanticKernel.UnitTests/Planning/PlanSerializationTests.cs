@@ -259,10 +259,10 @@ public sealed class PlanSerializationTests
         var contextVariables = new ContextVariables(planInput);
         contextVariables.Set("variables", "foo");
 
-        static string method(SKContext context)
+        static string method(ContextVariables localVariables)
         {
-            context.Variables.TryGetValue("variables", out string? v);
-            return context.Variables.Input + v;
+            localVariables.TryGetValue("variables", out string? v);
+            return localVariables.Input + v;
         };
         var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
@@ -306,10 +306,10 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
         var plugins = new SKPluginCollection();
 
-        static string method(SKContext context)
+        static string method(ContextVariables localVariables)
         {
-            context.Variables.TryGetValue("variables", out string? v);
-            return context.Variables.Input + v;
+            localVariables.TryGetValue("variables", out string? v);
+            return localVariables.Input + v;
         };
         var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
@@ -402,11 +402,11 @@ public sealed class PlanSerializationTests
         // Arrange
         var plugins = new SKPluginCollection();
 
-        var returnContext = new SKContext(new ContextVariables(stepOutput));
+        var variables = new ContextVariables(stepOutput);
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
-            returnContext.Variables.Update(returnContext.Variables.Input + context.Variables.Input);
+            variables.Update(variables.Input + localVariables.Input);
         }, "function");
 
         plan.AddSteps(new Plan("Step1", function), function);

@@ -419,9 +419,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        var context = kernel.CreateNewContext(variables);
-
-        return function.InvokeAsync(kernel, context, requestSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, variables, requestSettings: null, cancellationToken);
     }
 
     /// <summary>

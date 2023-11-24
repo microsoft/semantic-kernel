@@ -21,12 +21,13 @@ internal static class FunctionHelpers
 
         ISKPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        SKContext context = kernel.CreateNewContext();
+        ContextVariables contextVariables = new();
+
         foreach ((string Name, object Value) pair in variables)
         {
-            context.Variables.Set(pair.Name, pair.Value.ToString());
+            contextVariables.Set(pair.Name, pair.Value.ToString());
         }
 
-        return kernel.RunAsync(plugin[methodName], context.Variables);
+        return kernel.RunAsync(plugin[methodName], contextVariables);
     }
 }

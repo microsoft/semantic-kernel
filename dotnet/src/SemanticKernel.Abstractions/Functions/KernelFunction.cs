@@ -74,13 +74,13 @@ public abstract class KernelFunction
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="context">SK context</param>
+    /// <param name="variables">Context variables</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
@@ -95,7 +95,7 @@ public abstract class KernelFunction
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+            var result = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -128,13 +128,13 @@ public abstract class KernelFunction
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="context">SK context</param>
+    /// <param name="variables">Context variables</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken);
 
