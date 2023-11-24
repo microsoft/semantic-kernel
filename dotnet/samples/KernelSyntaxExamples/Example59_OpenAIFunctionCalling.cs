@@ -151,26 +151,21 @@ public static class Example59_OpenAIFunctionCalling
         }
     }
 
-    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
+    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
     {
         Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
-        chatHistory.AddUserMessage(ask);
 
         // Send request
-        await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, requestSettings))
         {
             StringBuilder chatContent = new();
             Console.Write("Assistant response: ");
-            await foreach (var message in chatResult.GetStreamingChatMessageAsync())
-            {
-                if (message.Content is not null)
-                {
-                    Console.Write(message.Content);
-                    chatContent.Append(message.Content);
-                }
+            if (chatResult.Content is { Length: > 0 })
+            { 
+                Console.Write(chatResult.Content);
+                chatContent.Append(chatResult.Content);
             }
-            chatHistory.AddAssistantMessage(chatContent.ToString());
 
             var functionResponse = await chatResult.GetOpenAIStreamingFunctionResponseAsync();
 
