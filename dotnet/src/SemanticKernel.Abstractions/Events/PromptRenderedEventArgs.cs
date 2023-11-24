@@ -12,10 +12,10 @@ public class PromptRenderedEventArgs : SKCancelEventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
     /// </summary>
-    /// <param name="metadata">Function metadata</param>
+    /// <param name="function">Kernel function</param>
     /// <param name="context">Context related to the event</param>
     /// <param name="renderedPrompt">Rendered prompt</param>
-    public PromptRenderedEventArgs(SKFunctionMetadata metadata, SKContext context, string renderedPrompt) : base(metadata, context)
+    public PromptRenderedEventArgs(KernelFunction function, SKContext context, string renderedPrompt) : base(function, context)
     {
         this.RenderedPrompt = renderedPrompt;
     }

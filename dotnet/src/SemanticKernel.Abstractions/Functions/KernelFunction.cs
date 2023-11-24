@@ -100,8 +100,8 @@ public abstract class KernelFunction
         try
         {
             // Invoke pre hook, and stop if skipping requested.
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
-            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+            var invokingEventArgs = kernel.OnFunctionInvoking(this, context);
+            if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
@@ -128,12 +128,12 @@ public abstract class KernelFunction
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Function invocation {Completion}: {Result}",
-                    invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
+                    invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed",
                     result.Value);
             }
 
-            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
-            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
+            result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
+            result.IsRepeatRequested = invokedEventArgs?.IsRepeatRequested ?? false;
 
             return result;
         }
@@ -187,17 +187,10 @@ public abstract class KernelFunction
     protected abstract SKFunctionMetadata GetMetadataCore();
 
     #region private
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
+    private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
     {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
-        kernel.OnFunctionInvoking(eventArgs);
-        return eventArgs;
-    }
-
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
-    {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-        if (kernel.OnFunctionInvoked(eventArgs))
+        var eventArgs = kernel.OnFunctionInvoked(this, result);
+        if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
             result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)

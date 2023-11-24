@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
@@ -201,25 +202,52 @@ public sealed class Kernel
         this._data;
 
     #region internal ===============================================================================
-    internal void OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, SKContext context)
     {
-        this.FunctionInvoking?.Invoke(this, eventArgs);
+        if (this.FunctionInvoking is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new FunctionInvokingEventArgs(function, context);
+        this.FunctionInvoking.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
-        this.FunctionInvoked?.Invoke(this, eventArgs);
-        return this.FunctionInvoked is not null;
+        if (this.FunctionInvoked is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new FunctionInvokedEventArgs(function, result);
+        this.FunctionInvoked.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-    internal void OnPromptRendering(PromptRenderingEventArgs eventArgs)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, SKContext context, AIRequestSettings? requestSettings)
     {
-        this.PromptRendering?.Invoke(this, eventArgs);
+        if (this.PromptRendering is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderingEventArgs(function, context, requestSettings);
+        this.PromptRendering.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-    internal void OnPromptRendered(PromptRenderedEventArgs eventArgs)
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, SKContext context, string renderedPrompt)
     {
-        this.PromptRendered?.Invoke(this, eventArgs);
+        if (this.PromptRendered is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderedEventArgs(function, context, renderedPrompt);
+        this.PromptRendered.Invoke(this, eventArgs);
+        return eventArgs;
     }
     #endregion
 

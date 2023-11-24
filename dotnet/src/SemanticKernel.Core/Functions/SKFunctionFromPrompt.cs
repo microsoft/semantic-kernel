@@ -146,20 +146,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
             Verify.NotNull(textCompletion);
 
-            this.CallPromptRendering(kernel, context, requestSettings ?? defaultRequestSettings);
+            kernel.OnPromptRendering(this, context, requestSettings ?? defaultRequestSettings);
 
             string renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
 
-            var renderedEventArgs = this.CallPromptRendered(kernel, context, renderedPrompt);
-            if (renderedEventArgs.CancelToken.IsCancellationRequested)
+            var renderedEventArgs = kernel.OnPromptRendered(this, context, renderedPrompt);
+            if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
             {
                 return new FunctionResult(this.Name, context)
                 {
                     IsCancellationRequested = true
                 };
             }
-
-            renderedPrompt = renderedEventArgs.RenderedPrompt;
+            renderedPrompt = renderedEventArgs?.RenderedPrompt ?? renderedPrompt;
 
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -227,32 +226,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 variables[parameter.Name] = parameter.DefaultValue;
             }
         }
-    }
-
-    /// <summary>
-    /// Handles the FunctionInvoking event
-    /// </summary>
-    /// <param name="kernel">Kernel instance</param>
-    /// <param name="context">Execution context</param>
-    /// <param name="requestSettings">Request settings</param>
-    private PromptRenderingEventArgs CallPromptRendering(Kernel kernel, SKContext context, AIRequestSettings? requestSettings)
-    {
-        var eventArgs = new PromptRenderingEventArgs(this.GetMetadata(), context, requestSettings);
-        kernel.OnPromptRendering(eventArgs);
-        return eventArgs;
-    }
-
-    /// <summary>
-    /// Handles the FunctionInvoked event
-    /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="context">Execution context</param>
-    /// <param name="renderedPrompt">Rendered prompt</param>
-    private PromptRenderedEventArgs CallPromptRendered(Kernel kernel, SKContext context, string renderedPrompt)
-    {
-        var eventArgs = new PromptRenderedEventArgs(this.GetMetadata(), context, renderedPrompt);
-        kernel.OnPromptRendered(eventArgs);
-        return eventArgs;
     }
 
     /// <summary>Create a random, valid function name.</summary>

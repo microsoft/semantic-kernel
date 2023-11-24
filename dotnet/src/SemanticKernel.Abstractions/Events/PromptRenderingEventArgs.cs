@@ -13,10 +13,10 @@ public class PromptRenderingEventArgs : SKEventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingEventArgs"/> class.
     /// </summary>
-    /// <param name="metadata">Function metadata</param>
+    /// <param name="function">Kernel function</param>
     /// <param name="context">Context related to the event</param>
     /// <param name="requestSettings">request settings used by the AI service</param>
-    public PromptRenderingEventArgs(SKFunctionMetadata metadata, SKContext context, AIRequestSettings? requestSettings) : base(metadata, context)
+    public PromptRenderingEventArgs(KernelFunction function, SKContext context, AIRequestSettings? requestSettings) : base(function, context)
     {
         this.RequestSettings = requestSettings; // TODO clone these settings
     }
