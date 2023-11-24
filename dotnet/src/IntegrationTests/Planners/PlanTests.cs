@@ -158,7 +158,7 @@ public sealed class PlanTests : IDisposable
         var subPlan = new Plan("Write a poem or joke");
         var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
         var returnContext = target.CreateNewContext();
-        var expectedInvocations = 6;
+        var expectedInvocations = 10;
         // 1 - Outer Plan - Write poem and send email goal
         // 2 - Inner Plan - Write poem or joke goal
         // 3 - Inner Plan - Step 1 - WritePoem
@@ -176,13 +176,13 @@ public sealed class PlanTests : IDisposable
         var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -203,15 +203,23 @@ public sealed class PlanTests : IDisposable
         Assert.Equal(invokingListFunctions[2].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokingListFunctions[3].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokingListFunctions[4].Name, emailFunctions["WritePoem"].Name);
-        Assert.Equal(invokingListFunctions[5].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokingListFunctions[5].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[6].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[7].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[8].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokingListFunctions[9].Name, emailFunctions["SendEmail"].Name);
 
         // Expected invoked sequence
         Assert.Equal(invokedListFunctions[0].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokedListFunctions[1].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokedListFunctions[2].Name, emailFunctions["WritePoem"].Name);
-        Assert.Equal(invokedListFunctions[3].Name, subPlan.Name);
-        Assert.Equal(invokedListFunctions[4].Name, emailFunctions["SendEmail"].Name);
-        Assert.Equal(invokedListFunctions[5].Name, plan.Name);
+        Assert.Equal(invokedListFunctions[3].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[4].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[5].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[6].Name, subPlan.Name);
+        Assert.Equal(invokedListFunctions[7].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokedListFunctions[8].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokedListFunctions[9].Name, plan.Name);
     }
 
     [Theory]

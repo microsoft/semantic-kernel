@@ -19,7 +19,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
@@ -96,56 +95,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            // Invoke pre hook, and stop if skipping requested.
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
-            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
-            {
-                if (this._logger.IsEnabled(LogLevel.Trace))
-                {
-                    this._logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
-                }
-
-                return new FunctionResult(this.Name, context)
-                {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
-                };
-            }
-
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Function {Name} invoking.", this.Name);
-            }
-
-            // Invoke the function.
-            var result = await this._function(null, requestSettings, kernel, context, cancellationToken).ConfigureAwait(false);
-
-            // Invoke the post hook.
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
-
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
-                    this.Name,
-                    invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
-                    result.Value);
-            }
-
-            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
-            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
-
-            return result;
-        }
-        catch (Exception e)
-        {
-            if (this._logger.IsEnabled(LogLevel.Error))
-            {
-                this._logger.LogError(e, "Function {Name} execution failed: {Error}", this.Name, e.Message);
-            }
-            throw;
-        }
+        return await this._function(null, requestSettings, kernel, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -179,31 +129,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
 
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
-    {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);
-        kernel.OnFunctionInvoking(eventArgs);
-        return eventArgs;
-    }
-
-    private (FunctionInvokedEventArgs, FunctionResult) CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult? result = null)
-    {
-        result ??= new FunctionResult(this.Name, context);
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
-        if (kernel.OnFunctionInvoked(eventArgs))
-        {
-            // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.SKContext, eventArgs.SKContext.Variables.Input)
-            {
-                // Updates the eventArgs metadata during invoked handler execution
-                // will reflect in the result metadata
-                Metadata = eventArgs.Metadata
-            };
-        }
-
-        return (eventArgs, result);
-    }
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
@@ -212,7 +137,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     #region private
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
-    /// <returns></returns>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
         AIRequestSettings? requestSettings,
