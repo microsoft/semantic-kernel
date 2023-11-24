@@ -158,9 +158,9 @@ public static class Example59_OpenAIFunctionCalling
 
         // Send request
         var fullContent = new List<StreamingChatContent>();
+        Console.Write("Assistant response: ");
         await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, requestSettings))
         {
-            Console.Write("Assistant response: ");
             if (chatResult.Content is { Length: > 0 })
             {
                 Console.Write(chatResult.Content);

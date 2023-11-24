@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /**
@@ -68,12 +67,9 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatWithDataContent>(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingContentAsync<string>(chatHistory))
         {
-            if (chatUpdate.ChatMessage.Content is { Length: > 0 })
-            {
-                Console.Write(chatUpdate.ChatMessage.Content);
-            }
+            Console.Write(word);
         }
 
         Console.WriteLine(Environment.NewLine);
