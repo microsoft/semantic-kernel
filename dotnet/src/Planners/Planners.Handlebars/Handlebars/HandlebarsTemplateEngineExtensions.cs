@@ -425,7 +425,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             var value = v.Value ?? "";
             var varString = !SKParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
-            if (contextVariables.TryGetValue(v.Key, out var argVal))
+            if (contextVariables.ContainsKey(v.Key))
             {
                 contextVariables[v.Key] = varString;
             }
