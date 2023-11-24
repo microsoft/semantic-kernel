@@ -31,14 +31,6 @@ public abstract class PlannerConfigBase
     public HashSet<string> ExcludedFunctions { get; } = new();
 
     /// <summary>
-    /// Semantic Memory configuration, used to enable function filtering during plan creation.
-    /// </summary>
-    /// <remarks>
-    /// This configuration will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
-    /// </remarks>
-    public SemanticMemoryConfig SemanticMemoryConfig { get; set; } = new();
-
-    /// <summary>
     /// Callback to get the available functions for planning (optional).
     /// Use if you want to override the default function lookup behavior.
     /// If set, this function takes precedence over <see cref="Memory"/>.

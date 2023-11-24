@@ -48,7 +48,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <returns>A string containing the manual for all available functions.</returns>
     public static async Task<string> GetFunctionsManualAsync(
         this IReadOnlySKPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerConfig config,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -136,8 +136,8 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
             .ToList();
 
         List<SKFunctionMetadata>? result = null;
-        var semanticMemoryConfig = config.SemanticMemoryConfig;
-        if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig.Memory is NullMemory)
+        var semanticMemoryConfig = config.GetSemanticMemoryConfig();
+        if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.
@@ -228,5 +228,10 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
                     additionalMetadata: string.Empty, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
+    }
+
+    private static SemanticMemoryConfig? GetSemanticMemoryConfig(this PlannerConfigBase config)
+    {
+        return (config is PlannerConfig plannerConfig) ? plannerConfig.SemanticMemoryConfig : null;
     }
 }
