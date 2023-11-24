@@ -101,4 +101,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         this.LogActionDetails();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        var chatHistory = this.CreateNewChat(prompt);
+        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);
+    }
 }

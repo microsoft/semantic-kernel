@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
@@ -346,6 +346,26 @@ public class SemanticFunctionTests
         Assert.Equal(newInput, originalInput);
     }
 
+    [Fact]
+    public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
+    {
+        // Arrange
+        var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(new TestStreamingContent());
+        var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var sut = SKFunctionFactory.CreateFromPrompt(prompt);
+        var variables = new ContextVariables("importance");
+        var context = kernel.CreateNewContext(variables);
+
+        // Act
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
+        {
+        }
+
+        // Assert
+        mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
@@ -353,12 +373,45 @@ public class SemanticFunctionTests
 
         var mockTextCompletion = new Mock<ITextCompletion>();
         mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-
         return (mockTextResult, mockTextCompletion);
     }
 
-    private static MethodInfo Method(Delegate method)
+    private Mock<ITextCompletion> SetupStreamingMocks<T>(T completionResult)
     {
-        return method.Method;
+        var mockTextCompletion = new Mock<ITextCompletion>();
+        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(new List<T> { completionResult }));
+
+        return mockTextCompletion;
+    }
+
+    private sealed class TestStreamingContent : StreamingContent
+    {
+        public TestStreamingContent() : base(null)
+        {
+        }
+
+        public override int ChoiceIndex => 0;
+
+        public override byte[] ToByteArray()
+        {
+            return Array.Empty<byte>();
+        }
+
+        public override string ToString()
+        {
+            return string.Empty;
+        }
+    }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable IDE1006 // Naming Styles
+    private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    {
+        foreach (var enumerationItem in enumeration)
+        {
+            yield return enumerationItem;
+        }
     }
 }
