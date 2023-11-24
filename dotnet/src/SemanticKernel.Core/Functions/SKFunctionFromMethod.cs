@@ -105,14 +105,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
         var functionResult = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
-
-        if (functionResult.IsCancellationRequested || functionResult.IsSkipRequested)
-        {
-            yield break;
-        }
-
         if (functionResult.Value is T)
         {
             yield return (T)functionResult.Value;
