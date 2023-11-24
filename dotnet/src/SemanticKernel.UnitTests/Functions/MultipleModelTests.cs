@@ -34,7 +34,7 @@ public class MultipleModelTests
         KernelFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -58,7 +58,7 @@ public class MultipleModelTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
+        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
@@ -96,7 +96,7 @@ public class MultipleModelTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service1"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[0]));
@@ -157,7 +157,7 @@ public class MultipleModelTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service1"), It.IsAny<CancellationToken>()), Times.Never());

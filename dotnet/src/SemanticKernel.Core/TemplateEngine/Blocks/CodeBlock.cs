@@ -106,7 +106,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            await kernel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
+            await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

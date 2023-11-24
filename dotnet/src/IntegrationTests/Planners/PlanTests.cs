@@ -66,7 +66,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(plan, cv);
+        var result = await target.InvokeAsync(plan, cv);
 
         // Assert
         Assert.Equal(expectedBody, result.GetValue<string>());
@@ -88,7 +88,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(plan, cv);
+        var result = await target.InvokeAsync(plan, cv);
 
         // Assert
         Assert.Equal(expectedBody, result.GetValue<string>());
@@ -112,7 +112,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToTranslate);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", language);
-        var result = (await target.RunAsync(plan, cv)).GetValue<string>();
+        var result = (await target.InvokeAsync(plan, cv)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -139,7 +139,7 @@ public sealed class PlanTests : IDisposable
         plan.State.Set("email_address", "something@email.com");
 
         // Act
-        var result = await target.RunAsync(plan, "PlanInput");
+        var result = await target.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -158,7 +158,7 @@ public sealed class PlanTests : IDisposable
         var subPlan = new Plan("Write a poem or joke");
         var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
         var returnContext = target.CreateNewContext();
-        var expectedInvocations = 6;
+        var expectedInvocations = 10;
         // 1 - Outer Plan - Write poem and send email goal
         // 2 - Inner Plan - Write poem or joke goal
         // 3 - Inner Plan - Step 1 - WritePoem
@@ -176,13 +176,13 @@ public sealed class PlanTests : IDisposable
         var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -190,7 +190,7 @@ public sealed class PlanTests : IDisposable
         target.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await target.RunAsync(plan, "PlanInput");
+        var result = await target.InvokeAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -203,15 +203,23 @@ public sealed class PlanTests : IDisposable
         Assert.Equal(invokingListFunctions[2].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokingListFunctions[3].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokingListFunctions[4].Name, emailFunctions["WritePoem"].Name);
-        Assert.Equal(invokingListFunctions[5].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokingListFunctions[5].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[6].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[7].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokingListFunctions[8].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokingListFunctions[9].Name, emailFunctions["SendEmail"].Name);
 
         // Expected invoked sequence
         Assert.Equal(invokedListFunctions[0].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokedListFunctions[1].Name, emailFunctions["WritePoem"].Name);
         Assert.Equal(invokedListFunctions[2].Name, emailFunctions["WritePoem"].Name);
-        Assert.Equal(invokedListFunctions[3].Name, subPlan.Name);
-        Assert.Equal(invokedListFunctions[4].Name, emailFunctions["SendEmail"].Name);
-        Assert.Equal(invokedListFunctions[5].Name, plan.Name);
+        Assert.Equal(invokedListFunctions[3].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[4].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[5].Name, emailFunctions["WritePoem"].Name);
+        Assert.Equal(invokedListFunctions[6].Name, subPlan.Name);
+        Assert.Equal(invokedListFunctions[7].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokedListFunctions[8].Name, emailFunctions["SendEmail"].Name);
+        Assert.Equal(invokedListFunctions[9].Name, plan.Name);
     }
 
     [Theory]
@@ -436,7 +444,7 @@ public sealed class PlanTests : IDisposable
         plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
 
         // Act
-        var result = (await target.RunAsync(plan, inputToSummarize)).GetValue<string>();
+        var result = (await target.InvokeAsync(plan, inputToSummarize)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -498,7 +506,7 @@ public sealed class PlanTests : IDisposable
         // Act
         var serializedPlan = plan.ToJson();
         var deserializedPlan = Plan.FromJson(serializedPlan, target.Plugins);
-        var result = (await target.RunAsync(deserializedPlan, inputToSummarize)).GetValue<string>();
+        var result = (await target.InvokeAsync(deserializedPlan, inputToSummarize)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -531,7 +539,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToSummarize);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", inputLanguage);
-        var result = await target.RunAsync(plan, cv);
+        var result = await target.InvokeAsync(plan, cv);
 
         // Assert
         Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

@@ -141,7 +141,7 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
 
-            var functionResult = await kernel.RunAsync(plan);
+            var functionResult = await kernel.InvokeAsync(plan);
 
             var result = functionResult.GetValue<string>()!;
 
