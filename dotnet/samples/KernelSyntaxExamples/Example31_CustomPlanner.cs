@@ -31,7 +31,7 @@ internal static class Example31_CustomPlanner
 
         // ContextQuery is part of the QAPlugin
         ISKPlugin qaPlugin = LoadQAPlugin(kernel);
-        ContextVariables variables = CreateContextQueryContextVariables();
+        var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
         kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
