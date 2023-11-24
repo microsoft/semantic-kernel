@@ -41,16 +41,22 @@ public static class Example33_StreamingChat
 
     private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
     {
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Hi, I'm looking for book suggestions"))
+        bool roleWritten = false;
+        var prompt = "Hi, I'm looking for book suggestions";
+
+        Console.WriteLine($"User: {prompt}");
+        Console.WriteLine("------------------------");
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt))
         {
-            if (chatUpdate.Role.HasValue)
+            if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.WriteLine($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}\n");
+                roleWritten = true;
             }
 
             if (chatUpdate.Content is { Length: > 0 })
             {
-                Console.WriteLine(chatUpdate.Content);
+                Console.Write(chatUpdate.Content);
             }
         }
 

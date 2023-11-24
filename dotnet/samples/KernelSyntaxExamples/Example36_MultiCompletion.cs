@@ -58,7 +58,8 @@ public static class Example36_MultiCompletion
 
         foreach (var completions in await chatCompletion.GetChatCompletionsAsync(chatHistory))
         {
-            Console.Write(await completions.GetChatMessageAsync());
+            var result = await completions.GetChatMessageAsync();
+            Console.Write(result.Content);
             Console.WriteLine("-------------");
         }
 

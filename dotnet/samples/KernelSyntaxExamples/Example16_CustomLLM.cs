@@ -7,10 +7,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -27,53 +29,18 @@ using RepoUtils;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public class MyTextCompletionService : ITextCompletion
-{
-    public string? ModelId { get; private set; }
-
-    public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
-
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (typeof(T) == typeof(MyStreamingContent))
-        {
-            yield return (T)(object)new MyStreamingContent("llm content update 1");
-            yield return (T)(object)new MyStreamingContent("llm content update 2");
-        }
-    }
-}
-
-public class MyStreamingContent : StreamingContent
-{
-    public override int ChoiceIndex => 0;
-
-    public string Content { get; }
-
-    public MyStreamingContent(string content) : base(content)
-    {
-        this.Content = content;
-    }
-
-    public override byte[] ToByteArray()
-    {
-        return Encoding.UTF8.GetBytes(this.Content);
-    }
-
-    public override string ToString()
-    {
-        return this.Content;
-    }
-}
-
 // ReSharper disable StringLiteralTypo
 // ReSharper disable once InconsistentNaming
 public static class Example16_CustomLLM
 {
+    private const string LLMResultText = @" ..output from your custom model... Example:
+    AI is awesome because it can help us solve complex problems, enhance our creativity,
+    and improve our lives in many ways. AI can perform tasks that are too difficult,
+    tedious, or dangerous for humans, such as diagnosing diseases, detecting fraud, or
+    exploring space. AI can also augment our abilities and inspire us to create new forms
+    of art, music, or literature. AI can also improve our well-being and happiness by
+    providing personalized recommendations, entertainment, and assistance. AI is awesome";
+
     public static async Task RunAsync()
     {
         await CustomTextCompletionWithSKFunctionAsync();
@@ -147,5 +114,78 @@ public static class Example16_CustomLLM
         }
 
         Console.WriteLine();
+    }
+
+    private class MyTextCompletionService : ITextCompletion
+    {
+        public string? ModelId { get; private set; }
+
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
+        {
+            this.ModelId = requestSettings?.ModelId;
+
+            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
+            {
+                new MyTextCompletionStreamingResult()
+            });
+        }
+
+        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (typeof(T) == typeof(MyStreamingContent) ||
+                typeof(T) == typeof(StreamingContent))
+            {
+                foreach (string word in LLMResultText.Split(' '))
+                {
+                    await Task.Delay(50, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return (T)(object)new MyStreamingContent(word);
+                }
+            }
+        }
+    }
+
+    private class MyStreamingContent : StreamingContent
+    {
+        public override int ChoiceIndex => 0;
+
+        public string Content { get; }
+
+        public MyStreamingContent(string content) : base(content)
+        {
+            this.Content = $"{content} ";
+        }
+
+        public override byte[] ToByteArray()
+        {
+            return Encoding.UTF8.GetBytes(this.Content);
+        }
+
+        public override string ToString()
+        {
+            return this.Content;
+        }
+    }
+
+    private class MyTextCompletionStreamingResult : ITextResult
+    {
+        private readonly ModelResult _modelResult = new(new
+        {
+            Content = LLMResultText,
+            Message = "This is my model raw response",
+            Tokens = LLMResultText.Split(' ').Length
+        });
+
+        public ModelResult ModelResult => this._modelResult;
+
+        public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+        {
+            // Forcing a 1 sec delay (Simulating custom LLM lag)
+            await Task.Delay(1000, cancellationToken);
+
+            return LLMResultText;
+        }
     }
 }
