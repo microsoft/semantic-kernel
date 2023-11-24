@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Functions.Yaml.Functions;
 using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel

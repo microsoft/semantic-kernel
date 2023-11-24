@@ -3,7 +3,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Default implementation of <see cref="IPromptTemplateFactory"/> for the semantic-kernel prompt template format.

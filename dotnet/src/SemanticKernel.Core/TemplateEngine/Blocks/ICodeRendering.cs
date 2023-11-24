@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 /// <summary>
 /// Interface of dynamic blocks that need async IO to be rendered.
 /// </summary>
-public interface ICodeRendering
+internal interface ICodeRendering
 {
     /// <summary>
     /// Render the block using the given context, potentially using external I/O.

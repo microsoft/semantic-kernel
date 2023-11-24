@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
