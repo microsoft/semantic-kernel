@@ -177,7 +177,17 @@ public abstract class KernelFunction
 
         logger.LogInformation("Function streaming invoking.");
 
-        cancellationToken.ThrowIfCancellationRequested();
+        // Invoke pre hook, and stop if skipping requested.
+        var invokingEventArgs = kernel.OnFunctionInvoking(this, context);
+        if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogTrace("Function canceled or skipped prior to invocation.");
+            }
+
+            yield break;
+        }
 
         await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken))
         {
@@ -185,6 +195,7 @@ public abstract class KernelFunction
         }
 
         // Completion logging is not supported for streaming functions
+        // Invoke post hook not support for streaming functions
     }
 
     /// <summary>

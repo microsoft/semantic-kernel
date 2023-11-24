@@ -234,7 +234,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunStreamingAsyncHandlesPostInvocationAsync()
+    public async Task RunStreamingAsyncDoesNotHandlePostInvocationAsync()
     {
         // Arrange
         var sut = new KernelBuilder().Build();
@@ -254,7 +254,7 @@ public class KernelTests
 
         // Assert
         Assert.Equal(1, functionInvocations);
-        Assert.Equal(1, handlerInvocations);
+        Assert.Equal(0, handlerInvocations);
     }
 
     [Fact]
