@@ -204,49 +204,53 @@ public sealed class Kernel
     #region internal ===============================================================================
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, SKContext context)
     {
-        if (this.FunctionInvoking is null)
+        var functionInvoking = this.FunctionInvoking;
+        if (functionInvoking is null)
         {
             return null;
         }
 
         var eventArgs = new FunctionInvokingEventArgs(function, context);
-        this.FunctionInvoking.Invoke(this, eventArgs);
+        functionInvoking.Invoke(this, eventArgs);
         return eventArgs;
     }
 
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
-        if (this.FunctionInvoked is null)
+        var functionInvoked = this.FunctionInvoked;
+        if (functionInvoked is null)
         {
             return null;
         }
 
         var eventArgs = new FunctionInvokedEventArgs(function, result);
-        this.FunctionInvoked.Invoke(this, eventArgs);
+        functionInvoked.Invoke(this, eventArgs);
         return eventArgs;
     }
 
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, SKContext context, AIRequestSettings? requestSettings)
     {
-        if (this.PromptRendering is null)
+        var promptRendering = this.PromptRendering;
+        if (promptRendering is null)
         {
             return null;
         }
 
         var eventArgs = new PromptRenderingEventArgs(function, context, requestSettings);
-        this.PromptRendering.Invoke(this, eventArgs);
+        promptRendering.Invoke(this, eventArgs);
         return eventArgs;
     }
 
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, SKContext context, string renderedPrompt)
     {
-        if (this.PromptRendered is null)
+        var promptRendered = this.PromptRendered;
+        if (promptRendered is null)
         {
             return null;
         }
 
         var eventArgs = new PromptRenderedEventArgs(function, context, renderedPrompt);
-        this.PromptRendered.Invoke(this, eventArgs);
+        promptRendered.Invoke(this, eventArgs);
         return eventArgs;
     }
     #endregion

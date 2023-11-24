@@ -89,10 +89,7 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function invoking.");
-        }
+        logger.LogTrace("Function invoking.");
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -104,10 +101,7 @@ public abstract class KernelFunction
             var invokingEventArgs = kernel.OnFunctionInvoking(this, context);
             if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
-                if (logger.IsEnabled(LogLevel.Trace))
-                {
-                    logger.LogTrace("Function canceled or skipped prior to invocation.");
-                }
+                logger.LogTrace("Function canceled or skipped prior to invocation.");
 
                 return new FunctionResult(this.Name, context)
                 {
@@ -118,10 +112,7 @@ public abstract class KernelFunction
 
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
 
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogTrace("Function succeeded.");
-            }
+            logger.LogTrace("Function succeeded.");
 
             // Invoke the post hook.
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
@@ -181,10 +172,7 @@ public abstract class KernelFunction
         var invokingEventArgs = kernel.OnFunctionInvoking(this, context);
         if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
         {
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
-            }
+            logger.LogTrace("Function canceled or skipped prior to invocation.");
 
             yield break;
         }

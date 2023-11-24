@@ -783,13 +783,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var invokedListFunctions = new List<SKFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -834,7 +834,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
 
             e.Cancel();
@@ -842,7 +842,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -880,10 +880,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
 
-            if (e.FunctionMetadata.Name == "WritePoem")
+            if (e.Function.GetMetadata().Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -891,7 +891,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -933,16 +933,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
 
-            if (e.FunctionMetadata.Name == "WritePoem")
+            if (e.Function.GetMetadata().Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -988,16 +988,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
 
-            if (e.FunctionMetadata.Name == "SendEmail")
+            if (e.Function.GetMetadata().Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1050,10 +1050,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
 
-            if (e.FunctionMetadata.Name == "WritePoem")
+            if (e.Function.GetMetadata().Name == "WritePoem")
             {
                 e.Skip();
             }
@@ -1061,7 +1061,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 
@@ -1105,10 +1105,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionMetadata);
+            invokingListFunctions.Add(e.Function.GetMetadata());
             invokingCalls++;
 
-            if (e.FunctionMetadata.Name == "SendEmail")
+            if (e.Function.GetMetadata().Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1116,7 +1116,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionMetadata);
+            invokedListFunctions.Add(e.Function.GetMetadata());
             invokedCalls++;
         }
 

@@ -32,11 +32,6 @@ public abstract class SKEventArgs : EventArgs
     public KernelFunction Function { get; }
 
     /// <summary>
-    /// Function metadata
-    /// </summary>
-    public SKFunctionMetadata FunctionMetadata => this.Function.GetMetadata();
-
-    /// <summary>
     /// Context related to the event.
     /// </summary>
     public SKContext SKContext { get; }
