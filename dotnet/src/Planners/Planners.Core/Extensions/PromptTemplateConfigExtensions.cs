@@ -2,7 +2,6 @@
 
 // ReSharper disable once CheckNamespace - Using the namespace of Kernel
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
