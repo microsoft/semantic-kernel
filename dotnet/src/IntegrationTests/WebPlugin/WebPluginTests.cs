@@ -1,8 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -48,9 +53,9 @@ public sealed class WebPluginTests : IDisposable
         var searchFunctions = kernel.ImportPluginFromObject(plugin, "WebSearchEngine");
 
         // Act
-        KernelResult result = await kernel.RunAsync(
-            prompt,
-            searchFunctions["Search"]
+        FunctionResult result = await kernel.RunAsync(
+            searchFunctions["Search"],
+            new ContextVariables(prompt)
         );
 
         // Assert
@@ -70,7 +75,7 @@ public sealed class WebPluginTests : IDisposable
         contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);
 
         // Act
-        await kernel.RunAsync(contextVariables, downloadFunctions["DownloadToFile"]);
+        await kernel.RunAsync(downloadFunctions["DownloadToFile"], contextVariables);
 
         // Assert
         var fileInfo = new FileInfo(fileWhereToSaveWebPage);
