@@ -90,7 +90,7 @@ public abstract class KernelFunction
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Function {Name} invoking.", this.Name);
+            logger.LogTrace("Function invoking.");
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -105,7 +105,7 @@ public abstract class KernelFunction
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
+                    logger.LogTrace("Function canceled or skipped prior to invocation.");
                 }
 
                 return new FunctionResult(this.Name, context)
@@ -127,8 +127,7 @@ public abstract class KernelFunction
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
-                    this.Name,
+                logger.LogTrace("Function invocation {Completion}: {Result}",
                     invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
                     result.Value);
             }

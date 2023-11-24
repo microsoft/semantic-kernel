@@ -201,26 +201,15 @@ public sealed class Kernel
         this._data;
 
     #region internal ===============================================================================
-    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    internal void OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
     {
-        bool handled = false;
-        if (this.FunctionInvoking != null)
-        {
-            this.FunctionInvoking.Invoke(this, eventArgs);
-            handled = true;
-        }
-        return handled;
+        this.FunctionInvoking?.Invoke(this, eventArgs);
     }
 
     internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
     {
-        bool handled = false;
-        if (this.FunctionInvoked != null)
-        {
-            this.FunctionInvoked.Invoke(this, eventArgs);
-            handled = true;
-        }
-        return handled;
+        this.FunctionInvoked?.Invoke(this, eventArgs);
+        return this.FunctionInvoked is not null;
     }
 
     internal void OnPromptRendering(PromptRenderingEventArgs eventArgs)
@@ -228,15 +217,9 @@ public sealed class Kernel
         this.PromptRendering?.Invoke(this, eventArgs);
     }
 
-    internal bool OnPromptRendered(PromptRenderedEventArgs eventArgs)
+    internal void OnPromptRendered(PromptRenderedEventArgs eventArgs)
     {
-        bool handled = false;
-        if (this.PromptRendered is not null)
-        {
-            this.PromptRendered.Invoke(this, eventArgs);
-            handled = true;
-        }
-        return handled;
+        this.PromptRendered?.Invoke(this, eventArgs);
     }
     #endregion
 
