@@ -770,7 +770,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var plan = new Plan(goal);
         plan.AddSteps(functions.ToArray());
 
-        var expectedInvocations = 3;
+        var expectedInvocations = 5;
         var sut = new KernelBuilder().Build();
 
         // 1 - Plan - Write poem and send email goal
@@ -807,12 +807,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Expected invoking sequence
         Assert.Equal(invokingListFunctions[0].Name, plan.Name);
         Assert.Equal(invokingListFunctions[1].Name, functions[0].Name);
-        Assert.Equal(invokingListFunctions[2].Name, functions[1].Name);
+        Assert.Equal(invokingListFunctions[2].Name, functions[0].Name);
+        Assert.Equal(invokingListFunctions[3].Name, functions[1].Name);
+        Assert.Equal(invokingListFunctions[4].Name, functions[1].Name);
 
         // Expected invoked sequence
         Assert.Equal(invokedListFunctions[0].Name, functions[0].Name);
-        Assert.Equal(invokedListFunctions[1].Name, functions[1].Name);
-        Assert.Equal(invokedListFunctions[2].Name, plan.Name);
+        Assert.Equal(invokedListFunctions[1].Name, functions[0].Name);
+        Assert.Equal(invokedListFunctions[2].Name, functions[1].Name);
+        Assert.Equal(invokedListFunctions[3].Name, functions[1].Name);
+        Assert.Equal(invokedListFunctions[4].Name, plan.Name);
     }
 
     [Fact]
@@ -920,8 +924,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
-        var expectedInvokingHandlerInvocations = 2;
-        var expectedInvokedHandlerInvocations = 2;
+        var expectedInvokingHandlerInvocations = 3;
+        var expectedInvokedHandlerInvocations = 3;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -975,8 +979,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
-        var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 3;
+        var expectedInvokingHandlerInvocations = 5;
+        var expectedInvokedHandlerInvocations = 5;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -1013,13 +1017,18 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Expected invoking sequence
         Assert.Equal(invokingListFunctions[0].Name, plan.Name);
         Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
-        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[3].Name, plan.Steps[1].Name);
+        Assert.Equal(invokingListFunctions[4].Name, plan.Steps[1].Name);
         Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
 
         // Expected invoked sequence
         Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
-        Assert.Equal(invokedListFunctions[1].Name, plan.Steps[1].Name);
+        Assert.Equal(invokedListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokedListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(invokedListFunctions[3].Name, plan.Steps[1].Name);
+        Assert.Equal(invokedListFunctions[4].Name, plan.Name);
 
         // Aborting last step in invoked will stop the plan result
         // and return the previous succeeded step result value.
@@ -1087,8 +1096,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         this.PrepareKernelAndPlan(out var sut, out var plan);
 
-        var expectedInvokingHandlerInvocations = 3;
-        var expectedInvokedHandlerInvocations = 2;
+        var expectedInvokingHandlerInvocations = 4;
+        var expectedInvokedHandlerInvocations = 3;
         var invokingCalls = 0;
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
@@ -1125,7 +1134,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Expected invoking sequence
         Assert.Equal(invokingListFunctions[0].Name, plan.Name);
         Assert.Equal(invokingListFunctions[1].Name, plan.Steps[0].Name);
-        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[1].Name);
+        Assert.Equal(invokingListFunctions[2].Name, plan.Steps[0].Name);
+        Assert.Equal(invokingListFunctions[3].Name, plan.Steps[1].Name);
         Assert.Equal(expectedInvokingHandlerInvocations, invokingListFunctions.Count);
 
         // Expected invoked sequence
@@ -1133,6 +1143,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Cancelling the second step, don't block the triggering "invoked" for the first step.
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
+        Assert.Equal(invokedListFunctions[1].Name, plan.Steps[0].Name);
+        Assert.Equal(invokedListFunctions[2].Name, plan.Name);
 
         // Aborting one any step of a plan, will render the value of the last executed step
         Assert.Equal("WritePoem", result.Value);

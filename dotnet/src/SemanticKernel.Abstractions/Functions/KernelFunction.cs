@@ -64,14 +64,11 @@ public abstract class KernelFunction
     /// <param name="name">Name of the function.</param>
     /// <param name="description">Function description.</param>
     /// <param name="modelSettings">Model request settings.</param>
-    /// <param name="invokeEventHandlers">Flad to control whether or not event handlers are invoked</param>
-    internal KernelFunction(string name, string description, IEnumerable<AIRequestSettings>? modelSettings = null, bool invokeEventHandlers = true)
+    internal KernelFunction(string name, string description, IEnumerable<AIRequestSettings>? modelSettings = null)
     {
         this.Name = name;
         this.Description = description;
         this.ModelSettings = modelSettings ?? Enumerable.Empty<AIRequestSettings>();
-
-        this._invokeEventHandlers = invokeEventHandlers;
     }
 
     /// <summary>
@@ -103,22 +100,19 @@ public abstract class KernelFunction
         try
         {
             // Invoke pre hook, and stop if skipping requested.
-            if (this._invokeEventHandlers)
+            var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
             {
-                var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
-                if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+                if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    if (logger.IsEnabled(LogLevel.Trace))
-                    {
-                        logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
-                    }
-
-                    return new FunctionResult(this.Name, context)
-                    {
-                        IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                        IsSkipRequested = invokingEventArgs.IsSkipRequested
-                    };
+                    logger.LogTrace("Function {Name} canceled or skipped prior to invocation.", this.Name);
                 }
+
+                return new FunctionResult(this.Name, context)
+                {
+                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
+                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                };
             }
 
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
@@ -128,22 +122,19 @@ public abstract class KernelFunction
                 logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>());
             }
 
-            if (this._invokeEventHandlers)
+            // Invoke the post hook.
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
+
+            if (logger.IsEnabled(LogLevel.Trace))
             {
-                // Invoke the post hook.
-                (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, context, result);
-
-                if (logger.IsEnabled(LogLevel.Trace))
-                {
-                    logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
-                        this.Name,
-                        invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
-                        result.Value);
-                }
-
-                result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
-                result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
+                logger.LogTrace("Function {Name} invocation {Completion}: {Result}",
+                    this.Name,
+                    invokedEventArgs.CancelToken.IsCancellationRequested ? "canceled" : "completed",
+                    result.Value);
             }
+
+            result.IsCancellationRequested = invokedEventArgs.CancelToken.IsCancellationRequested;
+            result.IsRepeatRequested = invokedEventArgs.IsRepeatRequested;
 
             return result;
         }
@@ -197,8 +188,6 @@ public abstract class KernelFunction
     protected abstract SKFunctionMetadata GetMetadataCore();
 
     #region private
-    private readonly bool _invokeEventHandlers;
-
     private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)
     {
         var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context);

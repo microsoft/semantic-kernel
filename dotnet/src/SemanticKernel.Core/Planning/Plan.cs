@@ -97,7 +97,7 @@ public sealed class Plan : KernelFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
-    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings, invokeEventHandlers: false)
+    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings)
     {
         this.Function = function;
     }
