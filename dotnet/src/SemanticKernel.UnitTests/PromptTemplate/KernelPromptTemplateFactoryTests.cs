@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class KernelPromptTemplateFactoryTests
 {
