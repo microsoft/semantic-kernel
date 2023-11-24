@@ -4,7 +4,6 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 

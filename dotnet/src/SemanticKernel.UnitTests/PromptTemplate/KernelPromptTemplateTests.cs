@@ -8,13 +8,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class KernelPromptTemplateTests
 {

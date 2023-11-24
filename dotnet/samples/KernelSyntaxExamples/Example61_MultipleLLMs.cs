@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -105,7 +104,7 @@ public static class Example61_MultipleLLMs
             promptTemplateConfig,
             "HelloAI");
 
-        var result = await kernel.RunAsync(function);
+        var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());
     }
 }

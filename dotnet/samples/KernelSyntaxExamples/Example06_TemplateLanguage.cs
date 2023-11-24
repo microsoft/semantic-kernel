@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -61,7 +60,7 @@ Is it weekend time (weekend/not weekend)?
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(kindOfDay);
+        var result = await kernel.InvokeAsync(kindOfDay);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:

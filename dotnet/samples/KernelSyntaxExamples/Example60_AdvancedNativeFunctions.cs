@@ -31,7 +31,7 @@ public static class Example60_AdvancedNativeFunctions
 
         var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
 
-        var result = await kernel.RunAsync(functions["Function1"]);
+        var result = await kernel.InvokeAsync(functions["Function1"]);
         var customType = result.GetValue<MyCustomType>()!;
 
         Console.WriteLine(customType.Number); // 2
@@ -49,7 +49,7 @@ public static class Example60_AdvancedNativeFunctions
         public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
-            var result = await kernel.RunAsync(PluginName, "Function2");
+            var result = await kernel.InvokeAsync(PluginName, "Function2");
             var value = result?.GetValue<MyCustomType>()!;
 
             return new MyCustomType
