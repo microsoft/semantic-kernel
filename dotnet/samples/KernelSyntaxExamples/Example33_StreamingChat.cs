@@ -50,13 +50,13 @@ public static class Example33_StreamingChat
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}\n");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.ContentUpdate}\n");
                 roleWritten = true;
             }
 
-            if (chatUpdate.Content is { Length: > 0 })
+            if (chatUpdate.ContentUpdate is { Length: > 0 })
             {
-                Console.Write(chatUpdate.Content);
+                Console.Write(chatUpdate.ContentUpdate);
             }
         }
 
