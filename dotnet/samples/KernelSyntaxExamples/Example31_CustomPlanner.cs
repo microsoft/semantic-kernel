@@ -77,15 +77,17 @@ internal static class Example31_CustomPlanner
 
     private static ContextVariables CreateContextQueryContextVariables()
     {
-        var variables = new ContextVariables();
-        variables.Set("firstname", "Jamal");
-        variables.Set("lastname", "Williams");
-        variables.Set("city", "Tacoma");
-        variables.Set("state", "WA");
-        variables.Set("country", "USA");
-        variables.Set("collection", "contextQueryMemories");
-        variables.Set("limit", "5");
-        variables.Set("relevance", "0.3");
+var variables = new ContextVariables
+{
+    ["firstname"] = "Jamal",
+    ["lastname"] = "Williams",
+    ["city"] = "Tacoma",
+    ["state"] = "WA",
+    ["country"] = "USA",
+    ["collection"] = "contextQueryMemories",
+    ["limit"] = "5",
+    ["relevance"] = "0.3",
+};
         return variables;
     }
 
