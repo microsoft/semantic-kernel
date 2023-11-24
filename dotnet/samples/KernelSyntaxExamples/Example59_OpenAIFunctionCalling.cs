@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -155,66 +155,69 @@ public static class Example59_OpenAIFunctionCalling
     {
         Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
-        chatHistory.AddUserMessage(ask);
 
         // Send request
-        await foreach (var chatResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
+        var fullContent = new List<StreamingChatContent>();
+        Console.Write("Assistant response: ");
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, requestSettings))
         {
-            StringBuilder chatContent = new();
-            Console.Write("Assistant response: ");
-            await foreach (var message in chatResult.GetStreamingChatMessageAsync())
+            if (chatResult.Content is { Length: > 0 })
             {
-                if (message.Content is not null)
+                Console.Write(chatResult.Content);
+            }
+
+            fullContent.Add(chatResult);
+        }
+
+        // Check for function response
+        OpenAIFunctionResponse? functionResponse = StreamingChatContent.GetOpenAIStreamingFunctionResponse(fullContent);
+
+        if (functionResponse is not null)
+        {
+            // Print function response details
+            Console.WriteLine("Function name: " + functionResponse.FunctionName);
+            Console.WriteLine("Plugin name: " + functionResponse.PluginName);
+            Console.WriteLine("Arguments: ");
+            foreach (var parameter in functionResponse.Parameters)
+            {
+                Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+            }
+
+            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
+            // you can invoke it using the following code.
+            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
+            {
+                var functionResult = await kernel.InvokeAsync(func, context);
+
+                var result = functionResult.GetValue<object>();
+
+                string? resultContent = null;
+                if (result is RestApiOperationResponse apiResponse)
                 {
-                    Console.Write(message.Content);
-                    chatContent.Append(message.Content);
+                    resultContent = apiResponse.Content?.ToString();
+                }
+                else if (result is string str)
+                {
+                    resultContent = str;
+                }
+
+                if (!string.IsNullOrEmpty(resultContent))
+                {
+                    // Add the function result to chat history
+                    chatHistory.AddFunctionMessage(resultContent, functionResponse.FullyQualifiedName);
+                    Console.WriteLine($"Function response: {resultContent}");
+
+                    // Get another completion
+                    requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
+                    var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+                    chatHistory.AddAssistantMessage(chatResult);
+
+                    await PrintChatResultAsync(chatResult);
                 }
             }
-            chatHistory.AddAssistantMessage(chatContent.ToString());
-
-            var functionResponse = await chatResult.GetOpenAIStreamingFunctionResponseAsync();
-
-            if (functionResponse is not null)
+            else
             {
-                // Print function response details
-                Console.WriteLine("Function name: " + functionResponse.FunctionName);
-                Console.WriteLine("Plugin name: " + functionResponse.PluginName);
-                Console.WriteLine("Arguments: ");
-                foreach (var parameter in functionResponse.Parameters)
-                {
-                    Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
-                }
-
-                // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
-                // you can invoke it using the following code.
-                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
-                {
-                    var functionResult = await kernel.InvokeAsync(func, context);
-
-                    var result = functionResult.GetValue<object>();
-
-                    string? resultMessage = null;
-                    if (result is RestApiOperationResponse apiResponse)
-                    {
-                        resultMessage = apiResponse.Content?.ToString();
-                    }
-                    else if (result is string str)
-                    {
-                        resultMessage = str;
-                    }
-
-                    if (!string.IsNullOrEmpty(resultMessage))
-                    {
-                        Console.WriteLine(resultMessage);
-
-                        // Add the function result to chat history
-                        chatHistory.AddAssistantMessage(resultMessage);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
-                }
+                Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
             }
         }
     }
