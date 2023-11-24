@@ -73,18 +73,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    async IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        foreach (TextCompletionResult result in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
-        {
-            yield return result;
-        }
-    }
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         AIRequestSettings? requestSettings = null,

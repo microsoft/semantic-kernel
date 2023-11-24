@@ -47,6 +47,7 @@
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
+    <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />

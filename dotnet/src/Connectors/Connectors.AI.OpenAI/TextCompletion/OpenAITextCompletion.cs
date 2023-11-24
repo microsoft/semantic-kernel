@@ -42,16 +42,6 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         AIRequestSettings? requestSettings,

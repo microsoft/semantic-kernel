@@ -74,21 +74,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
-        ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-
-        return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         AIRequestSettings? requestSettings,
@@ -104,31 +89,25 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        var chat = this.PrepareChatHistory(text, chatRequestSettings);
-
-        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
-        await foreach (var result in results)
-        {
-            yield return (ITextStreamingResult)result;
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
+
+        return this.GetStreamingContentAsync<T>(chat, chatRequestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        ChatHistory chat,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -183,20 +162,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
     }
 
-    private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
-        ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-
-        await foreach (var result in this.GetStreamingResultsAsync(response))
-        {
-            yield return result;
-        }
-    }
-
     private async Task<HttpResponseMessage> SendRequestAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
@@ -214,36 +179,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
             throw;
-        }
-    }
-
-    private async IAsyncEnumerable<IChatStreamingResult> GetStreamingResultsAsync(HttpResponseMessage response)
-    {
-        const string ServerEventPayloadPrefix = "data:";
-
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream);
-
-        while (!reader.EndOfStream)
-        {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
-
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                continue;
-            }
-
-            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
-            {
-                body = body.Substring(ServerEventPayloadPrefix.Length);
-            }
-
-            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-
-            foreach (var choice in chatWithDataResponse.Choices)
-            {
-                yield return new ChatWithDataStreamingResult(chatWithDataResponse, choice);
-            }
         }
     }
 

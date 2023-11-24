@@ -56,4 +56,32 @@ public class StreamingChatContent : StreamingContent
 
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
+
+    /// <summary>
+    /// Retrieve the resulting function from the chat result.
+    /// </summary>
+    /// <param name="fullContent"></param>
+    /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
+    public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<StreamingChatContent> fullContent)
+    {
+        StringBuilder arguments = new();
+        FunctionCall? functionCall = null;
+        foreach (var message in fullContent)
+        {
+            functionCall ??= message?.FunctionCall;
+
+            if (message?.FunctionCall?.Arguments is not null)
+            {
+                arguments.Append(message?.FunctionCall.Arguments);
+            }
+        }
+
+        if (functionCall is null)
+        {
+            return null;
+        }
+
+        functionCall.Arguments = arguments.ToString();
+        return OpenAIFunctionResponse.FromFunctionCall(functionCall);
+    }
 }
