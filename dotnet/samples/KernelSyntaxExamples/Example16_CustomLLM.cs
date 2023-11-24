@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -116,7 +115,7 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
-    private class MyTextCompletionService : ITextCompletion
+    private sealed class MyTextCompletionService : ITextCompletion
     {
         public string? ModelId { get; private set; }
 
@@ -147,7 +146,7 @@ public static class Example16_CustomLLM
         }
     }
 
-    private class MyStreamingContent : StreamingContent
+    private sealed class MyStreamingContent : StreamingContent
     {
         public override int ChoiceIndex => 0;
 
@@ -169,7 +168,7 @@ public static class Example16_CustomLLM
         }
     }
 
-    private class MyTextCompletionStreamingResult : ITextResult
+    private sealed class MyTextCompletionStreamingResult : ITextResult
     {
         private readonly ModelResult _modelResult = new(new
         {
