@@ -100,7 +100,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        var result = (await kernel.RunAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+        var result = (await kernel.InvokeAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
 
         // Assert
         Assert.NotNull(result);

@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
@@ -290,16 +289,6 @@ public sealed class Plan : KernelFunction
         }
         else
         {
-            var invokingEventArgs = this.CallFunctionInvoking(kernel, variables);
-            if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
-            {
-                return new FunctionResult(this.Name)
-                {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
-                };
-            }
-
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
@@ -307,11 +296,12 @@ public sealed class Plan : KernelFunction
 
                 var stepResult = await this.InternalInvokeNextStepAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
+                // If a step was cancelled before invocation
+                // Return the last result state of the plan.
                 if (stepResult.IsCancellationRequested)
                 {
-                    break;
+                    return result;
                 }
-
                 if (stepResult.IsSkipRequested)
                 {
                     continue;
@@ -322,11 +312,20 @@ public sealed class Plan : KernelFunction
                 result = new FunctionResult(this.Name, variables.Input);
                 this.UpdateFunctionResultWithOutputs(result, variables);
             }
-
-            var invokedEventArgs = this.CallFunctionInvoked(kernel, variables, result);
         }
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    protected override IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+        Kernel kernel,
+        ContextVariables variables,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Implementation will be added in future streaming feature iteration
+        throw new NotSupportedException("Streaming currently is not supported for plans");
     }
 
     #endregion ISKFunction implementation
@@ -372,7 +371,7 @@ public sealed class Plan : KernelFunction
             var functionVariables = this.GetNextStepVariables(variables, step);
 
             // Execute the step
-            var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             // TODO: Revise this line later in the context of the complex type support initiative.
             // Currently, this line has an issue where the ToString method uses CurrentCulture instead of the culture configured on the kernel.
@@ -418,25 +417,6 @@ public sealed class Plan : KernelFunction
         }
 
         throw new InvalidOperationException("There isn't a next step");
-    }
-
-    private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, ContextVariables variables)
-    {
-        var eventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), variables);
-        kernel.OnFunctionInvoking(eventArgs);
-        return eventArgs;
-    }
-
-    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)
-    {
-        var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result, variables);
-        if (kernel.OnFunctionInvoked(eventArgs))
-        {
-            // Updates the eventArgs metadata during invoked handler execution will reflect in the result metadata
-            result.Metadata = eventArgs.Metadata;
-        }
-
-        return eventArgs;
     }
 
     /// <summary>

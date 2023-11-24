@@ -13,7 +13,7 @@ public abstract class SKCancelEventArgs : SKEventArgs
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
 
-    internal SKCancelEventArgs(SKFunctionMetadata functionView, ContextVariables variables) : base(functionView, variables)
+    internal SKCancelEventArgs(KernelFunction function, ContextVariables variables) : base(function, variables)
     {
     }
 

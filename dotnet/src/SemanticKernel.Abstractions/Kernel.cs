@@ -8,8 +8,10 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -87,6 +89,16 @@ public sealed class Kernel
     /// Provides an event that's raised after a function's invocation.
     /// </summary>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -177,26 +189,56 @@ public sealed class Kernel
         this._data;
 
     #region internal ===============================================================================
-    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
     {
-        bool handled = false;
-        if (this.FunctionInvoking != null)
+        var functionInvoking = this.FunctionInvoking;
+        if (functionInvoking is null)
         {
-            this.FunctionInvoking.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokingEventArgs(function, variables);
+        functionInvoking.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result, ContextVariables variables)
     {
-        bool handled = false;
-        if (this.FunctionInvoked != null)
+        var functionInvoked = this.FunctionInvoked;
+        if (functionInvoked is null)
         {
-            this.FunctionInvoked.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokedEventArgs(function, result, variables);
+        functionInvoked.Invoke(this, eventArgs);
+        return eventArgs;
+    }
+
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, AIRequestSettings? requestSettings)
+    {
+        var promptRendering = this.PromptRendering;
+        if (promptRendering is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderingEventArgs(function, variables, requestSettings);
+        promptRendering.Invoke(this, eventArgs);
+        return eventArgs;
+    }
+
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
+    {
+        var promptRendered = this.PromptRendered;
+        if (promptRendered is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderedEventArgs(function, variables, renderedPrompt);
+        promptRendered.Invoke(this, eventArgs);
+        return eventArgs;
     }
     #endregion
 

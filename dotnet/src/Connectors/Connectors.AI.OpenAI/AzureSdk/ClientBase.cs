@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Prompt;
+using ChatMessage = Azure.AI.OpenAI.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -153,6 +154,69 @@ public abstract class ClientBase
         }
     }
 
+    private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
+        string prompt,
+    AIRequestSettings? requestSettings,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
+
+        ValidateMaxTokens(textRequestSettings.MaxTokens);
+
+        var options = CreateCompletionsOptions(prompt, textRequestSettings);
+
+        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
+            () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        using StreamingCompletions streamingChatCompletions = response.Value;
+        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
+
+        int choiceIndex = 0;
+        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (string update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                // If the provided T is a string, return the completion as is
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)update;
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingContent interface
+                if (typeof(T) == typeof(StreamingTextContent) ||
+                    typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, responseMetadata);
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            }
+            choiceIndex++;
+        }
+    }
+
+    private static Dictionary<string, object> GetResponseMetadata(StreamingCompletions streamingChatCompletions)
+    {
+        return new Dictionary<string, object>()
+        {
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
+            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+        };
+    }
+
+    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletions streamingChatCompletions)
+    {
+        return new Dictionary<string, object>()
+        {
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Id)}", streamingChatCompletions.Id },
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.Created)}", streamingChatCompletions.Created },
+            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+        };
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -259,6 +323,55 @@ public abstract class ClientBase
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
             yield return new ChatStreamingResult(response.Value, choice);
+        }
+    }
+
+    private protected async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
+
+        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        if (response is null)
+        {
+            throw new SKException("Chat completions null response");
+        }
+
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
+
+        int choiceIndex = 0;
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (ChatMessage chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)chatMessage.Content;
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingResultChunk interface
+                if (typeof(T) == typeof(StreamingChatContent) ||
+                    typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex, responseMetadata);
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            }
+            choiceIndex++;
         }
     }
 

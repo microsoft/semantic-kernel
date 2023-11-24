@@ -122,7 +122,7 @@ public static class Example08_RetryHandler
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            var answer = await kernel.RunAsync(qaPlugin["Question"], question);
+            var answer = await kernel.InvokeAsync(qaPlugin["Question"], question);
             InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
         }
         catch (Exception ex)

@@ -448,7 +448,7 @@ internal class FlowExecutor : IFlowExecutor
         context.Set("agentScratchPad", scratchPad);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        var llmResponse = await this._systemKernel.RunAsync(function, context).ConfigureAwait(false);
+        var llmResponse = await this._systemKernel.InvokeAsync(function, context).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
         this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);

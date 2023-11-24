@@ -151,7 +151,7 @@ internal sealed class ChatRun
                 }
             }
 
-            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

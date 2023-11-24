@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -116,6 +117,25 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        string prompt,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
+
+        using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in this.GetChatStreamingUpdatesAsync<T>(response))
+        {
+            yield return result;
         }
     }
 
@@ -225,6 +245,66 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 yield return new ChatWithDataStreamingResult(chatWithDataResponse, choice);
             }
         }
+    }
+
+    private async IAsyncEnumerable<T> GetChatStreamingUpdatesAsync<T>(HttpResponseMessage response)
+    {
+        const string ServerEventPayloadPrefix = "data:";
+
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                continue;
+            }
+
+            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
+            {
+                body = body.Substring(ServerEventPayloadPrefix.Length);
+            }
+
+            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
+            var responseMetadata = this.GetResponseMetadata(response);
+            foreach (var choice in chatWithDataResponse.Choices)
+            {
+                // If the provided T is an specialized class of StreamingContent interface
+                if (typeof(T) == typeof(StreamingChatContent) ||
+                    typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index, responseMetadata);
+                    continue;
+                }
+
+                var result = new ChatWithDataStreamingResult(chatWithDataResponse, choice);
+                if (typeof(T) == typeof(string))
+                {
+                    await foreach (SemanticKernel.AI.ChatCompletion.ChatMessage message in result.GetStreamingChatMessageAsync().ConfigureAwait(false))
+                    {
+                        yield return (T)(object)message.Content;
+                    }
+                }
+
+                if (typeof(T) == typeof(ChatWithDataStreamingResult))
+                {
+                    yield return (T)(object)result;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            }
+        }
+    }
+
+    private Dictionary<string, object> GetResponseMetadata(HttpResponseMessage response)
+    {
+        return new Dictionary<string, object>()
+        {
+            { nameof(HttpResponseMessage), response },
+        };
     }
 
     private T DeserializeResponse<T>(string body)
