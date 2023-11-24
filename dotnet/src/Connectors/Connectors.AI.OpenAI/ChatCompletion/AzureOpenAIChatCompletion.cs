@@ -127,9 +127,9 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string input, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        var chatHistory = this.CreateNewChat(input);
+        var chatHistory = this.CreateNewChat(prompt);
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);
     }
 }

@@ -194,17 +194,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        StringBuilder fullCompletion = new();
         await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            fullCompletion.Append(genericChunk);
+            yield return genericChunk;
         }
 
-        // Update the result with the completion
-        context.Variables.Update(fullCompletion.ToString());
-
-        this.CallFunctionInvoked(kernel, context, null, renderedPrompt);
+        // Invoked is not supported for streaming
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 

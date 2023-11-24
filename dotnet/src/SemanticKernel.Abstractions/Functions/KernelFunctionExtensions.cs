@@ -24,10 +24,10 @@ public static class KernelFunctionExtensions
     public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
         this KernelFunction function,
         Kernel kernel,
-        SKContext context,
+        SKContext? context = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return function.InvokeStreamingAsync<StreamingContent>(kernel, context, requestSettings, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingContent>(kernel, context ?? kernel.CreateNewContext(), requestSettings, cancellationToken);
     }
 }

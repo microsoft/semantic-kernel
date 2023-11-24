@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -494,60 +493,4 @@ public static class KernelExtensions
     public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
         => kernel.RunStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
     #endregion
-
-    /// <summary>
-    /// Checks if the handler requested to cancel the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns>Streaming result of the function</returns>
-    private static bool IsCancelRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsCancellationRequested)
-        {
-            logger.LogInformation("Execution was cancelled for pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to skip the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns>Streaming result of the function</returns>
-    private static bool IsSkipRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsSkipRequested)
-        {
-            logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to repeat the function execution.
-    /// </summary>
-    /// <param name="result">Function result</param>
-    /// <param name="function">Target function</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns>Streaming result of the function</returns>
-    private static bool IsRepeatRequested(FunctionResult result, KernelFunction function, int pipelineStepCount, ILogger logger)
-    {
-        if (result.IsRepeatRequested)
-        {
-            logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-        return false;
-    }
 }

@@ -155,6 +155,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Invoke pre hook, and stop if skipping requested.
+        var invokingEventArgs = this.CallFunctionInvoking(kernel, context);
+        if (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested)
+        {
+            yield break;
+        }
+
         var functionResult = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
         if (functionResult.Value is T)
         {
@@ -162,7 +169,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             yield break;
         }
 
-        if (typeof(T).IsSubclassOf(typeof(StreamingContent)) || typeof(T) == typeof(StreamingContent))
+        // Supports the following provided T types for Method streaming
+        if (typeof(T) == typeof(StreamingContent) ||
+            typeof(T) == typeof(StreamingMethodContent))
         {
             if (functionResult.Value is not null)
             {
@@ -172,6 +181,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(T)}");
+
+        // Invoked is not supported for streaming yet
+        // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
     private FunctionInvokingEventArgs CallFunctionInvoking(Kernel kernel, SKContext context)

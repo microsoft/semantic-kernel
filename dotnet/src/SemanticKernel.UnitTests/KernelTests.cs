@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -593,21 +590,5 @@ public class KernelTests
 
             return context;
         }
-    }
-
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
-    {
-        var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
-
-        var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-
-        return (mockTextResult, mockTextCompletion);
-    }
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
     }
 }

@@ -142,15 +142,16 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        logger.LogInformation("Function invoking streaming.");
+        logger.LogInformation("Function streaming invoking.");
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken))
         {
             yield return genericChunk;
         }
 
-        // No logging is done here since there is no guarantee that this line will be hit
-        // (Only if the caller consumes the whole enumeration)
+        // Completion logging is not supported for streaming functions
     }
 
     /// <summary>
