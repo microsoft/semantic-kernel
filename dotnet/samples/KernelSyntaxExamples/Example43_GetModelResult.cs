@@ -42,8 +42,8 @@ public static class Example43_GetModelResult
         Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
-        // Using the Kernel RunAsync
-        var result = await kernel.RunAsync(myFunction, "sorry I forgot your birthday");
+        // Using the Kernel InvokeAsync
+        var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
         var modelResults = result.GetModelResults() ?? Enumerable.Empty<ModelResult>();
 
         Console.WriteLine(result.GetValue<string>());
@@ -71,7 +71,7 @@ public static class Example43_GetModelResult
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            await kernel.RunAsync(errorFunction, "sorry I forgot your birthday");
+            await kernel.InvokeAsync(errorFunction, "sorry I forgot your birthday");
         }
         catch (Exception ex)
         {

@@ -356,14 +356,14 @@ public static class KernelExtensions
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.RunAsync((KernelFunction)SKFunctionFactory.CreateFromPrompt(
+        kernel.InvokeAsync((KernelFunction)SKFunctionFactory.CreateFromPrompt(
             promptTemplate,
             requestSettings,
             functionName,
             description));
     #endregion
 
-    #region RunAsync
+    #region InvokeAsync
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
@@ -371,14 +371,14 @@ public static class KernelExtensions
     /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> RunAsync(
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         KernelFunction function,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return kernel.RunAsync(function, new ContextVariables(), cancellationToken);
+        return kernel.InvokeAsync(function, new ContextVariables(), cancellationToken);
     }
 
     /// <summary>
@@ -389,7 +389,7 @@ public static class KernelExtensions
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> RunAsync(
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         KernelFunction function,
         string input,
@@ -400,7 +400,7 @@ public static class KernelExtensions
         var contextVariables = new ContextVariables();
         contextVariables.Update(input);
 
-        return kernel.RunAsync(function, contextVariables, cancellationToken);
+        return kernel.InvokeAsync(function, contextVariables, cancellationToken);
     }
 
     /// <summary>
@@ -411,7 +411,7 @@ public static class KernelExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> RunAsync(
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         KernelFunction function,
         ContextVariables variables,
@@ -433,7 +433,7 @@ public static class KernelExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function run.</returns>
-    public static Task<FunctionResult> RunAsync(
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         string pluginName,
         string functionName,
@@ -444,7 +444,7 @@ public static class KernelExtensions
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.RunAsync(function, variables ?? new(), cancellationToken);
+        return kernel.InvokeAsync(function, variables ?? new(), cancellationToken);
     }
     #endregion
 

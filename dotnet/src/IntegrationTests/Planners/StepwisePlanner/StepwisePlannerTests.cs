@@ -116,7 +116,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
+        var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.InvokeAsync(plan));
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
@@ -132,7 +132,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
-        var functionResult = await kernel.RunAsync(plan);
+        var functionResult = await kernel.InvokeAsync(plan);
         var result = functionResult.GetValue<string>();
 
         // Assert - should contain results, for now just verify it didn't fail

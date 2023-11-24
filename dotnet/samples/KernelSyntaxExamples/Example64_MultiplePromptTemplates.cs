@@ -70,7 +70,7 @@ public static class Example64_MultiplePromptTemplates
             { "name", "Bob" }
         };
 
-        var result = await kernel.RunAsync(function, variables);
+        var result = await kernel.InvokeAsync(function, variables);
         Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -372,7 +372,7 @@ public sealed class Plan : KernelFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var result = await kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             var resultValue = result.Context.Variables.Input.Trim();
 

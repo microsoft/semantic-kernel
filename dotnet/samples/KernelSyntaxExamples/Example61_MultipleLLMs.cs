@@ -105,7 +105,7 @@ public static class Example61_MultipleLLMs
             promptTemplateConfig,
             "HelloAI");
 
-        var result = await kernel.RunAsync(function);
+        var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());
     }
 }
