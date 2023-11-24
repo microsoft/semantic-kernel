@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Interface for prompt template.

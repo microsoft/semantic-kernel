@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 /// <summary>

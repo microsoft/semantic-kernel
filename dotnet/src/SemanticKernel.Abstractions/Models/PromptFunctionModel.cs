@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Models;
 
