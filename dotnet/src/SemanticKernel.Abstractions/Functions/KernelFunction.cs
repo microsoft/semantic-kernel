@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -97,9 +98,9 @@ public abstract class KernelFunction
         {
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
 
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogTrace("Function succeeded. Result: {Result}", result.GetValue<object>()); // Sensitive data, logging as trace, disabled by default
+                logger.LogTrace("Function succeeded.");
             }
 
             return result;
@@ -123,6 +124,48 @@ public abstract class KernelFunction
             }
         }
     }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The kernel</param>
+    /// <param name="context">SK context</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming content chunks</returns>
+    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+
+        logger.LogInformation("Function streaming invoking.");
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, context, requestSettings, cancellationToken))
+        {
+            yield return genericChunk;
+        }
+
+        // Completion logging is not supported for streaming functions
+    }
+
+    /// <summary>
+    /// Invoke as streaming the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="context">SK context</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.

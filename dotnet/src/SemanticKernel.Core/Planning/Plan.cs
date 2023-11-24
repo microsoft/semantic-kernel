@@ -330,6 +330,17 @@ public sealed class Plan : KernelFunction
         return result;
     }
 
+    /// <inheritdoc/>
+    protected override IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+        Kernel kernel,
+        SKContext context,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Implementation will be added in future streaming feature iteration
+        throw new NotSupportedException("Streaming currently is not supported for plans");
+    }
+
     #endregion ISKFunction implementation
 
     /// <summary>
@@ -425,8 +436,9 @@ public sealed class Plan : KernelFunction
         return eventArgs;
     }
 
-    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult result)
+    private FunctionInvokedEventArgs CallFunctionInvoked(Kernel kernel, SKContext context, FunctionResult? result = null)
     {
+        result ??= new FunctionResult(this.Name, context);
         var eventArgs = new FunctionInvokedEventArgs(this.GetMetadata(), result);
         if (kernel.OnFunctionInvoked(eventArgs))
         {
