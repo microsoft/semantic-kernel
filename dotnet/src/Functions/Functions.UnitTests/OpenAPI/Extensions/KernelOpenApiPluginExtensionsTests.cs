@@ -103,7 +103,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -133,7 +133,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -170,7 +170,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -208,7 +208,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var result = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
+        var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         //Assert
         Assert.NotNull(result);

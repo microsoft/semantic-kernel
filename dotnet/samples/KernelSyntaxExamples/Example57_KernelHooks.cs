@@ -84,7 +84,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -124,7 +124,7 @@ public static class Example57_KernelHooks
         kernel.PromptRendered += MyRenderedHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -158,7 +158,7 @@ public static class Example57_KernelHooks
 
         kernel.FunctionInvoked += MyChangeDataHandler;
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
 
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
@@ -195,7 +195,7 @@ public static class Example57_KernelHooks
             functionInvokedCount++;
         };
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
@@ -229,7 +229,7 @@ public static class Example57_KernelHooks
             e.Cancel();
         };
 
-        var result = await kernel.RunAsync(secondFunction);
+        var result = await kernel.InvokeAsync(secondFunction);
         Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }
