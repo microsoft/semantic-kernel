@@ -17,9 +17,9 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
-    /// <param name="metadata">Function metadata</param>
+    /// <param name="function">Kernel function</param>
     /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(SKFunctionMetadata metadata, FunctionResult result) : base(metadata, result.Context)
+    public FunctionInvokedEventArgs(KernelFunction function, FunctionResult result) : base(function, result.Context)
     {
         this.Metadata = result.Metadata;
     }

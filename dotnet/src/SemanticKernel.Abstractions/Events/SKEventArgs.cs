@@ -14,22 +14,22 @@ public abstract class SKEventArgs : EventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="SKEventArgs"/> class.
     /// </summary>
-    /// <param name="metadata">Function metadata</param>
+    /// <param name="function">Kernel function</param>
     /// <param name="context">Context related to the event</param>
-    internal SKEventArgs(SKFunctionMetadata metadata, SKContext context)
+    internal SKEventArgs(KernelFunction function, SKContext context)
     {
+        Verify.NotNull(function);
         Verify.NotNull(context);
-        Verify.NotNull(metadata);
 
-        this.FunctionMetadata = metadata;
+        this.Function = function;
         this.SKContext = context;
         this.Metadata = new();
     }
 
     /// <summary>
-    /// Function metadata
+    /// Kernel function
     /// </summary>
-    public SKFunctionMetadata FunctionMetadata { get; }
+    public KernelFunction Function { get; }
 
     /// <summary>
     /// Context related to the event.

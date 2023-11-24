@@ -17,9 +17,9 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
-    /// <param name="metadata">Function metadata</param>
+    /// <param name="function">Kernel function</param>
     /// <param name="context">Context related to the event</param>
-    public FunctionInvokingEventArgs(SKFunctionMetadata metadata, SKContext context) : base(metadata, context)
+    public FunctionInvokingEventArgs(KernelFunction function, SKContext context) : base(function, context)
     {
     }
 
