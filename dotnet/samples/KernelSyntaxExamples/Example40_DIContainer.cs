@@ -79,7 +79,6 @@ public static class Example40_DIContainer
         var collection = new ServiceCollection();
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
         collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
-        collection.AddTransient<ISKPluginCollection, SKPluginCollection>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
@@ -122,7 +121,7 @@ public static class Example40_DIContainer
 
             var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await this._kernel.RunAsync(ask, summarizePlugin["Summarize"]);
+            var result = await this._kernel.RunAsync(summarizePlugin["Summarize"], ask);
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }

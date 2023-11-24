@@ -13,9 +13,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
-#pragma warning restore IDE0130
 
 public sealed class HandlebarsPlannerTests : IDisposable
 {
@@ -39,7 +37,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
@@ -57,7 +55,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [RetryTheory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin")]
+    [InlineData("Outline a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange

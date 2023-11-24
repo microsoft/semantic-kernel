@@ -63,12 +63,12 @@ public class SKPluginCollectionTests
 
         SKPlugin plugin1 = new("name1", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function1"),
-            SKFunction.FromMethod(() => { }, "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
 
         c.Add(plugin1);
@@ -141,29 +141,29 @@ public class SKPluginCollectionTests
         {
             new SKPlugin("plugin1", new[]
             {
-                SKFunction.FromMethod(() => { }, "Function1"),
-                SKFunction.FromMethod(() => { }, "Function2"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
             }),
             new SKPlugin("plugin2", new[]
             {
-                SKFunction.FromMethod(() => { }, "Function2"),
-                SKFunction.FromMethod(() => { }, "Function3"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
+                SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
             })
         };
 
-        IList<SKFunctionMetadata> views = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
+        IList<SKFunctionMetadata> metadata = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
 
-        Assert.Equal("plugin1", views[0].PluginName);
-        Assert.Equal("Function1", views[0].Name);
+        Assert.Equal("plugin1", metadata[0].PluginName);
+        Assert.Equal("Function1", metadata[0].Name);
 
-        Assert.Equal("plugin1", views[1].PluginName);
-        Assert.Equal("Function2", views[1].Name);
+        Assert.Equal("plugin1", metadata[1].PluginName);
+        Assert.Equal("Function2", metadata[1].Name);
 
-        Assert.Equal("plugin2", views[2].PluginName);
-        Assert.Equal("Function2", views[2].Name);
+        Assert.Equal("plugin2", metadata[2].PluginName);
+        Assert.Equal("Function2", metadata[2].Name);
 
-        Assert.Equal("plugin2", views[3].PluginName);
-        Assert.Equal("Function3", views[3].Name);
+        Assert.Equal("plugin2", metadata[3].PluginName);
+        Assert.Equal("Function3", metadata[3].Name);
     }
 
     [Fact]
@@ -171,12 +171,12 @@ public class SKPluginCollectionTests
     {
         SKPlugin plugin1 = new("name1", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function1"),
-            SKFunction.FromMethod(() => { }, "Function2"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
         SKPlugin plugin2 = new("name2", new[]
         {
-            SKFunction.FromMethod(() => { }, "Function3"),
+            SKFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
 
         var c = new SKPluginCollection(new[] { plugin1, plugin2 });
@@ -192,7 +192,7 @@ public class SKPluginCollectionTests
         Assert.Same(plugin1["Function2"], c.GetFunction(null, "Function2"));
         Assert.Same(plugin2["Function3"], c.GetFunction(null, "Function3"));
 
-        Assert.True(c.TryGetFunction("name1", "Function1", out ISKFunction? func));
+        Assert.True(c.TryGetFunction("name1", "Function1", out KernelFunction? func));
         Assert.Same(plugin1["Function1"], func);
 
         Assert.False(c.TryGetFunction("name2", "Function1", out func));

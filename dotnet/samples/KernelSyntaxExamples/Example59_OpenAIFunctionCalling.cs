@@ -90,9 +90,9 @@ public static class Example59_OpenAIFunctionCalling
         OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
-            // If the function returned by OpenAI is an SKFunction registered with the kernel,
+            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
                 var result = (await kernel.RunAsync(func, context)).GetValue<object>();
 
@@ -185,13 +185,13 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
                 }
 
-                // If the function returned by OpenAI is an SKFunction registered with the kernel,
+                // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
                 // you can invoke it using the following code.
-                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+                if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
                 {
-                    var kernelResult = await kernel.RunAsync(func, context);
+                    var functionResult = await kernel.RunAsync(func, context);
 
-                    var result = kernelResult.GetValue<object>();
+                    var result = functionResult.GetValue<object>();
 
                     string? resultMessage = null;
                     if (result is RestApiOperationResponse apiResponse)

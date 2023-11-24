@@ -19,9 +19,9 @@ public class ConversationSummaryPlugin
     /// </summary>
     private const int MaxTokens = 1024;
 
-    private readonly ISKFunction _summarizeConversationFunction;
-    private readonly ISKFunction _conversationActionItemsFunction;
-    private readonly ISKFunction _conversationTopicsFunction;
+    private readonly KernelFunction _summarizeConversationFunction;
+    private readonly KernelFunction _conversationActionItemsFunction;
+    private readonly KernelFunction _conversationTopicsFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
@@ -38,17 +38,17 @@ public class ConversationSummaryPlugin
             }
         };
 
-        this._summarizeConversationFunction = SKFunction.FromPrompt(
+        this._summarizeConversationFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             requestSettings: settings);
 
-        this._conversationActionItemsFunction = SKFunction.FromPrompt(
+        this._conversationActionItemsFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             requestSettings: settings);
 
-        this._conversationTopicsFunction = SKFunction.FromPrompt(
+        this._conversationTopicsFunction = SKFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             requestSettings: settings);
@@ -93,7 +93,7 @@ public class ConversationSummaryPlugin
         SKContext context) =>
         ProcessAsync(this._conversationTopicsFunction, input, kernel, context);
 
-    private static async Task<string> ProcessAsync(ISKFunction func, string input, Kernel kernel, SKContext context)
+    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);

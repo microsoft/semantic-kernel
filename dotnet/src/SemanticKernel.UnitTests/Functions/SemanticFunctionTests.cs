@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,33 +147,27 @@ public class SemanticFunctionTests
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
+    [Fact]
+    public async Task RunAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
         {
             invoked++;
         };
-        List<ISKFunction> functions = new();
-        for (int i = 0; i < pipelineCount; i++)
-        {
-            functions.Add(semanticFunction);
-        }
+        List<KernelFunction> functions = new();
 
         // Act
-        var result = await sut.RunAsync(functions.ToArray());
+        var result = await sut.RunAsync(function);
 
         // Assert
-        Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        Assert.Equal(1, invoked);
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -183,7 +176,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -193,11 +186,11 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(input, semanticFunction);
+        var result = await sut.RunAsync(function, input);
 
         // Assert
         Assert.True(invoked);
-        Assert.Null(result.GetValue<string>());
+        Assert.NotNull(result);
     }
 
     [Fact]
@@ -206,7 +199,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -216,7 +209,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(semanticFunction, semanticFunction);
+        var result = await sut.RunAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
@@ -229,7 +222,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -243,7 +236,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(semanticFunction);
+        var result = await sut.RunAsync(function);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -255,8 +248,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction1 = SKFunction.FromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
-        var semanticFunction2 = SKFunction.FromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        var function = SKFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -264,7 +256,7 @@ public class SemanticFunctionTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "SkipMe")
+            if (e.FunctionMetadata.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -272,30 +264,26 @@ public class SemanticFunctionTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 
         // Act
-        var result = await sut.RunAsync(
-            semanticFunction1,
-            semanticFunction2);
+        var result = await sut.RunAsync(function);
 
         // Assert
-        Assert.Equal(2, invoking);
-        Assert.Equal(1, invoked);
-        Assert.Equal("DontSkipMe", invokedFunction);
+        Assert.Equal(1, invoking);
+        Assert.Equal(0, invoked);
+        Assert.Equal("", invokedFunction);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
+    [Fact]
+    public async Task RunAsyncHandlesPostInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -304,18 +292,12 @@ public class SemanticFunctionTests
             invoked++;
         };
 
-        List<ISKFunction> functions = new();
-        for (int i = 0; i < pipelineCount; i++)
-        {
-            functions.Add(semanticFunction);
-        }
-
         // Act
-        var result = await sut.RunAsync(functions.ToArray());
+        var result = await sut.RunAsync(function);
 
         // Assert
-        Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        Assert.Equal(1, invoked);
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -324,7 +306,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var function = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -335,7 +317,7 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, semanticFunction);
+        await sut.RunAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -347,7 +329,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var function = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -358,37 +340,10 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, semanticFunction);
+        await sut.RunAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
-    }
-
-    [Fact]
-    public async Task ItReturnsFunctionResultsCorrectlyAsync()
-    {
-        // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
-        var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-
-        var function1 = kernel.CreateFunctionFromMethod(() => "Result1", "Function1");
-        var function2 = kernel.CreateFunctionFromMethod(() => "Result2", "Function2");
-        var function3 = kernel.CreateFunctionFromPrompt("Write a simple phrase about UnitTests", functionName: "Function3");
-
-        // Act
-        var kernelResult = await kernel.RunAsync(function1, function2, function3);
-
-        // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal("Result3", kernelResult.GetValue<string>());
-
-        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1");
-        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2");
-        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3");
-
-        Assert.Equal("Result1", functionResult1.GetValue<string>());
-        Assert.Equal("Result2", functionResult2.GetValue<string>());
-        Assert.Equal("Result3", functionResult3.GetValue<string>());
     }
 
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)

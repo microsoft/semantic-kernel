@@ -249,17 +249,17 @@ public static class KernelOpenApiPluginExtensions
     }
 
     /// <summary>
-    /// Registers SKFunction for a REST API operation.
+    /// Registers SKFunctionFactory for a REST API operation.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Function execution parameters.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
+    /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An instance of <see cref="SKFunctionFromPrompt"/> class.</returns>
-    private static ISKFunction CreateRestApiFunction(
+    /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
+    private static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
@@ -322,17 +322,16 @@ public static class KernelOpenApiPluginExtensions
         var parameters = restOperationParameters
             .Select(p => new SKParameterMetadata(p.AlternativeName ?? p.Name)
             {
-                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
+                Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
-                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterJsonType(p.Type),
                 IsRequired = p.IsRequired,
-                Schema = p.Schema,
+                Schema = p.Schema ?? (p.Type is null ? null : SKJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
-        return SKFunction.FromMethod(
+        return SKFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             returnParameter: returnParameter,

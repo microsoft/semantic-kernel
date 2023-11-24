@@ -61,13 +61,15 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
-        Assert.Equal(ParameterJsonType.String, secretNameParameter.Type);
+        Assert.NotNull(secretNameParameter.Schema);
+        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-        Assert.Equal("string", apiVersionParameter?.Type?.ToString());
+        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
-        Assert.Equal(ParameterJsonType.Object, payloadParameter.Type);
+        Assert.NotNull(payloadParameter.Schema);
+        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
 
     [Theory]
@@ -176,52 +178,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
-    {
-        //Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
-
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-
-        var executionParameters = new OpenApiFunctionExecutionParameters
-        {
-            HttpClient = httpClient
-        };
-
-        var fakePlugin = new FakePlugin();
-
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportPluginFromObject(fakePlugin, "fakePlugin2");
-
-        var kernel = KernelBuilder.Create();
-
-        var arguments = new ContextVariables
-        {
-            { "secret-name", "fake-secret-name" },
-            { "api-version", "fake-api-version" }
-        };
-
-        //Act
-        var res = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
-
-        //Assert
-        Assert.NotNull(res);
-
-        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
-        Assert.NotNull(openApiPluginResult);
-
-        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
-
-        //Check original response
-        Assert.NotNull(result);
-        Assert.Equal("fake-content", result.Content);
-
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
-        Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
-    }
-
-    [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
         //Arrange
@@ -252,19 +208,16 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var res = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+        var result = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         //Assert
-        Assert.NotNull(res);
+        Assert.NotNull(result);
 
-        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
-        Assert.NotNull(openApiPluginResult);
-
-        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
+        var response = result.GetValue<RestApiOperationResponse>();
 
         //Check original response
-        Assert.NotNull(result);
-        Assert.Equal("fake-content", result.Content);
+        Assert.NotNull(response);
+        Assert.Equal("fake-content", response.Content);
     }
 
     public void Dispose()

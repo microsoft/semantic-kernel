@@ -9,6 +9,8 @@ namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class SendEmailPlugin
 {
+    private static readonly JsonSerializerOptions s_writeIndented = new() { WriteIndented = true };
+
     [SKFunction]
     [Description("Send email")]
     [SKName("SendEmail")]
@@ -24,7 +26,7 @@ public sealed class SendEmailPlugin
         };
 
         // for demo purpose only
-        string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
+        string emailPayload = JsonSerializer.Serialize(contract, s_writeIndented);
         context.Variables["email"] = emailPayload;
 
         return "Here's the API contract I will post to mail server: " + emailPayload;

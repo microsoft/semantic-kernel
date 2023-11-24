@@ -55,17 +55,19 @@ public sealed class SKFunctionMetadataExtensionsTests
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = SKJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
-    [Fact]
-    public void ItCanConvertToOpenAIFunctionWithParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ItCanConvertToOpenAIFunctionWithParameter(bool withSchema)
     {
         // Arrange
         var param1 = new SKParameterMetadata("param1")
         {
             Description = "This is param1",
             DefaultValue = "1",
-            Type = new ParameterJsonType("int"),
             ParameterType = typeof(int),
-            IsRequired = false
+            IsRequired = false,
+            Schema = withSchema ? SKJsonSchema.Parse("{\"type\":\"integer\"}") : null,
         };
 
         var sut = new SKFunctionMetadata("foo")
@@ -81,7 +83,6 @@ public sealed class SKFunctionMetadataExtensionsTests
         var outputParam = result.Parameters.First();
 
         // Assert
-        Assert.Equal("int", outputParam.Type);
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal("This is param1 (default value: 1)", outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
@@ -112,7 +113,6 @@ public sealed class SKFunctionMetadataExtensionsTests
         var outputParam = result.Parameters.First();
 
         // Assert
-        Assert.Equal("string", outputParam.Type);
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
@@ -141,7 +141,6 @@ public sealed class SKFunctionMetadataExtensionsTests
         var outputParam = result.Parameters.First();
 
         // Assert
-        Assert.Equal("string", outputParam.Type);
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);

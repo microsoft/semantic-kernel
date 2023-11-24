@@ -119,12 +119,12 @@ public sealed class FunctionCallingStepwisePlanner
             }
 
             // Look up function in kernel
-            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out ISKFunction? pluginFunction, out ContextVariables? funcContext))
+            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? pluginFunction, out ContextVariables? funcContext))
             {
                 try
                 {
                     // Execute function and add to result to chat history
-                    var result = (await this._kernel.RunAsync(funcContext, cancellationToken, pluginFunction).ConfigureAwait(false)).GetValue<object>();
+                    var result = (await this._kernel.RunAsync(pluginFunction, funcContext, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                     chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
                 }
                 catch (SKException)

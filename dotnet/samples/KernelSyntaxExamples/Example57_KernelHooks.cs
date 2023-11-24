@@ -39,10 +39,6 @@ public static class Example57_KernelHooks
         await BeforeInvokeCancellationAsync();
 
         await AfterInvokeCancellationAsync();
-
-        await SkippingFunctionsAsync();
-
-        await RepeatFunctionsAsync();
     }
 
     private static async Task GetUsageAsync()
@@ -65,19 +61,19 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -88,7 +84,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(Input, excuseFunction);
+        var result = await kernel.RunAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -112,7 +108,7 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
 
             if (e.TryGetRenderedPrompt(out var prompt))
             {
@@ -127,7 +123,7 @@ public static class Example57_KernelHooks
 
         void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Triggered");
             // Will be false for non semantic functions
             if (e.TryGetRenderedPrompt(out var prompt))
             {
@@ -140,7 +136,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoked += MyPostHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(Input, excuseFunction);
+        var result = await kernel.RunAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -200,7 +196,7 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -248,86 +244,5 @@ public static class Example57_KernelHooks
         var result = await kernel.RunAsync(secondFunction);
         Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
-    }
-
-    private static async Task SkippingFunctionsAsync()
-    {
-        Console.WriteLine("\n======== Skipping a Function in the Pipeline ========\n");
-
-        Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
-
-        var skipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Skipping",
-            functionName: "SkipMe");
-
-        var dontSkipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Handlers",
-            functionName: "DontSkipMe");
-
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            if (e.FunctionView.Name == "SkipMe")
-            {
-                e.Skip();
-                Console.WriteLine($"Function {e.FunctionView.Name} will be skipped");
-                return;
-            }
-
-            Console.WriteLine($"Function {e.FunctionView.Name} will not be skipped");
-        };
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
-        };
-
-        var result = await kernel.RunAsync(
-            skipMeFunction,
-            dontSkipMeFunction);
-
-        Console.WriteLine($"Final result: {result.GetValue<string>()}");
-    }
-
-    private static async Task RepeatFunctionsAsync()
-    {
-        Console.WriteLine("\n======== Repeating a Function in the Pipeline ========");
-
-        Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
-
-        var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
-
-        var repeatMeFunction = kernel.CreateFunctionFromPrompt("Write a sentence about {{$input}}",
-            functionName: "RepeatMe");
-
-        var repeatTimes = 0;
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            Console.WriteLine($"\nFunction {e.FunctionView.Name} executed:");
-            Console.WriteLine($"Result: {e.SKContext.Variables.Input}");
-
-            if (repeatTimes < 3)
-            {
-                // Flag the Kernel to repeat the function
-                e.Repeat();
-
-                // Redefine the input variable to repeat the function
-                e.SKContext.Variables.Update(repeatSubjects.Dequeue());
-
-                repeatTimes++;
-                Console.WriteLine("Repeat requested!");
-
-                return;
-            }
-        };
-
-        await kernel.RunAsync("Repetition", repeatMeFunction);
     }
 }

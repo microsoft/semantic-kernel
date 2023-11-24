@@ -10,7 +10,12 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http;
 
 internal static class HttpRequest
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { JsonOptionsCache.ReadOnlyMemoryConverter },
+    };
 
     public static HttpRequestMessage CreateGetRequest(string url, object? payload = null)
     {
@@ -42,16 +47,5 @@ internal static class HttpRequest
 
         string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonSerializerOptions);
         return new(strPayload, Encoding.UTF8, "application/json");
-    }
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }
