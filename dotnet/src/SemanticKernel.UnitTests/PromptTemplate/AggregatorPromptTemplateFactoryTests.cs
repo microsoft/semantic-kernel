@@ -6,10 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class AggregatorPromptTemplateFactoryTests
 {
@@ -51,7 +50,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
                 return new MyPromptTemplate1(templateString, promptTemplateConfig);
             }
@@ -83,7 +82,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
                 return new MyPromptTemplate2(templateString, promptTemplateConfig);
             }

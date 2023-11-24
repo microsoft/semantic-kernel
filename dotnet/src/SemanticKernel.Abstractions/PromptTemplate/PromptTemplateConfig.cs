@@ -9,7 +9,9 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Prompt template configuration.
