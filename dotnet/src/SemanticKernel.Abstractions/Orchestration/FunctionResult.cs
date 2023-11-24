@@ -47,21 +47,29 @@ public sealed class FunctionResult
     internal object? Value { get; private set; } = null;
 
     /// <summary>
+    /// Instance of <see cref="ContextVariables"/> to pass in function pipeline.
+    /// </summary>
+    internal ContextVariables Variables { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
-    public FunctionResult(string functionName)
+    /// <param name="variables">Instance of <see cref="ContextVariables"/> to pass in function pipeline.</param>
+    public FunctionResult(string functionName, ContextVariables variables)
     {
         this.FunctionName = functionName;
+        this.Variables = variables;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
+    /// <param name="variables">Instance of <see cref="ContextVariables"/> to pass in function pipeline.</param>
     /// <param name="value">Function result object.</param>
-    public FunctionResult(string functionName, object? value)
-        : this(functionName)
+    public FunctionResult(string functionName, ContextVariables variables, object? value)
+        : this(functionName, variables)
     {
         this.Value = value;
     }

@@ -103,7 +103,7 @@ public abstract class KernelFunction
             {
                 logger.LogTrace("Function canceled or skipped prior to invocation.");
 
-                return new FunctionResult(this.Name)
+                return new FunctionResult(this.Name, variables)
                 {
                     IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
                     IsSkipRequested = invokingEventArgs.IsSkipRequested
@@ -235,7 +235,7 @@ public abstract class KernelFunction
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.Variables.Input)
+            result = new FunctionResult(this.Name, eventArgs.Variables, eventArgs.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata

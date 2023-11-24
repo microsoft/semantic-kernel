@@ -270,7 +270,7 @@ public sealed class Plan : KernelFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(this.Name);
+        var result = new FunctionResult(this.Name, variables);
 
         if (this.Function is not null)
         {
@@ -285,7 +285,7 @@ public sealed class Plan : KernelFunction
             result = await this.Function
                 .InvokeAsync(kernel, functionVariables, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result, functionVariables);
+            this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
@@ -309,8 +309,8 @@ public sealed class Plan : KernelFunction
 
                 this.UpdateContextWithOutputs(variables);
 
-                result = new FunctionResult(this.Name, variables.Input);
-                this.UpdateFunctionResultWithOutputs(result, variables);
+                result = new FunctionResult(this.Name, variables, variables.Input);
+                this.UpdateFunctionResultWithOutputs(result);
             }
         }
 
@@ -373,10 +373,7 @@ public sealed class Plan : KernelFunction
             // Execute the step
             var result = await kernel.InvokeAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
-            // TODO: Revise this line later in the context of the complex type support initiative.
-            // Currently, this line has an issue where the ToString method uses CurrentCulture instead of the culture configured on the kernel.
-            // Consequently, it may produce unexpected results. For example, "24.68" might be returned on a machine with 'en-US' culture instead of "24,68"(right string for French culture) even though the 'fr-FR' culture is configured on the kernel.
-            var resultValue = result.ToString()?.Trim();
+            var resultValue = result.Variables.Input.Trim();
 
             #region Update State
 
@@ -399,7 +396,7 @@ public sealed class Plan : KernelFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (variables.TryGetValue(item, out string? val))
+                if (result.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -497,9 +494,8 @@ public sealed class Plan : KernelFunction
     /// Update the function result with the outputs from the current state.
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
-    /// <param name="variables">The context variables.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult, ContextVariables variables)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
     {
         if (functionResult is null)
         {
@@ -512,7 +508,7 @@ public sealed class Plan : KernelFunction
             {
                 functionResult.Metadata[output] = value;
             }
-            else if (variables.TryGetValue(output, out var val))
+            else if (functionResult.Variables.TryGetValue(output, out var val))
             {
                 functionResult.Metadata[output] = val;
             }

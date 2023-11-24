@@ -63,6 +63,6 @@ public sealed class HandlebarsPlan
     {
         string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, contextVariables, this._template, variables, cancellationToken);
         contextVariables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", results?.Trim());
+        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
     }
 }

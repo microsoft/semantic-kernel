@@ -146,7 +146,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
             if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
             {
-                return new FunctionResult(this.Name)
+                return new FunctionResult(this.Name, variables)
                 {
                     IsCancellationRequested = true
                 };
@@ -160,7 +160,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            var result = new FunctionResult(this.Name, completion);
+            var result = new FunctionResult(this.Name, variables, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);

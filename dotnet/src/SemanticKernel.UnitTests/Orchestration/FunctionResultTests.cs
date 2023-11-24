@@ -17,7 +17,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
+        FunctionResult target = new("functionName", new ContextVariables());
 
         // Act
         target.Metadata.Add(key, value);
@@ -32,7 +32,7 @@ public class FunctionResultTests
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
+        FunctionResult target = new("functionName", new ContextVariables());
 
         // Act,Assert
         Assert.False(target.TryGetMetadataValue<string>(key, out string result));
@@ -45,7 +45,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         int value = 42;
-        FunctionResult target = new("functionName");
+        FunctionResult target = new("functionName", new ContextVariables());
 
         // Act
         target.Metadata.Add(key, value);
@@ -60,7 +60,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", value);
+        FunctionResult target = new("functionName", new ContextVariables(), value);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -70,7 +70,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName");
+        FunctionResult target = new("functionName", new ContextVariables());
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -81,7 +81,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", value);
+        FunctionResult target = new("functionName", new ContextVariables(), value);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -111,7 +111,7 @@ public class FunctionResultTests
         string value = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName, value);
+        FunctionResult target = new(functionName, new ContextVariables(), value);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
@@ -123,7 +123,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", value);
+        FunctionResult target = new("functionName", new ContextVariables(), value);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());

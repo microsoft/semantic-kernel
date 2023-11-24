@@ -437,25 +437,25 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (returnType == typeof(void))
         {
-            return static (functionName, result, context, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(functionName));
+            return static (functionName, result, variables, _) =>
+                new ValueTask<FunctionResult>(new FunctionResult(functionName, variables));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (functionName, result, _, __) =>
+            return async static (functionName, result, variables, _) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName);
+                return new FunctionResult(functionName, variables);
             };
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (functionName, result, _, __) =>
+            return async static (functionName, result, variables, _) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName);
+                return new FunctionResult(functionName, variables);
             };
         }
 
@@ -467,7 +467,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = (string?)result;
                 variables.Update(resultString);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, resultString));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, resultString));
             };
         }
 
@@ -477,7 +477,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 variables.Update(resultString);
-                return new FunctionResult(functionName, resultString);
+                return new FunctionResult(functionName, variables, resultString);
             };
         }
 
@@ -487,7 +487,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
                 variables.Update(resultString);
-                return new FunctionResult(functionName, resultString);
+                return new FunctionResult(functionName, variables, resultString);
             };
         }
 
@@ -503,7 +503,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (functionName, result, variables, kernel) =>
             {
                 variables.Update(formatter(result, kernel.Culture));
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, result));
             };
         }
 
@@ -522,7 +522,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
                 variables.Update(taskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, taskResult);
+                return new FunctionResult(functionName, variables, taskResult);
             };
         }
 
@@ -541,7 +541,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
                 variables.Update(asTaskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, taskResult);
+                return new FunctionResult(functionName, variables, taskResult);
             };
         }
 
@@ -556,16 +556,16 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             if (getAsyncEnumeratorMethod is not null)
             {
-                return (functionName, result, context, _) =>
+                return (functionName, result, variables, _) =>
                 {
                     var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
                     if (asyncEnumerator is not null)
                     {
-                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, asyncEnumerator));
+                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, asyncEnumerator));
                     }
 
-                    return new ValueTask<FunctionResult>(new FunctionResult(functionName));
+                    return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables));
                 };
             }
         }
