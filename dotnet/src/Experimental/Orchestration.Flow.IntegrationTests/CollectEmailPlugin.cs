@@ -53,12 +53,12 @@ Do not expose the regex unless asked.
     public async Task<string> CollectEmailAsync(
         [SKName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
         string email,
-        SKContext context)
+        ContextVariables variables)
     {
         var chat = this._chat.CreateNewChat(SystemPrompt);
         chat.AddUserMessage(Goal);
 
-        ChatHistory? chatHistory = context.GetChatHistory();
+        ChatHistory? chatHistory = variables.GetChatHistory();
         if (chatHistory?.Any() ?? false)
         {
             chat.AddRange(chatHistory);
@@ -66,14 +66,14 @@ Do not expose the regex unless asked.
 
         if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
         {
-            context.Variables["email_address"] = email;
+            variables["email_address"] = email;
 
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
         }
 
         // invalid email, prompt user to provide a valid email
-        context.Variables["email_address"] = string.Empty;
-        context.PromptInput();
+        variables["email_address"] = string.Empty;
+        variables.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
     }
 

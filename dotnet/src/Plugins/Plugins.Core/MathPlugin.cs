@@ -28,7 +28,7 @@ public sealed class MathPlugin
         value + amount;
 
     /// <summary>
-    /// Returns the Sum of two SKContext numbers provided.
+    /// Returns the Sum of two ContextVariables numbers provided.
     /// </summary>
     /// <param name="value">Initial value from which to subtract the specified amount</param>
     /// <param name="amount">The amount to subtract as a string.</param>

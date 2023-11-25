@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 using Resources;
@@ -71,16 +72,17 @@ public static class Example30_ChatWithPrompts
 
         // We need a kernel context to store some information to pass to the prompts and the list
         // of available plugins needed to render prompt templates.
-        var context = kernel.CreateNewContext();
+        var variables = new ContextVariables
+        {
+            // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
+            ["selectedText"] = selectedText,
 
-        // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
-        context.Variables["selectedText"] = selectedText;
+            // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
+            ["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture),
 
-        // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
-        context.Variables["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
-
-        // This is the user message, store it in the variable used by 28-user-prompt.txt
-        context.Variables["userMessage"] = "extract locations as a bullet point list";
+            // This is the user message, store it in the variable used by 28-user-prompt.txt
+            ["userMessage"] = "extract locations as a bullet point list"
+        };
 
         // Instantiate the prompt template factory, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
@@ -89,12 +91,12 @@ public static class Example30_ChatWithPrompts
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context);
+        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context);
+        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers

@@ -35,7 +35,7 @@ public sealed class FlowOrchestratorConfig
     /// In most cases, the required variables are passed to ReAct engine to infer the next plugin and parameters to execute.
     /// However when the variable is too long, it will either be truncated or decrease the robustness of value passing.
     /// To mitigate that, the <see cref="ReActEngine"/> will avoid rendering the variables exceeding MaxVariableLength in the prompt.
-    /// And the variables should be accessed implicitly from SKContext instead of function parameters by the plugins.
+    /// And the variables should be accessed implicitly from ContextVariables instead of function parameters by the plugins.
     /// </remarks>
     public int MaxVariableLength { get; set; } = 400;
 

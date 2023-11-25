@@ -31,7 +31,7 @@ internal static class Example31_CustomPlanner
 
         // ContextQuery is part of the QAPlugin
         ISKPlugin qaPlugin = LoadQAPlugin(kernel);
-        SKContext context = CreateContextQueryContext(kernel);
+        var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
         kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
@@ -48,8 +48,8 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(qaPlugin["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(kernel, context);
+        variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
+        var result = await plan.InvokeAsync(kernel, variables);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -75,18 +75,20 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-    private static SKContext CreateContextQueryContext(Kernel kernel)
+    private static ContextVariables CreateContextQueryContextVariables()
     {
-        var context = kernel.CreateNewContext();
-        context.Variables.Set("firstname", "Jamal");
-        context.Variables.Set("lastname", "Williams");
-        context.Variables.Set("city", "Tacoma");
-        context.Variables.Set("state", "WA");
-        context.Variables.Set("country", "USA");
-        context.Variables.Set("collection", "contextQueryMemories");
-        context.Variables.Set("limit", "5");
-        context.Variables.Set("relevance", "0.3");
-        return context;
+        var variables = new ContextVariables
+        {
+            ["firstname"] = "Jamal",
+            ["lastname"] = "Williams",
+            ["city"] = "Tacoma",
+            ["state"] = "WA",
+            ["country"] = "USA",
+            ["collection"] = "contextQueryMemories",
+            ["limit"] = "5",
+            ["relevance"] = "0.3",
+        };
+        return variables;
     }
 
     private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
