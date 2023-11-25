@@ -1,17 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
-/// Base class for planner configs
+/// Planner config with semantic memory
 /// </summary>
 public abstract class PlannerConfigBase
 {
@@ -29,14 +25,6 @@ public abstract class PlannerConfigBase
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
     public HashSet<string> ExcludedFunctions { get; } = new();
-
-    /// <summary>
-    /// Semantic Memory configuration, used to enable function filtering during plan creation.
-    /// </summary>
-    /// <remarks>
-    /// This configuration will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
-    /// </remarks>
-    public SemanticMemoryConfig SemanticMemoryConfig { get; set; } = new();
 
     /// <summary>
     /// Callback to get the available functions for planning (optional).
@@ -57,4 +45,12 @@ public abstract class PlannerConfigBase
     /// which includes the tokens from the prompt and completion
     /// </summary>
     public int MaxTokens { get; set; }
+
+    /// <summary>
+    /// Semantic Memory configuration, used to enable function filtering during plan creation.
+    /// </summary>
+    /// <remarks>
+    /// This configuration will be ignored if GetAvailableFunctionsAsync is set.
+    /// </remarks>
+    public SemanticMemoryConfig SemanticMemoryConfig { get; set; } = new();
 }

@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Provides extension methods for the <see cref="IReadOnlySKPluginCollection"/> implementations for planners.
 /// </summary>
-public static class ReadOnlyPluginCollectionPlannerExtensions
+internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
 
@@ -28,7 +28,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <returns>A function callback that can be used to retrieve a function from the function provider.</returns>
-    public static Func<string, string, KernelFunction?> GetFunctionCallback(this IReadOnlySKPluginCollection plugins)
+    internal static Func<string, string, KernelFunction?> GetFunctionCallback(this IReadOnlySKPluginCollection plugins)
     {
         return (pluginName, functionName) =>
         {
@@ -46,7 +46,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
-    public static async Task<string> GetFunctionsManualAsync(
+    internal static async Task<string> GetFunctionsManualAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -68,7 +68,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
-    public static async Task<string> GetJsonSchemaFunctionsManualAsync(
+    internal static async Task<string> GetJsonSchemaFunctionsManualAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -99,7 +99,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IEnumerable<SKFunctionMetadata>> GetFunctionsAsync(
+    internal static async Task<IEnumerable<SKFunctionMetadata>> GetFunctionsAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery,
@@ -120,7 +120,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IEnumerable<SKFunctionMetadata>> GetAvailableFunctionsAsync(
+    internal static async Task<IEnumerable<SKFunctionMetadata>> GetAvailableFunctionsAsync(
         this IReadOnlySKPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -136,7 +136,7 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
 
         List<SKFunctionMetadata>? result = null;
         var semanticMemoryConfig = config.SemanticMemoryConfig;
-        if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig.Memory is NullMemory)
+        if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.

@@ -9,6 +9,7 @@
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/planning/PlanningUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -30,6 +31,5 @@
     <ProjectReference Include="..\..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
 </Project>

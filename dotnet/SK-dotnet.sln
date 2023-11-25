@@ -181,6 +181,29 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Markdown", "src\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars", "src\Planners\Planners.Handlebars\Planners.Handlebars.csproj", "{352DAE69-E31C-44E3-A35F-E0342A955869}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "planning", "planning", "{A7DAB812-81CF-4931-B38C-468A3261C4C8}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\planning\PlannerConfigBase.cs = src\InternalUtilities\planning\PlannerConfigBase.cs
+		src\InternalUtilities\planning\PlanningUtilities.props = src\InternalUtilities\planning\PlanningUtilities.props
+		src\InternalUtilities\planning\SemanticMemoryConfig.cs = src\InternalUtilities\planning\SemanticMemoryConfig.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs = src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs
+		src\InternalUtilities\planning\Extensions\SKFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Extensions\SKFunctionMetadataExtensions.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281F6-9C31-4641-98AE-F1D2844DE9F0}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\planning\Schema\JsonSchemaFunctionContent.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionContent.cs
+		src\InternalUtilities\planning\Schema\JsonSchemaFunctionParameters.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionParameters.cs
+		src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs
+		src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs
+		src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs
+		src\InternalUtilities\planning\Schema\SKFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Schema\SKFunctionMetadataExtensions.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -534,6 +557,9 @@ Global
 		{4AD4E731-16E7-4A0E-B403-6C96459F989B} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{E576E260-4030-4C4C-B207-CA3B684E9669} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{352DAE69-E31C-44E3-A35F-E0342A955869} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
+		{A7DAB812-81CF-4931-B38C-468A3261C4C8} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
+		{873281F6-9C31-4641-98AE-F1D2844DE9F0} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

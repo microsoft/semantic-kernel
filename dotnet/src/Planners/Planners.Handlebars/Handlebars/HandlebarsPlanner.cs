@@ -52,10 +52,8 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        return PlannerInstrumentation.CreatePlanAsync(
-            createPlanAsync: static (HandlebarsPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
-            planToString: static (HandlebarsPlan plan) => plan.ToString(),
-            this, goal, this._logger, cancellationToken);
+        // TODO (@teresaqhoang): Add instrumentation without depending on planners.core
+        return this.CreatePlanCoreAsync(goal, cancellationToken);
     }
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken = default)
