@@ -159,36 +159,6 @@ public sealed class PlanSerializationTests
     }
 
     [Fact]
-    public void CanSerializePlanWithStepsAndFunction()
-    {
-        // Arrange
-        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal);
-
-        // Arrange
-        var function1 = SKFunctionFactory.CreateFromMethod(() => { }, "function1");
-
-        var function2 = SKFunctionFactory.CreateFromMethod(() => { }, "function2");
-
-        plan.AddSteps(new Plan(function1), function2);
-
-        // Act
-        var serializedPlan = plan.ToJson();
-
-        // Assert
-        Assert.NotNull(serializedPlan);
-        Assert.NotEmpty(serializedPlan);
-        Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
-
-        var deserializedPlan = Plan.FromJson(serializedPlan);
-
-        Assert.NotNull(deserializedPlan);
-        Assert.Equal(2, deserializedPlan.Steps.Count);
-        Assert.Equal("function1", deserializedPlan.Steps[0].Name);
-        Assert.Equal("function2", deserializedPlan.Steps[1].Name);
-    }
-
-    [Fact]
     public void CanSerializePlanWithSteps()
     {
         // Arrange
@@ -368,7 +338,7 @@ public sealed class PlanSerializationTests
         var mockFunction = SKFunctionFactory.CreateFromMethod((string input) => input + input, "functionName");
         plugins.Add(new SKPlugin("test", new[] { mockFunction }));
 
-        plan.AddSteps(new Plan("Step1", mockFunction), mockFunction);
+        plan.AddSteps(new Plan("Step1", mockFunction), new Plan(mockFunction));
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -409,7 +379,7 @@ public sealed class PlanSerializationTests
             variables.Update(variables.Input + localVariables.Input);
         }, "function");
 
-        plan.AddSteps(new Plan("Step1", function), function);
+        plan.AddSteps(new Plan("Step1", function), new Plan(function));
 
         var serializedPlan = plan.ToJson();
 

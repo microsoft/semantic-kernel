@@ -65,7 +65,7 @@ public sealed class Program
             Console.WriteLine("Original plan:");
             Console.WriteLine(plan.ToPlanString());
 
-            var result = await kernel.InvokeAsync(plan);
+            var result = await plan.InvokeAsync(kernel);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
