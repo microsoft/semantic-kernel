@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -13,7 +9,7 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
 
 public sealed class PlanTests
 {
@@ -874,7 +870,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expectedInvokedHandlerInvocations, invokedListFunctions.Count);
 
         // Aborting at any step of a plan, will invalidate the full plan result
-        Assert.Null(result.Value);
+        Assert.Null(result.GetValue<string>());
     }
 
     [Fact]
@@ -928,7 +924,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Aborting in invoked of the first step will abort the result and
         // the plan will render no result as no step succeeded previously.
-        Assert.Null(result.Value);
+        Assert.Null(result.GetValue<string>());
     }
 
     [Fact]
@@ -984,7 +980,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Aborting last step in invoked will stop the plan result
         // and return the previous succeeded step result value.
-        Assert.Equal("WritePoem", result.Value);
+        Assert.Equal("WritePoem", result.GetValue<string>());
     }
 
     [Fact(Skip = "Skipping is currently not supported for plans")]
@@ -1039,7 +1035,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Skipped the first step (will not trigger invoked for it)
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[1].Name);
-        Assert.Equal("SendEmail", result.Value);
+        Assert.Equal("SendEmail", result.GetValue<string>());
     }
 
     [Fact]
@@ -1095,7 +1091,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[0].Name);
 
         // Aborting one any step of a plan, will render the value of the last executed step
-        Assert.Equal("WritePoem", result.Value);
+        Assert.Equal("WritePoem", result.GetValue<string>());
     }
 
     private void PrepareKernelAndPlan(out Kernel kernel, out Plan plan)

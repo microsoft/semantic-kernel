@@ -22,6 +22,8 @@ namespace Microsoft.SemanticKernel.Planning;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Plan
 {
+    internal const string MainKey = "INPUT";
+
     /// <summary>
     /// State of the plan
     /// </summary>
@@ -73,7 +75,6 @@ public sealed class Plan
         this.PluginName = nameof(Plan); // TODO markwallace - remove this
         this.Name = GetRandomPlanName();
         this.Description = goal;
-        this.ModelSettings = Enumerable.Empty<AIRequestSettings>(); // TODO markwallace - remove this
     }
 
     /// <summary>
@@ -105,7 +106,6 @@ public sealed class Plan
         this.Function = function;
         this.Name = function.Name;
         this.Description = function.Description;
-        this.ModelSettings = function.ModelSettings; // TODO markwallace - remove this
     }
 
     /// <summary>
@@ -133,7 +133,6 @@ public sealed class Plan
         this.PluginName = pluginName; // TODO markwallace - remove this
         this.Name = name;
         this.Description = description;
-        this.ModelSettings = Enumerable.Empty<AIRequestSettings>(); // TODO markwallace - remove this
         this.NextStepIndex = nextStepIndex;
         this.State = state;
         this.Parameters = parameters;
@@ -251,11 +250,6 @@ public sealed class Plan
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
     public string Description { get; }
-
-    /// <summary>
-    /// Gets the model request settings.
-    /// </summary>
-    internal IEnumerable<AIRequestSettings> ModelSettings { get; }
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -420,7 +414,7 @@ public sealed class Plan
             // Execute the step
             var result = await step.InvokeAsync(kernel, functionVariables, null, cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Variables.Input.Trim();
+            var resultValue = result.GetValue<string>()?.Trim();
 
             #region Update State
 
@@ -443,7 +437,7 @@ public sealed class Plan
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGetValue(item, out string? val))
+                if (result.TryGetVariableValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -555,7 +549,7 @@ public sealed class Plan
             {
                 functionResult.Metadata[output] = value;
             }
-            else if (functionResult.Variables.TryGetValue(output, out var val))
+            else if (functionResult.TryGetVariableValue(output, out var val))
             {
                 functionResult.Metadata[output] = val;
             }
@@ -610,7 +604,7 @@ public sealed class Plan
         var functionParameters = step.GetMetadata();
         foreach (var param in functionParameters.Parameters)
         {
-            if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
+            if (param.Name.Equals(MainKey, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
