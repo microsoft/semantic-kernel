@@ -97,7 +97,7 @@ public sealed class ActionPlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -117,7 +117,7 @@ public sealed class ActionPlanner
 
         if (planData == null)
         {
-            throw new SKException("The plan deserialized to a null object");
+            throw new KernelException("The plan deserialized to a null object");
         }
 
         // Build and return plan
@@ -160,7 +160,7 @@ public sealed class ActionPlanner
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
-    [SKFunction, Description("List all functions available in the kernel")]
+    [KernelFunction, Description("List all functions available in the kernel")]
     public async Task<string> ListOfFunctionsAsync(
         [Description("The current goal processed by the planner")] string goal,
         CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ public sealed class ActionPlanner
     /// <param name="goal">The current goal processed by the planner.</param>
     /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few good examples of plans to generate")]
+    [KernelFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
         ContextVariables variables)
@@ -222,7 +222,7 @@ Goal: create a file called ""something.txt"".
     /// <param name="goal">The current goal processed by the planner.</param>
     /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few edge case examples of plans to handle")]
+    [KernelFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,
         ContextVariables variables)
@@ -282,17 +282,17 @@ Goal: tell me a joke.
                 }
                 catch (Exception e)
                 {
-                    throw new SKException("Plan parsing error, invalid JSON", e);
+                    throw new KernelException("Plan parsing error, invalid JSON", e);
                 }
             }
         }
 
-        throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
+        throw new KernelException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
-    private void PopulateList(StringBuilder list, IEnumerable<SKFunctionMetadata> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<KernelFunctionMetadata> functions)
     {
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             // Function description
             if (func.Description != null)

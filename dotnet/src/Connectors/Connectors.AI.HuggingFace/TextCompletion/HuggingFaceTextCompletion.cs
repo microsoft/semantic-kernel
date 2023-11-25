@@ -136,7 +136,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         if (completionResponse is null)
         {
-            throw new SKException("Unexpected response from model")
+            throw new KernelException("Unexpected response from model")
             {
                 Data = { { "ResponseData", body } },
             };

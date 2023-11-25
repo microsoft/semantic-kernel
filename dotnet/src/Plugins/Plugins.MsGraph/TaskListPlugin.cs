@@ -72,7 +72,7 @@ public sealed class TaskListPlugin
     /// <summary>
     /// Add a task to a To-Do list with an optional reminder.
     /// </summary>
-    [SKFunction, Description("Add a task to a task list with an optional reminder.")]
+    [KernelFunction, Description("Add a task to a task list with an optional reminder.")]
     public async Task AddTaskAsync(
         [Description("Title of the task.")] string title,
         [Description("Reminder for the task in DateTimeOffset (optional)")] string? reminder = null,
@@ -98,7 +98,7 @@ public sealed class TaskListPlugin
     /// <summary>
     /// Get tasks from the default task list.
     /// </summary>
-    [SKFunction, Description("Get tasks from the default task list.")]
+    [KernelFunction, Description("Get tasks from the default task list.")]
     public async Task<string> GetDefaultTasksAsync(
         [Description("Whether to include completed tasks (optional)")] string includeCompleted = "false",
         CancellationToken cancellationToken = default)

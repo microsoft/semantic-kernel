@@ -27,7 +27,7 @@ public record RestApiOperationPayload
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public SKJsonSchema? Schema { get; }
+    public KernelParameterJsonSchema? Schema { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayload"/> class.
@@ -36,7 +36,7 @@ public record RestApiOperationPayload
     /// <param name="properties">The properties.</param>
     /// <param name="description">The description.</param>
     /// <param name="schema">The JSON Schema.</param>
-    public RestApiOperationPayload(string mediaType, IList<RestApiOperationPayloadProperty> properties, string? description = null, SKJsonSchema? schema = null)
+    public RestApiOperationPayload(string mediaType, IList<RestApiOperationPayloadProperty> properties, string? description = null, KernelParameterJsonSchema? schema = null)
     {
         this.MediaType = mediaType;
         this.Properties = properties;

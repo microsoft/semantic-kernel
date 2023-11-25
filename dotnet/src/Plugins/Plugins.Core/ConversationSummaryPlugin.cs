@@ -38,17 +38,17 @@ public class ConversationSummaryPlugin
             }
         };
 
-        this._summarizeConversationFunction = SKFunctionFactory.CreateFromPrompt(
+        this._summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             requestSettings: settings);
 
-        this._conversationActionItemsFunction = SKFunctionFactory.CreateFromPrompt(
+        this._conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             requestSettings: settings);
 
-        this._conversationTopicsFunction = SKFunctionFactory.CreateFromPrompt(
+        this._conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             requestSettings: settings);
@@ -60,7 +60,7 @@ public class ConversationSummaryPlugin
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel</param>
     /// <param name="variables">The context variables for function execution.</param>
-    [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
+    [KernelFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
@@ -73,7 +73,7 @@ public class ConversationSummaryPlugin
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">The context variables for function execution.</param>
-    [SKFunction, Description("Given a long conversation transcript, identify action items.")]
+    [KernelFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
@@ -86,7 +86,7 @@ public class ConversationSummaryPlugin
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">The context variables for function execution.</param>
-    [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
+    [KernelFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,

@@ -143,9 +143,9 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Input})";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{plugin.function}}-baz";
@@ -168,9 +168,9 @@ public sealed class KernelPromptTemplateTests
             return $"F({context.Input})";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{plugin.function $myVar}}-baz";
@@ -188,19 +188,19 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Name"), SKName("input")] string name,
-            [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
-            [Description("Date"), SKName("date")] DateTime date)
+            [Description("Name"), KernelFunctionName("input")] string name,
+            [Description("Age"), KernelFunctionName("age")] int age,
+            [Description("Slogan"), KernelFunctionName("slogan")] string slogan,
+            [Description("Date"), KernelFunctionName("date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
@@ -223,7 +223,7 @@ public sealed class KernelPromptTemplateTests
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
         // Act
-        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, this._variables));
+        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._variables));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -232,19 +232,19 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), SKName("input")] string name,
-            [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
-            [Description("Date"), SKName("date")] DateTime date)
+            [Description("Input"), KernelFunctionName("input")] string name,
+            [Description("Age"), KernelFunctionName("age")] int age,
+            [Description("Slogan"), KernelFunctionName("slogan")] string slogan,
+            [Description("Date"), KernelFunctionName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
@@ -290,12 +290,12 @@ public sealed class KernelPromptTemplateTests
 
         var functions = new List<KernelFunction>()
         {
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
         };
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", functions));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);
@@ -315,9 +315,9 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(localVariables.Input);
         }
 
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
 

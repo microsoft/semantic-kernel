@@ -81,7 +81,7 @@ public static class Example62_CustomAIServiceSelector
                 }
             }
 
-            throw new SKException("Unable to find AI service for GPT 3.x.");
+            throw new KernelException("Unable to find AI service for GPT 3.x.");
         }
     }
 }

@@ -19,12 +19,12 @@ public class OrderedIAIServiceConfigurationProviderTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Hello AI");
+        var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, new ContextVariables(), function));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, new ContextVariables(), function));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class OrderedIAIServiceConfigurationProviderTests
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function));
     }
 
     [Fact]

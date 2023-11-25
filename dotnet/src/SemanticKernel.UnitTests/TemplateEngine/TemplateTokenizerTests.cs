@@ -252,7 +252,7 @@ public class TemplateTokenizerTests
         var template = "{{ not='valid' }}";
 
         // Assert
-        var ex = Assert.Throws<SKException>(() =>
+        var ex = Assert.Throws<KernelException>(() =>
         {
             // Act
             this._target.Tokenize(template);

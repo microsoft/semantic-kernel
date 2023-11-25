@@ -75,7 +75,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (!this._validated && !this.IsValid(out var error))
         {
-            throw new SKException(error);
+            throw new KernelException(error);
         }
 
         this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
@@ -84,7 +84,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(variables),
             BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, variables).ConfigureAwait(false),
-            _ => throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}"),
+            _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
     }
 
@@ -174,7 +174,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
-                throw new SKException($"Unexpected first token type: {this._tokens[i].Type:G}");
+                throw new KernelException($"Unexpected first token type: {this._tokens[i].Type:G}");
             }
 
             // Sensitive data, logging as trace, disabled by default

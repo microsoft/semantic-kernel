@@ -72,7 +72,7 @@ public class StepwisePlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Plan CreatePlan(string goal)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -107,8 +107,8 @@ public class StepwisePlanner
     /// <param name="contextVariables">The context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result</returns>
-    /// <exception cref="SKException">No AIService available for getting completions.</exception>
-    [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
+    /// <exception cref="KernelException">No AIService available for getting completions.</exception>
+    [KernelFunction, KernelFunctionName("ExecutePlan"), Description("Execute a plan")]
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
@@ -125,12 +125,12 @@ public class StepwisePlanner
 
         if (aiService is null)
         {
-            throw new SKException("No AIService available for getting completions.");
+            throw new KernelException("No AIService available for getting completions.");
         }
 
         if (chatHistory is null)
         {
-            throw new SKException("ChatHistory is null.");
+            throw new KernelException("ChatHistory is null.");
         }
 
         var startingMessageCount = chatHistory.Count;
@@ -393,7 +393,7 @@ public class StepwisePlanner
 
         if (tokenCount >= this.Config.MaxPromptTokens)
         {
-            throw new SKException("ChatHistory is too long to get a completion. Try reducing the available functions.");
+            throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
         }
 
         var reducedChatHistory = new ChatHistory();
@@ -431,13 +431,13 @@ public class StepwisePlanner
 
             if (results.Count == 0)
             {
-                throw new SKException("No completions returned.");
+                throw new KernelException("No completions returned.");
             }
 
             return await results[0].GetCompletionAsync(token).ConfigureAwait(false);
         }
 
-        throw new SKException("No AIService available for getting completions.");
+        throw new KernelException("No AIService available for getting completions.");
     }
 
     /// <summary>
@@ -597,7 +597,7 @@ public class StepwisePlanner
             chatCompletion = kernel.GetService<IChatCompletion>();
             return true;
         }
-        catch (SKException)
+        catch (KernelException)
         {
             chatCompletion = null;
         }
@@ -642,7 +642,7 @@ public class StepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private readonly ISKPlugin _nativeFunctions;
+    private readonly IKernelPlugin _nativeFunctions;
 
     /// <summary>
     /// The prompt template to use for the system step

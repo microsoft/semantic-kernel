@@ -114,7 +114,7 @@ internal class FlowExecutor : IFlowExecutor
         var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
         this._checkStartStepFunction = CreateSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
 
-        this._systemKernel.Plugins.Add(new SKPlugin(RestrictedPluginName, new[]
+        this._systemKernel.Plugins.Add(new KernelPlugin(RestrictedPluginName, new[]
         {
             this._checkRepeatStepFunction,
             this._checkStartStepFunction,
@@ -411,7 +411,7 @@ internal class FlowExecutor : IFlowExecutor
     {
         if (step.Requires.Any(p => !context.ContainsKey(p)))
         {
-            throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.ContainsKey(p)))} that are not provided. ");
+            throw new KernelException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.ContainsKey(p)))} that are not provided. ");
         }
     }
 
@@ -682,7 +682,7 @@ internal class FlowExecutor : IFlowExecutor
             await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
         }
 
-        throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
+        throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
     private static KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)

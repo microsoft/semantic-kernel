@@ -61,7 +61,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -81,7 +81,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -129,7 +129,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         StringBuilder fullResult = new();
         // Act
@@ -161,7 +161,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -192,7 +192,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
@@ -226,7 +226,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
@@ -250,7 +250,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
@@ -274,7 +274,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
@@ -298,7 +298,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         // Assert
@@ -324,7 +324,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -358,7 +358,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);

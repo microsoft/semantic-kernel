@@ -29,13 +29,13 @@ public static class KernelGrpcExtensions
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin ImportPluginFromGrpcDirectory(
+    public static IKernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName,
         HttpClient? httpClient = null)
     {
-        ISKPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName, httpClient);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -48,13 +48,13 @@ public static class KernelGrpcExtensions
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin ImportPluginFromGrpcFile(
+    public static IKernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName,
         HttpClient? httpClient = null)
     {
-        ISKPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName, httpClient);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -67,13 +67,13 @@ public static class KernelGrpcExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin ImportPluginFromGrpc(
+    public static IKernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName,
         HttpClient? httpClient = null)
     {
-        ISKPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName, httpClient);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -86,7 +86,7 @@ public static class KernelGrpcExtensions
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin CreatePluginFromGrpcDirectory(
+    public static IKernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName,
@@ -122,7 +122,7 @@ public static class KernelGrpcExtensions
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin CreatePluginFromGrpcFile(
+    public static IKernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName,
@@ -150,7 +150,7 @@ public static class KernelGrpcExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static ISKPlugin CreatePluginFromGrpc(
+    public static IKernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName,
@@ -164,7 +164,7 @@ public static class KernelGrpcExtensions
 
         var operations = parser.Parse(documentStream, pluginName);
 
-        var plugin = new SKPlugin(pluginName);
+        var plugin = new KernelPlugin(pluginName);
 
         var client = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, httpClient, kernel.LoggerFactory);
 
@@ -192,7 +192,7 @@ public static class KernelGrpcExtensions
     #region private
 
     /// <summary>
-    /// Registers SKFunctionFactory for a gRPC operation.
+    /// Registers KernelFunctionFactory for a gRPC operation.
     /// </summary>
     /// <param name="runner">gRPC operation runner.</param>
     /// <param name="operation">The gRPC operation.</param>
@@ -240,7 +240,7 @@ public static class KernelGrpcExtensions
             return variables;
         }
 
-        return SKFunctionFactory.CreateFromMethod(
+        return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,

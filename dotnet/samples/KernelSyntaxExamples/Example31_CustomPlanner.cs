@@ -30,7 +30,7 @@ internal static class Example31_CustomPlanner
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        ISKPlugin qaPlugin = LoadQAPlugin(kernel);
+        IKernelPlugin qaPlugin = LoadQAPlugin(kernel);
         var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
@@ -116,7 +116,7 @@ internal static class Example31_CustomPlanner
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static ISKPlugin LoadQAPlugin(Kernel kernel)
+    private static IKernelPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromObject<TimePlugin>("time");
@@ -159,7 +159,7 @@ internal static class Example31_CustomPlanner
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
-    [SKFunction, Description("Run Markup")]
+    [KernelFunction, Description("Run Markup")]
     public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", kernel);

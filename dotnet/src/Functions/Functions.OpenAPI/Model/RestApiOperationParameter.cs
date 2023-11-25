@@ -60,7 +60,7 @@ public sealed class RestApiOperationParameter
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public SKJsonSchema? Schema { get; }
+    public KernelParameterJsonSchema? Schema { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
@@ -85,7 +85,7 @@ public sealed class RestApiOperationParameter
         string? arrayItemType = null,
         string? defaultValue = null,
         string? description = null,
-        SKJsonSchema? schema = null)
+        KernelParameterJsonSchema? schema = null)
     {
         this.Name = name;
         this.Type = type;

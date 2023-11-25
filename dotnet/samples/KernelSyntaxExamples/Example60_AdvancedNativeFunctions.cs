@@ -45,7 +45,7 @@ public static class Example60_AdvancedNativeFunctions
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
-        [SKFunction, SKName("Function1")]
+        [KernelFunction, KernelFunctionName("Function1")]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
@@ -59,7 +59,7 @@ public static class Example60_AdvancedNativeFunctions
             };
         }
 
-        [SKFunction, SKName("Function2")]
+        [KernelFunction, KernelFunctionName("Function2")]
         public static MyCustomType Function2()
         {
             return new MyCustomType

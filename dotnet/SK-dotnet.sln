@@ -191,7 +191,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs = src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs
-		src\InternalUtilities\planning\Extensions\SKFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Extensions\SKFunctionMetadataExtensions.cs
+		src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281F6-9C31-4641-98AE-F1D2844DE9F0}"
@@ -201,7 +201,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs
-		src\InternalUtilities\planning\Schema\SKFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Schema\SKFunctionMetadataExtensions.cs
+		src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars.UnitTests", "src\Planners\Planners.Handlebars.UnitTests\Planners.Handlebars.UnitTests.csproj", "{3FC4A81B-8ABE-473F-BC7C-6F4885775534}"

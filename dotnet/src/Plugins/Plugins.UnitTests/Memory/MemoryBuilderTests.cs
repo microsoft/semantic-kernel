@@ -23,7 +23,7 @@ public sealed class MemoryBuilderTests
         var builder = new MemoryBuilder();
 
         // Act
-        var exception = Assert.Throws<SKException>(() => builder.Build());
+        var exception = Assert.Throws<KernelException>(() => builder.Build());
 
         // Assert
         Assert.Equal("IMemoryStore dependency was not provided. Use WithMemoryStore method.", exception.Message);
@@ -37,7 +37,7 @@ public sealed class MemoryBuilderTests
             .WithMemoryStore(Mock.Of<IMemoryStore>());
 
         // Act
-        var exception = Assert.Throws<SKException>(() => builder.Build());
+        var exception = Assert.Throws<KernelException>(() => builder.Build());
 
         // Assert
         Assert.Equal("ITextEmbeddingGeneration dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);

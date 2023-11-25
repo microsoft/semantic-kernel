@@ -75,7 +75,7 @@ public class ChromaMemoryStore : IMemoryStore
         catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
-            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
+            throw new KernelException($"Cannot delete non-existent collection {collectionName}", e);
         }
     }
 
@@ -236,7 +236,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
         return
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Collection {collectionName} does not exist");
+            throw new KernelException($"Collection {collectionName} does not exist");
     }
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
@@ -306,7 +306,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         return
             JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, JsonOptionsCache.Default) ??
-            throw new SKException("Unable to deserialize memory record metadata.");
+            throw new KernelException("Unable to deserialize memory record metadata.");
     }
 
     private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)

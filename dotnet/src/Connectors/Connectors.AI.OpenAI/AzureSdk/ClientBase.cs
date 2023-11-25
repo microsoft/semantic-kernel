@@ -111,14 +111,14 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new SKException("Text completions null response");
+            throw new KernelException("Text completions null response");
         }
 
         var responseData = response.Value;
 
         if (responseData.Choices.Count == 0)
         {
-            throw new SKException("Text completions not found");
+            throw new KernelException("Text completions not found");
         }
 
         this.CaptureUsageDetails(responseData.Usage);
@@ -205,12 +205,12 @@ public abstract class ClientBase
 
             if (response is null)
             {
-                throw new SKException("Text embedding null response");
+                throw new KernelException("Text embedding null response");
             }
 
             if (response.Value.Data.Count == 0)
             {
-                throw new SKException("Text embedding not found");
+                throw new KernelException("Text embedding not found");
             }
 
             result.Add(response.Value.Data[0].Embedding.ToArray());
@@ -244,14 +244,14 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new SKException("Chat completions null response");
+            throw new KernelException("Chat completions null response");
         }
 
         var responseData = response.Value;
 
         if (responseData.Choices.Count == 0)
         {
-            throw new SKException("Chat completions not found");
+            throw new KernelException("Chat completions not found");
         }
 
         this.CaptureUsageDetails(responseData.Usage);
@@ -277,7 +277,7 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new SKException("Chat completions null response");
+            throw new KernelException("Chat completions null response");
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
@@ -477,7 +477,7 @@ public abstract class ClientBase
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 

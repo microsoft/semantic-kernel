@@ -178,7 +178,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act and Assert
-        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
+        await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
@@ -202,7 +202,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
+        await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
@@ -226,7 +226,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
+        var ex = await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),

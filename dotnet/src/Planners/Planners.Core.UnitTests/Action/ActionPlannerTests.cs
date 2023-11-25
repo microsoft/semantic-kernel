@@ -45,7 +45,7 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(() => planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
@@ -158,9 +158,9 @@ public sealed class ActionPlannerTests
         Assert.Equal(expected, result);
     }
 
-    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new SKPluginCollection();
+        plugins ??= new KernelPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult
@@ -184,18 +184,18 @@ public sealed class ActionPlannerTests
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-    private SKPluginCollection CreatePluginCollection()
+    private KernelPluginCollection CreatePluginCollection()
     {
         return new()
         {
-            new SKPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
             }),
-            new SKPlugin("GitHubPlugin", new[]
+            new KernelPlugin("GitHubPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
             })
         };
     }

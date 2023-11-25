@@ -220,7 +220,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert   
-        Assert.Throws<SKException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables));
+        Assert.Throws<KernelException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables));
     }
 
     [Fact]
@@ -259,13 +259,13 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
 
     private sealed class Foo
     {
-        [SKFunction, Description("Return Bar")]
+        [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
-        [SKFunction, Description("Return words concatenated")]
+        [KernelFunction, Description("Return words concatenated")]
         public string Combine([Description("First word")] string x, [Description("Second word")] string y) => y + x;
 
-        [SKFunction, Description("Return number as string")]
+        [KernelFunction, Description("Return number as string")]
         public string StringifyInt([Description("Number to stringify")] int x) => x.ToString(CultureInfo.InvariantCulture);
     }
 }

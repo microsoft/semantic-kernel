@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.PromptRendering event.
 /// </summary>
-public class PromptRenderingEventArgs : SKEventArgs
+public class PromptRenderingEventArgs : KernelEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingEventArgs"/> class.

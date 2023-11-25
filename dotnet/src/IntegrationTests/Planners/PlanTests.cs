@@ -169,8 +169,8 @@ public sealed class PlanTests : IDisposable
 
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
             invokingListFunctions.Add(e.Function.GetMetadata());

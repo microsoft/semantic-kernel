@@ -150,7 +150,7 @@ public sealed class Plan
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, IReadOnlySKPluginCollection? plugins = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlyKernelPluginCollection? plugins = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, s_includeFieldsOptions) ?? new Plan(string.Empty);
 
@@ -220,7 +220,7 @@ public sealed class Plan
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
-    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
@@ -254,8 +254,8 @@ public sealed class Plan
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
-    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    public SKFunctionMetadata GetMetadata()
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    public KernelFunctionMetadata GetMetadata()
     {
         if (this.Function is not null)
         {
@@ -274,7 +274,7 @@ public sealed class Plan
             var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
             var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-            return new SKParameterMetadata(p.Key)
+            return new KernelParameterMetadata(p.Key)
             {
                 Description = stepDescription?.Description,
                 DefaultValue = stepDescription?.DefaultValue,
@@ -401,7 +401,7 @@ public sealed class Plan
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
-    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
     private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
@@ -464,7 +464,7 @@ public sealed class Plan
     /// <param name="plugins">The collection of available plugins.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailablePlugins(Plan plan, IReadOnlySKPluginCollection plugins, bool requireFunctions = true)
+    private static Plan SetAvailablePlugins(Plan plan, IReadOnlyKernelPluginCollection plugins, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
@@ -476,7 +476,7 @@ public sealed class Plan
             }
             else if (requireFunctions)
             {
-                throw new SKException($"Function '{plan.PluginName}.{plan.Name}' not found in function collection");
+                throw new KernelException($"Function '{plan.PluginName}.{plan.Name}' not found in function collection");
             }
         }
         else

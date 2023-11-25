@@ -29,14 +29,14 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<SKParameterMetadata> Parameters => this._parameters.Value;
+    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (ISKPlugin plugin in kernel.Plugins)
+        foreach (IKernelPlugin plugin in kernel.Plugins)
         {
             foreach (KernelFunction function in plugin)
             {
@@ -60,14 +60,14 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private readonly Lazy<IReadOnlyList<SKParameterMetadata>> _parameters;
+    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
 
-    private List<SKParameterMetadata> InitParameters()
+    private List<KernelParameterMetadata> InitParameters()
     {
-        List<SKParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
+        List<KernelParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            parameters.Add(new SKParameterMetadata(p.Name)
+            parameters.Add(new KernelParameterMetadata(p.Name)
             {
                 Description = p.Description,
                 DefaultValue = p.DefaultValue

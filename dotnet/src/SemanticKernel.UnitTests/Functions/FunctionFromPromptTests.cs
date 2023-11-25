@@ -28,7 +28,7 @@ public class FunctionFromPromptTests
             .WithDefaultAIService(factory.Object)
             .Build();
 
-        kernel.Plugins.Add(new SKPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
+        kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
@@ -140,7 +140,7 @@ public class FunctionFromPromptTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
@@ -152,7 +152,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -175,7 +175,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -198,7 +198,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -221,7 +221,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -247,7 +247,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -282,7 +282,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -305,7 +305,7 @@ public class FunctionFromPromptTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var function = SKFunctionFactory.CreateFromPrompt(prompt);
+        var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -328,7 +328,7 @@ public class FunctionFromPromptTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var function = SKFunctionFactory.CreateFromPrompt(prompt);
+        var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -354,7 +354,7 @@ public class FunctionFromPromptTests
             new TestStreamingContent("chunk2"));
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var sut = SKFunctionFactory.CreateFromPrompt(prompt);
+        var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new ContextVariables("importance");
 
         var chunkCount = 0;

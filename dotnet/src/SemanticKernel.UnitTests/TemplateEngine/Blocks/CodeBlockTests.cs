@@ -37,9 +37,9 @@ public class CodeBlockTests
         var variables = new ContextVariables();
 
         static void method() => throw new FormatException("error");
-        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         var target = new CodeBlock("plugin.function", this._logger);
 
@@ -193,7 +193,7 @@ public class CodeBlockTests
         var canary1 = string.Empty;
         var canary2 = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
             canary0 = localVariables["input"];
             canary1 = localVariables["var1"];
@@ -205,7 +205,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
@@ -235,13 +235,13 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
             canary = localVariables["input"];
         },
         "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
@@ -264,13 +264,13 @@ public class CodeBlockTests
 
         var canary = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
             canary = localVariables["input"];
         },
         "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
@@ -300,14 +300,14 @@ public class CodeBlockTests
         var foo = string.Empty;
         var baz = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
             foo = localVariables["foo"];
             baz = localVariables["baz"];
         },
         "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);

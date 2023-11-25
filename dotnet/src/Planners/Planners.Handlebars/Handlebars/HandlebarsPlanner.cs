@@ -47,7 +47,7 @@ public sealed class HandlebarsPlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -78,13 +78,13 @@ public sealed class HandlebarsPlanner
         if (contextVariables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
-            throw new SKException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{contextVariables.Input}");
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{contextVariables.Input}");
         }
 
         Match match = Regex.Match(contextVariables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
-            throw new SKException("Could not find the plan in the results");
+            throw new KernelException("Could not find the plan in the results");
         }
 
         var planTemplate = match.Groups[2].Value.Trim();
@@ -100,7 +100,7 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
-    private List<SKFunctionMetadata> GetAvailableFunctionsManual(
+    private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken = default)
@@ -113,11 +113,11 @@ public sealed class HandlebarsPlanner
                 && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
-        var functionsMetadata = new List<SKFunctionMetadata>();
+        var functionsMetadata = new List<KernelFunctionMetadata>();
         foreach (var skFunction in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
-            var parametersMetadata = new List<SKParameterMetadata>();
+            var parametersMetadata = new List<KernelParameterMetadata>();
             foreach (var parameter in skFunction.Parameters)
             {
                 var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
@@ -128,7 +128,7 @@ public sealed class HandlebarsPlanner
             returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
 
             // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
-            var functionMetadata = new SKFunctionMetadata(skFunction.Name)
+            var functionMetadata = new KernelFunctionMetadata(skFunction.Name)
             {
                 PluginName = skFunction.PluginName,
                 Description = skFunction.Description,
@@ -142,8 +142,8 @@ public sealed class HandlebarsPlanner
     }
 
     // Extract any complex types or schemas for isolated render in prompt template
-    private SKParameterMetadata SetComplexTypeDefinition(
-        SKParameterMetadata parameter,
+    private KernelParameterMetadata SetComplexTypeDefinition(
+        KernelParameterMetadata parameter,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
@@ -206,7 +206,7 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(
         Kernel kernel, string goal,
-        List<SKFunctionMetadata> availableFunctions,
+        List<KernelFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {

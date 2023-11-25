@@ -17,7 +17,7 @@ public interface IPromptTemplate
     /// <summary>
     /// The list of parameters required by the template, using configuration and template info.
     /// </summary>
-    IReadOnlyList<SKParameterMetadata> Parameters { get; }
+    IReadOnlyList<KernelParameterMetadata> Parameters { get; }
 
     /// <summary>
     /// Render the template using the information in the context
