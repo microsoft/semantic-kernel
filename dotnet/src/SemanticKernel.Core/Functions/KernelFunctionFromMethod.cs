@@ -92,7 +92,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken)
     {
         return await this._function(null, requestSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
@@ -102,7 +102,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
@@ -138,7 +138,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         Kernel kernel,
         ContextVariables variables,
         CancellationToken cancellationToken);
@@ -179,7 +179,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by SKName so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelFunctionNameAttribute>(inherit: true)?.Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelNameAttribute>(inherit: true)?.Name?.Trim();
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
@@ -219,7 +219,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -322,7 +322,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
-            KernelFunctionNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelFunctionNameAttribute>(inherit: true);
+            KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
             string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");

@@ -86,7 +86,7 @@ public static class KernelExtensions
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         string? functionName = null,
         string? description = null)
     {
@@ -352,7 +352,7 @@ public static class KernelExtensions
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(

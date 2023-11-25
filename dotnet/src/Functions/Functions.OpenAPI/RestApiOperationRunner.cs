@@ -151,7 +151,7 @@ internal sealed class RestApiOperationRunner
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         HttpContent? payload = null,
-        IDictionary<string, KernelParameterJsonSchema?>? expectedSchemas = null,
+        IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -329,9 +329,9 @@ internal sealed class RestApiOperationRunner
     /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="statusCode">The status code.</param>
     /// <returns>The expected schema for the given status code.</returns>
-    private static KernelParameterJsonSchema? GetExpectedSchema(IDictionary<string, KernelParameterJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
+    private static KernelJsonSchema? GetExpectedSchema(IDictionary<string, KernelJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
-        KernelParameterJsonSchema? matchingResponse = null;
+        KernelJsonSchema? matchingResponse = null;
         if (expectedSchemas is not null)
         {
             var statusCodeKey = $"{(int)statusCode}";

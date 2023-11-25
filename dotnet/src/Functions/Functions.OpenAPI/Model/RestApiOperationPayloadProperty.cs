@@ -37,7 +37,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public KernelParameterJsonSchema? Schema { get; }
+    public KernelJsonSchema? Schema { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayloadProperty"/> class.
@@ -54,7 +54,7 @@ public sealed class RestApiOperationPayloadProperty
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
         string? description = null,
-        KernelParameterJsonSchema? schema = null)
+        KernelJsonSchema? schema = null)
     {
         this.Name = name;
         this.Type = type;

@@ -16,5 +16,5 @@ internal sealed class JsonSchemaResponse
     /// The JSON Schema
     /// </summary>
     [JsonPropertyName("schema")]
-    public KernelParameterJsonSchema? Schema { get; set; }
+    public KernelJsonSchema? Schema { get; set; }
 }

@@ -57,7 +57,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the model request settings.
     /// </summary>
-    internal IEnumerable<AIRequestSettings> ModelSettings { get; }
+    internal IEnumerable<PromptExecutionSettings> ModelSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -65,11 +65,11 @@ public abstract class KernelFunction
     /// <param name="name">Name of the function.</param>
     /// <param name="description">Function description.</param>
     /// <param name="modelSettings">Model request settings.</param>
-    internal KernelFunction(string name, string description, IEnumerable<AIRequestSettings>? modelSettings = null)
+    internal KernelFunction(string name, string description, IEnumerable<PromptExecutionSettings>? modelSettings = null)
     {
         this.Name = name;
         this.Description = description;
-        this.ModelSettings = modelSettings ?? Enumerable.Empty<AIRequestSettings>();
+        this.ModelSettings = modelSettings ?? Enumerable.Empty<PromptExecutionSettings>();
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public abstract class KernelFunction
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -160,7 +160,7 @@ public abstract class KernelFunction
     public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -196,7 +196,7 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -210,7 +210,7 @@ public abstract class KernelFunction
     protected abstract Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken);
 
     /// <summary>

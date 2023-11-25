@@ -69,5 +69,5 @@ public sealed class KernelParameterMetadata
     public Type? ParameterType { get; init; }
 
     /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
-    public KernelParameterJsonSchema? Schema { get; init; }
+    public KernelJsonSchema? Schema { get; init; }
 }

@@ -188,10 +188,10 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Name"), KernelFunctionName("input")] string name,
-            [Description("Age"), KernelFunctionName("age")] int age,
-            [Description("Slogan"), KernelFunctionName("slogan")] string slogan,
-            [Description("Date"), KernelFunctionName("date")] DateTime date)
+            [Description("Name"), KernelName("input")] string name,
+            [Description("Age"), KernelName("age")] int age,
+            [Description("Slogan"), KernelName("slogan")] string slogan,
+            [Description("Date"), KernelName("date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
@@ -232,10 +232,10 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), KernelFunctionName("input")] string name,
-            [Description("Age"), KernelFunctionName("age")] int age,
-            [Description("Slogan"), KernelFunctionName("slogan")] string slogan,
-            [Description("Date"), KernelFunctionName("date")] DateTime date)
+            [Description("Input"), KernelName("input")] string name,
+            [Description("Age"), KernelName("age")] int age,
+            [Description("Slogan"), KernelName("slogan")] string slogan,
+            [Description("Date"), KernelName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);

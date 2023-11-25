@@ -55,7 +55,7 @@ public class KernelFunctionMetadataTests
         {
             Description = "ReturnParameterA",
             ParameterType = typeof(string),
-            Schema = KernelParameterJsonSchema.Parse("\"schema\""),
+            Schema = KernelJsonSchema.Parse("\"schema\""),
         };
 
         // Act
@@ -66,7 +66,7 @@ public class KernelFunctionMetadataTests
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(KernelParameterJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class KernelFunctionMetadataTests
     public void ItSupportsValidFunctionSKNameAttributeOverride()
     {
         // Arrange
-        [KernelFunctionName("NewTestFunctionName")]
+        [KernelName("NewTestFunctionName")]
         static void TestFunctionName()
         { }
 

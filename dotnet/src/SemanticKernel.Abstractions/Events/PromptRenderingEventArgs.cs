@@ -16,7 +16,7 @@ public class PromptRenderingEventArgs : KernelEventArgs
     /// <param name="function">Kernel function</param>
     /// <param name="variables">Context variables related to the event</param>
     /// <param name="requestSettings">request settings used by the AI service</param>
-    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, AIRequestSettings? requestSettings) : base(function, variables)
+    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings) : base(function, variables)
     {
         this.RequestSettings = requestSettings; // TODO clone these settings
     }
@@ -24,5 +24,5 @@ public class PromptRenderingEventArgs : KernelEventArgs
     /// <summary>
     /// Request settings for the AI service.
     /// </summary>
-    public AIRequestSettings? RequestSettings { get; }
+    public PromptExecutionSettings? RequestSettings { get; }
 }

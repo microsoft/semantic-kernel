@@ -39,7 +39,7 @@ namespace Microsoft.SemanticKernel;
 /// or a <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/> of such a type.
 /// </para>
 /// <para>
-/// Parameters are populated based on a context variable of the same name, unless an <see cref="KernelFunctionNameAttribute"/> is
+/// Parameters are populated based on a context variable of the same name, unless an <see cref="KernelNameAttribute"/> is
 /// used to override which context variable is targeted. If no context variable of the given name is present, but
 /// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the siguatre,
 /// that default value is used instead. If no default value was specified and it's the first parameter, the "input"

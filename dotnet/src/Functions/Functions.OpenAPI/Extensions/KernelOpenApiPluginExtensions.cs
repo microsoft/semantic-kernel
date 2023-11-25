@@ -325,7 +325,7 @@ public static class KernelOpenApiPluginExtensions
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
-                Schema = p.Schema ?? (p.Type is null ? null : KernelParameterJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
+                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();
 

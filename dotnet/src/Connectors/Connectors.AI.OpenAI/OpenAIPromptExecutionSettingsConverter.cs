@@ -8,14 +8,14 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// JSON converter for <see cref="OpenAIRequestSettings"/>
+/// JSON converter for <see cref="OpenAIPromptExecutionSettings"/>
 /// </summary>
-public sealed class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSettings>
+public sealed class OpenAIPromptExecutionSettingsConverter : JsonConverter<OpenAIPromptExecutionSettings>
 {
     /// <inheritdoc/>
-    public override OpenAIRequestSettings? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override OpenAIPromptExecutionSettings? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var requestSettings = new OpenAIRequestSettings();
+        var requestSettings = new OpenAIPromptExecutionSettings();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -62,7 +62,7 @@ public sealed class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequest
                         break;
                     case "CHATSYSTEMPROMPT":
                     case "CHAT_SYSTEM_PROMPT":
-                        requestSettings.ChatSystemPrompt = reader.GetString() ?? OpenAIRequestSettings.DefaultChatSystemPrompt;
+                        requestSettings.ChatSystemPrompt = reader.GetString() ?? OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
                         break;
                     case "TOKENSELECTIONBIASES":
                     case "TOKEN_SELECTION_BIASES":
@@ -83,7 +83,7 @@ public sealed class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequest
     }
 
     /// <inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, OpenAIRequestSettings value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, OpenAIPromptExecutionSettings value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
 

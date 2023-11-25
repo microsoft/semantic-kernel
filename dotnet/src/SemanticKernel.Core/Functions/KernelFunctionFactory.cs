@@ -77,7 +77,7 @@ public static class KernelFunctionFactory
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         string? functionName = null,
         string? description = null,
         ILoggerFactory? loggerFactory = null) =>

@@ -28,7 +28,7 @@ public class ConversationSummaryPlugin
     /// </summary>
     public ConversationSummaryPlugin()
     {
-        AIRequestSettings settings = new()
+        PromptExecutionSettings settings = new()
         {
             ExtensionData = new()
             {

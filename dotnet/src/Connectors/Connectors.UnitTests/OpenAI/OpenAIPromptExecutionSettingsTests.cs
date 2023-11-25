@@ -10,16 +10,16 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit tests of OpenAIRequestSettings
+/// Unit tests of OpenAIPromptExecutionSettings
 /// </summary>
-public class OpenAIRequestSettingsTests
+public class OpenAIPromptExecutionSettingsTests
 {
     [Fact]
     public void ItCreatesOpenAIRequestSettingsWithCorrectDefaults()
     {
         // Arrange
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(null, 128);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(null, 128);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -38,7 +38,7 @@ public class OpenAIRequestSettingsTests
     public void ItUsesExistingOpenAIRequestSettings()
     {
         // Arrange
-        OpenAIRequestSettings actualSettings = new()
+        OpenAIPromptExecutionSettings actualSettings = new()
         {
             Temperature = 0.7,
             TopP = 0.7,
@@ -53,7 +53,7 @@ public class OpenAIRequestSettingsTests
         };
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -64,13 +64,13 @@ public class OpenAIRequestSettingsTests
     public void ItCanUseOpenAIRequestSettings()
     {
         // Arrange
-        AIRequestSettings actualSettings = new()
+        PromptExecutionSettings actualSettings = new()
         {
             ServiceId = "service",
         };
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -81,7 +81,7 @@ public class OpenAIRequestSettingsTests
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesSnakeCase()
     {
         // Arrange
-        AIRequestSettings actualSettings = new()
+        PromptExecutionSettings actualSettings = new()
         {
             ServiceId = "service",
             ExtensionData = new Dictionary<string, object>()
@@ -100,7 +100,7 @@ public class OpenAIRequestSettingsTests
         };
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
 
         // Assert
         AssertRequestSettings(requestSettings);
@@ -110,7 +110,7 @@ public class OpenAIRequestSettingsTests
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesPascalCase()
     {
         // Arrange
-        AIRequestSettings actualSettings = new()
+        PromptExecutionSettings actualSettings = new()
         {
             ServiceId = "service",
             ExtensionData = new Dictionary<string, object>()
@@ -129,7 +129,7 @@ public class OpenAIRequestSettingsTests
         };
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(requestSettings);
@@ -151,10 +151,10 @@ public class OpenAIRequestSettingsTests
   ""service_id"": ""service"",
   ""max_tokens"": 128
 }";
-        var actualSettings = JsonSerializer.Deserialize<AIRequestSettings>(json);
+        var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(requestSettings);
@@ -176,16 +176,16 @@ public class OpenAIRequestSettingsTests
   ""ServiceId"": ""service"",
   ""MaxTokens"": 128
 }";
-        var actualSettings = JsonSerializer.Deserialize<AIRequestSettings>(json);
+        var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(requestSettings);
     }
 
-    private static void AssertRequestSettings(OpenAIRequestSettings requestSettings)
+    private static void AssertRequestSettings(OpenAIPromptExecutionSettings requestSettings)
     {
         Assert.NotNull(requestSettings);
         Assert.Equal(0.7, requestSettings.Temperature);

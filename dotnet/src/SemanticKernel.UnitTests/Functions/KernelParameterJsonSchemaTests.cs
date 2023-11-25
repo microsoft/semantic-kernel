@@ -51,13 +51,13 @@ public class KernelParameterJsonSchemaTests
   ""required"": [""title"", ""author"", ""year"", ""genre"", ""pages"", ""rating""]
 }";
 
-        KernelParameterJsonSchema schema1 = KernelParameterJsonSchema.Parse(ValidJsonSchema);
-        KernelParameterJsonSchema schema2 = KernelParameterJsonSchema.Parse((ReadOnlySpan<char>)ValidJsonSchema);
-        KernelParameterJsonSchema schema3 = KernelParameterJsonSchema.Parse(Encoding.UTF8.GetBytes(ValidJsonSchema));
+        KernelJsonSchema schema1 = KernelJsonSchema.Parse(ValidJsonSchema);
+        KernelJsonSchema schema2 = KernelJsonSchema.Parse((ReadOnlySpan<char>)ValidJsonSchema);
+        KernelJsonSchema schema3 = KernelJsonSchema.Parse(Encoding.UTF8.GetBytes(ValidJsonSchema));
 
         string expected = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(ValidJsonSchema)); // roundtrip through JsonSerializer to normalize whitespace
 
-        foreach (KernelParameterJsonSchema schema in new[] { schema1, schema2, schema3 })
+        foreach (KernelJsonSchema schema in new[] { schema1, schema2, schema3 })
         {
             Assert.Equal(expected, JsonSerializer.Serialize(schema.RootElement));
             Assert.Equal(expected, JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(schema.ToString())));
@@ -78,14 +78,14 @@ public class KernelParameterJsonSchemaTests
     },
 }";
 
-        Assert.Throws<ArgumentNullException>(() => KernelParameterJsonSchema.Parse((string)null!));
+        Assert.Throws<ArgumentNullException>(() => KernelJsonSchema.Parse((string)null!));
 
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse(string.Empty));
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse(ReadOnlySpan<char>.Empty));
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse(ReadOnlySpan<byte>.Empty));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(string.Empty));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(ReadOnlySpan<char>.Empty));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(ReadOnlySpan<byte>.Empty));
 
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse(InvalidJsonSchema));
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse((ReadOnlySpan<char>)InvalidJsonSchema));
-        Assert.Throws<JsonException>(() => KernelParameterJsonSchema.Parse(Encoding.UTF8.GetBytes(InvalidJsonSchema)));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(InvalidJsonSchema));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse((ReadOnlySpan<char>)InvalidJsonSchema));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(Encoding.UTF8.GetBytes(InvalidJsonSchema)));
     }
 }

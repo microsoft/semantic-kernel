@@ -19,7 +19,7 @@ public class KernelFunctionYamlTests
         Assert.Equal("SayHello", function.Name);
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
         Assert.Equal(2, function.GetMetadata().Parameters.Count);
-        //Assert.Equal(0, function.ModelSettings.Count);
+        //Assert.Equal(0, function.ExecutionSettings.Count);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class KernelFunctionYamlTests
       - name:          language
         description:   The language to generate the greeting in
         default_value: English
-    model_settings:
+    execution_settings:
       - model_id:          gpt-4
         temperature:       1.0
         top_p:             0.0
@@ -104,7 +104,7 @@ public class KernelFunctionYamlTests
       - name:          language
         description:   The language to generate the greeting in
         default_value: English
-    model_settings:
+    execution_settings:
       - model_id:          gpt-4
         temperature:       1.0
         top_p:             0.0

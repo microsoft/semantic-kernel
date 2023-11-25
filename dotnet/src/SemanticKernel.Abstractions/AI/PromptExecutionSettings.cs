@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.AI;
 /// if the service they are calling supports additional properties. For an example please reference
 /// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIRequestSettings implementation.
 /// </summary>
-public class AIRequestSettings
+public class PromptExecutionSettings
 {
     private Dictionary<string, object>? _extensionData;
 

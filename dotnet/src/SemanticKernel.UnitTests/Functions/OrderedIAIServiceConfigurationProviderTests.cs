@@ -69,7 +69,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion())
             .Build();
         var variables = new ContextVariables();
-        var requestSettings = new AIRequestSettings() { ServiceId = "service2" };
+        var requestSettings = new PromptExecutionSettings() { ServiceId = "service2" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -90,7 +90,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion())
             .Build();
         var variables = new ContextVariables();
-        var requestSettings = new AIRequestSettings() { ServiceId = "service3" };
+        var requestSettings = new PromptExecutionSettings() { ServiceId = "service3" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -129,7 +129,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
             .Build();
         var variables = new ContextVariables();
-        var requestSettings = new AIRequestSettings();
+        var requestSettings = new PromptExecutionSettings();
         var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -150,7 +150,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
             .Build();
         var variables = new ContextVariables();
-        var requestSettings = new AIRequestSettings() { ServiceId = "" };
+        var requestSettings = new PromptExecutionSettings() { ServiceId = "" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", requestSettings: requestSettings);
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -176,10 +176,10 @@ public class OrderedIAIServiceConfigurationProviderTests
             .WithAIService<ITextCompletion>("service3", new TextCompletion())
             .Build();
         var variables = new ContextVariables();
-        var modelSettings = new List<AIRequestSettings>();
+        var modelSettings = new List<PromptExecutionSettings>();
         foreach (var serviceId in serviceIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
+            modelSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
         }
         var function = kernel.CreateFunctionFromPrompt("Hello AI", promptTemplateConfig: new PromptTemplateConfig() { ModelSettings = modelSettings });
         var serviceSelector = new OrderedIAIServiceSelector();
@@ -206,12 +206,12 @@ public class OrderedIAIServiceConfigurationProviderTests
 
         public string? ModelId { get; }
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
