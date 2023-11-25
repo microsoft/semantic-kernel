@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Handlebars.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
