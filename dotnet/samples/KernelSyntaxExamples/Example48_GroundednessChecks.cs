@@ -141,7 +141,7 @@ which are not grounded in the original.
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await kernel.InvokeAsync(plan, GroundingText);
+        var results = await plan.InvokeAsync(kernel, GroundingText);
         Console.WriteLine(results.GetValue<string>());
     }
 }
