@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,7 +40,6 @@ public sealed class OpenAICompletionTests : IDisposable
             .Build();
 
         this._kernelBuilder = new KernelBuilder();
-        this._kernelBuilder.WithRetryBasic();
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -176,16 +174,11 @@ public sealed class OpenAICompletionTests : IDisposable
         "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
-        // Arrange
-        var retryConfig = new BasicRetryConfig();
-        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithRetryBasic(retryConfig)
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
@@ -207,13 +200,8 @@ public sealed class OpenAICompletionTests : IDisposable
         "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
-        // Arrange
-        var retryConfig = new BasicRetryConfig();
-        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-
         KernelBuilder builder = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper)
-            .WithRetryBasic(retryConfig);
+            .WithLoggerFactory(this._testOutputHelper);
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);

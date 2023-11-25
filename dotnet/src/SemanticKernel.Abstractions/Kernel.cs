@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
@@ -71,14 +70,14 @@ public sealed class Kernel
         this._serviceSelector;
 
     /// <summary>
-    /// Gets the <see cref="IDelegatingHandlerFactory"/> to use when constructing <see cref="HttpClient"/>
-    /// instances for use in HTTP requests.
+    /// Gets the <see cref="HttpClient"/> to use for HTTP requests.
     /// </summary>
     /// <remarks>
-    /// This is typically only used as part of creating plugins and functions, as that is typically
-    /// when such clients are constructed.
+    /// This is typically only used as part of creating services, plugins, and functions, as that is typically
+    /// when such clients are constructed. This instance may be ignored if an <see cref="HttpClient"/> was provided
+    /// to the relevant component directly or via other means.
     /// </remarks>
-    public IDelegatingHandlerFactory HttpHandlerFactory { get; }
+    public HttpClient? HttpClient { get; }
 
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
@@ -106,7 +105,7 @@ public sealed class Kernel
     /// <param name="aiServiceProvider">The <see cref="IAIServiceProvider"/> used to query for services available through the kernel.</param>
     /// <param name="plugins">The collection of plugins available through the kernel. If null, an empty collection will be used.</param>
     /// <param name="serviceSelector">The <see cref="IAIServiceSelector"/> used to select between multiple AI services.</param>
-    /// <param name="httpHandlerFactory">The <see cref="IDelegatingHandlerFactory"/> to use when constructing <see cref="HttpClient"/> instances for use in HTTP requests.</param>
+    /// <param name="httpClient">The <see cref="HttpClient"/> to use for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
     /// The KernelBuilder class provides a fluent API for constructing a <see cref="Kernel"/> instance.
@@ -115,7 +114,7 @@ public sealed class Kernel
         IAIServiceProvider aiServiceProvider,
         IEnumerable<IKernelPlugin>? plugins = null,
         IAIServiceSelector? serviceSelector = null,
-        IDelegatingHandlerFactory? httpHandlerFactory = null,
+        HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(aiServiceProvider);
@@ -123,7 +122,7 @@ public sealed class Kernel
         this.ServiceProvider = aiServiceProvider;
         this._plugins = plugins is not null ? new KernelPluginCollection(plugins) : null;
         this._serviceSelector = serviceSelector;
-        this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
+        this.HttpClient = httpClient;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
@@ -136,7 +135,7 @@ public sealed class Kernel
     /// <item>
     /// The same <see cref="IAIServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.ServiceProvider"/>.</item>
     /// <item>The same <see cref="IAIServiceSelector"/> reference as is returned by the current instance's <see cref="Kernel.ServiceSelector"/>.</item>
-    /// <item>The same <see cref="IDelegatingHandlerFactory"/> reference as is returned by the current instance's <see cref="Kernel.HttpHandlerFactory"/>.</item>
+    /// <item>The same <see cref="HttpClient"/> reference as is returned by the current instance's <see cref="Kernel.HttpClient"/>.</item>
     /// <item>The same <see cref="ILoggerFactory"/> reference as is returned by the current instance's <see cref="Kernel.LoggerFactory"/>.</item>
     /// <item>
     /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
@@ -157,7 +156,7 @@ public sealed class Kernel
         new(this.ServiceProvider,
             this.Plugins is { Count: > 0 } ? new KernelPluginCollection(this.Plugins) : null,
             this.ServiceSelector,
-            this.HttpHandlerFactory,
+            this.HttpClient,
             this.LoggerFactory)
         {
             FunctionInvoking = this.FunctionInvoking,

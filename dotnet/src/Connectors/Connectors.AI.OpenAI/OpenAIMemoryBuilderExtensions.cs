@@ -35,13 +35,13 @@ public static class OpenAIMemoryBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
+        builder.WithTextEmbeddingGeneration((loggerFactory, injectedClient) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory),
                 loggerFactory));
 
         return builder;
@@ -70,13 +70,13 @@ public static class OpenAIMemoryBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
+        builder.WithTextEmbeddingGeneration((loggerFactory, injectedClient) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 credential,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory),
                 loggerFactory));
 
         return builder;
@@ -103,12 +103,12 @@ public static class OpenAIMemoryBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
+        builder.WithTextEmbeddingGeneration((loggerFactory, injectedClient) =>
             new OpenAITextEmbeddingGeneration(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory),
                 loggerFactory));
 
         return builder;

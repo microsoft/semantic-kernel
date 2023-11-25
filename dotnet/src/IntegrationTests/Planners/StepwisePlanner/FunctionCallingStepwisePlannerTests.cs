@@ -77,8 +77,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
+            .WithLoggerFactory(this._loggerFactory);
 
         builder.WithAzureOpenAIChatCompletionService(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,

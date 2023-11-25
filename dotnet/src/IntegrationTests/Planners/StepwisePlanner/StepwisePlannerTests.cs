@@ -149,8 +149,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
+            .WithLoggerFactory(this._loggerFactory);
 
         if (useChatModel)
         {
