@@ -31,8 +31,8 @@ namespace Microsoft.SemanticKernel;
 /// </para>
 /// <para>
 /// Functions may have any number of parameters. Parameters of type <see cref="ILogger"/> and
-/// <see cref="CancellationToken"/> are filled in from the corresponding members of the <see cref="SKContext"/>;
-/// <see cref="SKContext"/> itself may also be a parameter. A given native function may declare at
+/// <see cref="CancellationToken"/> are filled in from the corresponding members of the <see cref="ContextVariables"/>;
+/// <see cref="ContextVariables"/> itself may also be a parameter. A given native function may declare at
 /// most one parameter of each of these types.  All other parameters must be of a primitive .NET type or
 /// a type attributed with <see cref="TypeConverterAttribute"/>. Functions may return a <see cref="Task"/>,
 /// <see cref="ValueTask"/>, any primitive .NET type or a type attributed with <see cref="TypeConverterAttribute"/>,

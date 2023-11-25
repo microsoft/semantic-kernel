@@ -13,9 +13,9 @@ public class PromptRenderedEventArgs : SKCancelEventArgs
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
-    /// <param name="context">Context related to the event</param>
+    /// <param name="variables">Context variables related to the event</param>
     /// <param name="renderedPrompt">Rendered prompt</param>
-    public PromptRenderedEventArgs(KernelFunction function, SKContext context, string renderedPrompt) : base(function, context)
+    public PromptRenderedEventArgs(KernelFunction function, ContextVariables variables, string renderedPrompt) : base(function, variables)
     {
         this.RenderedPrompt = renderedPrompt;
     }

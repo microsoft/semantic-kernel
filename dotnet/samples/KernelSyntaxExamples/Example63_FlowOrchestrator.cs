@@ -259,12 +259,12 @@ Do not expose the regex unless asked.
             [SKName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
-            SKContext context)
+            ContextVariables variables)
         {
             var chat = this._chat.CreateNewChat(SystemPrompt);
             chat.AddUserMessage(Goal);
 
-            ChatHistory? chatHistory = context.GetChatHistory();
+            ChatHistory? chatHistory = variables.GetChatHistory();
             if (chatHistory?.Any() ?? false)
             {
                 chat.AddRange(chatHistory);
@@ -272,13 +272,13 @@ Do not expose the regex unless asked.
 
             if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
             {
-                context.Variables["email_addresses"] = email;
+                variables["email_addresses"] = email;
 
                 return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
             }
 
-            context.Variables["email_addresses"] = string.Empty;
-            context.PromptInput();
+            variables["email_addresses"] = string.Empty;
+            variables.PromptInput();
 
             return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
         }
@@ -301,7 +301,7 @@ Do not expose the regex unless asked.
             string emailAddress,
             [SKName("answer")][Description("answer, which is going to be the email content")]
             string answer,
-            SKContext context)
+            ContextVariables variables)
         {
             var contract = new Email()
             {
@@ -311,7 +311,7 @@ Do not expose the regex unless asked.
 
             // for demo purpose only
             string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
-            context.Variables["email"] = emailPayload;
+            variables["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;
         }

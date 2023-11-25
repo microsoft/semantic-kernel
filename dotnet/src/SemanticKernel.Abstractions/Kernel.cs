@@ -167,19 +167,6 @@ public sealed class Kernel
         };
 
     /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <returns>SK context</returns>
-    public SKContext CreateNewContext(
-        ContextVariables? variables = null,
-        IReadOnlySKPluginCollection? plugins = null)
-    {
-        return new SKContext(variables);
-    }
-
-    /// <summary>
     /// Gets a configured service from the service provider.
     /// </summary>
     /// <typeparam name="T">Specifies the type of the service being requested.</typeparam>
@@ -202,7 +189,7 @@ public sealed class Kernel
         this._data;
 
     #region internal ===============================================================================
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, SKContext context)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
     {
         var functionInvoking = this.FunctionInvoking;
         if (functionInvoking is null)
@@ -210,7 +197,7 @@ public sealed class Kernel
             return null;
         }
 
-        var eventArgs = new FunctionInvokingEventArgs(function, context);
+        var eventArgs = new FunctionInvokingEventArgs(function, variables);
         functionInvoking.Invoke(this, eventArgs);
         return eventArgs;
     }
@@ -228,7 +215,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, SKContext context, AIRequestSettings? requestSettings)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, AIRequestSettings? requestSettings)
     {
         var promptRendering = this.PromptRendering;
         if (promptRendering is null)
@@ -236,12 +223,12 @@ public sealed class Kernel
             return null;
         }
 
-        var eventArgs = new PromptRenderingEventArgs(function, context, requestSettings);
+        var eventArgs = new PromptRenderingEventArgs(function, variables, requestSettings);
         promptRendering.Invoke(this, eventArgs);
         return eventArgs;
     }
 
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, SKContext context, string renderedPrompt)
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
     {
         var promptRendered = this.PromptRendered;
         if (promptRendered is null)
@@ -249,7 +236,7 @@ public sealed class Kernel
             return null;
         }
 
-        var eventArgs = new PromptRenderedEventArgs(function, context, renderedPrompt);
+        var eventArgs = new PromptRenderedEventArgs(function, variables, renderedPrompt);
         promptRendered.Invoke(this, eventArgs);
         return eventArgs;
     }

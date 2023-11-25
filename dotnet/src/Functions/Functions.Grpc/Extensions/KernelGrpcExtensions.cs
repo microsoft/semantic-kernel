@@ -205,7 +205,7 @@ public static class KernelGrpcExtensions
     {
         var operationParameters = operation.GetParameters();
 
-        async Task<SKContext> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
+        async Task<ContextVariables> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
         {
             try
             {
@@ -215,7 +215,7 @@ public static class KernelGrpcExtensions
                 foreach (var parameter in operationParameters)
                 {
                     //A try to resolve argument parameter name.
-                    if (context.Variables.TryGetValue(parameter.Name, out string? value))
+                    if (variables.TryGetValue(parameter.Name, out string? value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
@@ -228,7 +228,7 @@ public static class KernelGrpcExtensions
 
                 if (result != null)
                 {
-                    context.Variables.Update(result.ToString());
+                    variables.Update(result.ToString());
                 }
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -237,7 +237,7 @@ public static class KernelGrpcExtensions
                 throw;
             }
 
-            return context;
+            return variables;
         }
 
         return SKFunctionFactory.CreateFromMethod(

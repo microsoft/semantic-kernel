@@ -184,8 +184,8 @@ public class SKFunctionMetadataTests
     private static async Task ValidFunctionNameAsync()
     {
         var function = SKFunctionFactory.CreateFromMethod(Method(ValidFunctionName));
-        var context = new SKContext(new ContextVariables(string.Empty));
-        var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
+        var variables = new ContextVariables(string.Empty);
+        var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), variables);
     }
 
     private static MethodInfo Method(Delegate method)

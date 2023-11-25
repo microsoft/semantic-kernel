@@ -95,13 +95,13 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public void Type04(SKContext context)
+    public void Type04(ContextVariables variables)
     {
         Console.WriteLine("Running function type 4");
     }
 
     [SKFunction]
-    public string Type05(SKContext context)
+    public string Type05(ContextVariables variables)
     {
         Console.WriteLine("Running function type 5");
         return "";
@@ -116,11 +116,11 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public async Task<SKContext> Type07Async(SKContext context)
+    public async Task<ContextVariables> Type07Async(ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 7");
-        return context;
+        return variables;
     }
 
     [SKFunction]
@@ -145,20 +145,20 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public void Type11(string x, SKContext context)
+    public void Type11(string x, ContextVariables variables)
     {
         Console.WriteLine("Running function type 11");
     }
 
     [SKFunction]
-    public string Type12(string x, SKContext context)
+    public string Type12(string x, ContextVariables variables)
     {
         Console.WriteLine("Running function type 12");
         return "";
     }
 
     [SKFunction]
-    public async Task<string> Type13Async(string x, SKContext context)
+    public async Task<string> Type13Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 13");
@@ -166,11 +166,11 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public async Task<SKContext> Type14Async(string x, SKContext context)
+    public async Task<ContextVariables> Type14Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 14");
-        return context;
+        return variables;
     }
 
     [SKFunction]
@@ -181,14 +181,14 @@ public class LocalExamplePlugin
     }
 
     [SKFunction]
-    public async Task Type16Async(SKContext context)
+    public async Task Type16Async(ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 16");
     }
 
     [SKFunction]
-    public async Task Type17Async(string x, SKContext context)
+    public async Task Type17Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 17");

@@ -19,10 +19,10 @@ public interface IAIServiceSelector
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">Semantic Kernel context</param>
+    /// <param name="variables">Context variables</param>
     /// <param name="function">Semantic Kernel callable function interface</param>
     /// <returns></returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, KernelFunction function) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService;
 #pragma warning restore CA1716
 }
