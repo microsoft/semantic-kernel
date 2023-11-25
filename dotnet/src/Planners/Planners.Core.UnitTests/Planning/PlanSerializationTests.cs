@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {

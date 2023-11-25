@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
 
 public sealed class PlanVariableExpansionTests
 {
