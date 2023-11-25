@@ -179,7 +179,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by SKName so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelFunctionNameAttribute>(inherit: true)?.Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelNameAttribute>(inherit: true)?.Name?.Trim();
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
@@ -322,7 +322,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
-            KernelFunctionNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelFunctionNameAttribute>(inherit: true);
+            KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
             string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");

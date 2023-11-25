@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel;
 /// "Async", by default the suffix is removed. This attribute can be used to override such heuristics.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter, AllowMultiple = false)]
-public sealed class KernelFunctionNameAttribute : Attribute
+public sealed class KernelNameAttribute : Attribute
 {
     /// <summary>
     /// Initializes the attribute with the name to use.
     /// </summary>
     /// <param name="name">The name.</param>
-    public KernelFunctionNameAttribute(string name) => this.Name = name;
+    public KernelNameAttribute(string name) => this.Name = name;
 
     /// <summary>Gets the specified name.</summary>
     public string Name { get; }

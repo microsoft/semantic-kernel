@@ -181,7 +181,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
     private sealed class MyPlugin
     {
-        [KernelFunction, KernelFunctionName("MyFunction"), System.ComponentModel.Description("My sample function.")]
+        [KernelFunction, KernelName("MyFunction"), System.ComponentModel.Description("My sample function.")]
         public string MyFunction(
             [System.ComponentModel.Description("String parameter")] string parameter1,
             [System.ComponentModel.Description("Enum parameter")] MyEnum parameter2,

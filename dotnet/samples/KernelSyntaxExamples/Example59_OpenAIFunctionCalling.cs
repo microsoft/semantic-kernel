@@ -231,7 +231,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private sealed class WidgetPlugin
     {
-        [KernelFunction, KernelFunctionName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        [KernelFunction, KernelName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
         public string CreateWidget(
             [System.ComponentModel.Description("Widget name")] string name,
             [System.ComponentModel.Description("Widget color")] WidgetColor color

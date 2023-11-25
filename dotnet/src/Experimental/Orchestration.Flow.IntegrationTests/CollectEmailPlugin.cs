@@ -49,9 +49,9 @@ Do not expose the regex unless asked.
 
     [KernelFunction]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
-    [KernelFunctionName("ConfigureEmailAddress")]
+    [KernelName("ConfigureEmailAddress")]
     public async Task<string> CollectEmailAsync(
-        [KernelFunctionName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
+        [KernelName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
         string email,
         ContextVariables variables)
     {

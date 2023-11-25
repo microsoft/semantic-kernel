@@ -254,9 +254,9 @@ Do not expose the regex unless asked.
 
         [KernelFunction]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [KernelFunctionName("ConfigureEmailAddress")]
+        [KernelName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [KernelFunctionName("email_address")]
+            [KernelName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
             ContextVariables variables)
@@ -295,11 +295,11 @@ Do not expose the regex unless asked.
     {
         [KernelFunction]
         [Description("Send email")]
-        [KernelFunctionName("SendEmail")]
+        [KernelName("SendEmail")]
         public string SendEmail(
-            [KernelFunctionName("email_addresses")][Description("target email addresses")]
+            [KernelName("email_addresses")][Description("target email addresses")]
             string emailAddress,
-            [KernelFunctionName("answer")][Description("answer, which is going to be the email content")]
+            [KernelName("answer")][Description("answer, which is going to be the email content")]
             string answer,
             ContextVariables variables)
         {
