@@ -252,11 +252,11 @@ Do not expose the regex unless asked.
             };
         }
 
-        [SKFunction]
+        [KernelFunction]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [SKName("ConfigureEmailAddress")]
+        [KernelFunctionName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email_address")]
+            [KernelFunctionName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
             ContextVariables variables)
@@ -293,13 +293,13 @@ Do not expose the regex unless asked.
 
     public sealed class EmailPluginV2
     {
-        [SKFunction]
+        [KernelFunction]
         [Description("Send email")]
-        [SKName("SendEmail")]
+        [KernelFunctionName("SendEmail")]
         public string SendEmail(
-            [SKName("email_addresses")][Description("target email addresses")]
+            [KernelFunctionName("email_addresses")][Description("target email addresses")]
             string emailAddress,
-            [SKName("answer")][Description("answer, which is going to be the email content")]
+            [KernelFunctionName("answer")][Description("answer, which is going to be the email content")]
             string answer,
             ContextVariables variables)
         {

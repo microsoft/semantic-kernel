@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Provides extension methods for the <see cref="IReadOnlySKPluginCollection"/> implementations for planners.
+/// Provides extension methods for the <see cref="IReadOnlyKernelPluginCollection"/> implementations for planners.
 /// </summary>
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
@@ -28,7 +28,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <returns>A function callback that can be used to retrieve a function from the function provider.</returns>
-    internal static Func<string, string, KernelFunction?> GetFunctionCallback(this IReadOnlySKPluginCollection plugins)
+    internal static Func<string, string, KernelFunction?> GetFunctionCallback(this IReadOnlyKernelPluginCollection plugins)
     {
         return (pluginName, functionName) =>
         {
@@ -47,13 +47,13 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetFunctionsManualAsync(
-        this IReadOnlySKPluginCollection plugins,
+        this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<SKFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -69,23 +69,23 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetJsonSchemaFunctionsManualAsync(
-        this IReadOnlySKPluginCollection plugins,
+        this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
         ILogger? logger = null,
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        static SKJsonSchema? CreateSchema(Type? type, string? description) =>
+        static KernelParameterJsonSchema? CreateSchema(Type? type, string? description) =>
             type is null ?
                 null :
-                SKJsonSchema.Parse(JsonSerializer.Serialize(
+                KernelParameterJsonSchema.Parse(JsonSerializer.Serialize(
                     new JsonSchemaBuilder()
                         .FromType(type)
                         .Description(description ?? string.Empty)
                         .Build()));
 
-        IEnumerable<SKFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
@@ -99,8 +99,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    internal static async Task<IEnumerable<SKFunctionMetadata>> GetFunctionsAsync(
-        this IReadOnlySKPluginCollection plugins,
+    internal static async Task<IEnumerable<KernelFunctionMetadata>> GetFunctionsAsync(
+        this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery,
         ILogger? logger,
@@ -120,8 +120,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    internal static async Task<IEnumerable<SKFunctionMetadata>> GetAvailableFunctionsAsync(
-        this IReadOnlySKPluginCollection plugins,
+    internal static async Task<IEnumerable<KernelFunctionMetadata>> GetAvailableFunctionsAsync(
+        this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
         ILogger? logger = null,
@@ -134,7 +134,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
                 && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
-        List<SKFunctionMetadata>? result = null;
+        List<KernelFunctionMetadata>? result = null;
         var semanticMemoryConfig = config.SemanticMemoryConfig;
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
@@ -144,7 +144,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         }
         else
         {
-            result = new List<SKFunctionMetadata>();
+            result = new List<KernelFunctionMetadata>();
 
             // Remember functions in memory so that they can be searched.
             await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);
@@ -173,13 +173,13 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             .ThenBy(x => x.Name);
     }
 
-    private static async Task<IEnumerable<SKFunctionMetadata>> GetRelevantFunctionsAsync(
-        IEnumerable<SKFunctionMetadata> availableFunctions,
+    private static async Task<IEnumerable<KernelFunctionMetadata>> GetRelevantFunctionsAsync(
+        IEnumerable<KernelFunctionMetadata> availableFunctions,
         IAsyncEnumerable<MemoryQueryResult> memories,
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new List<SKFunctionMetadata>();
+        var relevantFunctions = new List<KernelFunctionMetadata>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
@@ -205,7 +205,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private static async Task RememberFunctionsAsync(
         ISemanticTextMemory memory,
-        List<SKFunctionMetadata> availableFunctions,
+        List<KernelFunctionMetadata> availableFunctions,
         CancellationToken cancellationToken = default)
     {
         foreach (var function in availableFunctions)

@@ -216,8 +216,8 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
-    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    public SKFunctionMetadata GetMetadata()
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    public KernelFunctionMetadata GetMetadata()
     {
         return this.GetMetadataCore();
     }
@@ -225,8 +225,8 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
-    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
-    protected abstract SKFunctionMetadata GetMetadataCore();
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    protected abstract KernelFunctionMetadata GetMetadataCore();
 
     #region private
     private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)

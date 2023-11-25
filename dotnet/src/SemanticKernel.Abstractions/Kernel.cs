@@ -52,9 +52,9 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
-    public SKPluginCollection Plugins =>
+    public KernelPluginCollection Plugins =>
         this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new SKPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
         this._plugins;
 
     /// <summary>
@@ -113,7 +113,7 @@ public sealed class Kernel
     /// </remarks>
     public Kernel(
         IAIServiceProvider aiServiceProvider,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         IAIServiceSelector? serviceSelector = null,
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
@@ -121,7 +121,7 @@ public sealed class Kernel
         Verify.NotNull(aiServiceProvider);
 
         this.ServiceProvider = aiServiceProvider;
-        this._plugins = plugins is not null ? new SKPluginCollection(plugins) : null;
+        this._plugins = plugins is not null ? new KernelPluginCollection(plugins) : null;
         this._serviceSelector = serviceSelector;
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -139,7 +139,7 @@ public sealed class Kernel
     /// <item>The same <see cref="IDelegatingHandlerFactory"/> reference as is returned by the current instance's <see cref="Kernel.HttpHandlerFactory"/>.</item>
     /// <item>The same <see cref="ILoggerFactory"/> reference as is returned by the current instance's <see cref="Kernel.LoggerFactory"/>.</item>
     /// <item>
-    /// A new <see cref="SKPluginCollection"/> instance initialized with the same <see cref="ISKPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
     /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
     /// </item>
     /// <item>
@@ -155,7 +155,7 @@ public sealed class Kernel
     /// </remarks>
     public Kernel Clone() =>
         new(this.ServiceProvider,
-            this.Plugins is { Count: > 0 } ? new SKPluginCollection(this.Plugins) : null,
+            this.Plugins is { Count: > 0 } ? new KernelPluginCollection(this.Plugins) : null,
             this.ServiceSelector,
             this.HttpHandlerFactory,
             this.LoggerFactory)
@@ -172,10 +172,10 @@ public sealed class Kernel
     /// <typeparam name="T">Specifies the type of the service being requested.</typeparam>
     /// <param name="name">The name of the registered service. If a name is not provided, the default service for the specified <typeparamref name="T"/> is returned.</param>
     /// <returns>The instance of the service.</returns>
-    /// <exception cref="SKException">The specified service was not registered.</exception>
+    /// <exception cref="KernelException">The specified service was not registered.</exception>
     public T GetService<T>(string? name = null) where T : IAIService =>
         this.ServiceProvider.GetService<T>(name) ??
-        throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
+        throw new KernelException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -246,7 +246,7 @@ public sealed class Kernel
 
     private Dictionary<string, object?>? _data;
     private CultureInfo _culture = CultureInfo.CurrentCulture;
-    private SKPluginCollection? _plugins;
+    private KernelPluginCollection? _plugins;
     private IAIServiceSelector? _serviceSelector;
 
     #endregion

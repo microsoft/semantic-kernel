@@ -57,7 +57,7 @@ public class MultipleModelTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);

@@ -13,13 +13,13 @@ internal static class OpenApiSchemaExtensions
     /// Gets a JSON serialized representation of an <see cref="OpenApiSchema"/>
     /// </summary>
     /// <param name="schema">The schema.</param>
-    /// <returns>An instance of <see cref="SKJsonSchema"/> that contains the JSON Schema.</returns>
-    internal static SKJsonSchema ToJsonSchema(this OpenApiSchema schema)
+    /// <returns>An instance of <see cref="KernelParameterJsonSchema"/> that contains the JSON Schema.</returns>
+    internal static KernelParameterJsonSchema ToJsonSchema(this OpenApiSchema schema)
     {
         var schemaBuilder = new StringBuilder();
         var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder));
         jsonWriter.Settings.InlineLocalReferences = true;
         schema.SerializeAsV3(jsonWriter);
-        return SKJsonSchema.Parse(schemaBuilder.ToString());
+        return KernelParameterJsonSchema.Parse(schemaBuilder.ToString());
     }
 }

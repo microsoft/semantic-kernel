@@ -126,7 +126,7 @@ public sealed class FunctionCallingStepwisePlanner
                     var result = (await this._kernel.InvokeAsync(pluginFunction, funcContext, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                     chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
                 }
-                catch (SKException)
+                catch (KernelException)
                 {
                     chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
                 }
@@ -322,7 +322,7 @@ public sealed class FunctionCallingStepwisePlanner
         /// This function is used by the <see cref="FunctionCallingStepwisePlanner"/> to indicate when the final answer has been found.
         /// </summary>
         /// <param name="answer">The final answer for the plan.</param>
-        [SKFunction]
+        [KernelFunction]
         [Description("This function is used to send the final answer of a plan to the user.")]
         public string SendFinalAnswer([Description("The final answer")] string answer)
         {

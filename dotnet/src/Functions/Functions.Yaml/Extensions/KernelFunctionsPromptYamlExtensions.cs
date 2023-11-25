@@ -25,7 +25,7 @@ public static class KernelFunctionsPromptYamlExtensions
         string resourceName,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return SKFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -42,6 +42,6 @@ public static class KernelFunctionsPromptYamlExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return SKFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

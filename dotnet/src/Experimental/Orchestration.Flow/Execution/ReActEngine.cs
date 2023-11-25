@@ -238,7 +238,7 @@ internal sealed class ReActEngine
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        var plugin = new SKPlugin(RestrictedPluginName);
+        var plugin = new KernelPlugin(RestrictedPluginName);
 
         kernel.Plugins.Add(plugin);
 
@@ -369,12 +369,12 @@ internal sealed class ReActEngine
         return result;
     }
 
-    private string GetFunctionDescriptions(SKFunctionMetadata[] functions)
+    private string GetFunctionDescriptions(KernelFunctionMetadata[] functions)
     {
         return string.Join("\n", functions.Select(ToManualString));
     }
 
-    private IEnumerable<SKFunctionMetadata> GetAvailableFunctions(Kernel kernel)
+    private IEnumerable<KernelFunctionMetadata> GetAvailableFunctions(Kernel kernel)
     {
         var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
@@ -392,16 +392,16 @@ internal sealed class ReActEngine
             : availableFunctions;
     }
 
-    private static SKFunctionMetadata GetStopAndPromptUserFunction()
+    private static KernelFunctionMetadata GetStopAndPromptUserFunction()
     {
-        SKParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
+        KernelParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = SKJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelParameterJsonSchema.Parse("{\"type\":\"string\"}"),
         };
 
-        return new SKFunctionMetadata(Constants.StopAndPromptFunctionName)
+        return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)
         {
             PluginName = "_REACT_ENGINE_",
             Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
@@ -409,7 +409,7 @@ internal sealed class ReActEngine
         };
     }
 
-    private static string ToManualString(SKFunctionMetadata function)
+    private static string ToManualString(KernelFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
@@ -427,7 +427,7 @@ internal sealed class ReActEngine
         return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
     }
 
-    private static string ToFullyQualifiedName(SKFunctionMetadata function)
+    private static string ToFullyQualifiedName(KernelFunctionMetadata function)
     {
         return $"{function.PluginName}.{function.Name}";
     }

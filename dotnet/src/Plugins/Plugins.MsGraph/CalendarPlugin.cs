@@ -86,9 +86,9 @@ public sealed class CalendarPlugin
     /// <summary>
     /// Add an event to my calendar using <see cref="ContextVariables.Input"/> as the subject.
     /// </summary>
-    [SKFunction, Description("Add an event to my calendar.")]
+    [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(
-        [Description("Event subject"), SKName("input")] string subject,
+        [Description("Event subject"), KernelFunctionName("input")] string subject,
         [Description("Event start date/time as DateTimeOffset")] DateTimeOffset start,
         [Description("Event end date/time as DateTimeOffset")] DateTimeOffset end,
         [Description("Event location (optional)")] string? location = null,
@@ -118,7 +118,7 @@ public sealed class CalendarPlugin
     /// <summary>
     /// Get calendar events with specified optional clauses used to query for messages.
     /// </summary>
-    [SKFunction, Description("Get calendar events.")]
+    [KernelFunction, Description("Get calendar events.")]
     public async Task<string> GetCalendarEventsAsync(
         [Description("Optional limit of the number of events to retrieve.")] int? maxResults = 10,
         [Description("Optional number of events to skip before retrieving results.")] int? skip = 0,

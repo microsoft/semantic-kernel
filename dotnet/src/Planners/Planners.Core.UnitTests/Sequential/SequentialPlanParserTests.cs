@@ -25,20 +25,20 @@ public class SequentialPlanParserTests
     public void CanCallToPlanFromXml()
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmailAsync", "Send an e-mail"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddressAsync", "Get email address")
             }),
-            new SKPlugin("SummarizePlugin", new[]
+            new KernelPlugin("SummarizePlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize an input")
             }),
-            new SKPlugin("WriterPlugin", new[]
+            new KernelPlugin("WriterPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate to french")
             })
         };
 
@@ -101,7 +101,7 @@ public class SequentialPlanParserTests
         var kernel = this.CreateKernel(planString);
 
         // Act
-        Assert.Throws<SKException>(() => planString.ToPlanFromXml("Solve the equation x^2 = 2.", kernel.Plugins.GetFunctionCallback()));
+        Assert.Throws<KernelException>(() => planString.ToPlanFromXml("Solve the equation x^2 = 2.", kernel.Plugins.GetFunctionCallback()));
     }
 
     // Test that contains a #text node in the plan
@@ -114,11 +114,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithTextNodes(string goalText, string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("MockPlugin", new[]
+            new KernelPlugin("MockPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -142,11 +142,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithPartialXml(string goalText, string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("MockPlugin", new[]
+            new KernelPlugin("MockPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -171,11 +171,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithFunctionName(string goalText, string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("Global", new[]
+            new KernelPlugin("Global", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -207,11 +207,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithInvalidFunctionNodes(string planText, bool allowMissingFunctions)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("MockPlugin", new[]
+            new KernelPlugin("MockPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -237,7 +237,7 @@ public class SequentialPlanParserTests
         }
         else
         {
-            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, kernel.Plugins.GetFunctionCallback(), allowMissingFunctions));
+            Assert.Throws<KernelException>(() => planText.ToPlanFromXml(string.Empty, kernel.Plugins.GetFunctionCallback(), allowMissingFunctions));
         }
     }
 
@@ -263,11 +263,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithOtherText(string goalText, string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("MockPlugin", new[]
+            new KernelPlugin("MockPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -291,11 +291,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithOpenApiPlugin(string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("CodeSearch", new[]
+            new KernelPlugin("CodeSearch", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "codesearchresults_post", "Echo an input"),
             }),
         };
 
@@ -322,11 +322,11 @@ public class SequentialPlanParserTests
     public void CanCreatePlanWithIgnoredNodes(string goalText, string planText)
     {
         // Arrange
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("MockPlugin", new[]
+            new KernelPlugin("MockPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Echo", "Echo an input"),
             }),
         };
 
@@ -346,9 +346,9 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[1].Name);
     }
 
-    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new SKPluginCollection();
+        plugins ??= new KernelPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult

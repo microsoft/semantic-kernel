@@ -40,7 +40,7 @@ internal static class Example12_SequentialPlanner
         {
             await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine(e.Message);
             // Create plan error: Not possible to create plan for goal with available functions.
@@ -337,7 +337,7 @@ internal static class Example12_SequentialPlanner
                 Console.WriteLine(plan.State.ToString());
             }
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);

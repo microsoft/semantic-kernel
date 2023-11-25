@@ -116,7 +116,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () => await plan.InvokeAsync(kernel));
+        var ex = await Assert.ThrowsAsync<KernelException>(async () => await plan.InvokeAsync(kernel));
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 

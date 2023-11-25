@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A class to describe the parameters of an SKFunctionFactory in a JSON Schema friendly way.
+/// A class to describe the parameters of an KernelFunctionFactory in a JSON Schema friendly way.
 /// </summary>
 internal sealed class JsonSchemaFunctionParameters
 {
@@ -29,5 +29,5 @@ internal sealed class JsonSchemaFunctionParameters
     /// A dictionary of properties name => JSON Schema.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, SKJsonSchema> Properties { get; set; } = new Dictionary<string, SKJsonSchema>();
+    public Dictionary<string, KernelParameterJsonSchema> Properties { get; set; } = new Dictionary<string, KernelParameterJsonSchema>();
 }

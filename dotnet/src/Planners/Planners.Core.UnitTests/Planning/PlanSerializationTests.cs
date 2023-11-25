@@ -36,8 +36,8 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var expectedSteps = "\"steps\":[{";
-        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
-        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => true);
+        var function2 = KernelFunctionFactory.CreateFromMethod(() => true);
         var plan = new Plan(goal, function1, function2);
 
         // Act
@@ -78,7 +78,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var function = SKFunctionFactory.CreateFromMethod(() => { }, "function");
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
         plan.AddSteps(new Plan(function));
 
@@ -105,7 +105,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var function = SKFunctionFactory.CreateFromMethod(() => { }, "function");
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
         plan.AddSteps(function);
 
@@ -132,9 +132,9 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var function1 = SKFunctionFactory.CreateFromMethod(() => { }, "function1");
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod(() => { }, "function2");
+        var function2 = KernelFunctionFactory.CreateFromMethod(() => { }, "function2");
 
         plan.AddSteps(function1, function2);
 
@@ -162,9 +162,9 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var function1 = SKFunctionFactory.CreateFromMethod(() => { }, "function1");
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod(() => { }, "function2");
+        var function2 = KernelFunctionFactory.CreateFromMethod(() => { }, "function2");
 
         plan.AddSteps(new Plan(function1), new Plan(function2));
 
@@ -182,7 +182,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var plan = new Plan("Write a poem or joke and send it in an e-mail to Kai.");
 
-        var function = SKFunctionFactory.CreateFromMethod(() => { }, "function");
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
         plan.AddSteps(function, function);
 
@@ -230,7 +230,7 @@ public sealed class PlanSerializationTests
             localVariables.TryGetValue("variables", out string? v);
             return localVariables.Input + v;
         };
-        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
         plan.AddSteps(function, function);
 
@@ -270,16 +270,16 @@ public sealed class PlanSerializationTests
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
         var plan = new Plan(goal);
-        var plugins = new SKPluginCollection();
+        var plugins = new KernelPluginCollection();
 
         static string method(ContextVariables localVariables)
         {
             localVariables.TryGetValue("variables", out string? v);
             return localVariables.Input + v;
         };
-        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plugins.Add(new SKPlugin("pluginName", new[] { function }));
+        plugins.Add(new KernelPlugin("pluginName", new[] { function }));
 
         plan.AddSteps(function, function);
 
@@ -329,10 +329,10 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var plugins = new SKPluginCollection();
+        var plugins = new KernelPluginCollection();
 
-        var mockFunction = SKFunctionFactory.CreateFromMethod((string input) => input + input, "functionName");
-        plugins.Add(new SKPlugin("test", new[] { mockFunction }));
+        var mockFunction = KernelFunctionFactory.CreateFromMethod((string input) => input + input, "functionName");
+        plugins.Add(new KernelPlugin("test", new[] { mockFunction }));
 
         plan.AddSteps(new Plan("Step1", mockFunction), new Plan(mockFunction));
 
@@ -366,11 +366,11 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var plugins = new SKPluginCollection();
+        var plugins = new KernelPluginCollection();
 
         var variables = new ContextVariables(stepOutput);
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
         {
             variables.Update(variables.Input + localVariables.Input);
         }, "function");
@@ -382,7 +382,7 @@ public sealed class PlanSerializationTests
         if (requireFunctions)
         {
             // Act + Assert
-            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, plugins));
+            Assert.Throws<KernelException>(() => Plan.FromJson(serializedPlan, plugins));
         }
         else
         {

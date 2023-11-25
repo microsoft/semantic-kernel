@@ -56,7 +56,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             PrintFunction(func);
         }
@@ -64,7 +64,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-    private static void PrintFunction(SKFunctionMetadata func)
+    private static void PrintFunction(KernelFunctionMetadata func)
     {
         Console.WriteLine($"   {func.Name}: {func.Description}");
 

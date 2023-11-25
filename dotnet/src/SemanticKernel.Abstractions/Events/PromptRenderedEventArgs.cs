@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.PromptRendered event.
 /// </summary>
-public class PromptRenderedEventArgs : SKCancelEventArgs
+public class PromptRenderedEventArgs : KernelCancelEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.

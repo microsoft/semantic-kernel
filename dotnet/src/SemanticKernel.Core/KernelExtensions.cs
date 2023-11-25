@@ -34,12 +34,12 @@ public static class KernelExtensions
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<SKParameterMetadata>? parameters = null,
-        SKReturnParameterMetadata? returnParameter = null)
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -60,12 +60,12 @@ public static class KernelExtensions
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<SKParameterMetadata>? parameters = null,
-        SKReturnParameterMetadata? returnParameter = null)
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
@@ -92,7 +92,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -146,7 +146,7 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
         Verify.NotNull(kernel);
@@ -163,7 +163,7 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static IKernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -181,10 +181,10 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
-        ISKPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
+        IKernelPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -198,9 +198,9 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static IKernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
-        ISKPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
+        IKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -237,7 +237,7 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
-    public static ISKPlugin CreatePluginFromPromptDirectory(
+    public static IKernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
@@ -252,7 +252,7 @@ public static class KernelExtensions
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
 
-        SKPlugin plugin = new(pluginName);
+        KernelPlugin plugin = new(pluginName);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
@@ -327,13 +327,13 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
-    public static ISKPlugin ImportPluginFromPromptDirectory(
+    public static IKernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        ISKPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        IKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -355,7 +355,7 @@ public static class KernelExtensions
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.InvokeAsync((KernelFunction)SKFunctionFactory.CreateFromPrompt(
+        kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             requestSettings,
             functionName,

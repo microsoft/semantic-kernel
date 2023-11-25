@@ -69,7 +69,7 @@ public sealed class PlanTests
 
         var actualInput = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             actualInput = variables.Input;
             return "fake result";
@@ -97,7 +97,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             return "fake result";
@@ -124,13 +124,13 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
@@ -157,13 +157,13 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
@@ -190,13 +190,13 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
@@ -223,13 +223,13 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
@@ -263,7 +263,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal(planInput, variables.Input);
             Assert.Equal("foo", variables["variables"]);
@@ -271,7 +271,7 @@ public sealed class PlanTests
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             Assert.Equal("fake result of function 1", variables.Input);
             Assert.Equal("bar", variables["variables"]);
@@ -312,7 +312,7 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         static void method() => throw new ArgumentException("Error message");
-        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
         plan.AddSteps(function, function);
 
@@ -334,7 +334,7 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         static void method() => throw new ArgumentException("Error message");
-        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
         plan.AddSteps(new Plan(function), new Plan(function));
 
@@ -354,25 +354,25 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var childFunction1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var childFunction1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return "Child 1 output!" + variables.Input;
         },
         "childFunction1");
 
-        var childFunction2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var childFunction2 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return "Child 2 is happy about " + variables.Input;
         },
         "childFunction2");
 
-        var childFunction3 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var childFunction3 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return "Child 3 heard " + variables.Input;
         },
         "childFunction3");
 
-        var nodeFunction1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var nodeFunction1 = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return variables.Input + " - this just happened.";
         },
@@ -398,8 +398,8 @@ public sealed class PlanTests
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
-        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => true);
+        var function2 = KernelFunctionFactory.CreateFromMethod(() => true);
         var plan = new Plan(goal, function1, function2);
 
         // Assert
@@ -427,7 +427,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return "Here is a poem about " + variables.Input;
         },
@@ -450,7 +450,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             variables.TryGetValue("type", out string? t);
             return $"Here is a {t} about " + variables.Input;
@@ -479,7 +479,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             variables.TryGetValue("type", out string? t);
             return $"Here is a {t} about " + variables.Input;
@@ -519,7 +519,7 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             variables.TryGetValue("type", out string? t);
             return $"Here is a {t} about " + variables.Input;
@@ -579,19 +579,19 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var outlineFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var outlineFunction = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return $"Here is a {variables["chapterCount"]} chapter outline about " + variables.Input;
         },
         "outlineFunction");
 
-        var elementAtIndexFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var elementAtIndexFunction = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return $"Outline section #{variables["index"]} of {variables["count"]}: " + variables.Input;
         },
         "elementAtIndexFunction");
 
-        var novelChapterFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var novelChapterFunction = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return $"Chapter #{variables["chapterIndex"]}: {variables.Input}\nTheme:{variables["theme"]}\nPreviously:{variables["previousChapter"]}";
         },
@@ -691,7 +691,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
             return $"Here is a payload '{variables["payload"]}' for " + variables.Input;
         },
@@ -720,13 +720,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         List<KernelFunction> functions = new();
 
         // Arrange
-        [SKName("WritePoem")]
+        [KernelFunctionName("WritePoem")]
         static string Function2() => "Poem";
-        functions.Add(SKFunctionFactory.CreateFromMethod(Method(Function2)));
+        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function2)));
 
-        [SKName("SendEmail")]
+        [KernelFunctionName("SendEmail")]
         static string Function3() => "Sent Email";
-        functions.Add(SKFunctionFactory.CreateFromMethod(Method(Function3)));
+        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function3)));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
@@ -741,8 +741,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
             invokingListFunctions.Add(e.Function.GetMetadata());
@@ -785,8 +785,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 0;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -831,8 +831,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 0;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -883,8 +883,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -937,8 +937,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -993,8 +993,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 2;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -1048,8 +1048,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expectedInvokedHandlerInvocations = 1;
         var invokingCalls = 0;
         var invokedCalls = 0;
-        var invokingListFunctions = new List<SKFunctionMetadata>();
-        var invokedListFunctions = new List<SKFunctionMetadata>();
+        var invokingListFunctions = new List<KernelFunctionMetadata>();
+        var invokedListFunctions = new List<KernelFunctionMetadata>();
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
@@ -1115,7 +1115,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         return method.Method;
     }
 
-    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<ISKPlugin>? plugins = null)
+    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<IKernelPlugin>? plugins = null)
     {
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();

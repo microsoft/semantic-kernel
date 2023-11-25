@@ -143,7 +143,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -252,7 +252,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
             this._logger.LogError(ErrorMessage);
 
-            throw new SKException(ErrorMessage);
+            throw new KernelException(ErrorMessage);
         }
 
         return response;

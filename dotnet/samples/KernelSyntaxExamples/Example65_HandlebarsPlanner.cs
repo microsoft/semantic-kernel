@@ -128,7 +128,7 @@ public static class Example65_HandlebarsPlanner
             // Load additional plugins to enable planner but not enough for the given goal.
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             /*
                 Unable to create plan for goal with available functions.

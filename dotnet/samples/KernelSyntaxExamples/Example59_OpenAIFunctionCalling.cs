@@ -90,7 +90,7 @@ public static class Example59_OpenAIFunctionCalling
         OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
-            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
+            // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
             if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
@@ -183,7 +183,7 @@ public static class Example59_OpenAIFunctionCalling
                 Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
             }
 
-            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
+            // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
             if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
@@ -231,7 +231,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private sealed class WidgetPlugin
     {
-        [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        [KernelFunction, KernelFunctionName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
         public string CreateWidget(
             [System.ComponentModel.Description("Widget name")] string name,
             [System.ComponentModel.Description("Widget color")] WidgetColor color

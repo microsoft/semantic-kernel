@@ -132,10 +132,10 @@ public sealed class HandlebarsPromptTemplateTests
 
     private sealed class Foo
     {
-        [SKFunction, Description("Return Bar")]
+        [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
-        [SKFunction, Description("Return Baz")]
+        [KernelFunction, Description("Return Baz")]
         public async Task<string> BazAsync()
         {
             await Task.Delay(1000);

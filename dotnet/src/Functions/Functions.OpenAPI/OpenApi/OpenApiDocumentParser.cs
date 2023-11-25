@@ -95,7 +95,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new SKException("Parsing of OpenAPI document failed.");
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
             // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
@@ -218,12 +218,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         {
             if (parameter.In == null)
             {
-                throw new SKException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
+                throw new KernelException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
             if (parameter.Style == null)
             {
-                throw new SKException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
+                throw new KernelException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
             var restParameter = new RestApiOperationParameter(
@@ -268,7 +268,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt)) ?? throw new SKException($"Neither of the media types of {operationId} is supported.");
+        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt)) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
@@ -309,7 +309,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (level > PayloadPropertiesHierarchyMaxDepth)
         {
-            throw new SKException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            throw new KernelException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
         }
 
         var result = new List<RestApiOperationPayloadProperty>();
@@ -360,7 +360,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             PrimitiveType.Date => ((OpenApiDate)value).Value.ToString("o").Substring(0, 10),
             PrimitiveType.DateTime => ((OpenApiDateTime)value).Value.ToString(CultureInfo.InvariantCulture),
             PrimitiveType.Password => ((OpenApiPassword)value).Value.ToString(CultureInfo.InvariantCulture),
-            _ => throw new SKException($"The value type - {value.PrimitiveType} is not supported."),
+            _ => throw new KernelException($"The value type - {value.PrimitiveType} is not supported."),
         };
     }
 
@@ -382,7 +382,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             if (!ignoreNonCompliantErrors)
             {
-                throw new SKException(message);
+                throw new KernelException(message);
             }
         }
     }

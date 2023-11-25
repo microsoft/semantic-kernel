@@ -47,11 +47,11 @@ Do not expose the regex unless asked.
         };
     }
 
-    [SKFunction]
+    [KernelFunction]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
-    [SKName("ConfigureEmailAddress")]
+    [KernelFunctionName("ConfigureEmailAddress")]
     public async Task<string> CollectEmailAsync(
-        [SKName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
+        [KernelFunctionName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
         string email,
         ContextVariables variables)
     {

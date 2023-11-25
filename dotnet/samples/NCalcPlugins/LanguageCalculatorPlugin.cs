@@ -66,7 +66,7 @@ Question: {{ $input }}
     /// </summary>
     public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = SKFunctionFactory.CreateFromPrompt(
+        this._mathTranslator = KernelFunctionFactory.CreateFromPrompt(
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
@@ -87,7 +87,7 @@ Question: {{ $input }}
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
     /// <param name="kernel">The contextkernel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
+    [KernelFunction, KernelFunctionName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,

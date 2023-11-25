@@ -46,7 +46,7 @@ public sealed class TimePlugin
     /// {{time.date}} => Sunday, 12 January, 2031
     /// </example>
     /// <returns> The current date </returns>
-    [SKFunction, Description("Get the current date")]
+    [KernelFunction, Description("Get the current date")]
     public string Date(IFormatProvider? formatProvider = null) =>
         // Example: Sunday, 12 January, 2025
         DateTimeOffset.Now.ToString("D", formatProvider);
@@ -58,7 +58,7 @@ public sealed class TimePlugin
     /// {{time.today}} => Sunday, 12 January, 2031
     /// </example>
     /// <returns> The current date </returns>
-    [SKFunction, Description("Get the current date")]
+    [KernelFunction, Description("Get the current date")]
     public string Today(IFormatProvider? formatProvider = null) =>
         // Example: Sunday, 12 January, 2025
         this.Date(formatProvider);
@@ -70,7 +70,7 @@ public sealed class TimePlugin
     /// {{time.now}} => Sunday, January 12, 2025 9:15 PM
     /// </example>
     /// <returns> The current date and time in the local time zone </returns>
-    [SKFunction, Description("Get the current date and time in the local time zone")]
+    [KernelFunction, Description("Get the current date and time in the local time zone")]
     public string Now(IFormatProvider? formatProvider = null) =>
         // Sunday, January 12, 2025 9:15 PM
         DateTimeOffset.Now.ToString("f", formatProvider);
@@ -82,7 +82,7 @@ public sealed class TimePlugin
     /// {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
     /// </example>
     /// <returns> The current UTC date and time </returns>
-    [SKFunction, Description("Get the current UTC date and time")]
+    [KernelFunction, Description("Get the current UTC date and time")]
     public string UtcNow(IFormatProvider? formatProvider = null) =>
         // Sunday, January 13, 2025 5:15 AM
         DateTimeOffset.UtcNow.ToString("f", formatProvider);
@@ -94,7 +94,7 @@ public sealed class TimePlugin
     /// {{time.time}} => 09:15:07 PM
     /// </example>
     /// <returns> The current time </returns>
-    [SKFunction, Description("Get the current time")]
+    [KernelFunction, Description("Get the current time")]
     public string Time(IFormatProvider? formatProvider = null) =>
         // Example: 09:15:07 PM
         DateTimeOffset.Now.ToString("hh:mm:ss tt", formatProvider);
@@ -106,7 +106,7 @@ public sealed class TimePlugin
     /// {{time.year}} => 2025
     /// </example>
     /// <returns> The current year </returns>
-    [SKFunction, Description("Get the current year")]
+    [KernelFunction, Description("Get the current year")]
     public string Year(IFormatProvider? formatProvider = null) =>
         // Example: 2025
         DateTimeOffset.Now.ToString("yyyy", formatProvider);
@@ -118,7 +118,7 @@ public sealed class TimePlugin
     /// {time.month}} => January
     /// </example>
     /// <returns> The current month name </returns>
-    [SKFunction, Description("Get the current month name")]
+    [KernelFunction, Description("Get the current month name")]
     public string Month(IFormatProvider? formatProvider = null) =>
         // Example: January
         DateTimeOffset.Now.ToString("MMMM", formatProvider);
@@ -130,7 +130,7 @@ public sealed class TimePlugin
     /// {{time.monthNumber}} => 01
     /// </example>
     /// <returns> The current month number </returns>
-    [SKFunction, Description("Get the current month number")]
+    [KernelFunction, Description("Get the current month number")]
     public string MonthNumber(IFormatProvider? formatProvider = null) =>
         // Example: 01
         DateTimeOffset.Now.ToString("MM", formatProvider);
@@ -142,7 +142,7 @@ public sealed class TimePlugin
     /// {{time.day}} => 12
     /// </example>
     /// <returns> The current day of the month </returns>
-    [SKFunction, Description("Get the current day of the month")]
+    [KernelFunction, Description("Get the current day of the month")]
     public string Day(IFormatProvider? formatProvider = null) =>
         // Example: 12
         DateTimeOffset.Now.ToString("dd", formatProvider);
@@ -155,9 +155,9 @@ public sealed class TimePlugin
     /// {{time.daysAgo}} => Sunday, January 12, 2025 9:15 PM
     /// </example>
     /// <returns> The date the provided number of days before today </returns>
-    [SKFunction]
+    [KernelFunction]
     [Description("Get the date offset by a provided number of days from today")]
-    public string DaysAgo([Description("The number of days to offset from today"), SKName("input")] double daysOffset, IFormatProvider? formatProvider = null) =>
+    public string DaysAgo([Description("The number of days to offset from today"), KernelFunctionName("input")] double daysOffset, IFormatProvider? formatProvider = null) =>
         DateTimeOffset.Now.AddDays(-daysOffset).ToString("D", formatProvider);
 
     /// <summary>
@@ -167,7 +167,7 @@ public sealed class TimePlugin
     /// {{time.dayOfWeek}} => Sunday
     /// </example>
     /// <returns> The current day of the week </returns>
-    [SKFunction, Description("Get the current day of the week")]
+    [KernelFunction, Description("Get the current day of the week")]
     public string DayOfWeek(IFormatProvider? formatProvider = null) =>
         // Example: Sunday
         DateTimeOffset.Now.ToString("dddd", formatProvider);
@@ -179,7 +179,7 @@ public sealed class TimePlugin
     /// {{time.hour}} => 9 PM
     /// </example>
     /// <returns> The current clock hour </returns>
-    [SKFunction, Description("Get the current clock hour")]
+    [KernelFunction, Description("Get the current clock hour")]
     public string Hour(IFormatProvider? formatProvider = null) =>
         // Example: 9 PM
         DateTimeOffset.Now.ToString("h tt", formatProvider);
@@ -191,7 +191,7 @@ public sealed class TimePlugin
     /// {{time.hourNumber}} => 21
     /// </example>
     /// <returns> The current clock 24-hour number </returns>
-    [SKFunction, Description("Get the current clock 24-hour number")]
+    [KernelFunction, Description("Get the current clock 24-hour number")]
     public string HourNumber(IFormatProvider? formatProvider = null) =>
         // Example: 21
         DateTimeOffset.Now.ToString("HH", formatProvider);
@@ -204,10 +204,10 @@ public sealed class TimePlugin
     /// </example>
     /// <returns> The date of the last instance of this day name </returns>
     /// <exception cref="ArgumentOutOfRangeException">dayName is not a recognized name of a day of the week</exception>
-    [SKFunction]
+    [KernelFunction]
     [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
     public string DateMatchingLastDayName(
-        [Description("The day name to match"), SKName("input")] DayOfWeek dayName,
+        [Description("The day name to match"), KernelFunctionName("input")] DayOfWeek dayName,
         IFormatProvider? formatProvider = null)
     {
         DateTimeOffset dateTime = DateTimeOffset.Now;
@@ -232,7 +232,7 @@ public sealed class TimePlugin
     /// {{time.minute}} => 15
     /// </example>
     /// <returns> The minutes on the current hour </returns>
-    [SKFunction, Description("Get the minutes on the current hour")]
+    [KernelFunction, Description("Get the minutes on the current hour")]
     public string Minute(IFormatProvider? formatProvider = null) =>
         // Example: 15
         DateTimeOffset.Now.ToString("mm", formatProvider);
@@ -244,7 +244,7 @@ public sealed class TimePlugin
     /// {{time.second}} => 7
     /// </example>
     /// <returns> The seconds on the current minute </returns>
-    [SKFunction, Description("Get the seconds on the current minute")]
+    [KernelFunction, Description("Get the seconds on the current minute")]
     public string Second(IFormatProvider? formatProvider = null) =>
         // Example: 07
         DateTimeOffset.Now.ToString("ss", formatProvider);
@@ -256,7 +256,7 @@ public sealed class TimePlugin
     /// {{time.timeZoneOffset}} => -08:00
     /// </example>
     /// <returns> The local time zone offset from UTC </returns>
-    [SKFunction, Description("Get the local time zone offset from UTC")]
+    [KernelFunction, Description("Get the local time zone offset from UTC")]
     public string TimeZoneOffset(IFormatProvider? formatProvider = null) =>
         // Example: -08:00
         DateTimeOffset.Now.ToString("%K", formatProvider);
@@ -271,7 +271,7 @@ public sealed class TimePlugin
     /// Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
     /// </remark>
     /// <returns> The local time zone name </returns>
-    [SKFunction, Description("Get the local time zone name")]
+    [KernelFunction, Description("Get the local time zone name")]
     public string TimeZoneName() =>
         // Example: PST
         // Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
