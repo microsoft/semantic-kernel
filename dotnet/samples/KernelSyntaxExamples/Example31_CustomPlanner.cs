@@ -168,7 +168,7 @@ public class MarkupPlugin
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await kernel.InvokeAsync(plan);
+        var result = await plan.InvokeAsync(kernel);
         return result?.GetValue<string>()! ?? string.Empty;
     }
 }

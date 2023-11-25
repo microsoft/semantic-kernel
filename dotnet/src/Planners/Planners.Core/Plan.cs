@@ -20,8 +20,10 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="KernelFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : KernelFunction
+public sealed class Plan
 {
+    internal const string MainKey = "INPUT";
+
     /// <summary>
     /// State of the plan
     /// </summary>
@@ -68,9 +70,11 @@ public sealed class Plan : KernelFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
-    public Plan(string goal) : base(GetRandomPlanName(), goal)
+    public Plan(string goal)
     {
-        this.PluginName = nameof(Plan);
+        this.PluginName = nameof(Plan); // TODO markwallace - remove this
+        this.Name = GetRandomPlanName();
+        this.Description = goal;
     }
 
     /// <summary>
@@ -97,9 +101,11 @@ public sealed class Plan : KernelFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
-    public Plan(KernelFunction function) : base(function.Name, function.Description, function.ModelSettings)
+    public Plan(KernelFunction function)
     {
         this.Function = function;
+        this.Name = function.Name;
+        this.Description = function.Description;
     }
 
     /// <summary>
@@ -122,9 +128,11 @@ public sealed class Plan : KernelFunction
         ContextVariables state,
         ContextVariables parameters,
         IList<string> outputs,
-        IReadOnlyList<Plan> steps) : base(name, description)
+        IReadOnlyList<Plan> steps)
     {
-        this.PluginName = pluginName;
+        this.PluginName = pluginName; // TODO markwallace - remove this
+        this.Name = name;
+        this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
         this.Parameters = parameters;
@@ -185,7 +193,7 @@ public sealed class Plan : KernelFunction
     /// </remarks>
     public void AddSteps(params KernelFunction[] steps)
     {
-        this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
+        this._steps.AddRange(steps.Select(step => new Plan(step)));
     }
 
     /// <summary>
@@ -224,9 +232,30 @@ public sealed class Plan : KernelFunction
     }
 
     #region ISKFunction implementation
+    /// <summary>
+    /// Gets the name of the function.
+    /// </summary>
+    /// <remarks>
+    /// The name is used anywhere the function needs to be identified, such as in plans describing what functions
+    /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
+    /// handled in an ordinal case-insensitive manner.
+    /// </remarks>
+    public string Name { get; }
 
-    /// <inheritdoc/>
-    protected override SKFunctionMetadata GetMetadataCore()
+    /// <summary>
+    /// Gets a description of the function.
+    /// </summary>
+    /// <remarks>
+    /// The description may be supplied to a model in order to elaborate on the function's purpose,
+    /// in case it may be beneficial for the model to recommend invoking the function.
+    /// </remarks>
+    public string Description { get; }
+
+    /// <summary>
+    /// Gets the metadata describing the function.
+    /// </summary>
+    /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
+    public SKFunctionMetadata GetMetadata()
     {
         if (this.Function is not null)
         {
@@ -263,13 +292,36 @@ public sealed class Plan : KernelFunction
         };
     }
 
-    /// <inheritdoc/>
-    protected override async Task<FunctionResult> InvokeCoreAsync(
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="input">Plan input</param>
+    public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
-        ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+        string input)
     {
+        var contextVariables = new ContextVariables();
+        contextVariables.Update(input);
+
+        return await this.InvokeAsync(kernel, contextVariables).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="variables">Context variables</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task<FunctionResult> InvokeAsync(
+    Kernel kernel,
+    ContextVariables? variables = null,
+    AIRequestSettings? requestSettings = null,
+    CancellationToken cancellationToken = default)
+    {
+        variables ??= new ContextVariables();
         var result = new FunctionResult(this.Name, variables);
 
         if (this.Function is not null)
@@ -317,17 +369,6 @@ public sealed class Plan : KernelFunction
         return result;
     }
 
-    /// <inheritdoc/>
-    protected override IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
-        Kernel kernel,
-        ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        // Implementation will be added in future streaming feature iteration
-        throw new NotSupportedException("Streaming currently is not supported for plans");
-    }
-
     #endregion ISKFunction implementation
 
     /// <summary>
@@ -371,9 +412,9 @@ public sealed class Plan : KernelFunction
             var functionVariables = this.GetNextStepVariables(variables, step);
 
             // Execute the step
-            var result = await kernel.InvokeAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var result = await step.InvokeAsync(kernel, functionVariables, null, cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Variables.Input.Trim();
+            var resultValue = (result.TryGetVariableValue(MainKey, out string? value) ? value : string.Empty).Trim();
 
             #region Update State
 
@@ -396,7 +437,7 @@ public sealed class Plan : KernelFunction
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGetValue(item, out string? val))
+                if (result.TryGetVariableValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -508,7 +549,7 @@ public sealed class Plan : KernelFunction
             {
                 functionResult.Metadata[output] = value;
             }
-            else if (functionResult.Variables.TryGetValue(output, out var val))
+            else if (functionResult.TryGetVariableValue(output, out var val))
             {
                 functionResult.Metadata[output] = val;
             }
@@ -563,7 +604,7 @@ public sealed class Plan : KernelFunction
         var functionParameters = step.GetMetadata();
         foreach (var param in functionParameters.Parameters)
         {
-            if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
+            if (param.Name.Equals(MainKey, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
