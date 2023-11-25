@@ -7,49 +7,49 @@ namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
 
 public class KernelFunctionYamlTests
 {
-  [Fact]
-  public void ItShouldCreateFunctionFromPromptYamlWithNoModelSettings()
-  {
-    // Arrange
-    // Act
-    var function = KernelFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithNoModelSettings()
+    {
+        // Arrange
+        // Act
+        var function = KernelFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
 
-    // Assert
-    Assert.NotNull(function);
-    Assert.Equal("SayHello", function.Name);
-    Assert.Equal("Say hello to the specified person using the specified language", function.Description);
-    Assert.Equal(2, function.GetMetadata().Parameters.Count);
-    //Assert.Equal(0, function.ExecutionSettings.Count);
-  }
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
+        Assert.Equal(2, function.GetMetadata().Parameters.Count);
+        //Assert.Equal(0, function.ExecutionSettings.Count);
+    }
 
-  [Fact]
-  public void ItShouldCreateFunctionFromPromptYaml()
-  {
-    // Arrange
-    // Act
-    var function = KernelFunctionYaml.FromPromptYaml(this._yaml);
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYaml()
+    {
+        // Arrange
+        // Act
+        var function = KernelFunctionYaml.FromPromptYaml(this._yaml);
 
-    // Assert
-    Assert.NotNull(function);
-    Assert.Equal("SayHello", function.Name);
-    Assert.Equal("Say hello to the specified person using the specified language", function.Description);
-  }
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
+    }
 
-  [Fact]
-  public void ItShouldCreateFunctionFromPromptYamlWithCustomModelSettings()
-  {
-    // Arrange
-    // Act
-    var function = KernelFunctionYaml.FromPromptYaml(this._yamlWithCustomSettings);
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithCustomModelSettings()
+    {
+        // Arrange
+        // Act
+        var function = KernelFunctionYaml.FromPromptYaml(this._yamlWithCustomSettings);
 
-    // Assert
-    Assert.NotNull(function);
-    Assert.Equal("SayHello", function.Name);
-    Assert.Equal("Say hello to the specified person using the specified language", function.Description);
-    Assert.Equal(2, function.GetMetadata().Parameters.Count);
-  }
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("SayHello", function.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", function.Description);
+        Assert.Equal(2, function.GetMetadata().Parameters.Count);
+    }
 
-  private readonly string _yamlNoModelSettings = @"
+    private readonly string _yamlNoModelSettings = @"
     template_format: semantic-kernel
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
@@ -63,7 +63,7 @@ public class KernelFunctionYamlTests
         default_value: English
 ";
 
-  private readonly string _yaml = @"
+    private readonly string _yaml = @"
     template_format: semantic-kernel
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
@@ -92,7 +92,7 @@ public class KernelFunctionYamlTests
         stop_sequences:    [ ""foo"", ""bar"", ""baz"" ]
 ";
 
-  private readonly string _yamlWithCustomSettings = @"
+    private readonly string _yamlWithCustomSettings = @"
     template_format: semantic-kernel
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language

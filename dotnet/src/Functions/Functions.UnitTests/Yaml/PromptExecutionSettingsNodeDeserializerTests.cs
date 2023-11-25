@@ -13,29 +13,29 @@ namespace SemanticKernel.Functions.UnitTests.Yaml;
 /// </summary>
 public sealed class PromptExecutionSettingsNodeDeserializerTests
 {
-  [Fact]
-  public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
-  {
-    // Arrange
-    var deserializer = new DeserializerBuilder()
-        .WithNamingConvention(UnderscoredNamingConvention.Instance)
-        .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
-        .Build();
+    [Fact]
+    public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
+    {
+        // Arrange
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
+            .Build();
 
-    // Act
-    var semanticFunctionConfig = deserializer.Deserialize<PromptFunctionModel>(this._yaml);
+        // Act
+        var semanticFunctionConfig = deserializer.Deserialize<PromptFunctionModel>(this._yaml);
 
-    // Assert
-    Assert.NotNull(semanticFunctionConfig);
-    Assert.Equal("SayHello", semanticFunctionConfig.Name);
-    Assert.Equal("Say hello to the specified person using the specified language", semanticFunctionConfig.Description);
-    Assert.Equal(2, semanticFunctionConfig.InputParameters.Count);
-    Assert.Equal("language", semanticFunctionConfig.InputParameters[1].Name);
-    Assert.Equal(2, semanticFunctionConfig.ExecutionSettings.Count);
-    Assert.Equal("gpt-3.5", semanticFunctionConfig.ExecutionSettings[1].ModelId);
-  }
+        // Assert
+        Assert.NotNull(semanticFunctionConfig);
+        Assert.Equal("SayHello", semanticFunctionConfig.Name);
+        Assert.Equal("Say hello to the specified person using the specified language", semanticFunctionConfig.Description);
+        Assert.Equal(2, semanticFunctionConfig.InputParameters.Count);
+        Assert.Equal("language", semanticFunctionConfig.InputParameters[1].Name);
+        Assert.Equal(2, semanticFunctionConfig.ExecutionSettings.Count);
+        Assert.Equal("gpt-3.5", semanticFunctionConfig.ExecutionSettings[1].ModelId);
+    }
 
-  private readonly string _yaml = @"
+    private readonly string _yaml = @"
     template_format: semantic-kernel
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
