@@ -108,7 +108,6 @@ steps:
 
         var builder = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithRetryBasic()
             .WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,

@@ -2,9 +2,9 @@
 
 using System;
 using System.Globalization;
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelBuilder
 {
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
-    private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
+    private HttpClient? _httpClient;
     private readonly AIServiceCollection _aiServices = new();
     private IAIServiceSelector? _serviceSelector;
     private CultureInfo? _culture;
@@ -41,7 +41,7 @@ public sealed class KernelBuilder
             this._aiServices.Build(),
             new KernelPluginCollection(),
             this._serviceSelector,
-            this._httpHandlerFactory,
+            this._httpClient,
             this._loggerFactory
         );
 #pragma warning restore CS8604 // Possible null reference argument.
@@ -67,14 +67,14 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add a http handler factory to the kernel to be built.
+    /// Add an <see cref="HttpClient"/> to the kernel to be built.
     /// </summary>
-    /// <param name="httpHandlerFactory">Http handler factory to add.</param>
-    /// <returns>Updated kernel builder including the http handler factory.</returns>
-    public KernelBuilder WithHttpHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    /// <param name="httpClient"><see cref="HttpClient"/> to add.</param>
+    /// <returns>Updated kernel builder including the client.</returns>
+    public KernelBuilder WithHttpClient(HttpClient httpClient)
     {
-        Verify.NotNull(httpHandlerFactory);
-        this._httpHandlerFactory = httpHandlerFactory;
+        Verify.NotNull(httpClient);
+        this._httpClient = httpClient;
         return this;
     }
 
@@ -136,10 +136,10 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<ILoggerFactory, IDelegatingHandlerFactory, TService> factory,
+        Func<ILoggerFactory, HttpClient?, TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpClient), setAsDefault);
         return this;
     }
 

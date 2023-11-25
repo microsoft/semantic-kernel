@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
@@ -78,7 +76,7 @@ public static class Example40_DIContainer
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
         collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
-        collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
+        collection.AddHttpClient();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 

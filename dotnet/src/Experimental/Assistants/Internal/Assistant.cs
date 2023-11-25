@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -93,12 +92,7 @@ internal sealed class Assistant : IAssistant
         var services = new AIServiceCollection();
         services.SetService<IChatCompletion>(chatService);
         services.SetService<ITextCompletion>(chatService);
-        this.Kernel =
-            new Kernel(
-                services.Build(),
-                plugins,
-                httpHandlerFactory: NullHttpHandlerFactory.Instance,
-                loggerFactory: null);
+        this.Kernel = new Kernel(services.Build(), plugins);
     }
 
     /// <inheritdoc/>

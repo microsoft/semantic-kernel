@@ -166,7 +166,7 @@ public static class KernelGrpcExtensions
 
         var plugin = new KernelPlugin(pluginName);
 
-        var client = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, httpClient, kernel.LoggerFactory);
+        var client = HttpClientProvider.GetHttpClient(httpClient ?? kernel.HttpClient, kernel.LoggerFactory);
 
         var runner = new GrpcOperationRunner(client);
 

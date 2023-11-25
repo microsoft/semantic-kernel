@@ -212,12 +212,6 @@ provides:
                 TestConfiguration.AzureOpenAI.ApiKey,
                 true,
                 setAsDefault: true)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
             .WithLoggerFactory(loggerFactory);
     }
 

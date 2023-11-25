@@ -120,7 +120,6 @@ public sealed class SequentialPlannerTests : IDisposable
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         var builder = new KernelBuilder().WithLoggerFactory(this._logger);
-        builder.WithRetryBasic();
 
         if (useChatModel)
         {
