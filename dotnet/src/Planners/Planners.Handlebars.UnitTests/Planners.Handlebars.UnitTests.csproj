@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel.Planners.Core.UnitTests</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars.UnitTests</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planners.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
+    <ProjectReference Include="..\Planners.Handlebars\Planners.Handlebars.csproj" />
   </ItemGroup>
 
 </Project>
