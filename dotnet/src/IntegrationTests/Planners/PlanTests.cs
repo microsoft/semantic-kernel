@@ -132,8 +132,6 @@ public sealed class PlanTests : IDisposable
         var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
 
         // Arrange
-        var returnContext = target.CreateNewContext();
-
         subPlan.AddSteps(emailFunctions["WritePoem"], emailFunctions["WritePoem"], emailFunctions["WritePoem"]);
         plan.AddSteps(subPlan, emailFunctions["SendEmail"]);
         plan.State.Set("email_address", "something@email.com");
@@ -157,7 +155,6 @@ public sealed class PlanTests : IDisposable
         var plan = new Plan(goal);
         var subPlan = new Plan("Write a poem or joke");
         var emailFunctions = target.Plugins[nameof(EmailPluginFake)];
-        var returnContext = target.CreateNewContext();
         var expectedInvocations = 10;
         // 1 - Outer Plan - Write poem and send email goal
         // 2 - Inner Plan - Write poem or joke goal

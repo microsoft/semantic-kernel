@@ -50,8 +50,7 @@ public sealed class ActionPlanner
     // Planner semantic function
     private readonly KernelFunction _plannerFunction;
 
-    // Context used to access the list of functions in the kernel
-    private readonly SKContext _context;
+    private readonly ContextVariables _contextVariables;
     private readonly Kernel _kernel;
     private readonly ILogger _logger;
 
@@ -88,7 +87,7 @@ public sealed class ActionPlanner
         kernel.ImportPluginFromObject(this, pluginName: PluginName);
 
         // Create context and logger
-        this._context = kernel.CreateNewContext();
+        this._contextVariables = new ContextVariables();
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
@@ -111,9 +110,9 @@ public sealed class ActionPlanner
 
     private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
     {
-        this._context.Variables.Update(goal);
+        this._contextVariables.Update(goal);
 
-        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._contextVariables, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
@@ -180,12 +179,12 @@ public sealed class ActionPlanner
     /// Native function that provides a list of good examples of plans to generate.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context)
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]
@@ -221,12 +220,12 @@ Goal: create a file called ""something.txt"".
     /// Native function that provides a list of edge case examples of plans to handle.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context)
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]

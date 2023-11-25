@@ -275,7 +275,7 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
         {
             try
             {
@@ -284,14 +284,14 @@ public static class KernelOpenApiPluginExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.TryGetValue(parameter.AlternativeName!, out string? value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && variables.TryGetValue(parameter.AlternativeName!, out string? value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
                     }
 
                     // A try to resolve argument by original parameter name
-                    if (context.Variables.TryGetValue(parameter.Name, out value))
+                    if (variables.TryGetValue(parameter.Name, out value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;

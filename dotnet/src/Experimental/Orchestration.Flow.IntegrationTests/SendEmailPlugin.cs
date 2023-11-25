@@ -17,7 +17,7 @@ public sealed class SendEmailPlugin
     public string SendEmail(
         [SKName("email_address")] string emailAddress,
         [SKName("answer")] string answer,
-        SKContext context)
+        ContextVariables variables)
     {
         var contract = new Email()
         {
@@ -27,7 +27,7 @@ public sealed class SendEmailPlugin
 
         // for demo purpose only
         string emailPayload = JsonSerializer.Serialize(contract, s_writeIndented);
-        context.Variables["email"] = emailPayload;
+        variables["email"] = emailPayload;
 
         return "Here's the API contract I will post to mail server: " + emailPayload;
     }

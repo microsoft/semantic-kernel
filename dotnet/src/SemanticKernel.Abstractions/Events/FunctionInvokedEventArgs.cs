@@ -19,7 +19,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(KernelFunction function, FunctionResult result) : base(function, result.Context)
+    public FunctionInvokedEventArgs(KernelFunction function, FunctionResult result) : base(function, result.Variables)
     {
         this.Metadata = result.Metadata;
     }

@@ -175,10 +175,10 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var chatHistory = this._chatCompletion.CreateNewChat();
 
-        var systemContext = this._kernel.CreateNewContext();
+        var variables = new ContextVariables();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
-        systemContext.Variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        variables.Set(AvailableFunctionsKey, functionsManual);
+        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -194,10 +194,10 @@ public sealed class FunctionCallingStepwisePlanner
         var chatHistory = this._chatCompletion.CreateNewChat();
 
         // Add system message with context about the initial goal/plan
-        var systemContext = this._kernel.CreateNewContext();
-        systemContext.Variables.Set(GoalKey, goal);
-        systemContext.Variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        var variables = new ContextVariables();
+        variables.Set(GoalKey, goal);
+        variables.Set(InitialPlanKey, initialPlan);
+        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 

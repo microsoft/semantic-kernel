@@ -356,11 +356,10 @@ public class FunctionFromPromptTests
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = SKFunctionFactory.CreateFromPrompt(prompt);
         var variables = new ContextVariables("importance");
-        var context = kernel.CreateNewContext(variables);
 
         var chunkCount = 0;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, variables))
         {
             chunkCount++;
         }

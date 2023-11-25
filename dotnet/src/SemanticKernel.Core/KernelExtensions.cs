@@ -418,9 +418,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        var context = kernel.CreateNewContext(variables);
-
-        return function.InvokeAsync(kernel, context, requestSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, variables, requestSettings: null, cancellationToken);
     }
 
     /// <summary>
@@ -457,7 +455,7 @@ public static class KernelExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Streaming result of the function</returns>
     public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, kernel.CreateNewContext(variables), null, cancellationToken);
+        => function.InvokeStreamingAsync<T>(kernel, variables ?? new ContextVariables(), null, cancellationToken);
 
     /// <summary>
     /// Run a function in streaming mode.
@@ -479,7 +477,7 @@ public static class KernelExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Streaming result of the function</returns>
     public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, kernel.CreateNewContext(new ContextVariables(input)), null, cancellationToken);
+        => function.InvokeStreamingAsync<T>(kernel, new ContextVariables(input), null, cancellationToken);
 
     /// <summary>
     /// Run a function in streaming mode.

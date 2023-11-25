@@ -106,7 +106,6 @@ public static class ReadOnlyPluginCollectionPlannerExtensions
         ILogger? logger,
         CancellationToken cancellationToken)
     {
-        // Use configured function provider if available, otherwise use the default SKContext function provider.
         return config.GetAvailableFunctionsAsync is null ?
             await plugins.GetAvailableFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false) :
             await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);

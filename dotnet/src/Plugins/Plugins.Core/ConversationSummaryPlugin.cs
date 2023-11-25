@@ -59,41 +59,41 @@ public class ConversationSummaryPlugin
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">The SKContext for function execution.</param>
+    /// <param name="variables">The context variables for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context) =>
-        ProcessAsync(this._summarizeConversationFunction, input, kernel, context);
+        ContextVariables variables) =>
+        ProcessAsync(this._summarizeConversationFunction, input, kernel, variables);
 
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="context">The SKContext for function execution.</param>
+    /// <param name="variables">The context variables for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context) =>
-        ProcessAsync(this._conversationActionItemsFunction, input, kernel, context);
+        ContextVariables variables) =>
+        ProcessAsync(this._conversationActionItemsFunction, input, kernel, variables);
 
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="context">The SKContext for function execution.</param>
+    /// <param name="variables">The context variables for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
         Kernel kernel,
-        SKContext context) =>
-        ProcessAsync(this._conversationTopicsFunction, input, kernel, context);
+        ContextVariables variables) =>
+        ProcessAsync(this._conversationTopicsFunction, input, kernel, variables);
 
-    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, SKContext context)
+    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, ContextVariables variables)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
@@ -101,8 +101,8 @@ public class ConversationSummaryPlugin
         string[] results = new string[paragraphs.Count];
         for (int i = 0; i < results.Length; i++)
         {
-            context.Variables.Update(paragraphs[i]);
-            results[i] = (await func.InvokeAsync(kernel, context).ConfigureAwait(false)).GetValue<string>() ?? "";
+            variables.Update(paragraphs[i]);
+            results[i] = (await func.InvokeAsync(kernel, variables).ConfigureAwait(false)).GetValue<string>() ?? "";
         }
 
         return string.Join("\n", results);
