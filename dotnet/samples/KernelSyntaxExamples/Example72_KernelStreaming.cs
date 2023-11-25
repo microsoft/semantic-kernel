@@ -40,7 +40,7 @@ public static class Example72_KernelStreaming
                 apiKey: apiKey)
             .Build();
 
-        var funyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var funyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var roleDisplayed = false;
 

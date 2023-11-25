@@ -42,7 +42,7 @@ public sealed class SequentialPlanner
             promptTemplate: promptTemplate,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new AIRequestSettings()
+            requestSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {

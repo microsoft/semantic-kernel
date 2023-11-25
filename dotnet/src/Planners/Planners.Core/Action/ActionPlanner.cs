@@ -75,7 +75,7 @@ public sealed class ActionPlanner
 
         this._plannerFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            new AIRequestSettings()
+            new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {

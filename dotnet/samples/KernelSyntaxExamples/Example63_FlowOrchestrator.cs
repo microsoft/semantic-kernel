@@ -239,12 +239,12 @@ Do not expose the regex unless asked.
 
         private int MaxTokens { get; set; } = 256;
 
-        private readonly AIRequestSettings _chatRequestSettings;
+        private readonly PromptExecutionSettings _chatRequestSettings;
 
         public ChatPlugin(Kernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
-            this._chatRequestSettings = new OpenAIRequestSettings
+            this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
                 StopSequences = new List<string>() { "Observation:" },

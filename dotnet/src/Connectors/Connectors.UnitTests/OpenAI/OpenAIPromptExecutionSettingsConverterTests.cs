@@ -9,9 +9,9 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit tests of OpenAIRequestSettingsConverter
+/// Unit tests of OpenAIPromptExecutionSettingsConverter
 /// </summary>
-public class OpenAIRequestSettingsConverterTests
+public class OpenAIPromptExecutionSettingsConverterTests
 {
     [Fact]
     public void ItDeserialisesOpenAIRequestSettingsWithCorrectDefaults()
@@ -20,7 +20,7 @@ public class OpenAIRequestSettingsConverterTests
         var json = "{}";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -52,7 +52,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -84,7 +84,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json);
 
         // Assert
         Assert.NotNull(requestSettings);

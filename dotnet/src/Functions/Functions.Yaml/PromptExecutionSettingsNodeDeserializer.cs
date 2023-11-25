@@ -9,21 +9,21 @@ using YamlDotNet.Serialization;
 namespace Microsoft.SemanticKernel.Functions.Yaml;
 
 /// <summary>
-/// Deserializer for <see cref="AIRequestSettings"/>.
+/// Deserializer for <see cref="PromptExecutionSettings"/>.
 /// </summary>
-internal class AIRequestSettingsNodeDeserializer : INodeDeserializer
+internal class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
 {
     /// <inheritdoc/>
     public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
     {
-        if (expectedType != typeof(AIRequestSettings))
+        if (expectedType != typeof(PromptExecutionSettings))
         {
             value = null;
             return false;
         }
 
         var dictionary = nestedObjectDeserializer.Invoke(reader, typeof(Dictionary<string, object>));
-        var modelSettings = new AIRequestSettings();
+        var modelSettings = new PromptExecutionSettings();
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
             if (kv.Key == "service_id")

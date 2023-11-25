@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Services;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
+    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
     {
         var serviceProvider = kernel.ServiceProvider;
         var modelSettings = function.ModelSettings;
@@ -27,7 +27,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         }
         else
         {
-            AIRequestSettings? defaultRequestSettings = null;
+            PromptExecutionSettings? defaultRequestSettings = null;
             foreach (var model in modelSettings)
             {
                 if (!string.IsNullOrEmpty(model.ServiceId))

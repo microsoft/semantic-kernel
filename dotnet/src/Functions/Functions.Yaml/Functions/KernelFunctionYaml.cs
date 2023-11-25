@@ -52,7 +52,7 @@ public static class KernelFunctionYaml
     {
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new AIRequestSettingsNodeDeserializer())
+            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
             .Build();
 
         var promptFunctionModel = deserializer.Deserialize<PromptFunctionModel>(text);

@@ -91,7 +91,7 @@ public static class KernelPluginExtensions
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         string? functionName = null,
         string? description = null,
         ILoggerFactory? loggerFactory = null)

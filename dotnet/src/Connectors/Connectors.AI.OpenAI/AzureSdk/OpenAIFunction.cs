@@ -33,7 +33,7 @@ public class OpenAIFunctionParameter
     /// <summary>
     /// The JSON Schema of the parameter.
     /// </summary>
-    public KernelParameterJsonSchema? Schema { get; set; } = null;
+    public KernelJsonSchema? Schema { get; set; } = null;
 
     /// <summary>
     /// The <see cref="Type"/> of the parameter.
@@ -54,7 +54,7 @@ public class OpenAIFunctionReturnParameter
     /// <summary>
     /// The JSON Schema of the parameter.
     /// </summary>
-    public KernelParameterJsonSchema? Schema { get; set; } = null;
+    public KernelJsonSchema? Schema { get; set; } = null;
 
     /// <summary>
     /// The <see cref="Type"/> of the return parameter.
@@ -125,14 +125,14 @@ public class OpenAIFunction
         var parameters = this.Parameters;
         if (parameters.Count > 0)
         {
-            var properties = new Dictionary<string, KernelParameterJsonSchema>();
+            var properties = new Dictionary<string, KernelJsonSchema>();
             var required = new List<string>();
 
             for (int i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
 
-                KernelParameterJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
+                KernelJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
                 if (schema is not null)
                 {
                     properties.Add(parameter.Name, schema);
@@ -161,18 +161,18 @@ public class OpenAIFunction
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelParameterJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
+    /// Creates an <see cref="KernelJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
     /// </summary>
     /// <param name="type">The object Type.</param>
     /// <param name="description">The object description.</param>
     /// <returns>Return JSON Schema document or null if the type is null</returns>
     [return: NotNullIfNotNull("type")]
-    internal static KernelParameterJsonSchema? GetJsonSchema(Type? type, string? description)
+    internal static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
     {
-        KernelParameterJsonSchema? schema = null;
+        KernelJsonSchema? schema = null;
         if (type is not null)
         {
-            schema = KernelParameterJsonSchema.Parse(JsonSerializer.Serialize(
+            schema = KernelJsonSchema.Parse(JsonSerializer.Serialize(
                 new JsonSchemaBuilder()
                 .FromType(type)
                 .Description(description ?? string.Empty)

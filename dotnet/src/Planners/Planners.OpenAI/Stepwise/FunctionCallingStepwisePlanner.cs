@@ -161,10 +161,10 @@ public sealed class FunctionCallingStepwisePlanner
         return await this._kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
-    private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
+    private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
-        var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        var requestSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
+        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
         requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }

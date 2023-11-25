@@ -92,7 +92,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken)
     {
         return await this._function(null, requestSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
@@ -102,7 +102,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
@@ -138,7 +138,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         Kernel kernel,
         ContextVariables variables,
         CancellationToken cancellationToken);
@@ -219,7 +219,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();

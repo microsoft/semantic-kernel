@@ -29,5 +29,5 @@ internal sealed class JsonSchemaFunctionParameters
     /// A dictionary of properties name => JSON Schema.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, KernelParameterJsonSchema> Properties { get; set; } = new Dictionary<string, KernelParameterJsonSchema>();
+    public Dictionary<string, KernelJsonSchema> Properties { get; set; } = new Dictionary<string, KernelJsonSchema>();
 }

@@ -44,7 +44,7 @@ public static class Example37_MultiStreamingCompletion
 
     private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,

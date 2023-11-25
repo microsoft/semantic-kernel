@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
-[JsonConverter(typeof(OpenAIRequestSettingsConverter))]
-public class OpenAIRequestSettings : AIRequestSettings
+[JsonConverter(typeof(OpenAIPromptExecutionSettingsConverter))]
+public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Value for <see cref="FunctionCall"/> to indicate that the model
@@ -90,7 +90,7 @@ public class OpenAIRequestSettings : AIRequestSettings
         {
             if (string.IsNullOrEmpty(value))
             {
-                value = OpenAIRequestSettings.DefaultChatSystemPrompt;
+                value = OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
             }
             this._chatSystemPrompt = value;
         }
@@ -105,7 +105,7 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// <summary>
     /// Possible values are <see cref="FunctionCallNone"/>, <see cref="FunctionCallAuto"/>,
     /// or the name of a specific function that OpenAI should use to respond to the chat
-    /// request. If the latter, this function must exist in <see cref="OpenAIRequestSettings.Functions"/>.
+    /// request. If the latter, this function must exist in <see cref="OpenAIPromptExecutionSettings.Functions"/>.
     /// </summary>
     public string? FunctionCall { get; set; } = null;
 
@@ -129,36 +129,36 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// </summary>
     /// <param name="requestSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
-    /// <returns>An instance of OpenAIRequestSettings</returns>
-    public static OpenAIRequestSettings FromRequestSettings(AIRequestSettings? requestSettings, int? defaultMaxTokens = null)
+    /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? requestSettings, int? defaultMaxTokens = null)
     {
         if (requestSettings is null)
         {
-            return new OpenAIRequestSettings()
+            return new OpenAIPromptExecutionSettings()
             {
                 MaxTokens = defaultMaxTokens
             };
         }
 
-        if (requestSettings is OpenAIRequestSettings requestSettingsOpenAIRequestSettings)
+        if (requestSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
         {
             return requestSettingsOpenAIRequestSettings;
         }
 
         var json = JsonSerializer.Serialize(requestSettings);
-        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, JsonOptionsCache.ReadPermissive);
+        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
         if (openAIRequestSettings is not null)
         {
             return openAIRequestSettings;
         }
 
-        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIRequestSettings)}", nameof(requestSettings));
+        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(requestSettings));
     }
 
     #region private ================================================================================
 
-    private string _chatSystemPrompt = OpenAIRequestSettings.DefaultChatSystemPrompt;
+    private string _chatSystemPrompt = OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
 
     #endregion
 }

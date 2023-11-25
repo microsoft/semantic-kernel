@@ -40,12 +40,12 @@ public static class Example10_DescribeAllPluginsAndFunctions
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIRequestSettings() { MaxTokens = 150 });
+        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with plugin name
         var sFun2 = kernel.CreateFunctionFromPrompt(
             "write a novel about {{$input}} in {{$language}} language",
-            new OpenAIRequestSettings() { MaxTokens = 150 },
+            new OpenAIPromptExecutionSettings() { MaxTokens = 150 },
             functionName: "Novel",
             description: "Write a bedtime story");
 

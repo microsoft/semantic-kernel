@@ -41,7 +41,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         string? functionName = null,
         string? description = null,
         ILoggerFactory? loggerFactory = null)
@@ -135,7 +135,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(variables);
@@ -176,7 +176,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(variables);
@@ -242,7 +242,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextCompletion, AIRequestSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+    private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);

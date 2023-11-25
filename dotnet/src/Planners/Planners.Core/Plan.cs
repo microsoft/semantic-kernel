@@ -318,7 +318,7 @@ public sealed class Plan
     public async Task<FunctionResult> InvokeAsync(
     Kernel kernel,
     ContextVariables? variables = null,
-    AIRequestSettings? requestSettings = null,
+    PromptExecutionSettings? requestSettings = null,
     CancellationToken cancellationToken = default)
     {
         variables ??= new ContextVariables();
