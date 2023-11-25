@@ -49,6 +49,40 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
+    /// Modify an existing assistant, by identifier.
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="assistantId">The assistant identifier</param>
+    /// <param name="model">The assistant definition</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An assistant definition</returns>
+    public static Task<AssistantModel> UpdateAssistantModelAsync(
+        this OpenAIRestContext context,
+        string assistantId,
+        AssistantModel model,
+        CancellationToken cancellationToken = default)
+    {
+        var payload =
+            new
+            {
+                model = model.Model,
+                name = model.Name,
+                description = model.Description,
+                instructions = model.Instructions,
+                tools = model.Tools,
+                file_ids = model.FileIds,
+                metadata = model.Metadata,
+            };
+        string requestUrl = GetAssistantUrl(assistantId);
+
+        return
+            context.ExecutePostAsync<AssistantModel>(
+                requestUrl,
+                payload,
+                cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
