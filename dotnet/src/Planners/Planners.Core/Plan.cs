@@ -414,7 +414,7 @@ public sealed class Plan
             // Execute the step
             var result = await step.InvokeAsync(kernel, functionVariables, null, cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.GetValue<string>()?.Trim();
+            var resultValue = (result.TryGetVariableValue(MainKey, out string? value) ? value : string.Empty).Trim();
 
             #region Update State
 

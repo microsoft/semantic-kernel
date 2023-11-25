@@ -15,45 +15,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelPlanExtensions
 {
-    /*
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="plan">The plan to invoke</param>
-    /// <param name="input">Input to process</param>
-    /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        Plan plan,
-        string? input = null)
-    {
-        return plan.InvokeAsync(kernel, input ?? string.Empty, new CancellationToken());
-    }
-
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="plan">The plan to invoke</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        Plan plan,
-        string input,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        var contextVariables = new ContextVariables();
-        contextVariables.Update(input);
-
-        return plan.InvokeAsync(kernel, contextVariables, null, cancellationToken);
-    }
-    */
-
     /// <summary>
     /// Run the next step in a plan asynchronously
     /// </summary>
