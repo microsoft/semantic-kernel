@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Common configuration for planner instances.
 /// </summary>
-public sealed class SequentialPlannerConfig : PlannerConfig
+public sealed class SequentialPlannerConfig : PlannerConfigBase
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SequentialPlannerConfig"/> class.

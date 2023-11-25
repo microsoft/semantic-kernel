@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Planning.UnitTests;
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {
-    private static PlannerConfig InitializeConfig(Type t)
+    private static PlannerConfigBase InitializeConfig(Type t)
     {
-        PlannerConfig? config = Activator.CreateInstance(t) as PlannerConfig;
+        PlannerConfigBase? config = Activator.CreateInstance(t) as PlannerConfigBase;
         Assert.NotNull(config);
         return config;
     }
