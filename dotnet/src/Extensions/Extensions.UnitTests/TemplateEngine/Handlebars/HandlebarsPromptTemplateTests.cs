@@ -32,10 +32,9 @@ public sealed class HandlebarsPromptTemplateTests
         this._variables.Set("bar", "Bar");
         var template = "Foo {{bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -48,10 +47,9 @@ public sealed class HandlebarsPromptTemplateTests
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -64,10 +62,9 @@ public sealed class HandlebarsPromptTemplateTests
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
@@ -125,10 +122,9 @@ public sealed class HandlebarsPromptTemplateTests
         });
         var template = "Foo {{Bar}} {{Baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, promptTemplateConfig);
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);

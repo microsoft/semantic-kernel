@@ -32,14 +32,14 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// Renders a Handlebars template in the context of a Semantic Kernel.
     /// </summary>
     /// <param name="kernel">The Semantic Kernel.</param>
-    /// <param name="executionContext">The execution context.</param>
+    /// <param name="contextVariables">The execution context variables.</param>
     /// <param name="template">The Handlebars template to render.</param>
     /// <param name="variables">The dictionary of variables to pass to the Handlebars template engine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The rendered Handlebars template.</returns>
     public static string Render(
         Kernel kernel,
-        SKContext executionContext,
+        ContextVariables contextVariables,
         string template,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
@@ -53,7 +53,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         // Add helpers for each function
         foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
+            RegisterFunctionAsHelper(kernel, contextVariables, handlebarsInstance, function, variables, cancellationToken);
         }
 
         // Add system helpers
@@ -65,7 +65,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
     private static void RegisterFunctionAsHelper(
         Kernel kernel,
-        SKContext executionContext,
+        ContextVariables contextVariables,
         IHandlebars handlebarsInstance,
         SKFunctionMetadata functionMetadata,
         Dictionary<string, object?> variables,
@@ -92,11 +92,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
             }
 
-            InitializeContextVariables(variables, executionContext);
+            InitializeContextVariables(variables, contextVariables);
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeSKFunction(kernel, function, executionContext, cancellationToken);
+            return InvokeSKFunction(kernel, function, contextVariables, cancellationToken);
         });
     }
 
@@ -418,20 +418,20 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// Initializes the variables in the SK function context with the variables maintained by the Handlebars template engine.
     /// </summary>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
-    /// <param name="executionContext">The execution context of the SK function.</param>
-    private static void InitializeContextVariables(Dictionary<string, object?> variables, SKContext executionContext)
+    /// <param name="contextVariables">The execution context variables of the SK function.</param>
+    private static void InitializeContextVariables(Dictionary<string, object?> variables, ContextVariables contextVariables)
     {
         foreach (var v in variables)
         {
             var value = v.Value ?? "";
             var varString = !SKParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
-            if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
+            if (contextVariables.ContainsKey(v.Key))
             {
-                executionContext.Variables[v.Key] = varString;
+                contextVariables[v.Key] = varString;
             }
             else
             {
-                executionContext.Variables.Add(v.Key, varString);
+                contextVariables.Add(v.Key, varString);
             }
         }
     }
@@ -442,11 +442,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static object? InvokeSKFunction(
         Kernel kernel,
         KernelFunction function,
-        SKContext executionContext,
+        ContextVariables contextVariables,
         CancellationToken cancellationToken = default)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, contextVariables, cancellationToken: cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.

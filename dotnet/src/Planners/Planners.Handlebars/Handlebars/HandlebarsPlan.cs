@@ -52,17 +52,17 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
-    /// <param name="executionContext">The execution context.</param>
+    /// <param name="contextVariables">The execution context variables.</param>
     /// <param name="variables">The variables.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
-        SKContext executionContext,
+        ContextVariables contextVariables,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
-        string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, executionContext, this._template, variables, cancellationToken);
-        executionContext.Variables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", executionContext, results?.Trim());
+        string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, contextVariables, this._template, variables, cancellationToken);
+        contextVariables.Update(results);
+        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
     }
 }

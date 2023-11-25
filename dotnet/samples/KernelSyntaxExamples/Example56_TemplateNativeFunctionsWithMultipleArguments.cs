@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -40,8 +41,9 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         var variableName = "word2";
         var variableValue = " Potter";
-        var context = kernel.CreateNewContext();
-        context.Variables[variableName] = variableValue;
+
+        var variables = new ContextVariables();
+        variables[variableName] = variableValue;
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
@@ -56,7 +58,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
-        var renderedPrompt = await promptTemplate.RenderAsync(kernel, context);
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, variables);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
@@ -64,7 +66,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.InvokeAsync(haiku, context.Variables);
+        var result = await kernel.InvokeAsync(haiku, variables);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:

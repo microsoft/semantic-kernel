@@ -134,18 +134,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
+        this.AddDefaultValues(variables);
 
         try
         {
-            (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+            (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
             if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
             {
-                return new FunctionResult(this.Name, context)
+                return new FunctionResult(this.Name, variables)
                 {
                     IsCancellationRequested = true
                 };
@@ -155,11 +155,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
-            context.Variables.Update(completion);
+            variables.Update(completion);
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            var result = new FunctionResult(this.Name, context, completion);
+            var result = new FunctionResult(this.Name, variables, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
@@ -175,13 +175,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
-        SKContext context,
+        ContextVariables variables,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
+        this.AddDefaultValues(variables);
 
-        (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
+        (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
         if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
         {
             yield break;
@@ -242,17 +242,17 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextCompletion, AIRequestSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+    private async Task<(ITextCompletion, AIRequestSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
-        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, context, this);
+        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);
         Verify.NotNull(textCompletion);
 
-        kernel.OnPromptRendering(this, context, requestSettings ?? defaultRequestSettings);
+        kernel.OnPromptRendering(this, variables, requestSettings ?? defaultRequestSettings);
 
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
-        var renderedEventArgs = kernel.OnPromptRendered(this, context, renderedPrompt);
+        var renderedEventArgs = kernel.OnPromptRendered(this, variables, renderedPrompt);
 
         return (textCompletion, defaultRequestSettings, renderedPrompt, renderedEventArgs);
     }

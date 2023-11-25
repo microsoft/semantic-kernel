@@ -15,8 +15,8 @@ internal interface ICodeRendering
     /// Render the block using the given context, potentially using external I/O.
     /// </summary>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">SK execution context</param>
+    /// <param name="variables">The variables</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Rendered content</returns>
-    public Task<string> RenderCodeAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default);
+    public Task<string> RenderCodeAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default);
 }

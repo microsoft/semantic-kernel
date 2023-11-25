@@ -32,23 +32,6 @@ public sealed class PlanTests
     }
 
     [Fact]
-    public async Task CanExecutePlanAsync()
-    {
-        // Arrange
-        var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
-        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
-        var plan = new Plan(goal);
-
-        // Act
-        var result = await plan.InvokeAsync(kernel, "Some input");
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Some input", result.Context.Variables.Input);
-        Assert.Null(result.GetValue<string>());
-    }
-
-    [Fact]
     public async Task CanExecutePlanWithContextAsync()
     {
         // Arrange
@@ -57,23 +40,23 @@ public sealed class PlanTests
 
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var context = kernel.CreateNewContext(new ContextVariables("Some input"));
+        var variables = new ContextVariables("Some input");
 
         // Act
-        var result = await plan.InvokeAsync(kernel, context);
+        var result = await plan.InvokeAsync(kernel, variables);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Some input", result.Context.Variables.Input);
+        Assert.Equal("Some input", variables.Input);
         Assert.Null(result.GetValue<string>());
 
         plan = new Plan(goal);
         // Act
-        context.Variables.Update("other input");
-        result = await plan.InvokeAsync(kernel, context);
+        variables.Update("other input");
+        result = await plan.InvokeAsync(kernel, variables);
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("other input", result.Context.Variables.Input);
+        Assert.Equal("other input", variables.Input);
         Assert.Null(result.GetValue<string>());
     }
 
@@ -90,9 +73,9 @@ public sealed class PlanTests
 
         var actualInput = string.Empty;
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            actualInput = context.Variables.Input;
+            actualInput = variables.Input;
             return "fake result";
         }, "function");
 
@@ -103,7 +86,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result", result.Context.Variables.Input);
         Assert.Equal("fake result", result.GetValue<string>());
         Assert.Equal(planInput, actualInput);
     }
@@ -119,9 +101,9 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
+            Assert.Equal(planInput, variables.Input);
             return "fake result";
         }, "function");
 
@@ -132,7 +114,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result", result.Context.Variables.Input);
         Assert.Equal("fake result", result.GetValue<string>());
     }
 
@@ -147,15 +128,15 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
+            Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal("fake result of function 1", context.Variables.Input);
+            Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
         }, "function2");
 
@@ -166,7 +147,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -181,15 +161,15 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
+            Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal("fake result of function 1", context.Variables.Input);
+            Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
         }, "function2");
 
@@ -200,7 +180,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -215,15 +194,15 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
+            Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal("fake result of function 1", context.Variables.Input);
+            Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
         }, "function2");
 
@@ -234,7 +213,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("fake result of function2", result.Context.Variables.Input);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
@@ -249,15 +227,15 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
+            Assert.Equal(planInput, variables.Input);
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal("fake result of function 1", context.Variables.Input);
+            Assert.Equal("fake result of function 1", variables.Input);
             return "fake result of function2";
         }, "function2");
 
@@ -289,18 +267,18 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal(planInput, context.Variables.Input);
-            Assert.Equal("foo", context.Variables["variables"]);
+            Assert.Equal(planInput, variables.Input);
+            Assert.Equal("foo", variables["variables"]);
 
             return "fake result of function 1";
         }, "function1");
 
-        var function2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            Assert.Equal("fake result of function 1", context.Variables.Input);
-            Assert.Equal("bar", context.Variables["variables"]);
+            Assert.Equal("fake result of function 1", variables.Input);
+            Assert.Equal("bar", variables["variables"]);
 
             return "fake result of function2";
         }, "function2");
@@ -380,29 +358,27 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext();
-
-        var childFunction1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var childFunction1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return "Child 1 output!" + context.Variables.Input;
+            return "Child 1 output!" + variables.Input;
         },
         "childFunction1");
 
-        var childFunction2 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var childFunction2 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return "Child 2 is happy about " + context.Variables.Input;
+            return "Child 2 is happy about " + variables.Input;
         },
         "childFunction2");
 
-        var childFunction3 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var childFunction3 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return "Child 3 heard " + context.Variables.Input;
+            return "Child 3 heard " + variables.Input;
         },
         "childFunction3");
 
-        var nodeFunction1 = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var nodeFunction1 = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return context.Variables.Input + " - this just happened.";
+            return variables.Input + " - this just happened.";
         },
         "nodeFunction1");
 
@@ -455,9 +431,9 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return "Here is a poem about " + context.Variables.Input;
+            return "Here is a poem about " + variables.Input;
         },
         "function");
 
@@ -469,7 +445,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
@@ -479,10 +454,10 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
+            variables.TryGetValue("type", out string? t);
+            return $"Here is a {t} about " + variables.Input;
         },
         "function");
 
@@ -499,7 +474,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
@@ -509,10 +483,10 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
+            variables.TryGetValue("type", out string? t);
+            return $"Here is a {t} about " + variables.Input;
         },
         "function");
 
@@ -525,23 +499,21 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
 
         plan = new Plan(function);
         plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
-        var contextOverride = new SKContext();
-        contextOverride.Variables.Set("type", "joke");
-        contextOverride.Variables.Update("Medusa");
+        var variablesOverride = new ContextVariables();
+        variablesOverride.Set("type", "joke");
+        variablesOverride.Update("Medusa");
 
         // Act
-        result = await plan.InvokeAsync(kernel, contextOverride);
+        result = await plan.InvokeAsync(kernel, variablesOverride);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
     }
 
@@ -551,12 +523,10 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var returnContext = new SKContext();
-
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
+            variables.TryGetValue("type", out string? t);
+            return $"Here is a {t} about " + variables.Input;
         },
         "function");
 
@@ -572,7 +542,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
 
         planStep = new Plan(function);
@@ -588,7 +557,6 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a poem about Medusa", result.Context.Variables.Input);
         Assert.Equal("Here is a poem about Medusa", result.GetValue<string>());
 
         planStep = new Plan(function);
@@ -596,16 +564,16 @@ public sealed class PlanTests
         planStep.Parameters.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
-        var contextOverride = new SKContext();
-        contextOverride.Variables.Set("type", "joke");
-        contextOverride.Variables.Update("Medusa"); // context input will not override parameters
+
+        var variablesOverride = new ContextVariables();
+        variablesOverride.Set("type", "joke");
+        variablesOverride.Update("Medusa"); // context input will not override parameters
 
         // Act
-        result = await plan.InvokeAsync(kernel, contextOverride);
+        result = await plan.InvokeAsync(kernel, variablesOverride);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Here is a joke about Cleopatra", result.Context.Variables.Input);
         Assert.Equal("Here is a joke about Cleopatra", result.GetValue<string>());
     }
 
@@ -615,21 +583,21 @@ public sealed class PlanTests
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var outlineFunction = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var outlineFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return $"Here is a {context.Variables["chapterCount"]} chapter outline about " + context.Variables.Input;
+            return $"Here is a {variables["chapterCount"]} chapter outline about " + variables.Input;
         },
         "outlineFunction");
 
-        var elementAtIndexFunction = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var elementAtIndexFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return $"Outline section #{context.Variables["index"]} of {context.Variables["count"]}: " + context.Variables.Input;
+            return $"Outline section #{variables["index"]} of {variables["count"]}: " + variables.Input;
         },
         "elementAtIndexFunction");
 
-        var novelChapterFunction = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var novelChapterFunction = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return $"Chapter #{context.Variables["chapterIndex"]}: {context.Variables.Input}\nTheme:{context.Variables["theme"]}\nPreviously:{context.Variables["previousChapter"]}";
+            return $"Chapter #{variables["chapterIndex"]}: {variables.Input}\nTheme:{variables["theme"]}\nPreviously:{variables["previousChapter"]}";
         },
         "novelChapterFunction");
 
@@ -715,7 +683,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         var res = result.GetValue<string>();
         Assert.Equal(expected, result.GetValue<string>());
-        Assert.Equal(expected, result.Context.Variables.Input);
         Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_1", out var chapter1));
         Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_2", out var chapter2));
         Assert.True(result.TryGetMetadataValue<string>("CHAPTER_3", out var chapter3));
@@ -728,9 +695,9 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
-        var function = SKFunctionFactory.CreateFromMethod((SKContext context) =>
+        var function = SKFunctionFactory.CreateFromMethod((ContextVariables variables) =>
         {
-            return $"Here is a payload '{context.Variables["payload"]}' for " + context.Variables.Input;
+            return $"Here is a payload '{variables["payload"]}' for " + variables.Input;
         },
        "function");
 
@@ -748,7 +715,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var expected = @"Here is a payload '{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and foobar""}' for Function input.";
 
         // Assert
-        Assert.Equal(expected, result.Context.Variables.Input);
         Assert.Equal(expected, result.GetValue<string>());
     }
 

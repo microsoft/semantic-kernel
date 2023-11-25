@@ -71,7 +71,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -82,8 +82,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return this._tokens[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(context.Variables),
-            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false),
+            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(variables),
+            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, variables).ConfigureAwait(false),
             _ => throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
     }
@@ -93,10 +93,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, SKContext context)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, ContextVariables variables)
     {
         // Clone the context to avoid unexpected variable mutations from the inner function execution
-        ContextVariables inputVariables = context.Variables.Clone();
+        ContextVariables inputVariables = variables.Clone();
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input

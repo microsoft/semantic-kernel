@@ -17,17 +17,17 @@ public static class KernelFunctionExtensions
     /// </summary>
     /// <param name="function">Target function</param>
     /// <param name="kernel">The kernel</param>
-    /// <param name="context">SK context</param>
+    /// <param name="variables">SK context variables</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
     public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
         this KernelFunction function,
         Kernel kernel,
-        SKContext? context = null,
+        ContextVariables? variables = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return function.InvokeStreamingAsync<StreamingContent>(kernel, context ?? kernel.CreateNewContext(), requestSettings, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingContent>(kernel, variables ?? new ContextVariables(), requestSettings, cancellationToken);
     }
 }

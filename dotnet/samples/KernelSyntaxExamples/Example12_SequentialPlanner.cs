@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -316,7 +317,7 @@ internal static class Example12_SequentialPlanner
             {
                 if (string.IsNullOrEmpty(input))
                 {
-                    await plan.InvokeNextStepAsync(kernel, kernel.CreateNewContext());
+                    await plan.InvokeNextStepAsync(kernel, new ContextVariables());
                     // or await kernel.StepAsync(plan);
                 }
                 else
