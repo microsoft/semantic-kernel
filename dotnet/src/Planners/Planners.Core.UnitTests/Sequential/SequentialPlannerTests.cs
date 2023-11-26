@@ -65,7 +65,7 @@ public sealed class SequentialPlannerTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
-        Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml strings", StringComparison.InvariantCulture));
+        Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml string", StringComparison.InvariantCulture));
     }
 
     [Fact]
