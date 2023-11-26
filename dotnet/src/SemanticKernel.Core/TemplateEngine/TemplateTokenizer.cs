@@ -157,7 +157,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Variable:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new SKException($"Invalid token detected after the variable: {contentWithoutDelimiters}");
+                                        throw new KernelException($"Invalid token detected after the variable: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -166,7 +166,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Value:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new SKException($"Invalid token detected after the value: {contentWithoutDelimiters}");
+                                        throw new KernelException($"Invalid token detected after the value: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -181,7 +181,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Undefined:
                                 case BlockTypes.NamedArg:
                                 default:
-                                    throw new SKException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
+                                    throw new KernelException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
                             }
                         }
 

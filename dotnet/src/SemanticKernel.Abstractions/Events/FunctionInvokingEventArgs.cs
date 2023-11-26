@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoking event.
 /// </summary>
-public class FunctionInvokingEventArgs : SKCancelEventArgs
+public class FunctionInvokingEventArgs : KernelCancelEventArgs
 {
     /// <summary>
     /// Indicates if the function execution should be skipped.

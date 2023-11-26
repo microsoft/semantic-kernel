@@ -11,12 +11,12 @@ public sealed class SendEmailPlugin
 {
     private static readonly JsonSerializerOptions s_writeIndented = new() { WriteIndented = true };
 
-    [SKFunction]
+    [KernelFunction]
     [Description("Send email")]
-    [SKName("SendEmail")]
+    [KernelName("SendEmail")]
     public string SendEmail(
-        [SKName("email_address")] string emailAddress,
-        [SKName("answer")] string answer,
+        [KernelName("email_address")] string emailAddress,
+        [KernelName("answer")] string answer,
         ContextVariables variables)
     {
         var contract = new Email()

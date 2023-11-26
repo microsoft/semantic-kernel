@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public partial class AssistantBuilder
 {
     private readonly AssistantModel _model;
-    private readonly SKPluginCollection _plugins;
+    private readonly KernelPluginCollection _plugins;
 
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
@@ -28,7 +28,7 @@ public partial class AssistantBuilder
     public AssistantBuilder()
     {
         this._model = new AssistantModel();
-        this._plugins = new SKPluginCollection();
+        this._plugins = new KernelPluginCollection();
     }
 
     /// <summary>
@@ -40,12 +40,12 @@ public partial class AssistantBuilder
     {
         if (string.IsNullOrWhiteSpace(this._model.Model))
         {
-            throw new SKException("Model must be defined for assistant.");
+            throw new KernelException("Model must be defined for assistant.");
         }
 
         if (string.IsNullOrWhiteSpace(this._apiKey))
         {
-            throw new SKException("ApiKey must be provided for assistant.");
+            throw new KernelException("ApiKey must be provided for assistant.");
         }
 
         return
@@ -142,7 +142,7 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugin(ISKPlugin plugin)
+    public AssistantBuilder WithPlugin(IKernelPlugin plugin)
     {
         this._plugins.Add(plugin);
 
@@ -153,9 +153,9 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugins(IEnumerable<ISKPlugin> plugins)
+    public AssistantBuilder WithPlugins(IEnumerable<IKernelPlugin> plugins)
     {
-        foreach (ISKPlugin plugin in plugins)
+        foreach (IKernelPlugin plugin in plugins)
         {
             this._plugins.Add(plugin);
         }

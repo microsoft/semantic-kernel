@@ -19,7 +19,7 @@ public class FunctionFromMethodTests
         // Arrange
         var kernel = new KernelBuilder().Build();
         var nativeContent = "Full content result";
-        var sut = SKFunctionFactory.CreateFromMethod(() => nativeContent);
+        var sut = KernelFunctionFactory.CreateFromMethod(() => nativeContent);
 
         var chunkCount = 0;
         StreamingContent? lastChunk = null;
@@ -45,7 +45,7 @@ public class FunctionFromMethodTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var sut = SKFunctionFactory.CreateFromMethod(() => "any");
+        var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         var invokedCalled = false;
         var invokingCalled = false;
@@ -76,7 +76,7 @@ public class FunctionFromMethodTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var sut = SKFunctionFactory.CreateFromMethod(() => "any");
+        var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
@@ -99,7 +99,7 @@ public class FunctionFromMethodTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var sut = SKFunctionFactory.CreateFromMethod(() => "any");
+        var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
@@ -122,7 +122,7 @@ public class FunctionFromMethodTests
     {
         // Arrange
         var kernel = new KernelBuilder().Build();
-        var sut = SKFunctionFactory.CreateFromMethod(() => "any");
+        var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {

@@ -139,7 +139,7 @@ public class OneDriveConnector : ICloudDriveConnector
         string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))
         {
-            throw new SKException("Shareable file link was null or whitespace.");
+            throw new KernelException("Shareable file link was null or whitespace.");
         }
 
         return result!;

@@ -45,7 +45,7 @@ public static class Example32_StreamingCompletion
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,

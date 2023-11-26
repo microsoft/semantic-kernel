@@ -20,11 +20,11 @@ public static class ImageGenerationServiceExtensions
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The <see cref="IImageGeneration"/> id matching the given id or the default.</returns>
-    /// <exception cref="SKException">Thrown when no suitable service is found.</exception>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public static IImageGeneration GetImageGenerationService(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<IImageGeneration>(serviceId)
-            ?? throw new SKException("Image generation service not found");
+            ?? throw new KernelException("Image generation service not found");
 
     /// <summary>
     /// Returns true if a <see cref="IImageGeneration"/> exist with the specified ID.

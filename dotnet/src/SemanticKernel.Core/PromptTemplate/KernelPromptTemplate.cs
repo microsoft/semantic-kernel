@@ -46,7 +46,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<SKParameterMetadata> Parameters => this._parameters.Value;
+    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
@@ -60,16 +60,16 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IReadOnlyList<SKParameterMetadata>> _parameters;
+    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
 
-    private List<SKParameterMetadata> InitParameters()
+    private List<KernelParameterMetadata> InitParameters()
     {
         // Parameters from prompt template configuration
-        Dictionary<string, SKParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, KernelParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            result[p.Name] = new SKParameterMetadata(p.Name)
+            result[p.Name] = new KernelParameterMetadata(p.Name)
             {
                 Description = p.Description,
                 DefaultValue = p.DefaultValue
@@ -82,7 +82,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         {
             if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
             {
-                result.Add(variableName!, new SKParameterMetadata(variableName!));
+                result.Add(variableName!, new KernelParameterMetadata(variableName!));
             }
         }
 
@@ -106,7 +106,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
             {
                 if (!block.IsValid(out var error))
                 {
-                    throw new SKException(error);
+                    throw new KernelException(error);
                 }
             }
         }
@@ -141,7 +141,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
                 default:
                     const string Error = "Unexpected block type, the block doesn't have a rendering method";
                     this._logger.LogError(Error);
-                    throw new SKException(Error);
+                    throw new KernelException(Error);
             }
         }
 

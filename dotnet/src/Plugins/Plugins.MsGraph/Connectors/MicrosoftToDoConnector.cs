@@ -49,7 +49,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
 
         if (result == null)
         {
-            throw new SKException("Could not find default task list.");
+            throw new KernelException("Could not find default task list.");
         }
 
         return new TaskManagementTaskList(result.Id, result.DisplayName);

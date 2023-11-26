@@ -72,7 +72,7 @@ public class FlowOrchestrator
         }
         catch (Exception ex)
         {
-            throw new SKException("Invalid flow", ex);
+            throw new KernelException("Invalid flow", ex);
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);

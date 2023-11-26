@@ -97,6 +97,21 @@ public sealed class FunctionResult
     /// <summary>
     /// Get typed value from metadata.
     /// </summary>
+    public bool TryGetVariableValue(string key, out string value)
+    {
+        if (this.Variables.TryGetValue(key, out string? valueObject))
+        {
+            value = valueObject;
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
+
+    /// <summary>
+    /// Get typed value from metadata.
+    /// </summary>
     public bool TryGetMetadataValue<T>(string key, out T value)
     {
         if (this._metadata is { } metadata &&

@@ -97,7 +97,7 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
@@ -121,7 +121,7 @@ public static class Example16_CustomLLM
 
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken = default)
         {
             this.ModelId = requestSettings?.ModelId;
 
@@ -131,7 +131,7 @@ public static class Example16_CustomLLM
             });
         }
 
-        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (typeof(T) == typeof(MyStreamingContent) ||
                 typeof(T) == typeof(StreamingContent))

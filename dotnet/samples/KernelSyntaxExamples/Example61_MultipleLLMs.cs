@@ -64,7 +64,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           new AIRequestSettings()
+           new PromptExecutionSettings()
            {
                ServiceId = serviceId
            });
@@ -79,7 +79,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           requestSettings: new AIRequestSettings()
+           requestSettings: new PromptExecutionSettings()
            {
                ModelId = modelId
            });
@@ -92,10 +92,10 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<AIRequestSettings>();
+        var modelSettings = new List<PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ModelId = modelId });
+            modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
         }
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
 

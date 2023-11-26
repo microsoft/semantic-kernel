@@ -33,7 +33,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync(Type t)
     {
         // Arrange
-        var plugins = new SKPluginCollection();
+        var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
@@ -103,16 +103,16 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("pluginName", new[]
+            new KernelPlugin("pluginName", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => { }, "functionName", "description"),
-                SKFunctionFactory.CreateFromMethod(() => { }, "nativeFunctionName", "description"),
+                KernelFunctionFactory.CreateFromMethod(() => { }, "functionName", "description"),
+                KernelFunctionFactory.CreateFromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
-        var functionView = new SKFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
-        var nativeFunctionView = new SKFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
+        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
+        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
@@ -172,19 +172,19 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
-        var plugins = new SKPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
-            new SKPlugin("pluginName", new[]
+            new KernelPlugin("pluginName", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => { }, "functionName", "description"),
-                SKFunctionFactory.CreateFromMethod(() => { }, "nativeFunctionName", "description"),
+                KernelFunctionFactory.CreateFromMethod(() => { }, "functionName", "description"),
+                KernelFunctionFactory.CreateFromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
-        var functionView = new SKFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
-        var nativeFunctionView = new SKFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
+        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
+        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
 
         var memoryQueryResult =
             new MemoryQueryResult(
@@ -242,7 +242,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        var plugins = new SKPluginCollection();
+        var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);

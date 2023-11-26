@@ -113,12 +113,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result.Result is null)
         {
-            throw new SKException("Azure OpenAI Image Generation null response");
+            throw new KernelException("Azure OpenAI Image Generation null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new SKException("Azure OpenAI Image Generation result not found");
+            throw new KernelException("Azure OpenAI Image Generation result not found");
         }
 
         return result.Result.Images.First().Url;
@@ -152,7 +152,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
-            throw new SKException("Response not contains result");
+            throw new KernelException("Response not contains result");
         }
 
         return result.Id;
@@ -174,7 +174,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             if (this._maxRetryCount == retryCount)
             {
-                throw new SKException("Reached maximum retry attempts");
+                throw new KernelException("Reached maximum retry attempts");
             }
 
             using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
@@ -187,7 +187,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             }
             else if (this.IsFailedOrCancelled(result.Status))
             {
-                throw new SKException($"Azure OpenAI image generation {result.Status}");
+                throw new KernelException($"Azure OpenAI image generation {result.Status}");
             }
 
             if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))

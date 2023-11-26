@@ -56,7 +56,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
-        ISKPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
@@ -71,7 +71,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithSemanticFunctions ========");
 
-        var plugin = new SKPlugin("test");
+        var plugin = new KernelPlugin("test");
         plugin.AddFunctionFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
@@ -123,12 +123,12 @@ public static class Example70_Assistant
 
     private static async Task ChatAsync(
         string resourcePath,
-        ISKPlugin? plugin,
+        IKernelPlugin? plugin,
         params string[] messages)
     {
         var definition = EmbeddedResource.Read(resourcePath);
 
-        var plugins = plugin == null ? new SKPluginCollection() : new SKPluginCollection() { plugin };
+        var plugins = plugin == null ? new KernelPluginCollection() : new KernelPluginCollection() { plugin };
 
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(

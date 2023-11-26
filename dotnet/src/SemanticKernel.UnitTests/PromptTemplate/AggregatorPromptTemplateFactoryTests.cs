@@ -42,7 +42,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
         var result2 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
 
         // Assert
-        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 
     #region private
@@ -55,7 +55,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
                 return new MyPromptTemplate1(templateString, promptTemplateConfig);
             }
 
-            throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
         }
     }
 
@@ -70,7 +70,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
+        public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {
@@ -87,7 +87,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
                 return new MyPromptTemplate2(templateString, promptTemplateConfig);
             }
 
-            throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
         }
     }
 
@@ -102,7 +102,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-        public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
+        public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {

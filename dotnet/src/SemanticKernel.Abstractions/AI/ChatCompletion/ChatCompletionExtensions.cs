@@ -22,7 +22,7 @@ public static class ChatCompletionExtensions
     public static async Task<string> GenerateMessageAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
@@ -42,7 +42,7 @@ public static class ChatCompletionExtensions
     public static IAsyncEnumerable<StreamingContent> GetStreamingContentAsync(
         this IChatCompletion chatCompletion,
         string input,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
             => chatCompletion.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
 }

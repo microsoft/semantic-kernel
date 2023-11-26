@@ -25,7 +25,7 @@ public static class KernelFunctionExtensions
         this KernelFunction function,
         Kernel kernel,
         ContextVariables? variables = null,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return function.InvokeStreamingAsync<StreamingContent>(kernel, variables ?? new ContextVariables(), requestSettings, cancellationToken);

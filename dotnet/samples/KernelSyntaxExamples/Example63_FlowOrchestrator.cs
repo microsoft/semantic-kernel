@@ -239,12 +239,12 @@ Do not expose the regex unless asked.
 
         private int MaxTokens { get; set; } = 256;
 
-        private readonly AIRequestSettings _chatRequestSettings;
+        private readonly PromptExecutionSettings _chatRequestSettings;
 
         public ChatPlugin(Kernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
-            this._chatRequestSettings = new OpenAIRequestSettings
+            this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
                 StopSequences = new List<string>() { "Observation:" },
@@ -252,11 +252,11 @@ Do not expose the regex unless asked.
             };
         }
 
-        [SKFunction]
+        [KernelFunction]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [SKName("ConfigureEmailAddress")]
+        [KernelName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email_address")]
+            [KernelName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
             ContextVariables variables)
@@ -293,13 +293,13 @@ Do not expose the regex unless asked.
 
     public sealed class EmailPluginV2
     {
-        [SKFunction]
+        [KernelFunction]
         [Description("Send email")]
-        [SKName("SendEmail")]
+        [KernelName("SendEmail")]
         public string SendEmail(
-            [SKName("email_addresses")][Description("target email addresses")]
+            [KernelName("email_addresses")][Description("target email addresses")]
             string emailAddress,
-            [SKName("answer")][Description("answer, which is going to be the email content")]
+            [KernelName("answer")][Description("answer, which is going to be the email content")]
             string answer,
             ContextVariables variables)
         {

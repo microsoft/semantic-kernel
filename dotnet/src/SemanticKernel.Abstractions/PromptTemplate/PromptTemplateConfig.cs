@@ -93,14 +93,14 @@ public class PromptTemplateConfig
     [JsonPropertyName("models")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<AIRequestSettings> ModelSettings { get; set; } = new();
+    public List<PromptExecutionSettings> ModelSettings { get; set; } = new();
 
     /// <summary>
-    /// Return the default <see cref="AIRequestSettings"/>
+    /// Return the default <see cref="PromptExecutionSettings"/>
     /// </summary>
-    public AIRequestSettings GetDefaultRequestSettings()
+    public PromptExecutionSettings GetDefaultRequestSettings()
     {
-        return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
+        return this.ModelSettings.FirstOrDefault() ?? new PromptExecutionSettings();
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class PromptTemplateConfig
                     DefaultValue = p.DefaultValue
                 }).ToList()
             },
-            ModelSettings = semanticFunctionConfig.ModelSettings
+            ModelSettings = semanticFunctionConfig.ExecutionSettings
         };
     }
 }

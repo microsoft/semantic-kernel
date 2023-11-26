@@ -51,7 +51,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
+        foreach (KernelFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, contextVariables, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -67,7 +67,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         ContextVariables contextVariables,
         IHandlebars handlebarsInstance,
-        SKFunctionMetadata functionMetadata,
+        KernelFunctionMetadata functionMetadata,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
@@ -89,7 +89,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
             else if (functionMetadata.Parameters.Any(p => p.IsRequired))
             {
-                throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
+                throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
             }
 
             InitializeContextVariables(variables, contextVariables);
@@ -122,13 +122,13 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
         handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            SKParameterMetadata parameter = (SKParameterMetadata)arguments[0];
+            KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
             return parameter.GetSchemaTypeName();
         });
 
         handlebarsInstance.RegisterHelper("getSchemaReturnTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            SKReturnParameterMetadata parameter = (SKReturnParameterMetadata)arguments[0];
+            KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();
             return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
         });
@@ -238,7 +238,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             // Verify that the message has a role
             if (!parameters!.ContainsKey("role"))
             {
-                throw new SKException("Message must have a role.");
+                throw new KernelException("Message must have a role.");
             }
 
             writer.Write($"<{parameters["role"]}~>", false);
@@ -338,7 +338,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// </summary>
     /// <param name="parameterType">Function parameter type</param>
     /// <param name="argument">Handlebar argument </param>
-    private static bool IsExpectedParameterType(SKParameterMetadata parameterType, object argument)
+    private static bool IsExpectedParameterType(KernelParameterMetadata parameterType, object argument)
     {
         if (parameterType.ParameterType == argument.GetType() ||
             argument.GetType() == typeof(object))
@@ -358,11 +358,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <summary>
     /// Processes the hash arguments passed to a Handlebars helper function.
     /// </summary>
-    /// <param name="functionMetadata">SKFunctionMetadata for the function being invoked.</param>
+    /// <param name="functionMetadata">KernelFunctionMetadata for the function being invoked.</param>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
-    /// <exception cref="SKException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessHashArguments(SKFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
+    /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
+    private static void ProcessHashArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
     {
         // Prepare the input parameters for the function
         foreach (var param in functionMetadata.Parameters)
@@ -376,7 +376,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
             else if (param.IsRequired)
             {
-                throw new SKException($"Parameter {param.Name} is required for function {functionMetadata.Name}.");
+                throw new KernelException($"Parameter {param.Name} is required for function {functionMetadata.Name}.");
             }
         }
     }
@@ -384,11 +384,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <summary>
     /// Processes the positional arguments passed to a Handlebars helper function.
     /// </summary>
-    /// <param name="functionMetadata">SKFunctionMetadata for the function being invoked.</param>
+    /// <param name="functionMetadata">KernelFunctionMetadata for the function being invoked.</param>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
-    /// <exception cref="SKException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessPositionalArguments(SKFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
+    /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
+    private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
     {
         var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
         if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)
@@ -404,13 +404,13 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 }
                 else
                 {
-                    throw new SKException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarArgs[argIndex].GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarArgs[argIndex].GetType()}.");
                 }
             }
         }
         else
         {
-            throw new SKException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarArgs.Length} were specified but {functionMetadata.Parameters.Count} are required.");
+            throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarArgs.Length} were specified but {functionMetadata.Parameters.Count} are required.");
         }
     }
 
@@ -424,7 +424,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         foreach (var v in variables)
         {
             var value = v.Value ?? "";
-            var varString = !SKParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
+            var varString = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
             if (contextVariables.ContainsKey(v.Key))
             {
                 contextVariables[v.Key] = varString;
@@ -454,7 +454,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         var returnType = function.GetMetadata().ReturnParameter.ParameterType;
         var resultAsObject = result.GetValue<object?>();
 
-        if (returnType is not null && !SKParameterMetadataExtensions.IsPrimitiveOrStringType(returnType))
+        if (returnType is not null && !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(returnType))
         {
             var serializedResult = JsonSerializer.Serialize(resultAsObject);
             resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
