@@ -83,21 +83,11 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
         return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
-        ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        this.LogActionDetails();
-        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -107,19 +97,9 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        this.LogActionDetails();
-        return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -127,7 +107,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(prompt);
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);

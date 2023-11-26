@@ -126,7 +126,7 @@ public sealed class FunctionCallingStepwisePlanner
                     var result = (await this._kernel.InvokeAsync(pluginFunction, funcContext, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                     chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
                 }
-                catch (SKException)
+                catch (KernelException)
                 {
                     chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
                 }
@@ -161,10 +161,10 @@ public sealed class FunctionCallingStepwisePlanner
         return await this._kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
-    private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
+    private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
-        var requestSettings = this.Config.ModelSettings ?? new OpenAIRequestSettings();
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        var requestSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
+        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
         requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
@@ -175,10 +175,10 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var chatHistory = this._chatCompletion.CreateNewChat();
 
-        var systemContext = this._kernel.CreateNewContext();
+        var variables = new ContextVariables();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
-        systemContext.Variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        variables.Set(AvailableFunctionsKey, functionsManual);
+        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -194,10 +194,10 @@ public sealed class FunctionCallingStepwisePlanner
         var chatHistory = this._chatCompletion.CreateNewChat();
 
         // Add system message with context about the initial goal/plan
-        var systemContext = this._kernel.CreateNewContext();
-        systemContext.Variables.Set(GoalKey, goal);
-        systemContext.Variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        var variables = new ContextVariables();
+        variables.Set(GoalKey, goal);
+        variables.Set(InitialPlanKey, initialPlan);
+        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 
@@ -322,7 +322,7 @@ public sealed class FunctionCallingStepwisePlanner
         /// This function is used by the <see cref="FunctionCallingStepwisePlanner"/> to indicate when the final answer has been found.
         /// </summary>
         /// <param name="answer">The final answer for the plan.</param>
-        [SKFunction]
+        [KernelFunction]
         [Description("This function is used to send the final answer of a plan to the user.")]
         public string SendFinalAnswer([Description("The final answer")] string answer)
         {

@@ -57,7 +57,7 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
@@ -104,12 +104,12 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
             Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendering Handler - Triggered");
-            e.SKContext.Variables.Set("style", "Seinfeld");
+            e.Variables.Set("style", "Seinfeld");
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
@@ -144,16 +144,16 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.SKContext.Variables.Input;
+            var originalOutput = e.Variables.Input;
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.SKContext.Variables.Update(newOutput);
+            e.Variables.Update(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;
@@ -179,7 +179,7 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>

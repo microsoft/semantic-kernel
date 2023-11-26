@@ -57,12 +57,12 @@ internal static class RestApiOperationExtensions
     /// <param name="operation">The REST API operation object with Responses to parse.</param>
     /// <param name="preferredResponses">A list of preferred response codes to use when selecting the default response.</param>
     /// <returns>The default return parameter metadata, if any.</returns>
-    public static SKReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
+    public static KernelReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
     {
         RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null ? new SKReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
+            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
 
         return returnParameter;
     }
@@ -101,7 +101,7 @@ internal static class RestApiOperationExtensions
         {
             if (operation.Payload is null)
             {
-                throw new SKException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
+                throw new KernelException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
             }
 
             // The 'text/plain' content type payload metadata does not contain parameter names.

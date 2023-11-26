@@ -31,7 +31,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string template,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -44,7 +44,7 @@ public partial class AssistantBuilder
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
                 .WithDescription(assistantKernelModel.Description.Trim())
-                .WithPlugins(plugins ?? Array.Empty<ISKPlugin>())
+                .WithPlugins(plugins ?? Array.Empty<IKernelPlugin>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -62,7 +62,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string definitionPath,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(definitionPath);
@@ -106,13 +106,13 @@ public partial class AssistantBuilder
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
+            throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
         var chatService = new OpenAIChatCompletion(resultModel.Model, apiKey);
 
         return new Assistant(resultModel, chatService, restContext, plugins);

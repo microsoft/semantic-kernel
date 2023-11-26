@@ -80,19 +80,9 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -100,7 +90,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, requestSettings, cancellationToken);
     }

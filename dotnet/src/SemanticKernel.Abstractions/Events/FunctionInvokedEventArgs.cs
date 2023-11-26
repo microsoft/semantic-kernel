@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoked event.
 /// </summary>
-public class FunctionInvokedEventArgs : SKCancelEventArgs
+public class FunctionInvokedEventArgs : KernelCancelEventArgs
 {
     /// <summary>
     /// Indicates if the function execution should repeat.
@@ -19,7 +19,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(KernelFunction function, FunctionResult result) : base(function, result.Context)
+    public FunctionInvokedEventArgs(KernelFunction function, FunctionResult result) : base(function, result.Variables)
     {
         this.Metadata = result.Metadata;
     }

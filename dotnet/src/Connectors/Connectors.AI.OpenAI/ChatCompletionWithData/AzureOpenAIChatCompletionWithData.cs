@@ -61,12 +61,12 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -74,27 +74,12 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
-        ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-
-        return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
@@ -104,31 +89,25 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        string prompt,
+        PromptExecutionSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, chatRequestSettings);
+        var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
 
-        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
-        await foreach (var result in results)
-        {
-            yield return (ITextStreamingResult)result;
-        }
+        return this.GetStreamingContentAsync<T>(chat, chatRequestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        AIRequestSettings? requestSettings = null,
+        ChatHistory chat,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -164,13 +143,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
@@ -181,20 +160,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
 
         return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
-    }
-
-    private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
-        ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-
-        await foreach (var result in this.GetStreamingResultsAsync(response))
-        {
-            yield return result;
-        }
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(
@@ -214,36 +179,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
             throw;
-        }
-    }
-
-    private async IAsyncEnumerable<IChatStreamingResult> GetStreamingResultsAsync(HttpResponseMessage response)
-    {
-        const string ServerEventPayloadPrefix = "data:";
-
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream);
-
-        while (!reader.EndOfStream)
-        {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
-
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                continue;
-            }
-
-            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
-            {
-                body = body.Substring(ServerEventPayloadPrefix.Length);
-            }
-
-            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-
-            foreach (var choice in chatWithDataResponse.Choices)
-            {
-                yield return new ChatWithDataStreamingResult(chatWithDataResponse, choice);
-            }
         }
     }
 
@@ -317,7 +252,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
             this._logger.LogError(ErrorMessage);
 
-            throw new SKException(ErrorMessage);
+            throw new KernelException(ErrorMessage);
         }
 
         return response;
@@ -325,7 +260,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private HttpRequestMessage GetRequest(
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         bool isStreamEnabled)
     {
         var payload = new ChatWithDataRequest
@@ -371,7 +306,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             .ToList();
     }
 
-    private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
+    private ChatHistory PrepareChatHistory(string text, OpenAIPromptExecutionSettings requestSettings)
     {
         var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
 

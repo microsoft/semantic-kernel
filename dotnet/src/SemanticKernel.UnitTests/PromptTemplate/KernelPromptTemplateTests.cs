@@ -137,24 +137,22 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        string MyFunctionAsync(SKContext context)
+        string MyFunctionAsync(ContextVariables context)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
-            return $"F({context.Variables.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", context.Input);
+            return $"F({context.Input})";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -164,24 +162,22 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        string MyFunctionAsync(SKContext context)
+        string MyFunctionAsync(ContextVariables context)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
-            return $"F({context.Variables.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", context.Input);
+            return $"F({context.Input})";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{plugin.function $myVar}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -192,29 +188,27 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Name"), SKName("input")] string name,
-            [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
-            [Description("Date"), SKName("date")] DateTime date)
+            [Description("Name"), KernelName("input")] string name,
+            [Description("Age"), KernelName("age")] int age,
+            [Description("Slogan"), KernelName("slogan")] string slogan,
+            [Description("Date"), KernelName("date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -227,10 +221,9 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
-        var context = new SKContext(this._variables);
 
         // Act
-        var result = await Assert.ThrowsAsync<SKException>(() => target.RenderAsync(this._kernel, context));
+        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._variables));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -239,19 +232,19 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), SKName("input")] string name,
-            [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
-            [Description("Date"), SKName("date")] DateTime date)
+            [Description("Input"), KernelName("input")] string name,
+            [Description("Age"), KernelName("age")] int age,
+            [Description("Slogan"), KernelName("slogan")] string slogan,
+            [Description("Date"), KernelName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
@@ -259,10 +252,8 @@ public sealed class KernelPromptTemplateTests
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -277,39 +268,37 @@ public sealed class KernelPromptTemplateTests
         this._variables.Update("BAR");
         this._variables.Set("myVar", "BAZ");
 
-        string MyFunction1Async(SKContext context)
+        string MyFunction1Async(ContextVariables localVariables)
         {
-            this._logger.WriteLine("MyFunction1 call received, input: {0}", context.Variables.Input);
-            context.Variables.Update("foo");
+            this._logger.WriteLine("MyFunction1 call received, input: {0}", localVariables.Input);
+            localVariables.Update("foo");
             return "F(OUTPUT-FOO)";
         }
-        string MyFunction2Async(SKContext context)
+        string MyFunction2Async(ContextVariables localVariables)
         {
             // Input value should be "BAR" because the variable $input is immutable in MyFunction1
-            this._logger.WriteLine("MyFunction2 call received, input: {0}", context.Variables.Input);
-            context.Variables.Set("myVar", "bar");
-            return context.Variables.Input;
+            this._logger.WriteLine("MyFunction2 call received, input: {0}", localVariables.Input);
+            localVariables.Set("myVar", "bar");
+            return localVariables.Input;
         }
-        string MyFunction3Async(SKContext context)
+        string MyFunction3Async(ContextVariables localVariables)
         {
             // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
-            this._logger.WriteLine("MyFunction3 call received, input: {0}", context.Variables.Input);
-            return context.Variables.TryGetValue("myVar", out string? value) ? value : "";
+            this._logger.WriteLine("MyFunction3 call received, input: {0}", localVariables.Input);
+            return localVariables.TryGetValue("myVar", out string? value) ? value : "";
         }
 
         var functions = new List<KernelFunction>()
         {
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
+            KernelFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
         };
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", functions));
-
-        var context = new SKContext(this._variables);
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", functions));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
@@ -319,16 +308,16 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        Task<string> MyFunctionAsync(SKContext context)
+        Task<string> MyFunctionAsync(ContextVariables localVariables)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
-            return Task.FromResult(context.Variables.Input);
+            this._logger.WriteLine("MyFunction call received, input: {0}", localVariables.Input);
+            return Task.FromResult(localVariables.Input);
         }
 
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
-        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { func }));
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._variables.Set("myVar", "BAR");
 
@@ -336,10 +325,8 @@ public sealed class KernelPromptTemplateTests
 
         var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
 
-        var context = new SKContext(this._variables);
-
         // Act
-        var result = await target.RenderAsync(this._kernel, context);
+        var result = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);

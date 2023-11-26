@@ -35,7 +35,7 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
 
         return message is not null ?
             Task.FromResult<ChatMessage>(new AzureOpenAIChatMessage(message.Role, message.Content)) :
-            Task.FromException<ChatMessage>(new SKException("No message found"));
+            Task.FromException<ChatMessage>(new KernelException("No message found"));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)

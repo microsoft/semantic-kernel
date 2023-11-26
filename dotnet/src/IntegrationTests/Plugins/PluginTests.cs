@@ -40,7 +40,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -70,7 +70,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -135,7 +135,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -166,7 +166,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+            await plugin[functionName].InvokeAsync(kernel, contextVariables);
         }
     }
 
@@ -196,6 +196,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 }
