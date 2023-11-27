@@ -39,7 +39,7 @@ public static class Example24_OpenApiPlugin_Jira
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
 
-        ISKPlugin jiraFunctions;
+        IKernelPlugin jiraFunctions;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
@@ -82,7 +82,7 @@ public static class Example24_OpenApiPlugin_Jira
             contextVariables.Set("issueKey", "TEST-1");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
+            var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], contextVariables);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(
@@ -102,7 +102,7 @@ public static class Example24_OpenApiPlugin_Jira
             contextVariables.Set(RestApiOperation.PayloadArgumentName, "{\"body\": \"Here is a rad comment\"}");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
+            var result = await kernel.InvokeAsync(jiraFunctions["AddComment"], contextVariables);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(

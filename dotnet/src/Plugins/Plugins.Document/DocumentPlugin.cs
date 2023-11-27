@@ -69,7 +69,7 @@ public sealed class DocumentPlugin
     /// <summary>
     /// Read all text from a document, using <see cref="ContextVariables.Input"/> as the file path.
     /// </summary>
-    [SKFunction, Description("Read all text from a document")]
+    [KernelFunction, Description("Read all text from a document")]
     public async Task<string> ReadTextAsync(
         [Description("Path to the file to read")] string filePath,
         CancellationToken cancellationToken = default)
@@ -82,7 +82,7 @@ public sealed class DocumentPlugin
     /// <summary>
     /// Append the text in <see cref="ContextVariables.Input"/> to a document. If the document doesn't exist, it will be created.
     /// </summary>
-    [SKFunction, Description("Append text to a document. If the document doesn't exist, it will be created.")]
+    [KernelFunction, Description("Append text to a document. If the document doesn't exist, it will be created.")]
     public async Task AppendTextAsync(
         [Description("Text to append")] string text,
         [Description("Destination file path")] string filePath,

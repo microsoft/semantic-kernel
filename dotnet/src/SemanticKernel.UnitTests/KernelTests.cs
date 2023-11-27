@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -53,7 +51,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, functions["GetAnyValue"]));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.InvokeAsync(functions["GetAnyValue"], cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -66,7 +64,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        var result = await kernel.RunAsync(cts.Token, kernel.Plugins.GetFunction("mySk", "GetAnyValue"));
+        var result = await kernel.InvokeAsync(kernel.Plugins.GetFunction("mySk", "GetAnyValue"), cancellationToken: cts.Token);
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
@@ -76,7 +74,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        ISKPlugin plugin = new KernelBuilder().Build().ImportPluginFromObject<MyPlugin>();
+        IKernelPlugin plugin = new KernelBuilder().Build().ImportPluginFromObject<MyPlugin>();
 
         // Assert
         Assert.Equal(3, plugin.Count());
@@ -98,42 +96,57 @@ public class KernelTests
         kernel.ImportPluginFromObject<MyPlugin>("plugin3");
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
+    [Fact]
+    public async Task RunAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
         };
-        List<KernelFunction> pipeline = new();
-        for (int i = 0; i < pipelineCount; i++)
-        {
-            pipeline.Add(func);
-        }
 
         // Act
-        var result = await sut.RunAsync(pipeline.ToArray());
+        var result = await sut.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(pipelineCount, functionInvocations);
-        Assert.Equal(pipelineCount, handlerInvocations);
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, handlerInvocations);
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
+    public async Task RunStreamingAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        var handlerInvocations = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            handlerInvocations++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function)) { }
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, handlerInvocations);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncHandlesPreInvocationWasCancelledAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -143,12 +156,129 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(func);
+        int chunksCount = 0;
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+            chunksCount++;
+        }
 
         // Assert
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Null(result);
+        Assert.Equal(0, chunksCount);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        var functions = sut.ImportPluginFromObject<MyPlugin>();
+
+        var invoked = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            e.Cancel();
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invoked++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(functions["GetAnyValue"]))
+        {
+        }
+
+        // Assert
+        Assert.Equal(0, invoked);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int funcInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
+
+        var invoked = 0;
+        var invoking = 0;
+        string invokedFunction = string.Empty;
+
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoking++;
+            if (e.Function.Name == "func1")
+            {
+                e.Skip();
+            }
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invokedFunction = e.Function.Name;
+            invoked++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+        }
+
+        // Assert
+        Assert.Equal(1, invoking);
+        Assert.Equal(0, invoked);
+        Assert.Equal(0, funcInvocations);
+    }
+
+    [Fact]
+    public async Task RunStreamingAsyncDoesNotHandlePostInvocationAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        int handlerInvocations = 0;
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            handlerInvocations++;
+        };
+
+        // Act
+        await foreach (var chunk in sut.RunStreamingAsync(function))
+        {
+        }
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(0, handlerInvocations);
+    }
+
+    [Fact]
+    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
+    {
+        // Arrange
+        var sut = new KernelBuilder().Build();
+        int functionInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        var handlerInvocations = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            handlerInvocations++;
+            e.Cancel();
+        };
+
+        // Act
+        var result = await sut.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal(1, handlerInvocations);
+        Assert.Equal(0, functionInvocations);
+        Assert.NotNull(result);
     }
 
     [Fact]
@@ -157,8 +287,7 @@ public class KernelTests
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction func1 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
-        KernelFunction func2 = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -168,7 +297,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(func1, func2);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, handlerInvocations);
@@ -194,7 +323,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"]);
+        var result = await sut.InvokeAsync(functions["GetAnyValue"]);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -205,9 +334,8 @@ public class KernelTests
     {
         // Arrange
         var sut = new KernelBuilder().Build();
-        int func1Invocations = 0, func2Invocations = 0;
-        KernelFunction func1 = SKFunctionFactory.CreateFromMethod(() => func1Invocations++, functionName: "func1");
-        KernelFunction func2 = SKFunctionFactory.CreateFromMethod(() => func2Invocations++, functionName: "func2");
+        int funcInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
 
         var invoked = 0;
         var invoking = 0;
@@ -216,7 +344,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.FunctionMetadata.Name == "func1")
+            if (e.Function.Name == "func1")
             {
                 e.Skip();
             }
@@ -224,29 +352,26 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.FunctionMetadata.Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 
         // Act
-        var result = await sut.RunAsync(func1, func2);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(2, invoking);
-        Assert.Equal(1, invoked);
-        Assert.Equal(0, func1Invocations);
-        Assert.Equal(1, func2Invocations);
+        Assert.Equal(1, invoking);
+        Assert.Equal(0, invoked);
+        Assert.Equal(0, funcInvocations);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
+    [Fact]
+    public async Task RunAsyncHandlesPostInvocationAsync()
     {
         // Arrange
         var sut = new KernelBuilder().Build();
         int functionInvocations = 0;
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -254,25 +379,19 @@ public class KernelTests
             handlerInvocations++;
         };
 
-        List<KernelFunction> pipeline = new();
-        for (int i = 0; i < pipelineCount; i++)
-        {
-            pipeline.Add(func);
-        }
-
         // Act
-        var result = await sut.RunAsync(pipeline.ToArray());
+        var result = await sut.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(pipelineCount, functionInvocations);
-        Assert.Equal(pipelineCount, handlerInvocations);
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, handlerInvocations);
     }
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { });
+        var function = KernelFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -283,7 +402,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, func);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -293,7 +412,7 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = new KernelBuilder().Build();
-        KernelFunction func = SKFunctionFactory.CreateFromMethod(() => { });
+        var function = KernelFunctionFactory.CreateFromMethod(() => { });
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -304,7 +423,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, func);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -316,15 +435,14 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
-        var function2 = SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2");
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "Function1");
 
         // Act
-        var result = await kernel.RunAsync(function1, function2);
+        var result = await kernel.InvokeAsync(function);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Result2", result.GetValue<string>());
+        Assert.Equal("Result", result.GetValue<string>());
     }
 
     [Fact]
@@ -333,21 +451,20 @@ public class KernelTests
         var kernel = new KernelBuilder().Build();
 
         // Arrange
-        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
         const string ExpectedValue = "new result";
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            args.SKContext.Variables.Update(ExpectedValue);
+            args.Variables.Update(ExpectedValue);
         };
 
         // Act
-        var result = await kernel.RunAsync(function1);
+        var result = await kernel.InvokeAsync(function1);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(ExpectedValue, result.GetValue<string>());
-        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
     }
 
     [Fact]
@@ -356,194 +473,20 @@ public class KernelTests
         // Arrange
         var kernel = new KernelBuilder().Build();
 
-        var function1 = SKFunctionFactory.CreateFromMethod((string injectedVariable) => injectedVariable, "Function1");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string injectedVariable) => injectedVariable, "Function1");
         const string ExpectedValue = "injected value";
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            args.SKContext.Variables["injectedVariable"] = ExpectedValue;
+            args.Variables["injectedVariable"] = ExpectedValue;
         };
 
         // Act
-        var result = await kernel.RunAsync(function1);
+        var result = await kernel.InvokeAsync(function1);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(ExpectedValue, result.GetValue<string>());
-        Assert.Equal(ExpectedValue, result.Context.Variables.Input);
-    }
-
-    [Theory]
-    [InlineData("Function1", 5)]
-    [InlineData("Function2", 1)]
-    public async Task ItRepeatsFunctionInvokedEventsAsync(string retryFunction, int numberOfRepeats)
-    {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
-        var function1 = SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1");
-        var function2 = SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2");
-
-        int numberOfInvocations = 0;
-        int repeatCount = 0;
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
-        {
-            if (args.FunctionMetadata.Name == retryFunction && repeatCount < numberOfRepeats)
-            {
-                args.Repeat();
-                repeatCount++;
-            }
-
-            numberOfInvocations++;
-        };
-
-        // Act
-        var result = await kernel.RunAsync(function1, function2);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(2 + numberOfRepeats, numberOfInvocations);
-    }
-
-    [Theory]
-    [InlineData("Function1", "Result2 Result3")]
-    [InlineData("Function2", "Result1 Result3")]
-    [InlineData("Function3", "Result1 Result2")]
-    public async Task ItSkipsFunctionsFromFunctionInvokingEventsAsync(string skipFunction, string expectedResult)
-    {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
-        var function1 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result1", "Function1");
-        var function2 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result2", "Function2");
-        var function3 = SKFunctionFactory.CreateFromMethod((string input) => $"{input} Result3", "Function3");
-
-        const int ExpectedInvocations = 2;
-
-        int numberOfInvocations = 0;
-
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
-        {
-            if (args.FunctionMetadata.Name == skipFunction)
-            {
-                args.Skip();
-            }
-        };
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
-        {
-            numberOfInvocations++;
-        };
-
-        // Act
-        var result = await kernel.RunAsync(string.Empty, function1, function2, function3);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedResult, result.GetValue<string>()!.Trim());
-        Assert.Equal(ExpectedInvocations, numberOfInvocations);
-    }
-
-    [Theory]
-    [InlineData(1, 0, 0)]
-    [InlineData(2, 0, 0)]
-    [InlineData(2, 1, 1)]
-    [InlineData(5, 2, 2)]
-    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int invokedHandlerInvocations)
-    {
-        var kernel = new KernelBuilder().Build();
-
-        // Arrange
-        List<KernelFunction> functions = new()
-        {
-            SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
-            SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
-            SKFunctionFactory.CreateFromMethod(() => "Result3", "Function3"),
-            SKFunctionFactory.CreateFromMethod(() => "Result4", "Function4"),
-            SKFunctionFactory.CreateFromMethod(() => "Result5", "Function5")
-        };
-
-        int numberOfInvocations = 0;
-
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
-        {
-            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
-            {
-                args.Cancel();
-            }
-        };
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
-        {
-            numberOfInvocations++;
-        };
-
-        // Act
-        var result = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
-
-        // Assert
-        if (functionCancelIndex == 0)
-        {
-            // If the first function was cancelled, the result should be null
-            Assert.Null(result);
-        }
-        else
-        {
-            // Else result should be of the last invoked function
-            Assert.Equal($"Result{functionCancelIndex}", result.GetValue<string>());
-        }
-
-        // Kernel result is the same as the last invoked function
-        Assert.Equal(invokedHandlerInvocations, numberOfInvocations);
-    }
-
-    [Theory]
-    [InlineData(1, 0, 1)]
-    [InlineData(2, 0, 1)]
-    [InlineData(2, 1, 2)]
-    [InlineData(5, 2, 3)]
-    public async Task ItCancelsPipelineFromFunctionInvokedEventsAsync(int numberOfFunctions, int functionCancelIndex, int expectedInvocations)
-    {
-        var kernel = new KernelBuilder().Build();
-
-        // Arrange
-        List<KernelFunction> functions = new()
-        {
-            SKFunctionFactory.CreateFromMethod(() => "Result1", "Function1"),
-            SKFunctionFactory.CreateFromMethod(() => "Result2", "Function2"),
-            SKFunctionFactory.CreateFromMethod(() => "Result3", "Function3"),
-            SKFunctionFactory.CreateFromMethod(() => "Result4", "Function4"),
-            SKFunctionFactory.CreateFromMethod(() => "Result5", "Function5")
-        };
-
-        int numberOfInvocations = 0;
-
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
-        {
-            numberOfInvocations++;
-            if (args.FunctionMetadata.Name == functions[functionCancelIndex].Name)
-            {
-                args.Cancel();
-            }
-        };
-
-        // Act
-        var result = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
-
-        // Assert
-
-        if (functionCancelIndex == 0)
-        {
-            // If the first function was cancelled, the result should be null
-            Assert.Null(result);
-        }
-        else
-        {
-            // Else result should be of the last invoked function
-            Assert.Equal($"Result{functionCancelIndex}", result.GetValue<string>());
-        }
-        Assert.Equal(expectedInvocations, numberOfInvocations);
     }
 
     [Fact]
@@ -553,15 +496,13 @@ public class KernelTests
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        var context = new SKContext(new ContextVariables());
-
-        var function = SKFunctionFactory.CreateFromMethod(() => "fake result", "function");
+        var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
-        kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
+        kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         //Act
-        var result = await kernel.RunAsync("plugin", "function");
+        var result = await kernel.InvokeAsync("plugin", "function");
 
         //Assert
         Assert.NotNull(result);
@@ -597,22 +538,61 @@ public class KernelTests
         Assert.Equal(CultureInfo.CurrentCulture, culture);
     }
 
+    [Fact]
+    public void ItDeepClonesAllRelevantStateInClone()
+    {
+        // Kernel with all properties set
+        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceSelector = new Mock<IAIServiceSelector>();
+        var httpHandler = new Mock<IDelegatingHandlerFactory>();
+        var loggerFactory = new Mock<ILoggerFactory>();
+        var plugin = new KernelPlugin("plugin1");
+        var plugins = new KernelPluginCollection() { plugin };
+        Kernel kernel1 = new(serviceProvider.Object, plugins, serviceSelector.Object, httpHandler.Object, loggerFactory.Object);
+        kernel1.Data["key"] = "value";
+
+        // Clone and validate it
+        Kernel kernel2 = kernel1.Clone();
+        Assert.Same(kernel1.ServiceProvider, kernel2.ServiceProvider);
+        Assert.Same(kernel1.ServiceSelector, kernel2.ServiceSelector);
+        Assert.Same(kernel1.HttpHandlerFactory, kernel2.HttpHandlerFactory);
+        Assert.Same(kernel1.Culture, kernel2.Culture);
+        Assert.NotSame(kernel1.Data, kernel2.Data);
+        Assert.Equal(kernel1.Data.Count, kernel2.Data.Count);
+        Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Equal(kernel1.Plugins, kernel2.Plugins);
+
+        // Minimally configured kernel
+        Kernel kernel3 = new(serviceProvider.Object);
+
+        // Clone and validate it
+        Kernel kernel4 = kernel3.Clone();
+        Assert.Same(kernel3.ServiceProvider, kernel4.ServiceProvider);
+        Assert.Same(kernel3.ServiceSelector, kernel4.ServiceSelector);
+        Assert.Same(kernel3.HttpHandlerFactory, kernel4.HttpHandlerFactory);
+        Assert.NotSame(kernel3.Data, kernel4.Data);
+        Assert.Empty(kernel4.Data);
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+        Assert.Empty(kernel4.Plugins);
+    }
+
     public class MyPlugin
     {
-        [SKFunction, Description("Return any value.")]
+        [KernelFunction, Description("Return any value.")]
         public virtual string GetAnyValue()
         {
             return Guid.NewGuid().ToString();
         }
 
-        [SKFunction, Description("Just say hello")]
+        [KernelFunction, Description("Just say hello")]
         public virtual void SayHello()
         {
             Console.WriteLine("Hello folks!");
         }
 
-        [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context, Kernel kernel)
+        [KernelFunction, Description("Export info."), KernelName("ReadFunctionCollectionAsync")]
+        public async Task ReadFunctionCollectionAsync(ContextVariables variables, Kernel kernel)
         {
             await Task.Delay(0);
 
@@ -623,26 +603,8 @@ public class KernelTests
 
             foreach (var function in kernel.Plugins.GetFunctionsMetadata())
             {
-                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
+                variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
-
-            return context;
         }
-    }
-
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
-    {
-        var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
-
-        var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-
-        return (mockTextResult, mockTextCompletion);
-    }
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
     }
 }

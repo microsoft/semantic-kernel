@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
-/// Extension methods for <see cref="IReadOnlySKPluginCollection"/>.
+/// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
 /// </summary>
 public static class PluginCollectionExtensions
 {
@@ -19,7 +19,7 @@ public static class PluginCollectionExtensions
     /// <param name="availableContext">When this method returns, the context variables containing parameters for the function; otherwise, <see langword="null"/></param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
     public static bool TryGetFunctionAndContext(
-        this IReadOnlySKPluginCollection plugins,
+        this IReadOnlyKernelPluginCollection plugins,
         OpenAIFunctionResponse response,
         [NotNullWhen(true)] out KernelFunction? availableFunction,
         [NotNullWhen(true)] out ContextVariables? availableContext)

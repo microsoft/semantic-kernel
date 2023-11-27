@@ -39,7 +39,7 @@ public sealed class KernelBuilder
 #pragma warning disable CS8604 // Possible null reference argument.
         var instance = new Kernel(
             this._aiServices.Build(),
-            new SKPluginCollection(),
+            new KernelPluginCollection(),
             this._serviceSelector,
             this._httpHandlerFactory,
             this._loggerFactory

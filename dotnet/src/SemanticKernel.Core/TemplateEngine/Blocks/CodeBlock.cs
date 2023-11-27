@@ -71,20 +71,20 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
-            throw new SKException(error);
+            throw new KernelException(error);
         }
 
         this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
 
         return this._tokens[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(context.Variables),
-            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false),
-            _ => throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}"),
+            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(variables),
+            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, variables).ConfigureAwait(false),
+            _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
     }
 
@@ -93,10 +93,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, SKContext context)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, ContextVariables variables)
     {
         // Clone the context to avoid unexpected variable mutations from the inner function execution
-        ContextVariables inputVariables = context.Variables.Clone();
+        ContextVariables inputVariables = variables.Clone();
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
@@ -106,7 +106,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            await kernel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
+            await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -174,7 +174,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
-                throw new SKException($"Unexpected first token type: {this._tokens[i].Type:G}");
+                throw new KernelException($"Unexpected first token type: {this._tokens[i].Type:G}");
             }
 
             // Sensitive data, logging as trace, disabled by default

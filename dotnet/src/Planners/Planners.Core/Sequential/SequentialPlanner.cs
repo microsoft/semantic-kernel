@@ -42,7 +42,7 @@ public sealed class SequentialPlanner
             promptTemplate: promptTemplate,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new AIRequestSettings()
+            requestSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -62,7 +62,7 @@ public sealed class SequentialPlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -82,13 +82,13 @@ public sealed class SequentialPlanner
             [AvailableFunctionsKey] = relevantFunctionsManual
         };
 
-        FunctionResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
+        FunctionResult planResult = await this._kernel.InvokeAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string? planResultString = planResult.GetValue<string>()?.Trim();
 
         if (string.IsNullOrWhiteSpace(planResultString))
         {
-            throw new SKException(
+            throw new KernelException(
                 "Unable to create plan. No response from Function Flow function. " +
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
@@ -100,14 +100,14 @@ public sealed class SequentialPlanner
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
-            throw new SKException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
         }
 
         if (plan.Steps.Count == 0)
         {
-            throw new SKException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            throw new KernelException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
         return plan;
