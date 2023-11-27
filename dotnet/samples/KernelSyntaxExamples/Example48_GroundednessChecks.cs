@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -66,14 +68,13 @@ after this event Caroline became his wife.""";
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
+        var summarizePlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        var groundingPlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        var create_summary = functions["Summarize"];
-        var entityExtraction = functions["ExtractEntities"];
-        var reference_check = functions["ReferenceCheckEntities"];
-        var entity_excision = functions["ExciseEntities"];
+        var create_summary = summarizePlugin["Summarize"];
+        var entityExtraction = groundingPlugin["ExtractEntities"];
+        var reference_check = groundingPlugin["ReferenceCheckEntities"];
+        var entity_excision = groundingPlugin["ExciseEntities"];
 
         var summaryText = @"
 My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of
@@ -83,27 +84,27 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        var context = kernel.CreateNewContext();
-        context.Variables.Update(summaryText);
-        context.Variables.Set("topic", "people and places");
-        context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
+        var variables = new ContextVariables();
+        variables.Update(summaryText);
+        variables.Set("topic", "people and places");
+        variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
 
-        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
+        var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).GetValue<string>();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        context.Variables.Update(extractionResult);
-        context.Variables.Set("reference_context", GroundingText);
+        variables.Update(extractionResult);
+        variables.Set("reference_context", GroundingText);
 
-        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
+        var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).GetValue<string>();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        context.Variables.Update(summaryText);
-        context.Variables.Set("ungrounded_entities", groundingResult);
-        var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
+        variables.Update(summaryText);
+        variables.Set("ungrounded_entities", groundingResult);
+        var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
         Console.WriteLine("======== Excise Entities ========");
         Console.WriteLine(excisionResult.GetValue<string>());
@@ -131,17 +132,16 @@ which are not grounded in the original.
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        kernel.ImportFunctions(new TextPlugin());
+        kernel.ImportPluginFromObject<TextPlugin>();
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await kernel.RunAsync(GroundingText, plan);
+        var results = await plan.InvokeAsync(kernel, GroundingText);
         Console.WriteLine(results.GetValue<string>());
     }
 }
@@ -178,7 +178,6 @@ which are not grounded in the original.
 
 
 Steps:
-  - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
   - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
   - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES

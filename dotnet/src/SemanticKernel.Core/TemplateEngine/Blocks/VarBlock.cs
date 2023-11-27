@@ -2,7 +2,6 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -71,7 +70,7 @@ internal sealed class VarBlock : Block, ITextRendering
         {
             const string ErrMsg = "Variable rendering failed, the variable name is empty";
             this.Logger.LogError(ErrMsg);
-            throw new SKException(ErrMsg);
+            throw new KernelException(ErrMsg);
         }
 
         if (variables.TryGetValue(this.Name, out string? value))

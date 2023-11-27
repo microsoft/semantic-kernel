@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -23,7 +22,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         if (functionNameParts.Length > 2)
         {
             this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
-            throw new SKException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the plugin name from the function name");
+            throw new KernelException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the plugin name from the function name");
         }
 
         if (functionNameParts.Length == 2)

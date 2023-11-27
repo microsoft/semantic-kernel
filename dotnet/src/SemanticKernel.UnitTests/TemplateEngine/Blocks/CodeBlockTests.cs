@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -19,54 +16,35 @@ namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IFunctionRunner> _functionRunner = new();
-    private readonly Mock<IAIServiceProvider> _serviceProvider = new();
-    private readonly Mock<IAIServiceSelector> _serviceSelector = new();
-
-    public CodeBlockTests()
-    {
-        this._functions = new Mock<IReadOnlyFunctionCollection>();
-    }
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var functionRunner = new Mock<IFunctionRunner>();
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var variables = new ContextVariables();
         var target = new CodeBlock("functionName", this._logger);
 
-        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
-            {
-                throw new SKException("No function was found");
-            });
-
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, variables));
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, functions: this._functions.Object);
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Throws(new RuntimeWrappedException("error"));
+        var variables = new ContextVariables();
 
-        this.MockFunctionRunner(function.Object);
+        static void method() => throw new FormatException("error");
+        var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        var target = new CodeBlock("functionName", this._logger);
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+
+        var target = new CodeBlock("plugin.function", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, variables));
     }
 
     [Fact]
@@ -151,11 +129,10 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal("foo", result);
@@ -166,12 +143,11 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
         var varBlock = new VarBlock("$varName");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal("bar", result);
@@ -181,11 +157,11 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var variables = new ContextVariables();
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal("ciao", result);
@@ -195,13 +171,12 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var variables = new ContextVariables();
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal("arrivederci", result);
@@ -211,45 +186,30 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
-
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var funcBlock = new FunctionIdBlock("plugin.function");
 
         var canary0 = string.Empty;
         var canary1 = string.Empty;
         var canary2 = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary0 = context!.Variables["input"];
-                canary1 = context.Variables["var1"];
-                canary2 = context.Variables["var2"];
 
-                context.Variables["input"] = "overridden";
-                context.Variables["var1"] = "overridden";
-                context.Variables["var2"] = "overridden";
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        {
+            canary0 = localVariables["input"];
+            canary1 = localVariables["var1"];
+            canary2 = localVariables["var2"];
 
-        this.MockFunctionRunner(function.Object);
+            localVariables["input"] = "overridden";
+            localVariables["var1"] = "overridden";
+            localVariables["var2"] = "overridden";
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert - Values are received
         Assert.Equal("zero", canary0);
@@ -266,40 +226,26 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Var = "varName";
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
         var canary = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        {
+            canary = localVariables["input"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal(VarValue, result);
@@ -310,38 +256,25 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionWithCustomValueAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Value = "value";
 
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables: null, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        ContextVariables context = new();
+        var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
         var canary = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        {
+            canary = localVariables["input"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal(Value, result);
@@ -352,8 +285,6 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionWithNamedArgsAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Value = "value";
         const string FooValue = "bar";
         const string BobValue = "bob's value";
@@ -361,51 +292,30 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+
+        var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");
 
         var foo = string.Empty;
         var baz = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                foo = context!.Variables["foo"];
-                baz = context!.Variables["baz"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        {
+            foo = localVariables["foo"];
+            baz = localVariables["baz"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
 
         // Assert
         Assert.Equal(FooValue, foo);
         Assert.Equal(BobValue, baz);
         Assert.Equal(Value, result);
-    }
-
-    private void MockFunctionRunner(ISKFunction function)
-    {
-        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
-            {
-                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                return (FunctionResult?)await function.InvokeAsync(context, null, cancellationToken);
-            });
     }
 }

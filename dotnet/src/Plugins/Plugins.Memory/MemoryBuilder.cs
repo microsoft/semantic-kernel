@@ -4,7 +4,6 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
@@ -27,10 +26,10 @@ public sealed class MemoryBuilder
     public ISemanticTextMemory Build()
     {
         var memoryStore = this._memoryStoreFactory?.Invoke() ??
-            throw new SKException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
+            throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
         var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
-            throw new SKException($"{nameof(ITextEmbeddingGeneration)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
+            throw new KernelException($"{nameof(ITextEmbeddingGeneration)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }

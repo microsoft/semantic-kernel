@@ -2,7 +2,9 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.UnitTests.XunitHelpers;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Basic logger printing to console
