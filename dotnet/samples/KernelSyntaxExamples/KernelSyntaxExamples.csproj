@@ -12,6 +12,14 @@
     <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591;SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Example12_SequentialPlanner.cs" />
+    <Compile Remove="Example28_ActionPlanner.cs" />
+    <Compile Remove="Example31_CustomPlanner.cs" />
+    <Compile Remove="Example51_StepwisePlanner.cs" />
+    <Compile Remove="Example63_FlowOrchestrator.cs" />
+    <Compile Remove="RepoUtils\PlanExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -43,7 +51,6 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Assistants\Experimental.Assistants.csproj" />
-    <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
@@ -57,7 +64,6 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\..\src\Planners\Planners.Core\Planners.Core.csproj" />
     <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
