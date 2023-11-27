@@ -47,13 +47,13 @@ public sealed class Program
         var connectionString = Env.Var("ApplicationInsights__ConnectionString");
 
         using var traceProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("Microsoft.SemanticKernel.*")
+            .AddSource("Microsoft.SemanticKernel*")
             .AddSource("Telemetry.Example")
             .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
             .Build();
 
         using var meterProvider = Sdk.CreateMeterProviderBuilder()
-            .AddMeter("Microsoft.SemanticKernel.*")
+            .AddMeter("Microsoft.SemanticKernel*")
             .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
             .Build();
 
