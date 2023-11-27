@@ -49,7 +49,7 @@ public sealed class HttpPlugin
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction, Description("Makes a GET request to a uri")]
+    [KernelFunction, Description("Makes a GET request to a uri")]
     public Task<string> GetAsync(
         [Description("The URI of the request")] string uri,
         CancellationToken cancellationToken = default) =>
@@ -62,7 +62,7 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction, Description("Makes a POST request to a uri")]
+    [KernelFunction, Description("Makes a POST request to a uri")]
     public Task<string> PostAsync(
         [Description("The URI of the request")] string uri,
         [Description("The body of the request")] string body,
@@ -76,7 +76,7 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction, Description("Makes a PUT request to a uri")]
+    [KernelFunction, Description("Makes a PUT request to a uri")]
     public Task<string> PutAsync(
         [Description("The URI of the request")] string uri,
         [Description("The body of the request")] string body,
@@ -89,7 +89,7 @@ public sealed class HttpPlugin
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction, Description("Makes a DELETE request to a uri")]
+    [KernelFunction, Description("Makes a DELETE request to a uri")]
     public Task<string> DeleteAsync(
         [Description("The URI of the request")] string uri,
         CancellationToken cancellationToken = default) =>

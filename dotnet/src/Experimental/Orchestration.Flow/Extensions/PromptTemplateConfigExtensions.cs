@@ -18,7 +18,7 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        AIRequestSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
+        PromptExecutionSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
         if (config.ModelSettings.Count == 0)
         {
             config.ModelSettings.Add(requestSettings);

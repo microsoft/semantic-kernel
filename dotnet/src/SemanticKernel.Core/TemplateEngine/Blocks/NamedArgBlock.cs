@@ -27,7 +27,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// </summary>
     /// <param name="text">Raw text parsed from the prompt template.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
@@ -35,7 +35,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         if (argParts.Length != 2)
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
-            throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
+            throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
         this.Name = argParts[0];
@@ -44,7 +44,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         if (argValue.Length == 0)
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
-            throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
+            throw new KernelException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
         if (argValue[0] == Symbols.VarPrefix)

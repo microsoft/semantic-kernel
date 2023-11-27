@@ -63,7 +63,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new SKException("Embeddings not found");
+            throw new KernelException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => e.Values).ToList();
@@ -126,7 +126,7 @@ public abstract class OpenAIClientBase
         var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive);
         if (result is null)
         {
-            throw new SKException("Response JSON parse error");
+            throw new KernelException("Response JSON parse error");
         }
 
         return result;

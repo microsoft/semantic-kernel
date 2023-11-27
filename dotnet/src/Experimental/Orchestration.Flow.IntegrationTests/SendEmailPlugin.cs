@@ -11,13 +11,13 @@ public sealed class SendEmailPlugin
 {
     private static readonly JsonSerializerOptions s_writeIndented = new() { WriteIndented = true };
 
-    [SKFunction]
+    [KernelFunction]
     [Description("Send email")]
-    [SKName("SendEmail")]
+    [KernelName("SendEmail")]
     public string SendEmail(
-        [SKName("email_address")] string emailAddress,
-        [SKName("answer")] string answer,
-        SKContext context)
+        [KernelName("email_address")] string emailAddress,
+        [KernelName("answer")] string answer,
+        ContextVariables variables)
     {
         var contract = new Email()
         {
@@ -27,7 +27,7 @@ public sealed class SendEmailPlugin
 
         // for demo purpose only
         string emailPayload = JsonSerializer.Serialize(contract, s_writeIndented);
-        context.Variables["email"] = emailPayload;
+        variables["email"] = emailPayload;
 
         return "Here's the API contract I will post to mail server: " + emailPayload;
     }

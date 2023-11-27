@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
-    <ProjectReference Include="..\Planners.Handlebars\Planners.Handlebars.csproj" />
   </ItemGroup>
 
 </Project>

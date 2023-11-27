@@ -70,7 +70,7 @@ public class QdrantVectorRecord
     /// <param name="json"></param>
     /// <param name="tags"></param>
     /// <returns>Vector record</returns>
-    /// <exception cref="SKException">Qdrant exception</exception>
+    /// <exception cref="KernelException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
@@ -79,6 +79,6 @@ public class QdrantVectorRecord
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
 
-        throw new SKException("Unable to deserialize record payload");
+        throw new KernelException("Unable to deserialize record payload");
     }
 }

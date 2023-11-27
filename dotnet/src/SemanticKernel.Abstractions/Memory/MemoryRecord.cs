@@ -121,7 +121,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public static MemoryRecord FromJsonMetadata(
         string json,
         ReadOnlyMemory<float> embedding,
@@ -131,7 +131,7 @@ public class MemoryRecord : DataEntryBase
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         return metadata != null
             ? new MemoryRecord(metadata, embedding, key, timestamp)
-            : throw new SKException("Unable to create memory record from serialized metadata");
+            : throw new KernelException("Unable to create memory record from serialized metadata");
     }
 
     /// <summary>

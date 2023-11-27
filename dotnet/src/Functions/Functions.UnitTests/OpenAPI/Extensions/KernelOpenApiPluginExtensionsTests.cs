@@ -244,7 +244,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     {
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
 
-        [SKFunction]
+        [KernelFunction]
         public void DoFakeAction(string parameter)
         {
             this.ParameterValueFakeMethodCalledWith = parameter;

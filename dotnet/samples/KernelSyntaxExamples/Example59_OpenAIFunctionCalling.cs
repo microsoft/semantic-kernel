@@ -27,7 +27,7 @@ public static class Example59_OpenAIFunctionCalling
         var chatCompletion = kernel.GetService<IChatCompletion>();
         var chatHistory = chatCompletion.CreateNewChat();
 
-        OpenAIRequestSettings requestSettings = new()
+        OpenAIPromptExecutionSettings requestSettings = new()
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
@@ -43,10 +43,10 @@ public static class Example59_OpenAIFunctionCalling
         await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
         await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
 
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
         await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // This sample relies on the AI picking the correct color from an enum
@@ -74,9 +74,9 @@ public static class Example59_OpenAIFunctionCalling
         return kernel;
     }
 
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
+    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings requestSettings)
     {
-        Console.WriteLine($"\n\n======== Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Function Call - {(requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -90,7 +90,7 @@ public static class Example59_OpenAIFunctionCalling
         OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
-            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
+            // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
             if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
@@ -113,7 +113,7 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
-                    requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
+                    requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
                     chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
@@ -151,9 +151,9 @@ public static class Example59_OpenAIFunctionCalling
         }
     }
 
-    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIRequestSettings requestSettings)
+    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings requestSettings)
     {
-        Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
 
         // Send request
@@ -183,7 +183,7 @@ public static class Example59_OpenAIFunctionCalling
                 Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
             }
 
-            // If the function returned by OpenAI is an SKFunctionFactory registered with the kernel,
+            // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
             if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
@@ -208,7 +208,7 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
-                    requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallNone;
+                    requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
                     var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
@@ -231,7 +231,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private sealed class WidgetPlugin
     {
-        [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        [KernelFunction, KernelName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
         public string CreateWidget(
             [System.ComponentModel.Description("Widget name")] string name,
             [System.ComponentModel.Description("Widget color")] WidgetColor color

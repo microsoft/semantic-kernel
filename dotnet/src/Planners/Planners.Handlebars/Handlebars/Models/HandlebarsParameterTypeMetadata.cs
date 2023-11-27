@@ -20,7 +20,7 @@ internal class HandlebarsParameterTypeMetadata
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<SKParameterMetadata> Properties { get; set; } = new();
+    public List<KernelParameterMetadata> Properties { get; set; } = new();
 
     // Override the Equals method to compare the property values
     public override bool Equals(object obj)
@@ -41,8 +41,8 @@ internal class HandlebarsParameterTypeMetadata
         return ArePropertiesEqual(this.Properties, other.Properties);
     }
 
-    // A helper method to compare two lists of SKParameterMetadata
-    private static bool ArePropertiesEqual(List<SKParameterMetadata> list1, List<SKParameterMetadata> list2)
+    // A helper method to compare two lists of KernelParameterMetadata
+    private static bool ArePropertiesEqual(List<KernelParameterMetadata> list1, List<KernelParameterMetadata> list2)
     {
         // Check if the lists are null or have different lengths
         if (list1 == null || list2 == null || list1.Count != list2.Count)

@@ -20,11 +20,11 @@ public static class TextCompletionServiceExtensions
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The text completion service id matching the given ID or the default.</returns>
-    /// <exception cref="SKException">Thrown when no suitable service is found.</exception>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public static ITextCompletion GetTextCompletionServiceOrDefault(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<ITextCompletion>(serviceId)
-            ?? throw new SKException("Text completion service not found");
+            ?? throw new KernelException("Text completion service not found");
 
     /// <summary>
     /// Returns true if a <see cref="ITextCompletion"/> exist with the specified ID.

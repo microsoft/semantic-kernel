@@ -75,7 +75,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
@@ -84,7 +84,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))
@@ -136,7 +136,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         if (completionResponse is null)
         {
-            throw new SKException("Unexpected response from model")
+            throw new KernelException("Unexpected response from model")
             {
                 Data = { { "ResponseData", body } },
             };
