@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
