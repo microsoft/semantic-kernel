@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
 from openai import AsyncAzureOpenAI
 from pydantic import validate_arguments
@@ -25,7 +25,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         api_version: str = "2022-12-01",
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
-        ad_token_provider: Optional[Callable[[], "str | Awaitable[str]"]] = None,
+        ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
         log: Optional[Logger] = None,
     ) -> None:
         # TODO: add SK user-agent here
