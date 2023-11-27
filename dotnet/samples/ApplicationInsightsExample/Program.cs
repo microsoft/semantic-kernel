@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -13,7 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -51,7 +54,7 @@ public sealed class Program
         ConfigureTracing(activityListener, telemetryClient);
 
         var kernel = GetKernel(loggerFactory);
-        var planner = GetSequentialPlanner(kernel);
+        var planner = CreatePlanner(kernel);
 
         try
         {
@@ -63,9 +66,9 @@ public sealed class Program
             var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
             Console.WriteLine("Original plan:");
-            Console.WriteLine(plan.ToPlanString());
+            Console.WriteLine(plan.ToString());
 
-            var result = await plan.InvokeAsync(kernel);
+            var result = plan.Invoke(new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
@@ -128,33 +131,13 @@ public sealed class Program
         return kernel;
     }
 
-    private static SequentialPlanner GetSequentialPlanner(
+    private static HandlebarsPlanner CreatePlanner(
         Kernel kernel,
         int maxTokens = 1024)
     {
-        var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
+        var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlanner(kernel, plannerConfig);
-    }
-
-    private static ActionPlanner GetActionPlanner(
-        Kernel kernel)
-    {
-        return new ActionPlanner(kernel);
-    }
-
-    private static StepwisePlanner GetStepwisePlanner(
-        Kernel kernel,
-        int minIterationTimeMs = 1500,
-        int maxTokens = 2000)
-    {
-        var plannerConfig = new StepwisePlannerConfig
-        {
-            MinIterationTimeMs = minIterationTimeMs,
-            MaxTokens = maxTokens
-        };
-
-        return new StepwisePlanner(kernel, plannerConfig);
+        return new HandlebarsPlanner(kernel, plannerConfig);
     }
 
     /// <summary>
