@@ -51,7 +51,7 @@ public class FunctionFromPromptTests
             .WithAIService("x", mockTextCompletion.Object)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         promptModel.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
         {
@@ -84,7 +84,7 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         var func = kernel.CreateFunctionFromPrompt(promptModel);
 
@@ -113,7 +113,7 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
         var func = kernel.CreateFunctionFromPrompt(promptModel);
@@ -138,7 +138,7 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
         var func = kernel.CreateFunctionFromPrompt(promptModel);

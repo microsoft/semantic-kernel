@@ -90,7 +90,7 @@ public static class KernelFunctionFactory
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptModel, promptTemplateFactory, loggerFactory);
 
@@ -103,7 +103,7 @@ public static class KernelFunctionFactory
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
         IPromptTemplate promptTemplate,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptModel, loggerFactory);
     #endregion
 }

@@ -48,7 +48,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        var promptModel = new PromptModel
+        var promptModel = new PromptTemplateConfig
         {
             Name = functionName ?? RandomFunctionName(),
             Description = description ?? "Generic function, unknown purpose",
@@ -78,7 +78,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -99,7 +99,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptTemplate);
@@ -189,7 +189,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         ILoggerFactory? loggerFactory = null) : base(promptModel.Name, promptModel.Description, template.Parameters, null, promptModel.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
@@ -201,7 +201,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptModel _promptModel;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)

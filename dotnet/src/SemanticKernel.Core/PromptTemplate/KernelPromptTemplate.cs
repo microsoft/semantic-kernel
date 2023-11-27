@@ -33,7 +33,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// </summary>
     /// <param name="promptModel">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(PromptModel promptModel, ILoggerFactory? loggerFactory = null)
+    public KernelPromptTemplate(PromptTemplateConfig promptModel, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptModel, nameof(promptModel));
         Verify.NotNull(promptModel.Template, nameof(promptModel.Template));
@@ -58,7 +58,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptModel _promptModel;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;

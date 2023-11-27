@@ -17,8 +17,8 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
-        var promptModel1 = new PromptModel() { TemplateFormat = "my-format-1", Template = templateString };
-        var promptModel2 = new PromptModel() { TemplateFormat = "my-format-2", Template = templateString };
+        var promptModel1 = new PromptTemplateConfig() { TemplateFormat = "my-format-1", Template = templateString };
+        var promptModel2 = new PromptTemplateConfig() { TemplateFormat = "my-format-2", Template = templateString };
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
@@ -37,7 +37,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
-        var promptModel = new PromptModel() { TemplateFormat = "unknown-format", Template = templateString };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
@@ -48,7 +48,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptModel promptModel)
+        public IPromptTemplate Create(PromptTemplateConfig promptModel)
         {
             if (promptModel.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
@@ -61,9 +61,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplate1 : IPromptTemplate
     {
-        private readonly PromptModel _promptModel;
+        private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate1(PromptModel promptModel)
+        public MyPromptTemplate1(PromptTemplateConfig promptModel)
         {
             this._promptModel = promptModel;
         }
@@ -78,7 +78,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptModel promptModel)
+        public IPromptTemplate Create(PromptTemplateConfig promptModel)
         {
             if (promptModel.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
@@ -91,9 +91,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplate2 : IPromptTemplate
     {
-        private readonly PromptModel _promptModel;
+        private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate2(PromptModel promptModel)
+        public MyPromptTemplate2(PromptTemplateConfig promptModel)
         {
             this._promptModel = promptModel;
         }

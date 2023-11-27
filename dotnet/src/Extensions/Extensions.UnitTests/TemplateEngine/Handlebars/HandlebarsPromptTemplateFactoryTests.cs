@@ -13,7 +13,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
-        var promptModel = new PromptModel() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
@@ -29,7 +29,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
-        var promptModel = new PromptModel() { TemplateFormat = "unknown-format", Template = templateString };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act

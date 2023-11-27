@@ -28,7 +28,7 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
         var func = kernel.CreateFunctionFromPrompt(promptModel);
@@ -53,7 +53,7 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
         var func = kernel.CreateFunctionFromPrompt(promptModel);
@@ -89,7 +89,7 @@ public class MultipleModelTests
             .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
             .Build();
 
-        var promptModel = new PromptModel();
+        var promptModel = new PromptTemplateConfig();
         promptModel.Template = "template";
         foreach (var serviceId in serviceIds)
         {
@@ -155,7 +155,7 @@ public class MultipleModelTests
   ]
 }";
 
-        var promptModel = PromptModel.FromJson(json);
+        var promptModel = PromptTemplateConfig.FromJson(json);
         var func = kernel.CreateFunctionFromPrompt(promptModel);
 
         // Act

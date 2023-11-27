@@ -23,7 +23,7 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
             .Build();
 
         // Act
-        var semanticFunctionConfig = deserializer.Deserialize<PromptModel>(this._yaml);
+        var semanticFunctionConfig = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
 
         // Assert
         Assert.NotNull(semanticFunctionConfig);

@@ -24,9 +24,9 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptModel promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptModel)
     {
-        if (promptModel.TemplateFormat.Equals(PromptModel.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
+        if (promptModel.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
             return new KernelPromptTemplate(promptModel, this._loggerFactory);
         }

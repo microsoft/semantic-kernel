@@ -106,7 +106,7 @@ public static class KernelExtensions
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
@@ -125,7 +125,7 @@ public static class KernelExtensions
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         IPromptTemplate promptTemplate,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         string? functionName = null)
     {
         Verify.NotNull(kernel);
@@ -267,8 +267,8 @@ public static class KernelExtensions
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
             var promptModel = File.Exists(configPath) ?
-                PromptModel.FromJson(File.ReadAllText(configPath)) :
-                new PromptModel();
+                PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
+                new PromptTemplateConfig();
             promptModel.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))

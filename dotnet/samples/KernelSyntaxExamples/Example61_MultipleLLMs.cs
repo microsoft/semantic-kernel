@@ -97,7 +97,7 @@ public static class Example61_MultipleLLMs
         {
             modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
         }
-        var promptModel = new PromptModel(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
+        var promptModel = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
         var function = kernel.CreateFunctionFromPrompt(promptModel);
 

@@ -378,8 +378,8 @@ public sealed class OpenAICompletionTests : IDisposable
         Kernel target = builder.Build();
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
-        var defaultPromptModel = new PromptModel(prompt) { Name = "FishMarket1" };
-        var azurePromptModel = PromptModel.FromJson(
+        var defaultPromptModel = new PromptTemplateConfig(prompt) { Name = "FishMarket1" };
+        var azurePromptModel = PromptTemplateConfig.FromJson(
             @"{
                 ""name"": ""FishMarket2"",
                 ""execution_settings"": [

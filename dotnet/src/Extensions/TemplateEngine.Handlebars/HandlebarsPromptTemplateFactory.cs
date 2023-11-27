@@ -25,7 +25,7 @@ public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptModel promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptModel)
     {
         if (promptModel.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
         {

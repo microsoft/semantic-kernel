@@ -32,7 +32,7 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     /// </summary>
     /// <param name="promptModel">Prompt template configuration</param>
     /// <returns></returns>
-    public IPromptTemplate Create(PromptModel promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptModel)
     {
         foreach (var promptTemplateFactory in this._promptTemplateFactories)
         {

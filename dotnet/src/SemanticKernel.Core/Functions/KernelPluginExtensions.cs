@@ -114,7 +114,7 @@ public static class KernelPluginExtensions
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -136,7 +136,7 @@ public static class KernelPluginExtensions
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
         IPromptTemplate promptTemplate,
-        PromptModel promptModel,
+        PromptTemplateConfig promptModel,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);

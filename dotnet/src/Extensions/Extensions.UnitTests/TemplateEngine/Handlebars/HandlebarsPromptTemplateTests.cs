@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
-using static Microsoft.SemanticKernel.PromptModel;
+using static Microsoft.SemanticKernel.PromptTemplateConfig;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
 
@@ -31,7 +31,7 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._variables.Set("bar", "Bar");
         var template = "Foo {{bar}}";
-        var promptModel = new PromptModel() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptModel);
 
         // Act
@@ -47,7 +47,7 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}}";
-        var promptModel = new PromptModel() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptModel);
 
         // Act
@@ -63,7 +63,7 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
-        var promptModel = new PromptModel() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var promptModel = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptModel);
 
         // Act
@@ -77,7 +77,7 @@ public sealed class HandlebarsPromptTemplateTests
     public void ItReturnsParameters()
     {
         // Arrange
-        var promptModel = new PromptModel()
+        var promptModel = new PromptTemplateConfig()
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };
@@ -107,7 +107,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItUsesDefaultValuesAsync()
     {
         // Arrange
-        var promptModel = new PromptModel()
+        var promptModel = new PromptTemplateConfig()
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };

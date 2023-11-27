@@ -18,7 +18,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// </summary>
     /// <param name="promptModel">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public HandlebarsPromptTemplate(PromptModel promptModel, ILoggerFactory? loggerFactory = null)
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptModel, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
@@ -56,7 +56,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptModel _promptModel;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
 
     private List<KernelParameterMetadata> InitParameters()

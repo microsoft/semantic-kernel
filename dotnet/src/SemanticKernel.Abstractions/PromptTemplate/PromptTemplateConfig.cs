@@ -12,9 +12,9 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Prompt model files.
+/// Prompt template configuration.
 /// </summary>
-public sealed class PromptModel
+public sealed class PromptTemplateConfig
 {
     /// <summary>
     /// Semantic Kernel template format.
@@ -58,16 +58,16 @@ public sealed class PromptModel
     public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptModel"/> class.
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
-    public PromptModel()
+    public PromptTemplateConfig()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptModel"/> class.
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
-    public PromptModel(string template)
+    public PromptTemplateConfig(string template)
     {
         this.Template = template;
     }
@@ -109,9 +109,9 @@ public sealed class PromptModel
     /// <param name="json">JSON of the prompt template configuration.</param>
     /// <returns>Prompt template configuration.</returns>
     /// <exception cref="ArgumentException">Thrown when the deserialization returns null.</exception>
-    public static PromptModel FromJson(string json)
+    public static PromptTemplateConfig FromJson(string json)
     {
-        var result = JsonSerializer.Deserialize<PromptModel>(json, JsonOptionsCache.ReadPermissive);
+        var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }

@@ -67,7 +67,7 @@ public static class Example58_ConfigureRequestSettings
             ""frequency_penalty"": 0.0
           }
         }";
-        var promptModel = JsonSerializer.Deserialize<PromptModel>(configPayload)!;
+        var promptModel = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
         promptModel.Template = prompt;
         var func = kernel.CreateFunctionFromPrompt(promptModel);
 
