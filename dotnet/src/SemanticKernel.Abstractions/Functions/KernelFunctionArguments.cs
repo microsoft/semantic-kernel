@@ -16,10 +16,10 @@ public sealed class KernelFunctionArguments : Dictionary<string, string>
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class with the specified AI request settings.
     /// </summary>
-    /// <param name="reqSettings">The AI request settings.</param>
-    public KernelFunctionArguments(AIRequestSettings? reqSettings = null) : base(StringComparer.OrdinalIgnoreCase)
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    public KernelFunctionArguments(PromptExecutionSettings? executionSettings = null) : base(StringComparer.OrdinalIgnoreCase)
     {
-        this.RequestSettings = reqSettings;
+        this.ExecutionSettings = executionSettings;
     }
 
     /// <summary>
@@ -37,11 +37,11 @@ public sealed class KernelFunctionArguments : Dictionary<string, string>
     /// <param name="other">The <see cref="KernelFunctionArguments"/> whose AI request setting and elements are copied to the new <see cref="KernelFunctionArguments"/>.</param>
     public KernelFunctionArguments(KernelFunctionArguments other) : this(other as IDictionary<string, string>)
     {
-        this.RequestSettings = other.RequestSettings;
+        this.ExecutionSettings = other.ExecutionSettings;
     }
 
     /// <summary>
-    /// Gets or sets the AI request settings.
+    /// Gets or sets the prompt execution settings
     /// </summary>
-    public AIRequestSettings? RequestSettings { get; set; }
+    public PromptExecutionSettings? ExecutionSettings { get; set; }
 }
