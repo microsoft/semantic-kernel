@@ -73,7 +73,7 @@ public sealed class FunctionCallingStepwisePlanner
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
         this._requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-        this.ValidateTokenCount(chatHistoryForPlan);
+        await this.ValidateTokenCountAsync(chatHistoryForPlan, cancellationToken).ConfigureAwait(false);
         string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, this._requestSettings, cancellationToken).ConfigureAwait(false));
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
@@ -162,7 +162,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
         this._requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
 
-        this.ValidateTokenCount(chatHistory); // TODO: factor in request settings / functions
+        await this.ValidateTokenCountAsync(chatHistory, cancellationToken).ConfigureAwait(false);
         return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, this._requestSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
@@ -273,14 +273,21 @@ public sealed class FunctionCallingStepwisePlanner
         return resultStr;
     }
 
-    private void ValidateTokenCount(ChatHistory chatHistory)
+    private async Task ValidateTokenCountAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
     {
-        // TODO: move GetTokenCount
-        /*var tokenCount = chatHistory.GetTokenCount();
+        string functionManual = string.Empty;
+
+        // If using functions, get the functions manual to include in token count estimate
+        if (this._requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto)
+        {
+            functionManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        var tokenCount = chatHistory.GetTokenCount(additionalMessage: functionManual);
         if (tokenCount >= this.Config.MaxPromptTokens)
         {
             throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
-        }*/
+        }
     }
 
     /// <summary>
