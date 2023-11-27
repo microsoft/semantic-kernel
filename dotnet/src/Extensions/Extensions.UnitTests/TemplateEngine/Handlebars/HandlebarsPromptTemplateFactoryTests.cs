@@ -13,11 +13,11 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
-        var promptModel = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
-        var result = target.Create(promptModel);
+        var result = target.Create(promptConfig);
 
         // Assert
         Assert.NotNull(result);
@@ -29,11 +29,11 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
-        var promptModel = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => target.Create(promptModel));
+        Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 }

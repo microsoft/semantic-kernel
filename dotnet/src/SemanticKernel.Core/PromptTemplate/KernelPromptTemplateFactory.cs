@@ -24,13 +24,13 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptTemplateConfig promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
     {
-        if (promptModel.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
+        if (promptConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
-            return new KernelPromptTemplate(promptModel, this._loggerFactory);
+            return new KernelPromptTemplate(promptConfig, this._loggerFactory);
         }
 
-        throw new KernelException($"Prompt template format {promptModel.TemplateFormat} is not supported.");
+        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
     }
 }

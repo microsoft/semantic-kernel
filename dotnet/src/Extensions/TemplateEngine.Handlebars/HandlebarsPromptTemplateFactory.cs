@@ -25,14 +25,14 @@ public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptTemplateConfig promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
     {
-        if (promptModel.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
+        if (promptConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
         {
-            return new HandlebarsPromptTemplate(promptModel, this._loggerFactory);
+            return new HandlebarsPromptTemplate(promptConfig, this._loggerFactory);
         }
 
-        throw new KernelException($"Prompt template format {promptModel.TemplateFormat} is not supported.");
+        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
     }
 
     #region private

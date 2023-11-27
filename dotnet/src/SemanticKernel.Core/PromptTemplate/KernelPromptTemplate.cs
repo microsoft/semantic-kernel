@@ -31,18 +31,18 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="promptModel">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(PromptTemplateConfig promptModel, ILoggerFactory? loggerFactory = null)
+    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNull(promptModel, nameof(promptModel));
-        Verify.NotNull(promptModel.Template, nameof(promptModel.Template));
+        Verify.NotNull(promptConfig, nameof(promptConfig));
+        Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._promptModel = promptModel;
+        this._promptModel = promptConfig;
         this._parameters = new(() => this.InitParameters());
-        this._blocks = new(() => this.ExtractBlocks(promptModel.Template));
+        this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 

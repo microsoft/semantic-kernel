@@ -101,17 +101,17 @@ public static class KernelExtensions
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="promptModel">Prompt template configuration.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
-        PromptTemplateConfig promptModel,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptModel, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -119,18 +119,18 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptModel">Prompt template configuration.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptModel,
+        PromptTemplateConfig promptConfig,
         string? functionName = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptModel, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.LoggerFactory);
     }
     #endregion
 
@@ -266,26 +266,26 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptModel = File.Exists(configPath) ?
+            var promptConfig = File.Exists(configPath) ?
                 PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
                 new PromptTemplateConfig();
-            promptModel.Name = functionName;
+            promptConfig.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptModel, JsonOptionsCache.WriteIndented));
+                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptConfig, JsonOptionsCache.WriteIndented));
             }
 
             // Load prompt template
-            promptModel.Template = File.ReadAllText(promptPath);
-            IPromptTemplate? promptTemplateInstance = factory.Create(promptModel);
+            promptConfig.Template = File.ReadAllText(promptPath);
+            IPromptTemplate? promptTemplateInstance = factory.Create(promptConfig);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptModel));
+            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptConfig));
         }
 
         return plugin;

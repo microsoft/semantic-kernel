@@ -16,13 +16,13 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="promptModel">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public HandlebarsPromptTemplate(PromptTemplateConfig promptModel, ILoggerFactory? loggerFactory = null)
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        this._promptModel = promptModel;
+        this._promptModel = promptConfig;
         this._parameters = new(() => this.InitParameters());
     }
 

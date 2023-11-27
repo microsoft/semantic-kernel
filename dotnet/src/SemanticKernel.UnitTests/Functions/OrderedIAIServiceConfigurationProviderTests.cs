@@ -181,7 +181,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             executionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
         }
-        var function = kernel.CreateFunctionFromPrompt(promptModel: new PromptTemplateConfig() { Template = "Hello AI", ExecutionSettings = executionSettings });
+        var function = kernel.CreateFunctionFromPrompt(promptConfig: new PromptTemplateConfig() { Template = "Hello AI", ExecutionSettings = executionSettings });
         var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act

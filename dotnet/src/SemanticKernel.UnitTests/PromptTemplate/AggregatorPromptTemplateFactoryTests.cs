@@ -37,25 +37,25 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
-        var promptModel = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => target.Create(promptModel));
+        Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptTemplateConfig promptModel)
+        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
         {
-            if (promptModel.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
+            if (promptConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate1(promptModel);
+                return new MyPromptTemplate1(promptConfig);
             }
 
-            throw new KernelException($"Prompt template format {promptModel.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
         }
     }
 
@@ -63,9 +63,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate1(PromptTemplateConfig promptModel)
+        public MyPromptTemplate1(PromptTemplateConfig promptConfig)
         {
-            this._promptModel = promptModel;
+            this._promptModel = promptConfig;
         }
 
         public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
@@ -78,14 +78,14 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptTemplateConfig promptModel)
+        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
         {
-            if (promptModel.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
+            if (promptConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate2(promptModel);
+                return new MyPromptTemplate2(promptConfig);
             }
 
-            throw new KernelException($"Prompt template format {promptModel.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
         }
     }
 
@@ -93,9 +93,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate2(PromptTemplateConfig promptModel)
+        public MyPromptTemplate2(PromptTemplateConfig promptConfig)
         {
-            this._promptModel = promptModel;
+            this._promptModel = promptConfig;
         }
 
         public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();

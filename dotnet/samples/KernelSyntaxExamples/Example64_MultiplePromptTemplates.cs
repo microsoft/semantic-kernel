@@ -55,7 +55,7 @@ public static class Example64_MultiplePromptTemplates
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var function = kernel.CreateFunctionFromPrompt(
-            promptModel: new PromptTemplateConfig()
+            promptConfig: new PromptTemplateConfig()
             {
                 Template = prompt,
                 TemplateFormat = templateFormat,

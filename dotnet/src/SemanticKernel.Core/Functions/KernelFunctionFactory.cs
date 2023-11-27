@@ -85,25 +85,25 @@ public static class KernelFunctionFactory
     /// <summary>
     /// Create a semantic function instance, given a prompt function model.
     /// </summary>
-    /// <param name="promptModel">Prompt configuration model</param>
+    /// <param name="promptConfig">Prompt configuration model</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
-        PromptTemplateConfig promptModel,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptModel, promptTemplateFactory, loggerFactory);
+        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
 
     /// <summary>
     /// Create a semantic function instance, given a prompt function model.
     /// </summary>
     /// <param name="promptTemplate">Prompt template</param>
-    /// <param name="promptModel">Prompt configuration model</param>
+    /// <param name="promptConfig">Prompt configuration model</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptModel,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptModel, loggerFactory);
+        PromptTemplateConfig promptConfig,
+        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
     #endregion
 }

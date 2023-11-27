@@ -30,15 +30,15 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     /// <summary>
     /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration. Throws an <see cref="KernelException"/> if the specified template format is not supported.
     /// </summary>
-    /// <param name="promptModel">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <returns></returns>
-    public IPromptTemplate Create(PromptTemplateConfig promptModel)
+    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
     {
         foreach (var promptTemplateFactory in this._promptTemplateFactories)
         {
             try
             {
-                var promptTemplate = promptTemplateFactory.Create(promptModel);
+                var promptTemplate = promptTemplateFactory.Create(promptConfig);
                 if (promptTemplate != null)
                 {
                     return promptTemplate;
@@ -50,6 +50,6 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
             }
         }
 
-        throw new KernelException($"Prompt template format {promptModel.TemplateFormat} is not supported.");
+        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
     }
 }

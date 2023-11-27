@@ -51,14 +51,14 @@ public class FunctionFromPromptTests
             .WithAIService("x", mockTextCompletion.Object)
             .Build();
 
-        var promptModel = new PromptTemplateConfig();
-        promptModel.Template = "template";
-        promptModel.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
 
-        var func = kernel.CreateFunctionFromPrompt(promptModel);
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -84,9 +84,9 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptTemplateConfig();
-        promptModel.Template = "template";
-        var func = kernel.CreateFunctionFromPrompt(promptModel);
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -113,10 +113,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptTemplateConfig();
-        promptModel.Template = "template";
-        promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
-        var func = kernel.CreateFunctionFromPrompt(promptModel);
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -138,10 +138,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var promptModel = new PromptTemplateConfig();
-        promptModel.Template = "template";
-        promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
-        var func = kernel.CreateFunctionFromPrompt(promptModel);
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));

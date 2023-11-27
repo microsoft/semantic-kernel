@@ -109,18 +109,18 @@ public static class KernelPluginExtensions
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="promptModel">Prompt template configuration.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
-        PromptTemplateConfig promptModel,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptModel, promptTemplateFactory, loggerFactory);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -130,18 +130,18 @@ public static class KernelPluginExtensions
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="promptTemplate">Prompt template</param>
-    /// <param name="promptModel">Prompt template configuration.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptModel,
+        PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptModel, loggerFactory);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
