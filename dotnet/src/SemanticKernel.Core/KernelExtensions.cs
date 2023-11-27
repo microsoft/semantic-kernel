@@ -344,19 +344,19 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <returns>Function execution result</returns>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null) =>
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            requestSettings,
+            executionSettings,
             functionName,
             description));
     #endregion
@@ -417,7 +417,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return function.InvokeAsync(kernel, variables, requestSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, variables, executionSettings: null, cancellationToken);
     }
 
     /// <summary>

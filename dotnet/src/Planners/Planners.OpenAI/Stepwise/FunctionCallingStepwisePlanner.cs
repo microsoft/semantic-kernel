@@ -152,8 +152,8 @@ public sealed class FunctionCallingStepwisePlanner
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
-        var requestSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings, cancellationToken).ConfigureAwait(false))[0];
+        var executionSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
+        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
@@ -163,10 +163,10 @@ public sealed class FunctionCallingStepwisePlanner
 
     private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
-        var requestSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
-        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
-        return requestSettings;
+        var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
+        executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
+        executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+        return executionSettings;
     }
 
     private async Task<ChatHistory> BuildChatHistoryForInitialPlanAsync(

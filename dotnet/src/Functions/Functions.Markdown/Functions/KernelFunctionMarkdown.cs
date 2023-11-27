@@ -87,10 +87,10 @@ public static class KernelFunctionMarkdown
                 else if (codeBlock.Info == "sk.execution_settings")
                 {
                     var modelSettings = codeBlock.Lines.ToString();
-                    var requestSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
-                    if (requestSettings is not null)
+                    var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
+                    if (executionSettings is not null)
                     {
-                        promptFunctionModel.ExecutionSettings.Add(requestSettings);
+                        promptFunctionModel.ExecutionSettings.Add(executionSettings);
                     }
                 }
             }
