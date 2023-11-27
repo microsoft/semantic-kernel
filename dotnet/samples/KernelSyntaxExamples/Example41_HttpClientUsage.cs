@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel;
 /**
  * These examples show how to use HttpClient and HttpClientFactory within SK SDK.
  */
-
 public static class Example41_HttpClientUsage
 {
     public static Task RunAsync()
@@ -64,7 +63,7 @@ public static class Example41_HttpClientUsage
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddHttpClient();
 
-        var kernel = serviceCollection.AddTransient<IKernel>((sp) =>
+        var kernel = serviceCollection.AddTransient<Kernel>((sp) =>
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
@@ -95,7 +94,7 @@ public static class Example41_HttpClientUsage
             client.BaseAddress = new Uri("https://api.openai.com/v1/", UriKind.Absolute);
         });
 
-        var kernel = serviceCollection.AddTransient<IKernel>((sp) =>
+        var kernel = serviceCollection.AddTransient<Kernel>((sp) =>
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 

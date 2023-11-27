@@ -24,11 +24,11 @@ public static class Example63_ChatCompletionPrompts
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var textSemanticFunction = kernel.CreateSemanticFunction(TextPrompt);
-        var chatSemanticFunction = kernel.CreateSemanticFunction(ChatPrompt);
+        var textSemanticFunction = kernel.CreateFunctionFromPrompt(TextPrompt);
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
 
-        var textPromptResult = await kernel.RunAsync(textSemanticFunction);
-        var chatPromptResult = await kernel.RunAsync(chatSemanticFunction);
+        var textPromptResult = await kernel.InvokeAsync(textSemanticFunction);
+        var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine("Text Prompt:");
         Console.WriteLine(TextPrompt);

@@ -9,20 +9,8 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Chat message history representation
 /// </summary>
-public class ChatHistory : List<ChatMessageBase>
+public class ChatHistory : List<ChatMessage>
 {
-    private sealed class ChatMessage : ChatMessageBase
-    {
-        public ChatMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties) : base(authorRole, content, additionalProperties)
-        {
-        }
-    }
-
-    /// <summary>
-    /// List of messages in the chat
-    /// </summary>
-    public List<ChatMessageBase> Messages => this;
-
     /// <summary>
     /// Add a message to the chat history
     /// </summary>

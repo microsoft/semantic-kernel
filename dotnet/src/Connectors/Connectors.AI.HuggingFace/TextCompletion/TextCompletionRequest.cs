@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// <summary>
 /// HTTP schema to perform completion request.
 /// </summary>
-[Serializable]
 public sealed class TextCompletionRequest
 {
     /// <summary>
@@ -16,4 +14,10 @@ public sealed class TextCompletionRequest
     /// </summary>
     [JsonPropertyName("inputs")]
     public string Input { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Enable streaming
+    /// </summary>
+    [JsonPropertyName("stream")]
+    public bool Stream { get; set; } = false;
 }

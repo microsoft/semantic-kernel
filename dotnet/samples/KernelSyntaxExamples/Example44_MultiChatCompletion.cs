@@ -48,7 +48,7 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIRequestSettings()
+        var chatRequestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
@@ -60,7 +60,7 @@ public static class Example44_MultiChatCompletion
         // First bot assistant message
         foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatRequestSettings))
         {
-            ChatMessageBase chatMessage = await chatCompletionResult.GetChatMessageAsync();
+            ChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
             chatHistory.Add(chatMessage);
             await MessageOutputAsync(chatHistory);
         }
@@ -73,7 +73,7 @@ public static class Example44_MultiChatCompletion
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
