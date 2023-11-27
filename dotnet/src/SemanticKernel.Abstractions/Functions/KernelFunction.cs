@@ -78,9 +78,9 @@ public abstract class KernelFunction
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        this.Metadata = new KernelFunctionMetadata(this.Name)
+        this.Metadata = new KernelFunctionMetadata(name)
         {
-            Description = this.Description,
+            Description = description,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? new()
         };
