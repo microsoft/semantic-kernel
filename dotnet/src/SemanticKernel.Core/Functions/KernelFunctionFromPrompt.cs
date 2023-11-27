@@ -117,18 +117,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-    /// <summary>
-    /// List of function parameters
-    /// </summary>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._promptTemplate.Parameters;
-
     /// <inheritdoc/>
     protected override KernelFunctionMetadata GetMetadataCore() =>
         this._metadata ??=
         new KernelFunctionMetadata(this.Name)
         {
             Description = this._promptTemplateConfig.Description,
-            Parameters = this.Parameters
+            Parameters = this._promptTemplate.Parameters
         };
 
     /// <inheritdoc/>
@@ -211,7 +206,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
-        Verify.ParametersUniqueness(this.Parameters);
+        Verify.ParametersUniqueness(this._promptTemplate.Parameters);
     }
 
     #region private
@@ -233,7 +228,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
     {
-        foreach (var parameter in this.Parameters)
+        foreach (var parameter in this._promptTemplate.Parameters)
         {
             if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
             {
