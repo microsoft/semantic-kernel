@@ -57,7 +57,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
-        var functionView = setSecretFunction.GetMetadata();
+        var functionView = setSecretFunction.Metadata;
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");

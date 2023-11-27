@@ -158,7 +158,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var function = plugin.First();
 
-        var functionView = function.GetMetadata();
+        var functionView = function.Metadata;
 
         var sut = functionView.ToOpenAIFunction();
 

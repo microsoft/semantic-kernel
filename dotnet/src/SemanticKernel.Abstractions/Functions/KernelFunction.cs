@@ -64,11 +64,22 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="name">Name of the function.</param>
     /// <param name="description">Function description.</param>
+    /// <param name="parameters">Function parameters metadata</param>
+    /// <param name="returnParameter">Function return parameter metadata</param>
     /// <param name="modelSettings">Model request settings.</param>
-    internal KernelFunction(string name, string description, IEnumerable<AIRequestSettings>? modelSettings = null)
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, IEnumerable<AIRequestSettings>? modelSettings = null)
     {
+        Verify.NotNull(name);
+        Verify.ParametersUniqueness(parameters);
+
         this.Name = name;
         this.Description = description;
+        this.Metadata = new KernelFunctionMetadata(this.Name)
+        {
+            Description = this.Description,
+            Parameters = parameters,
+            ReturnParameter = returnParameter ?? new()
+        };
         this.ModelSettings = modelSettings ?? Enumerable.Empty<AIRequestSettings>();
     }
 
@@ -217,16 +228,7 @@ public abstract class KernelFunction
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    public KernelFunctionMetadata GetMetadata()
-    {
-        return this.GetMetadataCore();
-    }
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    protected abstract KernelFunctionMetadata GetMetadataCore();
+    public KernelFunctionMetadata Metadata { get; init; }
 
     #region private
     private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)

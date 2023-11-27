@@ -118,15 +118,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-        new KernelFunctionMetadata(this.Name)
-        {
-            Description = this._promptTemplateConfig.Description,
-            Parameters = this._promptTemplate.Parameters
-        };
-
-    /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
@@ -200,20 +191,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
         string functionName,
-        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, promptTemplateConfig.ModelSettings)
+        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, template.Parameters, null, promptTemplateConfig.ModelSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
-        Verify.ParametersUniqueness(this._promptTemplate.Parameters);
     }
 
     #region private
 
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private KernelFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
