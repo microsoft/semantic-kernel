@@ -14,4 +14,10 @@ public sealed class TextCompletionRequest
     /// </summary>
     [JsonPropertyName("inputs")]
     public string Input { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Enable streaming
+    /// </summary>
+    [JsonPropertyName("stream")]
+    public bool Stream { get; set; } = false;
 }

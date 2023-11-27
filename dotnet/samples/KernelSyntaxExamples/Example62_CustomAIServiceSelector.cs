@@ -66,9 +66,9 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
         {
-            var services = context.ServiceProvider.GetServices<T>();
+            var services = kernel.ServiceProvider.GetServices<T>();
             foreach (var service in services)
             {
                 // Find the first service that has a model id that starts with "gpt-3"
@@ -77,11 +77,11 @@ public static class Example62_CustomAIServiceSelector
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
-                    return (service, new OpenAIRequestSettings());
+                    return (service, new OpenAIPromptExecutionSettings());
                 }
             }
 
-            throw new SKException("Unable to find AI service for GPT 3.x.");
+            throw new KernelException("Unable to find AI service for GPT 3.x.");
         }
     }
 }

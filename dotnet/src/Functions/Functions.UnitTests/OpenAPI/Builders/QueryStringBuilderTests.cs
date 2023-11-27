@@ -129,7 +129,7 @@ public class QueryStringBuilderTests
         };
 
         //Act and assert
-        Assert.Throws<SKException>(() => operation.BuildQueryString(arguments));
+        Assert.Throws<KernelException>(() => operation.BuildQueryString(arguments));
     }
 
     [Theory]

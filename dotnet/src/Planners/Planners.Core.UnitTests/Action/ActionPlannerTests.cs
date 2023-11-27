@@ -45,7 +45,7 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(() => planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
@@ -108,10 +108,8 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel);
 
-        var context = kernel.CreateNewContext();
-
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
@@ -131,10 +129,8 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel, config: config);
 
-        var context = kernel.CreateNewContext();
-
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
@@ -154,19 +150,17 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel, config: config);
 
-        var context = kernel.CreateNewContext();
-
         // Act
-        var result = await planner.ListOfFunctionsAsync("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal");
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
 
-    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new SKPluginCollection();
+        plugins ??= new KernelPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult
@@ -177,31 +171,31 @@ public sealed class ActionPlannerTests
 
         var textCompletion = new Mock<ITextCompletion>();
         textCompletion
-            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(textCompletionResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
-            .Returns((textCompletion.Object, new AIRequestSettings()));
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Returns((textCompletion.Object, new PromptExecutionSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();
 
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-    private SKPluginCollection CreatePluginCollection()
+    private KernelPluginCollection CreatePluginCollection()
     {
         return new()
         {
-            new SKPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
             }),
-            new SKPlugin("GitHubPlugin", new[]
+            new KernelPlugin("GitHubPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
             })
         };
     }

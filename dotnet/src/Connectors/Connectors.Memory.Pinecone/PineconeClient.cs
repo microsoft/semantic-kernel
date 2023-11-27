@@ -258,7 +258,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new SKException("Must provide at least one of ids, filter, or deleteAll");
+            throw new KernelException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -562,12 +562,12 @@ public sealed class PineconeClient : IPineconeClient
 
         if (pineconeIndex == null)
         {
-            throw new SKException("Index not found in Pinecone. Create index to perform operations with vectors.");
+            throw new KernelException("Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
-            throw new SKException($"Host of index {indexName} is unknown.");
+            throw new KernelException($"Host of index {indexName} is unknown.");
         }
 
         this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);

@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Models;
 
@@ -43,10 +42,10 @@ public sealed class PromptFunctionModel
     public List<InputParameter> InputParameters { get; set; } = new();
 
     /// <summary>
-    /// Model request settings.
+    /// Prompt execution settings.
     /// </summary>
-    [JsonPropertyName("model_settings")]
-    public List<AIRequestSettings> ModelSettings { get; set; } = new();
+    [JsonPropertyName("execution_settings")]
+    public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
 
     /// <summary>
     /// Input parameter for semantic functions.

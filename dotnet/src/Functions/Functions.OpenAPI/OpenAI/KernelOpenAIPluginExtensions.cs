@@ -27,14 +27,14 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -48,14 +48,14 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -69,14 +69,14 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -90,7 +90,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
@@ -122,7 +122,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
@@ -161,7 +161,7 @@ public static class KernelOpenAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
@@ -183,7 +183,7 @@ public static class KernelOpenAIPluginExtensions
 
     #region private
 
-    private static async Task<ISKPlugin> CreateAsync(
+    private static async Task<IKernelPlugin> CreateAsync(
         Kernel kernel,
         string openAIManifest,
         string pluginName,
@@ -199,7 +199,7 @@ public static class KernelOpenAIPluginExtensions
         }
         catch (JsonException ex)
         {
-            throw new SKException("Parsing of Open AI manifest failed.", ex);
+            throw new KernelException("Parsing of Open AI manifest failed.", ex);
         }
 
         if (executionParameters?.AuthCallback is not null)
@@ -223,13 +223,13 @@ public static class KernelOpenAIPluginExtensions
         string? apiType = pluginJson?["api"]?["type"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
         {
-            throw new SKException($"Unexpected API type '{apiType}' found in Open AI manifest.");
+            throw new KernelException($"Unexpected API type '{apiType}' found in Open AI manifest.");
         }
 
         string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiUrl))
         {
-            throw new SKException("No Open API spec URL found in Open AI manifest.");
+            throw new KernelException("No Open API spec URL found in Open AI manifest.");
         }
 
         try
@@ -238,7 +238,7 @@ public static class KernelOpenAIPluginExtensions
         }
         catch (System.UriFormatException ex)
         {
-            throw new SKException("Invalid Open API spec URI found in Open AI manifest.", ex);
+            throw new KernelException("Invalid Open API spec URI found in Open AI manifest.", ex);
         }
     }
 

@@ -29,14 +29,14 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        var plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
+        var plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         var menuAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 model: OpenAIFunctionEnabledModel,
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                new SKPluginCollection { plugin });
+                new[] { plugin });
 
         var parrotAssistant =
             await AssistantBuilder.FromDefinitionAsync(
@@ -59,13 +59,13 @@ public static class Example71_AssistantDelegation
             "Can you talk like pirate?",
             "Thank you");
 
-        ISKPluginCollection Import(params IAssistant[] assistants)
+        IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
         {
-            var plugins = new SKPluginCollection();
+            var plugins = new KernelPluginCollection();
 
             foreach (var assistant in assistants)
             {
-                plugins.Add(SKPlugin.FromObject(assistant, assistant.Id));
+                plugins.Add(KernelPluginFactory.CreateFromObject(assistant, assistant.Id));
             }
 
             return plugins;

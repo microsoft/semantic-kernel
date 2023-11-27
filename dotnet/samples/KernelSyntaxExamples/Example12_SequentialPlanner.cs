@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -39,7 +40,7 @@ internal static class Example12_SequentialPlanner
         {
             await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine(e.Message);
             // Create plan error: Not possible to create plan for goal with available functions.
@@ -96,7 +97,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var result = await kernel.RunAsync(plan);
+        var result = await plan.InvokeAsync(kernel);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -183,7 +184,7 @@ internal static class Example12_SequentialPlanner
             "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
             "he's not just an ordinary boy.";
 
-            var result = await kernel.RunAsync(restoredPlan, new(newInput));
+            var result = await restoredPlan.InvokeAsync(kernel, newInput);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
@@ -316,7 +317,7 @@ internal static class Example12_SequentialPlanner
             {
                 if (string.IsNullOrEmpty(input))
                 {
-                    await plan.InvokeNextStepAsync(kernel.CreateNewContext());
+                    await plan.InvokeNextStepAsync(kernel, new ContextVariables());
                     // or await kernel.StepAsync(plan);
                 }
                 else
@@ -336,7 +337,7 @@ internal static class Example12_SequentialPlanner
                 Console.WriteLine(plan.State.ToString());
             }
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);

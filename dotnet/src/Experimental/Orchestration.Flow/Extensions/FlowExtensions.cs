@@ -27,7 +27,7 @@ public static class FlowExtensions
 
             if (independentStep is null)
             {
-                throw new SKException("The plan contains circular dependencies.");
+                throw new KernelException("The plan contains circular dependencies.");
             }
 
             sortedSteps.Add(independentStep);

@@ -67,6 +67,6 @@ public sealed class ThreadHarness
 
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
-        await Assert.ThrowsAsync<SKException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+        await Assert.ThrowsAsync<KernelException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }
