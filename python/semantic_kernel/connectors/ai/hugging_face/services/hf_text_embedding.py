@@ -6,16 +6,14 @@ from typing import List, Optional
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 
-class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
-    _model_id: str
-    _device: int
-    _log: Logger
+class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+    device: int
 
     def __init__(
         self,
@@ -34,8 +32,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        self._model_id = model_id
-        self._log = log if log is not None else NullLogger()
+        super().__init__(model_id=model_id, log=log)
 
         try:
             import sentence_transformers
@@ -51,7 +48,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             else "cpu"
         )
         self.generator = sentence_transformers.SentenceTransformer(
-            model_name_or_path=self._model_id, device=self.device
+            model_name_or_path=self.model_id, device=self.device
         )
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
@@ -65,7 +62,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             ndarray -- Embeddings for the texts.
         """
         try:
-            self._log.info(f"Generating embeddings for {len(texts)} texts")
+            self.log.info(f"Generating embeddings for {len(texts)} texts")
             embeddings = self.generator.encode(texts)
             return array(embeddings)
         except Exception as e:

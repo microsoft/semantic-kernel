@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import google.generativeai as palm
-from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
-from pydantic import Field
+from google.generativeai.types import ExampleOptions, MessagePromptOptions
+from pydantic import Field, constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -20,11 +20,15 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+if TYPE_CHECKING:
+    from google.generativeai.types import ChatResponse
+
 
 class GooglePalmChatCompletion(
     ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
 ):
-    message_history: Optional[ChatResponse] = Field(None, init=False)
+    api_key: constr(strip_whitespace=True, min_length=1)
+    message_history: Optional["ChatResponse"] = Field(None, init=False)
 
     def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
         """

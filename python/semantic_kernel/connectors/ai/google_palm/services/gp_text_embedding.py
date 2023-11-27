@@ -5,6 +5,7 @@ from typing import List
 
 import google.generativeai as palm
 from numpy import array, ndarray
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -14,6 +15,8 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+    api_key: constr(strip_whitespace=True, min_length=1)
+
     def __init__(self, model_id: str, api_key: str) -> None:
         """
         Initializes a new instance of the GooglePalmTextEmbedding class.

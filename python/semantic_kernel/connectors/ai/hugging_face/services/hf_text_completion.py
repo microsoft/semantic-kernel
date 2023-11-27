@@ -9,6 +9,7 @@ import transformers
 from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
@@ -17,8 +18,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 
 
-class HuggingFaceTextCompletion(TextCompletionClientBase):
-    model_id: constr(strip_whitespace=True, min_length=1)
+class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     task: constr(strip_whitespace=True, min_length=1)
     device: str
     generator: transformers.Pipeline
