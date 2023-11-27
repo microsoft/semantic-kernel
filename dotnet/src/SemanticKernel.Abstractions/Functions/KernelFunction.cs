@@ -43,7 +43,7 @@ public abstract class KernelFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name { get; }
+    public string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets a description of the function.
@@ -52,7 +52,13 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description { get; }
+    public string Description => this.Metadata.Description;
+
+    /// <summary>
+    /// Gets the metadata describing the function.
+    /// </summary>
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    public KernelFunctionMetadata Metadata { get; init; }
 
     /// <summary>
     /// Gets the prompt execution settings.
@@ -72,8 +78,6 @@ public abstract class KernelFunction
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        this.Name = name;
-        this.Description = description;
         this.Metadata = new KernelFunctionMetadata(this.Name)
         {
             Description = this.Description,
@@ -223,12 +227,6 @@ public abstract class KernelFunction
         ContextVariables variables,
         PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    public KernelFunctionMetadata Metadata { get; init; }
 
     #region private
     private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)

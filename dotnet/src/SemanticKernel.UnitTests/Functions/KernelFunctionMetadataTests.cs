@@ -76,7 +76,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.Metadata;
+        var fv = function.Metadata;
 
         // Assert
         Assert.Equal("ValidFunctionName", fv.Name);
