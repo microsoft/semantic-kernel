@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Prompt;
-using ChatMessage = Azure.AI.OpenAI.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -104,10 +103,10 @@ public abstract class ClientBase
         OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
-        var options = CreateCompletionsOptions(text, textRequestSettings);
+        var options = CreateCompletionsOptions(text, textRequestSettings, this.DeploymentOrModelName);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -135,23 +134,23 @@ public abstract class ClientBase
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(prompt, textRequestSettings);
+        var options = CreateCompletionsOptions(prompt, textRequestSettings, this.DeploymentOrModelName);
 
-        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => this.Client.GetCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
-
-        using StreamingCompletions streamingChatCompletions = response.Value;
-        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
+        StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
+            () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         int choiceIndex = 0;
-        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        Dictionary<string, object>? responseMetadata = null;
+        await foreach (Completions completions in response)
         {
-            await foreach (string update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            responseMetadata ??= GetResponseMetadata(completions);
+
+            foreach (Choice choice in completions.Choices)
             {
                 // If the provided T is a string, return the completion as is
                 if (typeof(T) == typeof(string))
                 {
-                    yield return (T)(object)update;
+                    yield return (T)(object)choice.Text;
                     continue;
                 }
 
@@ -159,7 +158,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingTextContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, responseMetadata);
+                    yield return (T)(object)new StreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
                     continue;
                 }
 
@@ -169,19 +168,22 @@ public abstract class ClientBase
         }
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(StreamingCompletions streamingChatCompletions)
+    private static Dictionary<string, object> GetResponseMetadata(Completions completions)
     {
         return new Dictionary<string, object>()
         {
-            { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+            { $"{nameof(Completions)}.{nameof(completions.Id)}", completions.Id },
+            { $"{nameof(Completions)}.{nameof(completions.Created)}", completions.Created },
+            { $"{nameof(Completions)}.{nameof(completions.PromptFilterResults)}", completions.PromptFilterResults },
         };
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletions streamingChatCompletions)
+    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
         return new Dictionary<string, object>()
         {
-            { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults },
+            { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Id)}", completions.Id },
+            { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created },
         };
     }
 
@@ -198,10 +200,10 @@ public abstract class ClientBase
         var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
-            var options = new EmbeddingsOptions(text);
+            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+                () => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
 
             if (response is null)
             {
@@ -237,10 +239,10 @@ public abstract class ClientBase
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
+        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -270,41 +272,36 @@ public abstract class ClientBase
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
+        var options = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
 
-        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+        var response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
+           () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
             throw new KernelException("Chat completions null response");
         }
 
-        using StreamingChatCompletions streamingChatCompletions = response.Value;
-        var responseMetadata = GetResponseMetadata(streamingChatCompletions);
-
-        int choiceIndex = 0;
-        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        Dictionary<string, object>? responseMetadata = null;
+        await foreach (StreamingChatCompletionsUpdate update in response)
         {
-            await foreach (ChatMessage chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            responseMetadata ??= GetResponseMetadata(update);
+
+            if (typeof(T) == typeof(string))
             {
-                if (typeof(T) == typeof(string))
-                {
-                    yield return (T)(object)chatMessage.Content;
-                    continue;
-                }
-
-                // If the provided T is an specialized class of StreamingResultChunk interface
-                if (typeof(T) == typeof(StreamingChatContent) ||
-                    typeof(T) == typeof(StreamingContent))
-                {
-                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex, responseMetadata);
-                    continue;
-                }
-
-                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+                yield return (T)(object)update.ContentUpdate;
+                continue;
             }
-            choiceIndex++;
+
+            // If the provided T is an specialized class of StreamingResultChunk interface
+            if (typeof(T) == typeof(StreamingChatContent) ||
+                typeof(T) == typeof(StreamingContent))
+            {
+                yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
+                continue;
+            }
+
+            throw new NotSupportedException($"Type {typeof(T)} is not supported");
         }
     }
 
@@ -362,7 +359,7 @@ public abstract class ClientBase
         return chat;
     }
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings requestSettings)
+    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings requestSettings, string deploymentOrModelName)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -382,6 +379,7 @@ public abstract class ClientBase
             GenerationSampleCount = requestSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
             User = null,
+            DeploymentName = deploymentOrModelName
         };
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)
@@ -400,7 +398,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory, string deploymentOrModelName)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -415,6 +413,7 @@ public abstract class ClientBase
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
             ChoiceCount = requestSettings.ResultsPerPrompt,
+            DeploymentName = deploymentOrModelName,
         };
 
         if (requestSettings.Functions is not null)

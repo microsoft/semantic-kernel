@@ -16,7 +16,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
     {
         var serviceProvider = kernel.ServiceProvider;
-        var modelSettings = function.ModelSettings;
+        var modelSettings = function.ExecutionSettings;
         if (modelSettings is null || !modelSettings.Any())
         {
             var service = serviceProvider.GetService<T>(null);
