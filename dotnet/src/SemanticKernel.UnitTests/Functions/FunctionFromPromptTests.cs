@@ -51,13 +51,14 @@ public class FunctionFromPromptTests
             .WithAIService("x", mockTextCompletion.Object)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new OpenAIPromptExecutionSettings()
+        var promptModel = new PromptModel();
+        promptModel.Template = "template";
+        promptModel.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
 
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var func = kernel.CreateFunctionFromPrompt(promptModel);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -83,8 +84,9 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptModel = new PromptModel();
+        promptModel.Template = "template";
+        var func = kernel.CreateFunctionFromPrompt(promptModel);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -111,9 +113,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptModel = new PromptModel();
+        promptModel.Template = "template";
+        promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        var func = kernel.CreateFunctionFromPrompt(promptModel);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -135,9 +138,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptModel = new PromptModel();
+        promptModel.Template = "template";
+        promptModel.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        var func = kernel.CreateFunctionFromPrompt(promptModel);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));

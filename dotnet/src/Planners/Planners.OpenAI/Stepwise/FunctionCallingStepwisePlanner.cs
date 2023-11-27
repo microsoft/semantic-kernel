@@ -178,7 +178,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        string systemMessage = await this._promptTemplateFactory.Create(new PromptModel(this._initialPlanPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -197,7 +197,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         variables.Set(GoalKey, goal);
         variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        var systemMessage = await this._promptTemplateFactory.Create(new PromptModel(this._stepPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 

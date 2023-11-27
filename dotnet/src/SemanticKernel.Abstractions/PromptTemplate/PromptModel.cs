@@ -58,6 +58,21 @@ public sealed class PromptModel
     public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="PromptModel"/> class.
+    /// </summary>
+    public PromptModel()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptModel"/> class.
+    /// </summary>
+    public PromptModel(string template)
+    {
+        this.Template = template;
+    }
+
+    /// <summary>
     /// Input parameter for semantic functions.
     /// </summary>
     public class InputParameter

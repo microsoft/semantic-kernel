@@ -95,12 +95,12 @@ public class PromptTemplateConfigTests
         ";
 
         // Act
-        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+        var promptModel = JsonSerializer.Deserialize<PromptModel>(configPayload);
 
         // Assert
-        Assert.NotNull(promptTemplateConfig);
-        Assert.NotNull(promptTemplateConfig.ModelSettings);
-        Assert.Equal(2, promptTemplateConfig.ModelSettings.Count);
+        Assert.NotNull(promptModel);
+        Assert.NotNull(promptModel.ExecutionSettings);
+        Assert.Equal(2, promptModel.ExecutionSettings.Count);
     }
 
     [Fact]

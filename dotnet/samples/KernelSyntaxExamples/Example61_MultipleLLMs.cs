@@ -97,12 +97,9 @@ public static class Example61_MultipleLLMs
         {
             modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
         }
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+        var promptModel = new PromptModel(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
-        var function = kernel.CreateFunctionFromPrompt(
-            prompt,
-            promptTemplateConfig,
-            "HelloAI");
+        var function = kernel.CreateFunctionFromPrompt(promptModel);
 
         var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());
