@@ -22,7 +22,7 @@ internal sealed class SnakeCaseJsonNamingPolicy : JsonNamingPolicy
     {
         static IEnumerable<char> ToSnakeCase(CharEnumerator e)
         {
-            if (!e.MoveNext()) yield break;
+            if (!e.MoveNext()) { yield break; }
             var wasLower = char.IsLower(e.Current);
             yield return char.ToLower(e.Current, CultureInfo.InvariantCulture);
             while (e.MoveNext())
