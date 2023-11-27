@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using Xunit;
 
@@ -33,6 +32,6 @@ public sealed class HandlebarsPromptTemplateFactoryTests
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 }

@@ -32,7 +32,7 @@ public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
             return new HandlebarsPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
         }
 
-        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+        throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
 
     #region private

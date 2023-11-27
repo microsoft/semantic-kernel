@@ -27,7 +27,7 @@ public sealed class FileIOPlugin
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [SKFunction, Description("Read a file")]
+    [KernelFunction, Description("Read a file")]
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
         using var reader = File.OpenText(path);
@@ -43,7 +43,7 @@ public sealed class FileIOPlugin
     /// <param name="path">The destination file path</param>
     /// <param name="content">The file content to write</param>
     /// <returns> An awaitable task </returns>
-    [SKFunction, Description("Write a file")]
+    [KernelFunction, Description("Write a file")]
     public async Task WriteAsync(
         [Description("Destination file")] string path,
         [Description("File content")] string content)

@@ -71,7 +71,7 @@ internal sealed class ChatRun
         // Did fail?
         if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
+            throw new KernelException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
@@ -151,7 +151,7 @@ internal sealed class ChatRun
                 }
             }
 
-            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }
