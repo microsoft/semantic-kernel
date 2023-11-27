@@ -19,7 +19,6 @@ using RepoUtils;
  * - Shared tokens
  * - etc.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example26_AADAuth
 {

@@ -363,7 +363,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
         if (vectorScoreValue.IsNullOrEmpty || !vectorScoreValue.TryParse(out double vectorScore))
         {
-            throw new SKException("Invalid or missing vector score value.");
+            throw new KernelException("Invalid or missing vector score value.");
         }
 
         return 1 - vectorScore;

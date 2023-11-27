@@ -53,7 +53,7 @@ internal static class Verify
         }
     }
 
-    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlySKPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
+    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
@@ -63,7 +63,7 @@ internal static class Verify
 
         if (plugins is not null && plugins.Contains(pluginName))
         {
-            throw new SKException($"A plugin with the name '{pluginName}' already exists.");
+            throw new KernelException($"A plugin with the name '{pluginName}' already exists.");
         }
     }
 
@@ -119,7 +119,7 @@ internal static class Verify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IReadOnlyList<SKParameterMetadata> parameters)
+    internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -127,7 +127,7 @@ internal static class Verify
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < count; i++)
             {
-                SKParameterMetadata p = parameters[i];
+                KernelParameterMetadata p = parameters[i];
                 if (string.IsNullOrWhiteSpace(p.Name))
                 {
                     string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
@@ -143,7 +143,7 @@ internal static class Verify
 
                 if (!seen.Add(p.Name))
                 {
-                    throw new SKException($"The function has two or more parameters with the same name '{p.Name}'");
+                    throw new KernelException($"The function has two or more parameters with the same name '{p.Name}'");
                 }
             }
         }

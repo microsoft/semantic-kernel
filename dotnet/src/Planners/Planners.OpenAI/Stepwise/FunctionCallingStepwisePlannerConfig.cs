@@ -39,5 +39,5 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
-    public OpenAIRequestSettings? ModelSettings { get; set; }
+    public OpenAIPromptExecutionSettings? ModelSettings { get; set; }
 }

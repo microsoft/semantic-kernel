@@ -36,7 +36,7 @@ public sealed class WaitPlugin
     /// <example>
     /// {{wait.seconds 10}} (Wait 10 seconds)
     /// </example>
-    [SKFunction, Description("Wait a given amount of seconds")]
+    [KernelFunction, Description("Wait a given amount of seconds")]
     public Task SecondsAsync([Description("The number of seconds to wait")] decimal seconds) =>
         this._timeProvider.Delay(TimeSpan.FromSeconds((double)Math.Max(seconds, 0)));
 }

@@ -28,7 +28,7 @@ internal sealed class Assistant : IAssistant
     public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public SKPluginCollection Plugins => this.Kernel.Plugins;
+    public KernelPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
@@ -68,12 +68,12 @@ internal sealed class Assistant : IAssistant
         OpenAIRestContext restContext,
         OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating assistant: no result.");
+            throw new KernelException("Unexpected failure creating assistant: no result.");
 
         return new Assistant(resultModel, chatService, restContext, plugins);
     }
@@ -85,7 +85,7 @@ internal sealed class Assistant : IAssistant
         AssistantModel model,
         OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
-        IEnumerable<ISKPlugin>? plugins = null)
+        IEnumerable<IKernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
@@ -119,7 +119,7 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [SKFunction, Description("Provide input to assistant a response")]
+    [KernelFunction, Description("Provide input to assistant a response")]
     public async Task<string> AskAsync(
         [Description("The input for the assistant.")]
         string input,

@@ -70,14 +70,14 @@ public sealed class EmailPlugin
     /// <summary>
     /// Get my email address.
     /// </summary>
-    [SKFunction, Description("Gets the email address for me.")]
+    [KernelFunction, Description("Gets the email address for me.")]
     public async Task<string> GetMyEmailAddressAsync()
         => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Send an email using <see cref="ContextVariables.Input"/> as the body.
     /// </summary>
-    [SKFunction, Description("Send an email to one or more recipients.")]
+    [KernelFunction, Description("Send an email to one or more recipients.")]
     public async Task SendEmailAsync(
         [Description("Email content/body")] string content,
         [Description("Recipients of the email, separated by ',' or ';'.")] string recipients,
@@ -103,7 +103,7 @@ public sealed class EmailPlugin
     /// <summary>
     /// Get email messages with specified optional clauses used to query for messages.
     /// </summary>
-    [SKFunction, Description("Get email messages.")]
+    [KernelFunction, Description("Get email messages.")]
     public async Task<string> GetEmailMessagesAsync(
         [Description("Optional limit of the number of message to retrieve.")] int? maxResults = 10,
         [Description("Optional number of message to skip before retrieving results.")] int? skip = 0,

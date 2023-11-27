@@ -118,7 +118,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
-        Assert.IsType<SKException>(exception);
+        Assert.IsType<KernelException>(exception);
         Assert.Contains(
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,

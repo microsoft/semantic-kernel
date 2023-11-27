@@ -57,23 +57,23 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -84,7 +84,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -99,44 +99,32 @@ public static class Example57_KernelHooks
                 apiKey: s_openAIApiKey!)
             .Build();
 
-        const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
+        const string FunctionPrompt = "Write a random paragraph about: {{$input}} in the style of {{$style}}.";
 
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
+        void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
-
-            if (e.TryGetRenderedPrompt(out var prompt))
-            {
-                // Get the rendered prompt when available
-                Console.WriteLine("Rendered Prompt:");
-                Console.WriteLine(prompt);
-
-                // Update the prompt
-                e.TryUpdateRenderedPrompt($"{prompt}. USE SHORT, CLEAR, COMPLETE SENTENCES.");
-            }
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendering Handler - Triggered");
+            e.Variables.Set("style", "Seinfeld");
         }
 
-        void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
+        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Triggered");
-            // Will be false for non semantic functions
-            if (e.TryGetRenderedPrompt(out var prompt))
-            {
-                Console.WriteLine("Used Prompt:");
-                Console.WriteLine(prompt);
-            }
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendered Handler - Triggered");
+            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
+
+            Console.WriteLine(e.RenderedPrompt);
         }
 
-        kernel.FunctionInvoking += MyPreHandler;
-        kernel.FunctionInvoked += MyPostHandler;
+        kernel.PromptRendering += MyRenderingHandler;
+        kernel.PromptRendered += MyRenderedHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -156,21 +144,21 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.SKContext.Variables.Input;
+            var originalOutput = e.Variables.Input;
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.SKContext.Variables.Update(newOutput);
+            e.Variables.Update(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
 
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
@@ -191,12 +179,12 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
+            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -207,7 +195,7 @@ public static class Example57_KernelHooks
             functionInvokedCount++;
         };
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
@@ -241,7 +229,7 @@ public static class Example57_KernelHooks
             e.Cancel();
         };
 
-        var result = await kernel.RunAsync(secondFunction);
+        var result = await kernel.InvokeAsync(secondFunction);
         Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }

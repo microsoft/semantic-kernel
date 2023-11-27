@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Functions.Yaml.Functions;
 using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
@@ -26,7 +25,7 @@ public static class KernelFunctionsPromptYamlExtensions
         string resourceName,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return SKFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -43,6 +42,6 @@ public static class KernelFunctionsPromptYamlExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return SKFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

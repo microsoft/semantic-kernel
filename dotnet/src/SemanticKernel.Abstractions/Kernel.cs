@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
@@ -51,9 +52,9 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
-    public SKPluginCollection Plugins =>
+    public KernelPluginCollection Plugins =>
         this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new SKPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
         this._plugins;
 
     /// <summary>
@@ -90,6 +91,16 @@ public sealed class Kernel
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
     /// </summary>
     /// <param name="aiServiceProvider">The <see cref="IAIServiceProvider"/> used to query for services available through the kernel.</param>
@@ -102,7 +113,7 @@ public sealed class Kernel
     /// </remarks>
     public Kernel(
         IAIServiceProvider aiServiceProvider,
-        IEnumerable<ISKPlugin>? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         IAIServiceSelector? serviceSelector = null,
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
@@ -110,7 +121,7 @@ public sealed class Kernel
         Verify.NotNull(aiServiceProvider);
 
         this.ServiceProvider = aiServiceProvider;
-        this._plugins = plugins is not null ? new SKPluginCollection(plugins) : null;
+        this._plugins = plugins is not null ? new KernelPluginCollection(plugins) : null;
         this._serviceSelector = serviceSelector;
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -128,7 +139,7 @@ public sealed class Kernel
     /// <item>The same <see cref="IDelegatingHandlerFactory"/> reference as is returned by the current instance's <see cref="Kernel.HttpHandlerFactory"/>.</item>
     /// <item>The same <see cref="ILoggerFactory"/> reference as is returned by the current instance's <see cref="Kernel.LoggerFactory"/>.</item>
     /// <item>
-    /// A new <see cref="SKPluginCollection"/> instance initialized with the same <see cref="ISKPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
     /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
     /// </item>
     /// <item>
@@ -144,7 +155,7 @@ public sealed class Kernel
     /// </remarks>
     public Kernel Clone() =>
         new(this.ServiceProvider,
-            this.Plugins is { Count: > 0 } ? new SKPluginCollection(this.Plugins) : null,
+            this.Plugins is { Count: > 0 } ? new KernelPluginCollection(this.Plugins) : null,
             this.ServiceSelector,
             this.HttpHandlerFactory,
             this.LoggerFactory)
@@ -156,28 +167,15 @@ public sealed class Kernel
         };
 
     /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <returns>SK context</returns>
-    public SKContext CreateNewContext(
-        ContextVariables? variables = null,
-        IReadOnlySKPluginCollection? plugins = null)
-    {
-        return new SKContext(variables);
-    }
-
-    /// <summary>
     /// Gets a configured service from the service provider.
     /// </summary>
     /// <typeparam name="T">Specifies the type of the service being requested.</typeparam>
     /// <param name="name">The name of the registered service. If a name is not provided, the default service for the specified <typeparamref name="T"/> is returned.</param>
     /// <returns>The instance of the service.</returns>
-    /// <exception cref="SKException">The specified service was not registered.</exception>
+    /// <exception cref="KernelException">The specified service was not registered.</exception>
     public T GetService<T>(string? name = null) where T : IAIService =>
         this.ServiceProvider.GetService<T>(name) ??
-        throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
+        throw new KernelException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -191,26 +189,56 @@ public sealed class Kernel
         this._data;
 
     #region internal ===============================================================================
-    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
     {
-        bool handled = false;
-        if (this.FunctionInvoking != null)
+        var functionInvoking = this.FunctionInvoking;
+        if (functionInvoking is null)
         {
-            this.FunctionInvoking.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokingEventArgs(function, variables);
+        functionInvoking.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
-        bool handled = false;
-        if (this.FunctionInvoked != null)
+        var functionInvoked = this.FunctionInvoked;
+        if (functionInvoked is null)
         {
-            this.FunctionInvoked.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokedEventArgs(function, result);
+        functionInvoked.Invoke(this, eventArgs);
+        return eventArgs;
+    }
+
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings)
+    {
+        var promptRendering = this.PromptRendering;
+        if (promptRendering is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderingEventArgs(function, variables, requestSettings);
+        promptRendering.Invoke(this, eventArgs);
+        return eventArgs;
+    }
+
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
+    {
+        var promptRendered = this.PromptRendered;
+        if (promptRendered is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderedEventArgs(function, variables, renderedPrompt);
+        promptRendered.Invoke(this, eventArgs);
+        return eventArgs;
     }
     #endregion
 
@@ -218,7 +246,7 @@ public sealed class Kernel
 
     private Dictionary<string, object?>? _data;
     private CultureInfo _culture = CultureInfo.CurrentCulture;
-    private SKPluginCollection? _plugins;
+    private KernelPluginCollection? _plugins;
     private IAIServiceSelector? _serviceSelector;
 
     #endregion

@@ -42,12 +42,12 @@ internal static class TestHelpers
             "QASkill");
     }
 
-    internal static IReadOnlySKPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
+    internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
         return ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
     }
 
-    internal static IReadOnlySKPluginCollection ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
+    internal static IReadOnlyKernelPluginCollection ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -57,7 +57,7 @@ internal static class TestHelpers
 
         string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, path));
 
-        return new SKPluginCollection(
+        return new KernelPluginCollection(
             from pluginName in pluginNames
             select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
     }

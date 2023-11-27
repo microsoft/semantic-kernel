@@ -59,9 +59,9 @@ public static class Example71_AssistantDelegation
             "Can you talk like pirate?",
             "Thank you");
 
-        IEnumerable<ISKPlugin> Import(params IAssistant[] assistants)
+        IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
         {
-            var plugins = new SKPluginCollection();
+            var plugins = new KernelPluginCollection();
 
             foreach (var assistant in assistants)
             {

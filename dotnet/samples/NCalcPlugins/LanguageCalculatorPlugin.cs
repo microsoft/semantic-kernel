@@ -20,7 +20,7 @@ namespace NCalcPlugins;
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
 /// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
-/// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
+/// var summary = await kernel.InvokeAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
 /// </example>
@@ -66,11 +66,11 @@ Question: {{ $input }}
     /// </summary>
     public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = SKFunctionFactory.CreateFromPrompt(
+        this._mathTranslator = KernelFunctionFactory.CreateFromPrompt(
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            requestSettings: new AIRequestSettings()
+            requestSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -87,7 +87,7 @@ Question: {{ $input }}
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
     /// <param name="kernel">The contextkernel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
+    [KernelFunction, KernelName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,
@@ -97,7 +97,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

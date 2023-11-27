@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -65,7 +64,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           new AIRequestSettings()
+           new PromptExecutionSettings()
            {
                ServiceId = serviceId
            });
@@ -80,7 +79,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           requestSettings: new AIRequestSettings()
+           requestSettings: new PromptExecutionSettings()
            {
                ModelId = modelId
            });
@@ -93,10 +92,10 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<AIRequestSettings>();
+        var modelSettings = new List<PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ModelId = modelId });
+            modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
         }
         var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
 
@@ -105,7 +104,7 @@ public static class Example61_MultipleLLMs
             promptTemplateConfig,
             "HelloAI");
 
-        var result = await kernel.RunAsync(function);
+        var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());
     }
 }

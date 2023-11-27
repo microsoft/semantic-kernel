@@ -100,7 +100,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new SKException("Failed to convert memory record to Qdrant vector record");
+            throw new KernelException("Failed to convert memory record to Qdrant vector record");
         }
 
         try
@@ -186,7 +186,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record</returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
@@ -262,7 +262,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
     {
         try
@@ -282,7 +282,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
         try
@@ -419,7 +419,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new SKException("Failed to convert memory record to Qdrant vector record");
+            throw new KernelException("Failed to convert memory record to Qdrant vector record");
         }
 
         return vectorData;

@@ -4,7 +4,6 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 
@@ -30,7 +29,7 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
-        return SKFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -51,6 +50,6 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return SKFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }
