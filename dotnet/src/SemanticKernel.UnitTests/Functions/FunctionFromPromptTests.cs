@@ -255,7 +255,7 @@ public class FunctionFromPromptTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-            if (e.Function.GetMetadata().Name == "SkipMe")
+            if (e.Function.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -263,7 +263,7 @@ public class FunctionFromPromptTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 

@@ -61,19 +61,19 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -108,13 +108,13 @@ public static class Example57_KernelHooks
 
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendering Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendering Handler - Triggered");
             e.Variables.Set("style", "Seinfeld");
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendered Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
             Console.WriteLine(e.RenderedPrompt);
@@ -184,7 +184,7 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 

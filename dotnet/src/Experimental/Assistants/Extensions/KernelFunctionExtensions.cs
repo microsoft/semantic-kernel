@@ -26,7 +26,7 @@ internal static class KernelFunctionExtensions
     /// <returns>An OpenAI tool model</returns>
     public static ToolModel ToToolModel(this KernelFunction function, string pluginName)
     {
-        var metadata = function.GetMetadata();
+        var metadata = function.Metadata;
         var required = new List<string>(metadata.Parameters.Count);
         var properties =
             metadata.Parameters.ToDictionary(

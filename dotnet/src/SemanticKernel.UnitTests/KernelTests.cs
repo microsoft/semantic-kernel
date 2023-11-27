@@ -210,7 +210,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.Function.GetMetadata().Name == "func1")
+            if (e.Function.Name == "func1")
             {
                 e.Skip();
             }
@@ -218,7 +218,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 
@@ -344,7 +344,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.Function.GetMetadata().Name == "func1")
+            if (e.Function.Name == "func1")
             {
                 e.Skip();
             }
@@ -352,7 +352,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 
