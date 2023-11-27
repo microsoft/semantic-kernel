@@ -67,7 +67,7 @@ internal static class SequentialPlanParser
             // '>': Matches the closing angle bracket (">") to indicate the end of the opening <plan> tag.
             // '(.*?)': Captures the content between the opening and closing <plan> tags using a non-greedy match. It matches any character (except newline) in a lazy manner, i.e., it captures the smallest possible match.
             // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
-            Regex planRegex = new(@"<plan>([\r|\n].*)*<\/plan>", RegexOptions.Singleline);
+            Regex planRegex = new(@"<plan>(.|\n)*?<\/plan>", RegexOptions.Singleline);
             Match match = planRegex.Match(xmlString);
 
             if (!match.Success)
