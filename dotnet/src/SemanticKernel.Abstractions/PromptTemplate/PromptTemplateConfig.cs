@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -115,7 +114,7 @@ public class PromptTemplateConfig
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 
-    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
+    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptModel semanticFunctionConfig)
     {
         return new PromptTemplateConfig()
         {

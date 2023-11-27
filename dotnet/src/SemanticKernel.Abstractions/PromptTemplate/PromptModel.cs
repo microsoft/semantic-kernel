@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Models;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Prompt model files.
 /// </summary>
-public sealed class PromptFunctionModel
+public sealed class PromptModel
 {
     /// <summary>
     /// Name of the kernel function.

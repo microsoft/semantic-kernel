@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Models;
 
 #pragma warning disable IDE0130
 
@@ -123,7 +122,7 @@ public static class KernelFunctionFactory
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFromPrompt(
-        PromptFunctionModel promptFunctionModel,
+        PromptModel promptFunctionModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
