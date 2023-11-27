@@ -38,6 +38,16 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private readonly DALLE3GenerationOptions? _imageGenerationOptions;
 
     /// <summary>
+    /// Serializer options for JSON serialization.
+    /// </summary>
+    private static readonly JsonSerializerOptions s_serializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIImageGeneration"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
@@ -112,7 +122,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = format,
             Quality = this._imageGenerationOptions?.Quality,
             Style = this._imageGenerationOptions?.Style
-        });
+        }, s_serializerOptions);
 
         var list = await this.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
         return list[0];

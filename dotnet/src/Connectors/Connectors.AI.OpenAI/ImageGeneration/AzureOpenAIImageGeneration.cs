@@ -56,6 +56,16 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private readonly DALLE3GenerationOptions? _imageGenerationOptions;
 
     /// <summary>
+    /// Serializer options for JSON serialization.
+    /// </summary>
+    private static readonly JsonSerializerOptions s_serializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    /// <summary>
     /// Create a new instance of Azure OpenAI DALL-E 2 image generation service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -153,7 +163,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             return await this.GenerateImageForDALLE3Async(description, width, height, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new SKException($"Azure OpenAI Image Generation Model {this._model} not supported");
+        throw new KernelException($"Azure OpenAI Image Generation Model {this._model} not supported");
     }
 
     #region DALL-E 3
@@ -163,14 +173,14 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         ImageGenerationVerify.DALL3ImageSize(width, height);
 
-        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1,
             Quality = this._imageGenerationOptions?.Quality,
             Style = this._imageGenerationOptions?.Style
-        });
+        }, s_serializerOptions);
 
         var operation = this.GetUri($"openai/deployments/{this._deploymentName}/images/generations");
         var list = await this.ExecuteImageGenerationRequestAsync(operation, requestBody, x => x.Url, cancellationToken).ConfigureAwait(false);
@@ -216,7 +226,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1
-        });
+        }, s_serializerOptions);
 
         var uri = this.GetUri("openai/images/generations:submit");
 

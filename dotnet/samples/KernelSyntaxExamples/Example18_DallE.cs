@@ -95,7 +95,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("======== OpenAI Dall-E 3 Image Generation ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey, options: new DALLE3GenerationOptions())
@@ -189,7 +189,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("========Azure OpenAI Dall-E 3 Image Generation ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.DALLE3DeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey, new DALLE3GenerationOptions())
