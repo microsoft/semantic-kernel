@@ -55,9 +55,9 @@ public abstract class KernelFunction
     public string Description { get; }
 
     /// <summary>
-    /// Gets the model request settings.
+    /// Gets the prompt execution settings.
     /// </summary>
-    internal IEnumerable<PromptExecutionSettings> ModelSettings { get; }
+    internal IEnumerable<PromptExecutionSettings> ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -80,7 +80,7 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? new()
         };
-        this.ModelSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
+        this.ExecutionSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
     }
 
     /// <summary>
