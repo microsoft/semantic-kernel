@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turns natural language into Python code like a Python Copilot.",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,

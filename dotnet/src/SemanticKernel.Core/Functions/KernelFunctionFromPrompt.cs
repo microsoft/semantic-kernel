@@ -34,86 +34,86 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        functionName ??= RandomFunctionName();
-
-        var promptTemplateConfig = new PromptTemplateConfig
+        var promptConfig = new PromptTemplateConfig
         {
+            Name = functionName ?? RandomFunctionName(),
             Description = description ?? "Generic function, unknown purpose",
+            Template = promptTemplate
         };
 
-        if (requestSettings is not null)
+        if (executionSettings is not null)
         {
-            promptTemplateConfig.ModelSettings.Add(requestSettings);
+            promptConfig.ExecutionSettings.Add(executionSettings);
         }
 
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
+
         return Create(
-            promptTemplate: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptTemplate: factory.Create(promptConfig),
+            promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
+    /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            factory.Create(promptTemplate, promptTemplateConfig),
-            promptTemplateConfig,
-            functionName,
-            loggerFactory);
+            promptTemplate: factory.Create(promptConfig),
+            promptConfig: promptConfig,
+            loggerFactory: loggerFactory);
     }
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptTemplate);
-        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptConfig);
 
-        functionName ??= RandomFunctionName();
-        Verify.ValidFunctionName(functionName);
+        if (string.IsNullOrEmpty(promptConfig.Name))
+        {
+            promptConfig.Name = RandomFunctionName();
+        }
+        Verify.ValidFunctionName(promptConfig.Name);
 
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
 
@@ -121,14 +121,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(variables);
 
         try
         {
-            (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+            (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
             if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
             {
                 return new FunctionResult(this.Name, variables)
@@ -137,7 +137,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 };
             }
 
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, executionSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -162,18 +162,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(variables);
 
-        (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+        (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
         if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
         {
             yield break;
         }
 
-        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken))
+        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, executionSettings ?? defaultRequestSettings, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             yield return genericChunk;
@@ -189,20 +189,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
-        PromptTemplateConfig promptTemplateConfig,
-        string functionName,
-        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, template.Parameters, null, promptTemplateConfig.ModelSettings)
+        PromptTemplateConfig promptConfig,
+        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, template.Parameters, null, promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._promptTemplateConfig = promptTemplateConfig;
+        this._promptModel = promptConfig;
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -226,13 +225,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken)
+    private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);
         Verify.NotNull(textCompletion);
 
-        kernel.OnPromptRendering(this, variables, requestSettings ?? defaultRequestSettings);
+        kernel.OnPromptRendering(this, variables, executionSettings ?? defaultRequestSettings);
 
         var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 

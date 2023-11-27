@@ -24,7 +24,7 @@ public class SimpleCalculatorPlugin
             "Task: Give the final solution for the problem. Be as concise as possible.\nProblem:4+4\nSolution:8\nProblem:{{$input}}\nSolution:\n",
             functionName: "Calculator",
             description: "Evaluate a mathematical expression. Input is a valid mathematical expression that could be executed by a simple calculator i.e. add, subtract, multiply and divide. Cannot use variables.",
-            requestSettings: new PromptExecutionSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {

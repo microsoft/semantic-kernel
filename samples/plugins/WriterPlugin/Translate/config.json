@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Translate the input into a language of your choice",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 2000,
       "temperature": 0.7,
@@ -13,18 +13,16 @@
       ]
     }
   ],
-  "input": {
-    "parameters": [
+  "input_parameters": [
+    {
+      "name": "input",
+      "description": "Text to translate",
+      "default_value": ""
+    },
       {
-        "name": "input",
-        "description": "Text to translate",
-        "defaultValue": ""
-      },
-       {
-        "name": "language",
-        "description": "Language to translate to",
-        "defaultValue": ""
-      }
-    ]
-  }
+      "name": "language",
+      "description": "Language to translate to",
+      "default_value": ""
+    }
+  ]
 }

@@ -56,6 +56,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function using the implicitly set request settings
         string configPayload = @"{
           ""schema"": 1,
+          ""name"": ""HelloAI"",
           ""description"": ""Say hello to an AI"",
           ""type"": ""completion"",
           ""completion"": {
@@ -66,8 +67,9 @@ public static class Example58_ConfigureRequestSettings
             ""frequency_penalty"": 0.0
           }
         }";
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateFunctionFromPrompt(prompt, templateConfig!, "HelloAI");
+        var promptConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
+        promptConfig.Template = prompt;
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         result = await kernel.InvokeAsync(func);
         Console.WriteLine(result.GetValue<string>());

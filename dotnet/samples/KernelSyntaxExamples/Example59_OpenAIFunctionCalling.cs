@@ -27,7 +27,7 @@ public static class Example59_OpenAIFunctionCalling
         var chatCompletion = kernel.GetService<IChatCompletion>();
         var chatHistory = chatCompletion.CreateNewChat();
 
-        OpenAIPromptExecutionSettings requestSettings = new()
+        OpenAIPromptExecutionSettings executionSettings = new()
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
@@ -36,25 +36,25 @@ public static class Example59_OpenAIFunctionCalling
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
-        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, executionSettings);
 
         // Before each invocation I need to specify the function call I want to use.
-        requestSettings.FunctionCall = "TimePlugin_Date";
-        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+        executionSettings.FunctionCall = "TimePlugin_Date";
+        await StreamingCompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, executionSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
-        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
+        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, executionSettings);
 
-        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
+        executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
+        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, executionSettings);
 
         // This sample relies on the AI picking the correct color from an enum
-        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
-        await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, requestSettings);
+        executionSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, executionSettings);
 
-        requestSettings.FunctionCall = "WidgetPlugin_CreateWidget";
-        await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, requestSettings);
+        executionSettings.FunctionCall = "WidgetPlugin_CreateWidget";
+        await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, executionSettings);
     }
 
     private static async Task<Kernel> InitializeKernelAsync()
@@ -74,14 +74,14 @@ public static class Example59_OpenAIFunctionCalling
         return kernel;
     }
 
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings requestSettings)
+    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
-        Console.WriteLine($"\n\n======== Function Call - {(requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
         // Send request and add response to chat history
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
         chatHistory.AddAssistantMessage(chatResult);
 
         await PrintChatResultAsync(chatResult);
@@ -113,8 +113,8 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
-                    requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-                    chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+                    executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
+                    chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
                     await PrintChatResultAsync(chatResult);
@@ -151,15 +151,15 @@ public static class Example59_OpenAIFunctionCalling
         }
     }
 
-    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings requestSettings)
+    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
-        Console.WriteLine($"\n\n======== Streaming Function Call - {(requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Streaming Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
         Console.WriteLine($"User message: {ask}");
 
         // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, requestSettings))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings))
         {
             if (chatResult.ContentUpdate is { Length: > 0 })
             {
@@ -208,8 +208,8 @@ public static class Example59_OpenAIFunctionCalling
                     Console.WriteLine($"Function response: {resultContent}");
 
                     // Get another completion
-                    requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-                    var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+                    executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
+                    var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
                     await PrintChatResultAsync(chatResult);

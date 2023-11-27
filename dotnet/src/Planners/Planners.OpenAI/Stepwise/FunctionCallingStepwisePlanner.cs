@@ -46,10 +46,10 @@ public sealed class FunctionCallingStepwisePlanner
         this._initialPlanPrompt = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.InitialPlanPrompt.txt");
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
 
-        this._requestSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
+        this._executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
 
         // Set max tokens on request settings. Should be minimum of model settings max tokens and planner config max completion tokens
-        this._requestSettings.MaxTokens = Math.Min(this.Config.MaxCompletionTokens, this._requestSettings.MaxTokens ?? int.MaxValue);
+        this._executionSettings.MaxTokens = Math.Min(this.Config.MaxCompletionTokens, this._executionSettings.MaxTokens ?? int.MaxValue);
 
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
@@ -72,9 +72,9 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        this._requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
+        this._executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
         await this.ValidateTokenCountAsync(chatHistoryForPlan, cancellationToken).ConfigureAwait(false);
-        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, this._requestSettings, cancellationToken).ConfigureAwait(false));
+        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, this._executionSettings, cancellationToken).ConfigureAwait(false));
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -158,12 +158,11 @@ public sealed class FunctionCallingStepwisePlanner
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
-        // Prepare request settings with functions
-        this._requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        this._requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+        this._executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
+        this._executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
 
         await this.ValidateTokenCountAsync(chatHistory, cancellationToken).ConfigureAwait(false);
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, this._requestSettings, cancellationToken).ConfigureAwait(false))[0];
+        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, this._executionSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
@@ -180,7 +179,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        string systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -199,7 +198,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         variables.Set(GoalKey, goal);
         variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        var systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 
@@ -278,7 +277,7 @@ public sealed class FunctionCallingStepwisePlanner
         string functionManual = string.Empty;
 
         // If using functions, get the functions manual to include in token count estimate
-        if (this._requestSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto)
+        if (this._executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto)
         {
             functionManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -299,7 +298,7 @@ public sealed class FunctionCallingStepwisePlanner
     private readonly Kernel _kernel;
     private readonly IChatCompletion _chatCompletion;
     private readonly ILogger? _logger;
-    private readonly OpenAIPromptExecutionSettings _requestSettings;
+    private readonly OpenAIPromptExecutionSettings _executionSettings;
 
     /// <summary>
     /// The prompt (system message) used to generate the initial set of steps to perform.
