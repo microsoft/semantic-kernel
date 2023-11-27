@@ -34,86 +34,83 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        functionName ??= RandomFunctionName();
-
-        var promptTemplateConfig = new PromptTemplateConfig
+        var promptModel = new PromptModel
         {
+            Name = functionName ?? RandomFunctionName(),
             Description = description ?? "Generic function, unknown purpose",
+            Template = promptTemplate
         };
 
-        if (requestSettings is not null)
+        if (executionSettings is not null)
         {
-            promptTemplateConfig.ModelSettings.Add(requestSettings);
+            promptModel.ExecutionSettings.Add(executionSettings);
         }
 
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
+
         return Create(
-            promptTemplate: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptTemplate: factory.Create(promptModel),
+            promptModel: promptModel,
             loggerFactory: loggerFactory);
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
+    /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="promptModel">Prompt template configuration</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptModel promptModel,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            factory.Create(promptTemplate, promptTemplateConfig),
-            promptTemplateConfig,
-            functionName,
-            loggerFactory);
+            promptTemplate: factory.Create(promptModel),
+            promptModel: promptModel,
+            loggerFactory: loggerFactory);
     }
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptModel">Prompt template configuration.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptModel promptModel,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptTemplate);
-        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptModel);
 
-        functionName ??= RandomFunctionName();
-        Verify.ValidFunctionName(functionName);
+        promptModel.Name ??= RandomFunctionName();
+        Verify.ValidFunctionName(promptModel.Name);
 
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptModel: promptModel,
             loggerFactory: loggerFactory);
     }
 
@@ -189,20 +186,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
-        PromptTemplateConfig promptTemplateConfig,
-        string functionName,
-        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, template.Parameters, null, promptTemplateConfig.ModelSettings)
+        PromptModel promptModel,
+        ILoggerFactory? loggerFactory = null) : base(promptModel.Name, promptModel.Description, template.Parameters, null, promptModel.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._promptTemplateConfig = promptTemplateConfig;
+        this._promptModel = promptModel;
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly PromptModel _promptModel;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Given a text input, continue it with additional text.",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 4000,
       "temperature": 0.3,

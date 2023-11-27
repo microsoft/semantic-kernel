@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Write a chapter of a novel.",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 2048,
       "temperature": 0.3,

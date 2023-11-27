@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Prompt template configuration.
 /// </summary>
+[Obsolete("Removing this")]
 public class PromptTemplateConfig
 {
     /// <summary>

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Extract entities related to a specified topic from the supplied input text. Returns the entities and the source text",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,

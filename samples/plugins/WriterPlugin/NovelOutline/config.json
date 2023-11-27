@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Generate a list of chapter synopsis for a novel or novella",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 2048,
       "temperature": 0.1,

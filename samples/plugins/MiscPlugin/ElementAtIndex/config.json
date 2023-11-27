@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Get an element from an array or list at a specified index",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 1024,
       "temperature": 0.0,

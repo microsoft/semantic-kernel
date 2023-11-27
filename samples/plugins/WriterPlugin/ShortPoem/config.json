@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turn a scenario into a short and entertaining poem.",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 60,
       "temperature": 0.5,

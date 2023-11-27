@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Remove a list of ungrounded entities from a given text in a coherent manner. Returns the input text without the ungrounded entities in the list",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 1024,
       "temperature": 0.1,

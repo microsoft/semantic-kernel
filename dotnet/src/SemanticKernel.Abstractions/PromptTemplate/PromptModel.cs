@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 
@@ -14,6 +17,11 @@ namespace Microsoft.SemanticKernel;
 public sealed class PromptModel
 {
     /// <summary>
+    /// Semantic Kernel template format.
+    /// </summary>
+    public const string SemanticKernelTemplateFormat = "semantic-kernel";
+
+    /// <summary>
     /// Name of the kernel function.
     /// </summary>
     [JsonPropertyName("name")]
@@ -23,7 +31,7 @@ public sealed class PromptModel
     /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
     /// </summary>
     [JsonPropertyName("template_format")]
-    public string TemplateFormat { get; set; } = PromptTemplateConfig.SemanticKernelTemplateFormat;
+    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
 
     /// <summary>
     /// The prompt template
@@ -78,5 +86,17 @@ public sealed class PromptModel
         /// </summary>
         [JsonPropertyName("is_required")]
         public bool IsRequired { get; set; } = true;
+    }
+
+    /// <summary>
+    /// Creates a prompt template configuration from JSON.
+    /// </summary>
+    /// <param name="json">JSON of the prompt template configuration.</param>
+    /// <returns>Prompt template configuration.</returns>
+    /// <exception cref="ArgumentException">Thrown when the deserialization returns null.</exception>
+    public static PromptModel FromJson(string json)
+    {
+        var result = JsonSerializer.Deserialize<PromptModel>(json, JsonOptionsCache.ReadPermissive);
+        return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }
