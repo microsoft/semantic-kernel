@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -35,7 +34,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Arrange
         var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();
@@ -54,7 +53,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -114,7 +113,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
         var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         var memoryQueryResult =
             new MemoryQueryResult(
@@ -133,7 +132,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -181,7 +180,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             }),
         };
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
         var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
@@ -203,7 +202,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -239,13 +238,13 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync(Type t)
     {
         // Arrange
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();

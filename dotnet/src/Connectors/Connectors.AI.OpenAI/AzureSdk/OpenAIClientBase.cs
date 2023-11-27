@@ -4,9 +4,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -46,7 +44,7 @@ public abstract class OpenAIClientBase : ClientBase
 
         this.DeploymentOrModelName = modelId;
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
@@ -83,29 +81,5 @@ public abstract class OpenAIClientBase : ClientBase
     private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
         this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
-    }
-
-    /// <summary>
-    /// Options used by the OpenAI client, e.g. User Agent.
-    /// </summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
-    {
-        var options = new OpenAIClientOptions
-        {
-            Diagnostics =
-            {
-                ApplicationId = HttpHeaderValues.UserAgent,
-            }
-        };
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
-        }
-
-        return options;
     }
 }

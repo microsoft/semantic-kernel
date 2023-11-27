@@ -52,11 +52,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._logger)
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
-                apiKey: openAIConfiguration.ApiKey,
-                setAsDefault: true)
+                apiKey: openAIConfiguration.ApiKey)
             .Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
@@ -179,7 +178,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
@@ -207,7 +206,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        builder.WithAzureTextCompletionService(
+        builder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
@@ -232,7 +231,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         Kernel target = this._kernelBuilder
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
@@ -255,7 +254,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureTextCompletionService(
+            .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
@@ -279,7 +278,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureTextCompletionService(
+            .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
@@ -427,11 +426,10 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        kernelBuilder.WithOpenAIChatCompletionService(
+        kernelBuilder.WithOpenAIChatCompletion(
             modelId: openAIConfiguration.ChatModelId,
             apiKey: openAIConfiguration.ApiKey,
-            serviceId: openAIConfiguration.ServiceId,
-            setAsDefault: true);
+            serviceId: openAIConfiguration.ServiceId);
     }
 
     private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
@@ -444,12 +442,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureTextCompletionService(
+        kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
-            serviceId: azureOpenAIConfiguration.ServiceId,
-            setAsDefault: true);
+            serviceId: azureOpenAIConfiguration.ServiceId);
     }
     private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
     {
@@ -459,12 +456,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        kernelBuilder.WithAzureTextCompletionService(
+        kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "invalid-api-key",
-            serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}",
-            setAsDefault: true);
+            serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
     }
 
     private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
@@ -477,7 +473,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAIChatCompletionService(
+        kernelBuilder.WithAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,

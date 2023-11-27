@@ -25,7 +25,7 @@ public static class QdrantMemoryBuilderExtensions
         builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(injectedClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(injectedClient),
                 vectorSize,
                 endpoint,
                 loggerFactory);
@@ -53,7 +53,7 @@ public static class QdrantMemoryBuilderExtensions
         builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
                 vectorSize,
                 endpoint,
                 loggerFactory);

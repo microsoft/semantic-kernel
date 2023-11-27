@@ -29,7 +29,7 @@ public sealed class HttpPlugin
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
-    public HttpPlugin() : this(new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false))
+    public HttpPlugin() : this(HttpClientProvider.GetHttpClient())
     {
     }
 

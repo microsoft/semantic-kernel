@@ -30,7 +30,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
+        this(HttpClientProvider.GetHttpClient(), loggerFactory)
     {
     }
 

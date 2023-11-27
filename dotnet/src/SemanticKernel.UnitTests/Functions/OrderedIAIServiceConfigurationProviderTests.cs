@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -18,7 +19,7 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNoServices()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -31,7 +32,10 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleAIService()
     {
         // Arrange
-        var kernel = new KernelBuilder().WithAIService<IAIService>("service1", new AIService()).Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<IAIService>("service1", new AIService());
+        }).Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
 
@@ -47,7 +51,10 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
         // Arrange
-        var kernel = new KernelBuilder().WithAIService<ITextCompletion>("service1", new TextCompletion()).Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
@@ -64,10 +71,11 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextCompletionByServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion())
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service2" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
@@ -77,7 +85,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
@@ -85,10 +93,11 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion())
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service3" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
@@ -103,10 +112,11 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceForEmptyModelSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedIAIServiceSelector();
@@ -115,7 +125,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
         Assert.Null(defaultRequestSettings);
     }
 
@@ -124,10 +134,11 @@ public class OrderedIAIServiceConfigurationProviderTests
     {
         // Arrange
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var executionSettings = new PromptExecutionSettings();
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
@@ -137,7 +148,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
         Assert.Equal(executionSettings, defaultRequestSettings);
     }
 
@@ -145,10 +156,11 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion(), true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
@@ -158,7 +170,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
         Assert.Equal(executionSettings, defaultRequestSettings);
     }
 
@@ -170,11 +182,12 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithAIService<ITextCompletion>("service1", new TextCompletion())
-            .WithAIService<ITextCompletion>("service2", new TextCompletion())
-            .WithAIService<ITextCompletion>("service3", new TextCompletion())
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service3", new TextCompletion());
+        }).Build();
         var variables = new ContextVariables();
         var executionSettings = new List<PromptExecutionSettings>();
         foreach (var serviceId in serviceIds)
@@ -188,7 +201,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>(expectedServiceId), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>(expectedServiceId), aiService);
         Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
     }
 

@@ -109,24 +109,25 @@ public sealed class Program
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
-        var folder = RepoFiles.SamplePluginsPath();
-        var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))
+            .ConfigurePlugins(plugins =>
+            {
+                var webSearchEnginePlugin = new WebSearchEnginePlugin(new BingConnector(Env.Var("Bing__ApiKey")));
+
+                plugins.AddPluginFromObject(webSearchEnginePlugin, "WebSearch");
+                plugins.AddPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
+                plugins.AddPluginFromObject<TimePlugin>();
+            })
             .Build();
 
+        var folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
-
-        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }

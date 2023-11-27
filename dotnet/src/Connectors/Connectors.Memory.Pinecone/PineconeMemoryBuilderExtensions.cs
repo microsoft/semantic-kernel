@@ -30,7 +30,7 @@ public static class PineconeMemoryBuilderExtensions
                 environment,
                 apiKey,
                 loggerFactory,
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory));
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient));
 
             return new PineconeMemoryStore(client, loggerFactory);
         });

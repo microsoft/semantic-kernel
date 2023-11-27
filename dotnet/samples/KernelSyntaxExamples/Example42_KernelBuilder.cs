@@ -6,16 +6,13 @@
 
 #pragma warning disable CA1852
 
-using System.Net.Http;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
-using Microsoft.SemanticKernel.Services;
+using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
@@ -27,78 +24,56 @@ public static class Example42_KernelBuilder
         string azureOpenAIChatCompletionDeployment = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
-#pragma warning disable CA1852 // Seal internal types
-        Kernel kernel1 = new KernelBuilder().Build();
-#pragma warning restore CA1852 // Seal internal types
-
-        Kernel kernel2 = new KernelBuilder().Build();
-
-        // ==========================================================================================================
-        // new KernelBuilder() returns a new builder instance, in case you want to configure the builder differently.
-        // The following are 3 distinct builder instances.
-
-        var builder1 = new KernelBuilder();
-
-        var builder2 = new KernelBuilder();
-
-        var builder3 = new KernelBuilder();
-
-        // ==========================================================================================================
-        // A builder instance can create multiple kernel instances, e.g. in case you need
-        // multiple kernels that share the same dependencies.
-
-        var builderX = new KernelBuilder();
-
-        var kernelX1 = builderX.Build();
-        var kernelX2 = builderX.Build();
-        var kernelX3 = builderX.Build();
-
-        // ==========================================================================================================
-        // Kernel instances can be created the usual way with "new", though the process requires particular
-        // attention to how dependencies are wired together. Although the building blocks are available
-        // to enable custom configurations, we highly recommend using KernelBuilder instead, to ensure
-        // a correct dependency injection.
-
-        // Manually setup all the dependencies to be used by the kernel
-        var loggerFactory = NullLoggerFactory.Instance;
-        var memoryStorage = new VolatileMemoryStore();
-        var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            deploymentName: azureOpenAIEmbeddingDeployment,
-            endpoint: azureOpenAIEndpoint,
-            apiKey: azureOpenAIKey,
-            loggerFactory: loggerFactory);
-
-        var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-        var plugins = new KernelPluginCollection();
-
-        using var httpClient = new HttpClient();
-        var aiServices = new AIServiceCollection();
-        ITextCompletion Factory() => new AzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIChatCompletionDeployment,
-            endpoint: azureOpenAIEndpoint,
-            apiKey: azureOpenAIKey,
-            httpClient: httpClient,
-            loggerFactory: loggerFactory);
-        aiServices.SetService("foo", Factory);
-        IAIServiceProvider aiServiceProvider = aiServices.Build();
-
-        // Create kernel manually injecting all the dependencies
-        var kernel3 = new Kernel(aiServiceProvider, plugins, httpClient: httpClient, loggerFactory: loggerFactory);
-
-        // ==========================================================================================================
-        // The kernel builder purpose is to simplify this process, automating how dependencies
-        // are connected, still allowing to customize parts of the composition.
-
-        // ==========================================================================================================
-        // The AI services are defined with the builder
-
-        var kernel7 = new KernelBuilder()
-            .WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIChatCompletionDeployment,
-                endpoint: azureOpenAIEndpoint,
-                apiKey: azureOpenAIKey,
-                setAsDefault: true)
+        // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
+        // with logging and an Azure OpenAI chat completion service configured.
+        Kernel kernel1 = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
             .Build();
+
+        // For greater flexibility and to incorporate arbitrary services, KernelBuilder.ConfigureServices
+        // provides direct access to an underlying IServiceCollection. Multiple calls to ConfigureServices
+        // may be made, each of which may register any number of services.
+        Kernel kernel2 = new KernelBuilder()
+            .ConfigureServices(c => c.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information)))
+            .ConfigureServices(c =>
+            {
+                c.AddHttpClient();
+                c.AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey);
+            })
+            .Build();
+
+        // Plugins may also be configured via the corresponding ConfigurePlugins method. There are multiple
+        // overloads of ConfigurePlugins, one of which provides access to the services registered with the
+        // builder, such that a plugin can resolve and use those services.
+        Kernel kernel3 = new KernelBuilder()
+            .ConfigurePlugins((serviceProvider, plugins) =>
+            {
+                ILogger logger = serviceProvider.GetService<ILogger<KernelBuilder>>() ?? (ILogger)NullLogger.Instance;
+                plugins.Add(new KernelPlugin("Example", new[]
+                {
+                    KernelFunctionFactory.CreateFromMethod(() => logger.LogInformation("Function invoked"), functionName: "LogInvocation")
+                }));
+            })
+            .Build();
+
+        // Every call to KernelBuilder.Build creates a new Kernel instance, with a new service provider
+        // and a new plugin collection.
+        var builder = new KernelBuilder();
+        Debug.Assert(!ReferenceEquals(builder.Build(), builder.Build()));
+
+        // KernelBuilder provides a convenient API for creating Kernel instances. However, it is just a
+        // wrapper around a service collection and plugin collection, ultimately constructing a Kernel
+        // using the public constructor that's available for anyone to use directly if desired.
+        var services = new ServiceCollection();
+        services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+        services.AddHttpClient();
+        services.AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey);
+        Kernel kernel4 = new(services.BuildServiceProvider());
+
+        // Kernels can also be constructed and resolved via such a dependency injection container.
+        services.AddTransient<Kernel>();
+        Kernel kernel5 = services.BuildServiceProvider().GetRequiredService<Kernel>();
 
         return Task.CompletedTask;
     }

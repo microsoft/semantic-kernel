@@ -206,12 +206,10 @@ provides:
         var builder = new KernelBuilder();
 
         return builder
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                true,
-                setAsDefault: true)
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithLoggerFactory(loggerFactory);
     }
 

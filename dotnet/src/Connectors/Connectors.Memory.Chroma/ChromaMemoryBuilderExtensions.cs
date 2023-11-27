@@ -21,7 +21,7 @@ public static class ChromaMemoryBuilderExtensions
         builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(injectedClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(injectedClient),
                 endpoint,
                 loggerFactory);
         });
@@ -44,7 +44,7 @@ public static class ChromaMemoryBuilderExtensions
         builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
                 endpoint,
                 loggerFactory);
         });

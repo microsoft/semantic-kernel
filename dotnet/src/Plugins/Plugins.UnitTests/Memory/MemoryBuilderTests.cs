@@ -75,7 +75,7 @@ public sealed class MemoryBuilderTests
 
                 return Mock.Of<IMemoryStore>();
             })
-            .WithTextEmbeddingGeneration((loggerFactory, injectedClient) =>
+            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);

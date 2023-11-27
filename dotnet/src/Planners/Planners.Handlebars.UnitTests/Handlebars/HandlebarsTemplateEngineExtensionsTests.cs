@@ -253,7 +253,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
 
     private Kernel InitializeKernel()
     {
-        Kernel kernel = new KernelBuilder().Build();
+        Kernel kernel = new Kernel();
         return kernel;
     }
 
