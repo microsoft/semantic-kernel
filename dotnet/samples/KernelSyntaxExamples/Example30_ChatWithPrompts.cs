@@ -91,12 +91,12 @@ public static class Example30_ChatWithPrompts
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.Create(systemPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables);
+        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, variables);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.Create(userPromptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables);
+        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, variables);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers

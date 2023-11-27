@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Models;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -16,12 +14,63 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Prompt template configuration.
 /// </summary>
-public class PromptTemplateConfig
+public sealed class PromptTemplateConfig
 {
     /// <summary>
     /// Semantic Kernel template format.
     /// </summary>
     public const string SemanticKernelTemplateFormat = "semantic-kernel";
+
+    /// <summary>
+    /// Name of the kernel function.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
+    /// </summary>
+    [JsonPropertyName("template_format")]
+    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
+
+    /// <summary>
+    /// The prompt template
+    /// </summary>
+    [JsonPropertyName("template")]
+    public string Template { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Description
+    /// </summary>
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Input parameters.
+    /// </summary>
+    [JsonPropertyName("input_parameters")]
+    public List<InputParameter> InputParameters { get; set; } = new();
+
+    /// <summary>
+    /// Prompt execution settings.
+    /// </summary>
+    [JsonPropertyName("execution_settings")]
+    public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
+    /// </summary>
+    public PromptTemplateConfig()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
+    /// </summary>
+    public PromptTemplateConfig(string template)
+    {
+        this.Template = template;
+    }
 
     /// <summary>
     /// Input parameter for semantic functions.
@@ -33,74 +82,25 @@ public class PromptTemplateConfig
         /// e.g. when using "{{$input}}" the name is "input", when using "{{$style}}" the name is "style", etc.
         /// </summary>
         [JsonPropertyName("name")]
-        [JsonPropertyOrder(1)]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Parameter description for UI apps and planner. Localization is not supported here.
         /// </summary>
         [JsonPropertyName("description")]
-        [JsonPropertyOrder(2)]
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Default value when nothing is provided.
         /// </summary>
-        [JsonPropertyName("defaultValue")]
-        [JsonPropertyOrder(3)]
+        [JsonPropertyName("default_value")]
         public string DefaultValue { get; set; } = string.Empty;
-    }
 
-    /// <summary>
-    /// Input configuration (list of all input parameters for a semantic function).
-    /// </summary>
-    public class InputConfig
-    {
         /// <summary>
-        /// Gets or sets the list of input parameters.
+        /// True to indeicate the input parameter is required. True by default.
         /// </summary>
-        [JsonPropertyName("parameters")]
-        [JsonPropertyOrder(1)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<InputParameter> Parameters { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
-    /// </summary>
-    [JsonPropertyName("template_format")]
-    [JsonPropertyOrder(1)]
-    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
-
-    /// <summary>
-    /// Description
-    /// </summary>
-    [JsonPropertyName("description")]
-    [JsonPropertyOrder(2)]
-    public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Input configuration (that is, list of all input parameters).
-    /// </summary>
-    [JsonPropertyName("input")]
-    [JsonPropertyOrder(3)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public InputConfig Input { get; set; } = new();
-
-    /// <summary>
-    /// Model request settings.
-    /// </summary>
-    [JsonPropertyName("models")]
-    [JsonPropertyOrder(4)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<PromptExecutionSettings> ModelSettings { get; set; } = new();
-
-    /// <summary>
-    /// Return the default <see cref="PromptExecutionSettings"/>
-    /// </summary>
-    public PromptExecutionSettings GetDefaultRequestSettings()
-    {
-        return this.ModelSettings.FirstOrDefault() ?? new PromptExecutionSettings();
+        [JsonPropertyName("is_required")]
+        public bool IsRequired { get; set; } = true;
     }
 
     /// <summary>
@@ -113,24 +113,5 @@ public class PromptTemplateConfig
     {
         var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
-    }
-
-    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
-    {
-        return new PromptTemplateConfig()
-        {
-            TemplateFormat = semanticFunctionConfig.TemplateFormat,
-            Description = semanticFunctionConfig.Description,
-            Input = new InputConfig()
-            {
-                Parameters = semanticFunctionConfig.InputParameters.Select(p => new InputParameter()
-                {
-                    Name = p.Name,
-                    Description = p.Description,
-                    DefaultValue = p.DefaultValue
-                }).ToList()
-            },
-            ModelSettings = semanticFunctionConfig.ExecutionSettings
-        };
     }
 }

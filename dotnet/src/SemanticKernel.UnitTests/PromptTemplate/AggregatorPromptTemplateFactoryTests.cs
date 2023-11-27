@@ -17,11 +17,13 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
+        var promptModel1 = new PromptTemplateConfig() { TemplateFormat = "my-format-1", Template = templateString };
+        var promptModel2 = new PromptTemplateConfig() { TemplateFormat = "my-format-2", Template = templateString };
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
-        var result1 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
-        var result2 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
+        var result1 = target.Create(promptModel1);
+        var result2 = target.Create(promptModel2);
 
         // Assert
         Assert.NotNull(result1);
@@ -35,78 +37,72 @@ public sealed class AggregatorPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{$input}}";
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new AggregatorPromptTemplateFactory(new MyPromptTemplateFactory1(), new MyPromptTemplateFactory2());
 
         // Act
-        var result1 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-1" });
-        var result2 = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "my-format-2" });
-
         // Assert
-        Assert.Throws<KernelException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
+            if (promptConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate1(templateString, promptTemplateConfig);
+                return new MyPromptTemplate1(promptConfig);
             }
 
-            throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
         }
     }
 
     private sealed class MyPromptTemplate1 : IPromptTemplate
     {
-        private readonly string _templateString;
-        private readonly PromptTemplateConfig _promptTemplateConfig;
+        private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate1(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public MyPromptTemplate1(PromptTemplateConfig promptConfig)
         {
-            this._templateString = templateString;
-            this._promptTemplateConfig = promptTemplateConfig;
+            this._promptModel = promptConfig;
         }
 
         public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(this._templateString);
+            return Task.FromResult(this._promptModel.Template);
         }
     }
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
+            if (promptConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate2(templateString, promptTemplateConfig);
+                return new MyPromptTemplate2(promptConfig);
             }
 
-            throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
         }
     }
 
     private sealed class MyPromptTemplate2 : IPromptTemplate
     {
-        private readonly string _templateString;
-        private readonly PromptTemplateConfig _promptTemplateConfig;
+        private readonly PromptTemplateConfig _promptModel;
 
-        public MyPromptTemplate2(string templateString, PromptTemplateConfig promptTemplateConfig)
+        public MyPromptTemplate2(PromptTemplateConfig promptConfig)
         {
-            this._templateString = templateString;
-            this._promptTemplateConfig = promptTemplateConfig;
+            this._promptModel = promptConfig;
         }
 
         public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(this._templateString);
+            return Task.FromResult(this._promptModel.Template);
         }
     }
     #endregion

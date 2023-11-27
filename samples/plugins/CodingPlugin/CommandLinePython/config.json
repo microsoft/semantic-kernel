@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,

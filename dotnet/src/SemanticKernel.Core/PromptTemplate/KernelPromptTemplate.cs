@@ -31,17 +31,18 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="templateString">Prompt template string.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(promptConfig, nameof(promptConfig));
+        Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
+
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
+        this._promptModel = promptConfig;
         this._parameters = new(() => this.InitParameters());
-        this._blocks = new(() => this.ExtractBlocks(this._templateString));
+        this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
@@ -57,8 +58,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
@@ -66,8 +66,8 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     private List<KernelParameterMetadata> InitParameters()
     {
         // Parameters from prompt template configuration
-        Dictionary<string, KernelParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        Dictionary<string, KernelParameterMetadata> result = new(this._promptModel.InputParameters.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var p in this._promptModel.InputParameters)
         {
             result[p.Name] = new KernelParameterMetadata(p.Name)
             {

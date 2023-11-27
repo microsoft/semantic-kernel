@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turn a scenario into a creative or humorous excuse to send your boss",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 60,
       "temperature": 0.5,

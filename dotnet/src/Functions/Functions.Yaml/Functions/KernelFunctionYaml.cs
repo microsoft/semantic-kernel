@@ -3,7 +3,6 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -16,7 +15,7 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
@@ -41,7 +40,7 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="text">YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
+    /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
@@ -55,7 +54,7 @@ public static class KernelFunctionYaml
             .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
             .Build();
 
-        var promptFunctionModel = deserializer.Deserialize<PromptFunctionModel>(text);
+        var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(text);
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptFunctionModel,
