@@ -17,7 +17,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -29,7 +29,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = string.Empty,
             Description = "baz",
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -52,7 +52,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Theory]
@@ -67,7 +67,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             DefaultValue = "1",
             ParameterType = typeof(int),
             IsRequired = false,
-            Schema = withSchema ? KernelParameterJsonSchema.Parse("{\"type\":\"integer\"}") : null,
+            Schema = withSchema ? KernelJsonSchema.Parse("{\"type\":\"integer\"}") : null,
         };
 
         var sut = new KernelFunctionMetadata("foo")
@@ -75,7 +75,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -88,7 +88,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
@@ -116,7 +116,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelParameterJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
     private sealed class MyPlugin
     {
-        [KernelFunction, KernelFunctionName("MyFunction"), System.ComponentModel.Description("My sample function.")]
+        [KernelFunction, KernelName("MyFunction"), System.ComponentModel.Description("My sample function.")]
         public string MyFunction(
             [System.ComponentModel.Description("String parameter")] string parameter1,
             [System.ComponentModel.Description("Enum parameter")] MyEnum parameter2,

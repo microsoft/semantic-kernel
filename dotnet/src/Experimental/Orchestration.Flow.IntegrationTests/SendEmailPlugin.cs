@@ -13,10 +13,10 @@ public sealed class SendEmailPlugin
 
     [KernelFunction]
     [Description("Send email")]
-    [KernelFunctionName("SendEmail")]
+    [KernelName("SendEmail")]
     public string SendEmail(
-        [KernelFunctionName("email_address")] string emailAddress,
-        [KernelFunctionName("answer")] string answer,
+        [KernelName("email_address")] string emailAddress,
+        [KernelName("answer")] string answer,
         ContextVariables variables)
     {
         var contract = new Email()

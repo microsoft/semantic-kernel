@@ -88,7 +88,7 @@ public sealed class CalendarPlugin
     /// </summary>
     [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(
-        [Description("Event subject"), KernelFunctionName("input")] string subject,
+        [Description("Event subject"), KernelName("input")] string subject,
         [Description("Event start date/time as DateTimeOffset")] DateTimeOffset start,
         [Description("Event end date/time as DateTimeOffset")] DateTimeOffset end,
         [Description("Event location (optional)")] string? location = null,

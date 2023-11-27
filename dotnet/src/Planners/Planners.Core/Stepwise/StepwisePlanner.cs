@@ -108,7 +108,7 @@ public class StepwisePlanner
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result</returns>
     /// <exception cref="KernelException">No AIService available for getting completions.</exception>
-    [KernelFunction, KernelFunctionName("ExecutePlan"), Description("Execute a plan")]
+    [KernelFunction, KernelName("ExecutePlan"), Description("Execute a plan")]
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,

@@ -23,7 +23,7 @@ public sealed class StringParamsDictionaryPlugin
         {"elephant", "a large gray mammal with a long trunk, tusks, and ears that lives in Africa and Asia"}
     };
 
-    [KernelFunction, KernelFunctionName("GetRandomWord"), System.ComponentModel.Description("Gets a random word from a dictionary of common words and their definitions.")]
+    [KernelFunction, KernelName("GetRandomWord"), System.ComponentModel.Description("Gets a random word from a dictionary of common words and their definitions.")]
     public string GetRandomWord()
     {
         // Get random number
@@ -33,7 +33,7 @@ public sealed class StringParamsDictionaryPlugin
         return this._dictionary.ElementAt(index).Key;
     }
 
-    [KernelFunction, KernelFunctionName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
+    [KernelFunction, KernelName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
     public string GetDefinition([System.ComponentModel.Description("Word to get definition for.")] string word)
     {
         return this._dictionary.TryGetValue(word, out var definition)

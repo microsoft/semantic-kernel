@@ -68,8 +68,8 @@ public sealed class FlowOrchestratorConfig
     /// Optional. The AI request settings for the ReAct engine.
     /// </summary>
     /// <remarks>
-    /// Prompt used for reasoning may be different for different models, the prompt selection would be based on the AIRequestSettings.
+    /// Prompt used for reasoning may be different for different models, the prompt selection would be based on the PromptExecutionSettings.
     /// if the built in prompt template does not work for your model, suggest to override it with <see cref="ReActPromptTemplate"/>.
     /// </remarks>
-    public AIRequestSettings? AIRequestSettings { get; set; } = null;
+    public PromptExecutionSettings? AIRequestSettings { get; set; } = null;
 }

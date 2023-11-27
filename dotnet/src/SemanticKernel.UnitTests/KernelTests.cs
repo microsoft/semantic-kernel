@@ -591,7 +591,7 @@ public class KernelTests
             Console.WriteLine("Hello folks!");
         }
 
-        [KernelFunction, Description("Export info."), KernelFunctionName("ReadFunctionCollectionAsync")]
+        [KernelFunction, Description("Export info."), KernelName("ReadFunctionCollectionAsync")]
         public async Task ReadFunctionCollectionAsync(ContextVariables variables, Kernel kernel)
         {
             await Task.Delay(0);

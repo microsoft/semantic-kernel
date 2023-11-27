@@ -26,7 +26,7 @@ public static class KernelFunctionExtensions
     public static Task<FunctionResult> InvokeAsync(this KernelFunction function,
         Kernel kernel,
         ContextVariables? variables = null,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return function.InvokeAsync(kernel, variables ?? new ContextVariables(), requestSettings, cancellationToken);
@@ -44,7 +44,7 @@ public static class KernelFunctionExtensions
     public static Task<FunctionResult> InvokeAsync(this KernelFunction function,
         Kernel kernel,
         string input,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
         => function.InvokeAsync(kernel, new ContextVariables(input), requestSettings, cancellationToken);
 }

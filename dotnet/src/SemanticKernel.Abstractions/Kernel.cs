@@ -215,7 +215,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, AIRequestSettings? requestSettings)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings)
     {
         var promptRendering = this.PromptRendering;
         if (promptRendering is null)

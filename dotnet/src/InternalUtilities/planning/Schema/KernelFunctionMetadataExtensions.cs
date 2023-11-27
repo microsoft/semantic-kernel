@@ -22,7 +22,7 @@ internal static class KernelFunctionMetadataExtensions
     /// <param name="jsonSchemaDelegate">A delegate that creates a JSON Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, Func<Type?, string?, KernelParameterJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, Func<Type?, string?, KernelJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionView = new JsonSchemaFunctionView
         {

@@ -61,12 +61,12 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -76,10 +76,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
@@ -91,10 +91,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
 
@@ -104,10 +104,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
 
         using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -149,7 +149,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
@@ -260,7 +260,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private HttpRequestMessage GetRequest(
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         bool isStreamEnabled)
     {
         var payload = new ChatWithDataRequest
@@ -306,7 +306,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             .ToList();
     }
 
-    private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
+    private ChatHistory PrepareChatHistory(string text, OpenAIPromptExecutionSettings requestSettings)
     {
         var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
 

@@ -720,11 +720,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         List<KernelFunction> functions = new();
 
         // Arrange
-        [KernelFunctionName("WritePoem")]
+        [KernelName("WritePoem")]
         static string Function2() => "Poem";
         functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function2)));
 
-        [KernelFunctionName("SendEmail")]
+        [KernelName("SendEmail")]
         static string Function3() => "Sent Email";
         functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function3)));
 

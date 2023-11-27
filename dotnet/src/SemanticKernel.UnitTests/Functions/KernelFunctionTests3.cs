@@ -145,7 +145,7 @@ public sealed class KernelFunctionTests3
     private sealed class InvalidPlugin
     {
         [KernelFunction]
-        public void Invalid1([KernelFunctionName("input"), Description("The x parameter")] string x, [KernelFunctionName("input"), Description("The y parameter")] string y)
+        public void Invalid1([KernelName("input"), Description("The x parameter")] string x, [KernelName("input"), Description("The y parameter")] string y)
         {
         }
 

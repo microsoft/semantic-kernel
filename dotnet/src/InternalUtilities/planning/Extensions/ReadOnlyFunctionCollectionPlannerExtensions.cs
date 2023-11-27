@@ -76,10 +76,10 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        static KernelParameterJsonSchema? CreateSchema(Type? type, string? description) =>
+        static KernelJsonSchema? CreateSchema(Type? type, string? description) =>
             type is null ?
                 null :
-                KernelParameterJsonSchema.Parse(JsonSerializer.Serialize(
+                KernelJsonSchema.Parse(JsonSerializer.Serialize(
                     new JsonSchemaBuilder()
                         .FromType(type)
                         .Description(description ?? string.Empty)

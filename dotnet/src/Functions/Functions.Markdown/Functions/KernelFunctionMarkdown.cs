@@ -85,13 +85,13 @@ public static class KernelFunctionMarkdown
                 {
                     promptFunctionModel.Template = codeBlock.Lines.ToString();
                 }
-                else if (codeBlock.Info == "sk.model_settings")
+                else if (codeBlock.Info == "sk.execution_settings")
                 {
                     var modelSettings = codeBlock.Lines.ToString();
-                    var requestSettings = JsonSerializer.Deserialize<AIRequestSettings>(modelSettings);
+                    var requestSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
                     if (requestSettings is not null)
                     {
-                        promptFunctionModel.ModelSettings.Add(requestSettings);
+                        promptFunctionModel.ExecutionSettings.Add(requestSettings);
                     }
                 }
             }

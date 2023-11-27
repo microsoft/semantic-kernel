@@ -70,7 +70,7 @@ Question: {{ $input }}
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            requestSettings: new AIRequestSettings()
+            requestSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -87,7 +87,7 @@ Question: {{ $input }}
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
     /// <param name="kernel">The contextkernel.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [KernelFunction, KernelFunctionName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
+    [KernelFunction, KernelName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,

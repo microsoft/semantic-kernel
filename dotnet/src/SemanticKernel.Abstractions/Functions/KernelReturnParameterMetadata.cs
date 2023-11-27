@@ -41,5 +41,5 @@ public sealed class KernelReturnParameterMetadata
     public Type? ParameterType { get; init; }
 
     /// <summary>Gets a JSON Schema describing the type of the return parameter.</summary>
-    public KernelParameterJsonSchema? Schema { get; init; }
+    public KernelJsonSchema? Schema { get; init; }
 }

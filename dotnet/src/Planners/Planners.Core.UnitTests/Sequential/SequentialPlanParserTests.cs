@@ -359,13 +359,13 @@ public class SequentialPlanParserTests
 
         var textCompletion = new Mock<ITextCompletion>();
         textCompletion
-            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(textCompletionResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
             .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
-            .Returns((textCompletion.Object, new AIRequestSettings()));
+            .Returns((textCompletion.Object, new PromptExecutionSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();
 

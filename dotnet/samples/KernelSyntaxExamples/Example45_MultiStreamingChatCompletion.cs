@@ -46,7 +46,7 @@ public static class Example45_MultiStreamingChatCompletion
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -68,7 +68,7 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine();
     }
 
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIRequestSettings requestSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings requestSettings, int consoleLinesPerResult)
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
@@ -82,9 +82,9 @@ public static class Example45_MultiStreamingChatCompletion
                 roleDisplayed.Add(chatUpdate.ChoiceIndex);
             }
 
-            if (chatUpdate.Content is { Length: > 0 })
+            if (chatUpdate.ContentUpdate is { Length: > 0 })
             {
-                newContent += chatUpdate.Content;
+                newContent += chatUpdate.ContentUpdate;
             }
 
             if (!messagePerChoice.ContainsKey(chatUpdate.ChoiceIndex))

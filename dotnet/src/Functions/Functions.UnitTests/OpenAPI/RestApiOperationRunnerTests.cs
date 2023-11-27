@@ -1018,37 +1018,37 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             yield return new object[] {
                     "default",
                     new (string, RestApiOperationExpectedResponse)[] {
-                        ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
                     },
             };
             yield return new object[] {
                     "200",
                     new (string, RestApiOperationExpectedResponse)[] {
-                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
                     },
             };
             yield return new object[] {
                     "2XX",
                     new (string, RestApiOperationExpectedResponse)[] {
-                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
                     },
             };
             yield return new object[] {
                     "2XX",
                     new (string, RestApiOperationExpectedResponse)[] {
-                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
                     },
             };
             yield return new object[] {
                     "200",
                     new (string, RestApiOperationExpectedResponse)[] {
-                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("2XXFakeResponseSchema.json")))),
-                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelParameterJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("200FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("2XXFakeResponseSchema.json")))),
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", KernelJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("200FakeResponseSchema.json")))),
                     },
             };
         }

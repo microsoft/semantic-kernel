@@ -398,7 +398,7 @@ internal sealed class ReActEngine
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = KernelParameterJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
         };
 
         return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)

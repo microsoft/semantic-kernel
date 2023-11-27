@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -44,7 +43,7 @@ public static class Example37_MultiStreamingCompletion
 
     private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -54,12 +53,9 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Write one paragraph about why AI is awesome"))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<string>("Write one paragraph about why AI is awesome"))
         {
-            if (chatUpdate.Content is { Length: > 0 })
-            {
-                Console.Write(chatUpdate.Content);
-            }
+            Console.Write(chatUpdate);
         }
 
         Console.WriteLine();
