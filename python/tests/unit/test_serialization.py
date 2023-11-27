@@ -24,7 +24,7 @@ from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.sk_pydantic import PydanticField, SKBaseModel
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.parameter_view import ParameterView
@@ -53,7 +53,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
-PydanticFieldT = t.TypeVar("PydanticFieldT", bound=PydanticField)
+PydanticFieldT = t.TypeVar("PydanticFieldT", bound=SKBaseModel)
 
 
 class _Serializable(t.Protocol):
@@ -120,12 +120,12 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         return SkillCollection()
 
     cls_obj_map = {
-        Block: Block("foo"),
-        CodeBlock: CodeBlock("foo"),
-        FunctionIdBlock: FunctionIdBlock("bar"),
-        TextBlock: TextBlock("baz"),
-        ValBlock: ValBlock("qux"),
-        VarBlock: VarBlock("quux"),
+        Block: Block(content="foo"),
+        CodeBlock: CodeBlock(content="foo"),
+        FunctionIdBlock: FunctionIdBlock(content="bar"),
+        TextBlock: TextBlock(content="baz"),
+        ValBlock: ValBlock(content="qux"),
+        VarBlock: VarBlock(content="quux"),
         CodeTokenizer: CodeTokenizer(log=logging.getLogger("test")),
         PromptTemplateEngine: PromptTemplateEngine(logger=logging.getLogger("test")),
         TemplateTokenizer: TemplateTokenizer(log=logging.getLogger("test")),
@@ -279,7 +279,7 @@ class TestUsageInPydanticFields:
 def assert_serializable(obj: _Serializable, obj_type) -> None:
     """Assert that an object is serializable."""
     assert obj is not None
-    serialized = obj.json()
+    serialized = obj.model_dump_json()
     assert isinstance(serialized, str)
-    deserialized = obj_type.parse_raw(serialized)
+    deserialized = obj_type.model_validate_json(serialized)
     assert deserialized == obj

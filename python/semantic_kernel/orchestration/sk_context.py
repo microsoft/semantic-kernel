@@ -11,7 +11,7 @@ from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryT,
 )
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
@@ -20,7 +20,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 
 
-class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
+class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
     memory: SemanticTextMemoryT
