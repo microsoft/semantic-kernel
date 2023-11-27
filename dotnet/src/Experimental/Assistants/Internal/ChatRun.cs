@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Microsoft.SemanticKernel.Orchestration;
@@ -40,7 +39,7 @@ internal sealed class ChatRun
 
     private readonly OpenAIRestContext _restContext;
     private ThreadRunModel _model;
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -72,7 +71,7 @@ internal sealed class ChatRun
         // Did fail?
         if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
+            throw new KernelException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
@@ -106,7 +105,7 @@ internal sealed class ChatRun
     /// </summary>
     internal ChatRun(
         ThreadRunModel model,
-        IKernel kernel,
+        Kernel kernel,
         OpenAIRestContext restContext)
     {
         this._model = model;
@@ -152,7 +151,7 @@ internal sealed class ChatRun
                 }
             }
 
-            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

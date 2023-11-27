@@ -29,28 +29,28 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
+    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        var functionViews = executionContext.Functions.GetFunctionViews();
-
-        foreach (FunctionView functionView in functionViews)
+        foreach (IKernelPlugin plugin in kernel.Plugins)
         {
-            var skfunction = executionContext.Functions.GetFunction(functionView.PluginName, functionView.Name);
-            handlebars.RegisterHelper($"{functionView.PluginName}_{functionView.Name}", (writer, hcontext, parameters) =>
+            foreach (KernelFunction function in plugin)
             {
-                var result = skfunction.InvokeAsync(executionContext).GetAwaiter().GetResult();
-                writer.WriteSafeString(result.GetValue<string>());
-            });
+                handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
+                {
+                    var result = function.InvokeAsync(kernel, variables).GetAwaiter().GetResult();
+                    writer.WriteSafeString(result.GetValue<string>());
+                });
+            }
         }
 
         var template = handlebars.Compile(this._templateString);
 
-        var prompt = template(this.GetVariables(executionContext));
+        var prompt = template(this.GetVariables(variables));
 
         return await Task.FromResult(prompt).ConfigureAwait(true);
     }
@@ -60,36 +60,40 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private readonly Lazy<IReadOnlyList<ParameterView>> _parameters;
+    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
 
-    private List<ParameterView> InitParameters()
+    private List<KernelParameterMetadata> InitParameters()
     {
-        List<ParameterView> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
+        List<KernelParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            parameters.Add(new ParameterView(p.Name, p.Description, p.DefaultValue));
+            parameters.Add(new KernelParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.DefaultValue
+            });
         }
 
         return parameters;
     }
 
-    private Dictionary<string, string> GetVariables(SKContext executionContext)
+    private Dictionary<string, string> GetVariables(ContextVariables variables)
     {
-        Dictionary<string, string> variables = new();
+        Dictionary<string, string> result = new();
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
             {
-                variables[p.Name] = p.DefaultValue;
+                result[p.Name] = p.DefaultValue;
             }
         }
 
-        foreach (var kvp in executionContext.Variables)
+        foreach (var kvp in variables)
         {
-            variables.Add(kvp.Key, kvp.Value);
+            result[kvp.Key] = kvp.Value;
         }
 
-        return variables;
+        return result;
     }
 
     #endregion

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -53,6 +52,42 @@ internal static class RestApiOperationExtensions
     }
 
     /// <summary>
+    /// Returns the default return parameter metadata for a given REST API operation.
+    /// </summary>
+    /// <param name="operation">The REST API operation object with Responses to parse.</param>
+    /// <param name="preferredResponses">A list of preferred response codes to use when selecting the default response.</param>
+    /// <returns>The default return parameter metadata, if any.</returns>
+    public static KernelReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
+    {
+        RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
+
+        var returnParameter =
+            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
+
+        return returnParameter;
+    }
+
+    /// <summary>
+    /// Retrieves the default response for a given REST API operation.
+    /// </summary>
+    /// <param name="responses">The REST API operation responses to parse.</param>
+    /// <param name="preferredResponses">The preferred response codes to use when selecting the default response.</param>
+    /// <returns>The default response, if any.</returns>
+    private static RestApiOperationExpectedResponse? GetDefaultResponse(IDictionary<string, RestApiOperationExpectedResponse> responses, string[] preferredResponses)
+    {
+        foreach (var code in preferredResponses)
+        {
+            if (responses.TryGetValue(code, out var response))
+            {
+                return response;
+            }
+        }
+
+        // If no appropriate response is found, return null or throw an exception
+        return null;
+    }
+
+    /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.
     /// </summary>
     /// <param name="operation">The REST API operation to retrieve parameters for.</param>
@@ -66,7 +101,7 @@ internal static class RestApiOperationExtensions
         {
             if (operation.Payload is null)
             {
-                throw new SKException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
+                throw new KernelException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
             }
 
             // The 'text/plain' content type payload metadata does not contain parameter names.
@@ -176,4 +211,5 @@ internal static class RestApiOperationExtensions
 
     private const string MediaTypeTextPlain = "text/plain";
     private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");
+    private static readonly string[] s_preferredResponses = new string[] { "200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default" };
 }

@@ -12,7 +12,6 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example18_DallE
 {
@@ -28,7 +27,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey)
@@ -123,7 +122,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)

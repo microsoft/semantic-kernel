@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
@@ -43,9 +43,9 @@ public static class Example66_FunctionCallingStepwisePlanner
     /// Initialize the kernel and load plugins.
     /// </summary>
     /// <returns>A kernel instance</returns>
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -53,9 +53,9 @@ public static class Example66_FunctionCallingStepwisePlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        kernel.ImportFunctions(new EmailPlugin(), "EmailPlugin");
-        kernel.ImportFunctions(new MathPlugin(), "MathPlugin");
-        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
+        kernel.ImportPluginFromObject(new EmailPlugin(), "EmailPlugin");
+        kernel.ImportPluginFromObject(new MathPlugin(), "MathPlugin");
+        kernel.ImportPluginFromObject(new TimePlugin(), "TimePlugin");
 
         return kernel;
     }

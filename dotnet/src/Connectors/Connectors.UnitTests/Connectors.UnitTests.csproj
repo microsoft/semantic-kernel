@@ -21,10 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Numerics.Tensors" />
-
-    <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />
-    <PackageVersion Update="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />

@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -93,7 +93,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
@@ -186,12 +186,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result.Result is null)
         {
-            throw new SKException("Azure OpenAI Image Generation null response");
+            throw new KernelException("Azure OpenAI Image Generation null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new SKException("Azure OpenAI Image Generation result not found");
+            throw new KernelException("Azure OpenAI Image Generation result not found");
         }
 
         return result.Result.Images.First().Url;
@@ -211,7 +211,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         ImageGenerationVerify.DALLE2ImageSize(width, height);
 
-        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
@@ -224,7 +224,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
-            throw new SKException("Response not contains result");
+            throw new KernelException("Response not contains result");
         }
 
         return result.Id;
@@ -246,7 +246,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             if (this._maxRetryCount == retryCount)
             {
-                throw new SKException("Reached maximum retry attempts");
+                throw new KernelException("Reached maximum retry attempts");
             }
 
             using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
@@ -259,7 +259,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             }
             else if (this.IsFailedOrCancelled(result.Status))
             {
-                throw new SKException($"Azure OpenAI image generation {result.Status}");
+                throw new KernelException($"Azure OpenAI image generation {result.Status}");
             }
 
             if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -28,7 +27,7 @@ public static class FlowExtensions
 
             if (independentStep is null)
             {
-                throw new SKException("The plan contains circular dependencies.");
+                throw new KernelException("The plan contains circular dependencies.");
             }
 
             sortedSteps.Add(independentStep);

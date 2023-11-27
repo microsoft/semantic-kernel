@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -49,6 +48,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
     /// <param name="label"></param>
+    [JsonConstructor]
     public AuthorRole(string label)
     {
         Verify.NotNull(label, nameof(label));
@@ -78,12 +78,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         => !(left == right);
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode()
         => this.Label.GetHashCode();
 

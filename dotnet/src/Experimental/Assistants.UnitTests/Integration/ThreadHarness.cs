@@ -2,7 +2,7 @@
 
 #define DISABLEHOST // Comment line to enable
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -67,6 +67,6 @@ public sealed class ThreadHarness
 
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
-        await Assert.ThrowsAsync<SKException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+        await Assert.ThrowsAsync<KernelException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }

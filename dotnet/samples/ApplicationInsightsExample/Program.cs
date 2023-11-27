@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -51,7 +51,7 @@ public sealed class Program
         ConfigureTracing(activityListener, telemetryClient);
 
         var kernel = GetKernel(loggerFactory);
-        var planner = GetSequentialPlanner(kernel, loggerFactory);
+        var planner = GetSequentialPlanner(kernel);
 
         try
         {
@@ -65,7 +65,7 @@ public sealed class Program
             Console.WriteLine("Original plan:");
             Console.WriteLine(plan.ToPlanString());
 
-            var result = await kernel.RunAsync(plan);
+            var result = await plan.InvokeAsync(kernel);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
@@ -104,7 +104,7 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILoggerFactory loggerFactory)
+    private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
@@ -118,35 +118,33 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }
 
-    private static ISequentialPlanner GetSequentialPlanner(
-        IKernel kernel,
-        ILoggerFactory loggerFactory,
+    private static SequentialPlanner GetSequentialPlanner(
+        Kernel kernel,
         int maxTokens = 1024)
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
+        return new SequentialPlanner(kernel, plannerConfig);
     }
 
-    private static IActionPlanner GetActionPlanner(
-        IKernel kernel,
-        ILoggerFactory loggerFactory)
+    private static ActionPlanner GetActionPlanner(
+        Kernel kernel)
     {
-        return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
+        return new ActionPlanner(kernel);
     }
 
-    private static IStepwisePlanner GetStepwisePlanner(
-        IKernel kernel,
-        ILoggerFactory loggerFactory,
+    private static StepwisePlanner GetStepwisePlanner(
+        Kernel kernel,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)
     {
@@ -156,7 +154,7 @@ public sealed class Program
             MaxTokens = maxTokens
         };
 
-        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
+        return new StepwisePlanner(kernel, plannerConfig);
     }
 
     /// <summary>
@@ -210,13 +208,13 @@ public sealed class Program
             var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
             operation.Telemetry.Type = activity.Kind.ToString();
 
-            operations.TryAdd(activity.TraceId.ToString(), operation);
+            operations.TryAdd(activity.SpanId.ToString(), operation);
         }
 
         // We also need to manually stop Application Insights operation when Activity entity is stopped.
         void activityStopped(Activity activity)
         {
-            if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
+            if (operations.TryRemove(activity.SpanId.ToString(), out var operation))
             {
                 telemetryClient.StopOperation(operation);
             }

@@ -15,15 +15,15 @@ public static class Example27_SemanticFunctionsUsingChatGPT
     {
         Console.WriteLine("======== Using Chat GPT model for text completion ========");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        var func = kernel.CreateSemanticFunction(
+        var func = kernel.CreateFunctionFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter", kernel);
+        var result = await func.InvokeAsync(kernel, "Jupiter");
         Console.WriteLine(result.GetValue<string>());
 
         /*

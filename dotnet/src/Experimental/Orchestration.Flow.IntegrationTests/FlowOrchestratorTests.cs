@@ -15,6 +15,8 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable SKEXP0001
+
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class FlowOrchestratorTests : IDisposable

@@ -17,14 +17,13 @@ public class SamplePluginsTests
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         // Assert
-        Assert.NotNull(kernel.Functions);
-        var functionViews = kernel.Functions.GetFunctionViews();
-        Assert.NotNull(functionViews);
-        Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
-        functionViews.ToList().ForEach(view =>
+        Assert.NotNull(kernel.Plugins);
+        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        Assert.NotNull(metadata);
+        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
+        metadata.ToList().ForEach(function =>
         {
-            var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
-            Assert.NotNull(function);
+            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
         });
     }
 
@@ -39,14 +38,13 @@ public class SamplePluginsTests
         TestHelpers.ImportAllSampleSkills(kernel);
 
         // Assert
-        Assert.NotNull(kernel.Functions);
-        var functionViews = kernel.Functions.GetFunctionViews();
-        Assert.NotNull(functionViews);
-        Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
-        functionViews.ToList().ForEach(view =>
+        Assert.NotNull(kernel.Plugins);
+        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        Assert.NotNull(metadata);
+        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
+        metadata.ToList().ForEach(function =>
         {
-            var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
-            Assert.NotNull(function);
+            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
         });
     }
 }

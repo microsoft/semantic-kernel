@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
@@ -57,7 +57,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
         this._imageGenerationOptions = options;
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>
@@ -103,7 +103,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         var model = this._imageGenerationOptions is not null ? "dall-e-3" : "dall-e-2";
 
-        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
         {
             Model = model,
             Prompt = description,
