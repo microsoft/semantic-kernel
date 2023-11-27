@@ -11,13 +11,11 @@
       "stop_sequences": ["##END##"]
     }
   ],
-  "input": {
-    "parameters": [
-      {
-        "name": "input",
-        "description": "A topic description or goal.",
-        "defaultValue": ""
-      }
-    ]
-  }
+  "input_parameters": [
+    {
+      "name": "input",
+      "description": "A topic description or goal.",
+      "default_value": ""
+    }
+  ]
 }

@@ -123,7 +123,7 @@ public sealed class HandlebarsPromptTemplateTests
             Description = "Baz",
             DefaultValue = "Baz"
         });
-        promptModel.Template = "Foo {{Bar}} {{Baz}}";
+        promptModel.Template = "Foo {{bar}} {{baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptModel);
 
         // Act

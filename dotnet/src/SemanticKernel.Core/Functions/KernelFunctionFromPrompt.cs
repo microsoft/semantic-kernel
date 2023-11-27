@@ -105,7 +105,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.NotNull(promptTemplate);
         Verify.NotNull(promptModel);
 
-        promptModel.Name ??= RandomFunctionName();
+        if (string.IsNullOrEmpty(promptModel.Name))
+        {
+            promptModel.Name = RandomFunctionName();
+        }
         Verify.ValidFunctionName(promptModel.Name);
 
         return new KernelFunctionFromPrompt(

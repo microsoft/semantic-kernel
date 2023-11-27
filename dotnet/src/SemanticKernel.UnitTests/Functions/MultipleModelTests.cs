@@ -129,7 +129,7 @@ public class MultipleModelTests
         var json = @"{
   ""template"": ""template"",
   ""description"": ""Semantic function"",
-  ""models"": [
+  ""execution_settings"": [
     {
       ""service_id"": ""service2"",
       ""max_tokens"": 100,
