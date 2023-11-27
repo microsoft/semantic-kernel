@@ -839,7 +839,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.Metadata.Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -897,7 +897,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
 
-            if (e.Function.Metadata.Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -951,7 +951,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
 
-            if (e.Function.Metadata.Name == "SendEmail")
+            if (e.Function.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1001,7 +1001,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.Metadata.Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Skip();
             }
@@ -1056,7 +1056,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.Metadata.Name == "SendEmail")
+            if (e.Function.Name == "SendEmail")
             {
                 e.Cancel();
             }
