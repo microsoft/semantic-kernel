@@ -86,6 +86,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
 
     @Override
     public Mono<SKContext> invokeAsync(
+            @Nullable String input, @Nullable RequestConfiguration settings) {
+        return invokeAsync(input, null, settings);
+    }
+
+    @Override
+    public Mono<SKContext> invokeAsync(
             @Nullable String input,
             @Nullable SKContext context,
             @Nullable RequestConfiguration settings) {

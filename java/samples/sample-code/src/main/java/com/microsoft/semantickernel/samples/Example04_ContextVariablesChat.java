@@ -12,7 +12,6 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -46,13 +45,14 @@ public class Example04_ContextVariablesChat {
                 .getSemanticFunctionBuilder()
                 .withPromptTemplate(prompt)
                 .withFunctionName("ChatBot")
-                .withCompletionConfig(
-                        new PromptTemplateConfig.CompletionConfig(
-                                0.7,
-                                0.5,
-                                0,
-                                0,
-                                2000))
+            .withRequestSettings(
+                SKBuilders.completionRequestSettings()
+                    .temperature(0.7)
+                    .topP(0.5)
+                    .maxTokens(2000)
+                    .frequencyPenalty(0)
+                    .presencePenalty(0)
+                    .build())
                 .build();
 
         SKContext readOnlySkContext = SKBuilders.context().withKernel(kernel).build();

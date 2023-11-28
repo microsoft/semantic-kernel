@@ -104,13 +104,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
      * @param kernel The semantic kernel instance.
      * @param config Optional configuration object
      * @param prompt Optional prompt override
-     * @param promptUserConfig Optional prompt config override
      */
     public DefaultStepwisePlanner(
-            Kernel kernel,
-            @Nullable StepwisePlannerConfig config,
-            @Nullable String prompt,
-            @Nullable PromptTemplateConfig promptUserConfig) {
+            Kernel kernel, @Nullable StepwisePlannerConfig config, @Nullable String prompt) {
         Verify.notNull(kernel);
         this.kernel = kernel;
 
@@ -121,28 +117,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         this.config = config;
         this.config.addExcludedSkills(RESTRICTED_SKILL_NAME);
 
-        PromptTemplateConfig promptConfig;
-        if (promptUserConfig == null) {
-            String promptConfigString = null;
-            try {
-                promptConfigString =
-                        EmbeddedResourceLoader.readFile(
-                                "config.json", DefaultStepwisePlanner.class);
-                if (!Verify.isNullOrEmpty(promptConfigString)) {
-                    promptConfig =
-                            new ObjectMapper()
-                                    .readValue(promptConfigString, PromptTemplateConfig.class);
-                } else {
-                    promptConfig = new PromptTemplateConfig();
-                }
-            } catch (FileNotFoundException | JsonProcessingException e) {
-                throw new PlanningException(
-                        PlanningException.ErrorCodes.INVALID_CONFIGURATION,
-                        "Could not find or parse config.json",
-                        e);
-            }
-        } else {
-            promptConfig = promptUserConfig;
+        PromptTemplateConfig promptConfig = config.promptTemplateConfig;
+        if (promptConfig == null) {
+            promptConfig = loadPromptConfig();
         }
 
         if (prompt == null) {
@@ -163,8 +140,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                         promptConfig.getSchema(),
                         promptConfig.getDescription(),
                         promptConfig.getType(),
-                        new PromptTemplateConfig.CompletionConfigBuilder(
-                                        promptConfig.getCompletionConfig())
+                        new CompletionRequestSettings.Builder(
+                                        promptConfig.getCompletionRequestSettings())
                                 .maxTokens(this.config.getMaxTokens())
                                 .build(),
                         promptConfig.getInput());
@@ -174,6 +151,26 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         this.nativeFunctions = this.kernel.importSkill(this, RESTRICTED_SKILL_NAME);
 
         this.context = SKBuilders.context().withKernel(kernel).build();
+    }
+
+    private static PromptTemplateConfig loadPromptConfig() {
+        PromptTemplateConfig promptConfig;
+        String promptConfigString = null;
+        try {
+            promptConfigString =
+                    EmbeddedResourceLoader.readFile("config.json", DefaultStepwisePlanner.class);
+            if (!Verify.isNullOrEmpty(promptConfigString)) {
+                promptConfig =
+                        new ObjectMapper()
+                                .readValue(promptConfigString, PromptTemplateConfig.class);
+            } else {
+                promptConfig = new PromptTemplateConfig();
+            }
+        } catch (FileNotFoundException | JsonProcessingException e) {
+            throw new PlanningException(
+                    ErrorCodes.INVALID_CONFIGURATION, "Could not find or parse config.json", e);
+        }
+        return promptConfig;
     }
 
     /**
@@ -199,7 +196,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         /*
             planStep.addOutputs(Arrays.asList("agentScratchPad", "stepCount", "skillCount", "stepsTaken"));
         */
-        return new Plan(goal, parameters, kernel::getSkills, planStep);
+        return new Plan(goal, parameters, kernel::getSkills, kernel::getService, planStep);
     }
 
     /**

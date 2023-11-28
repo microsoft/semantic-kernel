@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.stepwiseplanner;
 
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /// <summary>
 /// Configuration for Stepwise planner instances.
@@ -60,6 +62,11 @@ public class StepwisePlannerConfig {
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
     private int minIterationTimeMs = 0;
+
+    /// <summary>
+    /// The configuration to use for the prompt template.
+    /// </summary>
+    @Nullable public PromptTemplateConfig promptTemplateConfig;
 
     public void addExcludedSkills(String restrictedSkillName) {
         excludedSkills.add(restrictedSkillName);

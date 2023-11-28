@@ -4,7 +4,6 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.io.IOException;
@@ -106,8 +105,14 @@ public class InlineFunctionExample {
                 kernel.getSemanticFunctionBuilder()
                         .withPromptTemplate(prompt)
                         .withFunctionName("summarize")
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0.2)
+                                        .topP(0.5)
+                                        .maxTokens(2000)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .build())
                         .build();
 
         if (summarize == null) {

@@ -8,6 +8,7 @@ package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -38,13 +39,14 @@ public class Example03_SemanticFunctionInline {
                 .getSemanticFunctionBuilder()
                 .withPromptTemplate(prompt)
                 .withFunctionName(functionName)
-                .withCompletionConfig(
-                        new PromptTemplateConfig.CompletionConfig(
-                                0.2,
-                                0.5,
-                                0,
-                                0,
-                                2000))
+            .withRequestSettings(
+                SKBuilders.completionRequestSettings()
+                    .temperature(0.2)
+                    .topP(0.5)
+                    .maxTokens(2000)
+                    .frequencyPenalty(0)
+                    .presencePenalty(0)
+                    .build())
                 .build();
 
         Mono<SKContext> result = summarize.invokeAsync(text);

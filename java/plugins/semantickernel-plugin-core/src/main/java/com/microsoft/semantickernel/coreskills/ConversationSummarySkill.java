@@ -39,8 +39,8 @@ public class ConversationSummarySkill {
                         .withDescription(
                                 "Given a section of a conversation transcript, summarize the part"
                                         + " of the conversation.")
-                        .withCompletionConfig(
-                                SKBuilders.completionConfig()
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)
@@ -57,8 +57,8 @@ public class ConversationSummarySkill {
                         .withDescription(
                                 "Given a section of a conversation transcript, identify action"
                                         + " items.")
-                        .withCompletionConfig(
-                                SKBuilders.completionConfig()
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)
@@ -75,8 +75,8 @@ public class ConversationSummarySkill {
                         .withDescription(
                                 "Analyze a conversation transcript and extract key topics worth"
                                         + " remembering.")
-                        .withCompletionConfig(
-                                SKBuilders.completionConfig()
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)

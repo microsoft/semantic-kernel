@@ -10,7 +10,6 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -31,8 +30,6 @@ public enum BuildersSingleton {
 
     private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
-    private static final String FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS =
-            "com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig$CompletionConfigBuilder";
     private static final String FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction$Builder";
     private static final String FALLBACK_CONTEXT_BUILDER_CLASS =
@@ -65,9 +62,6 @@ public enum BuildersSingleton {
         try {
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
-            registerBuilder(
-                    PromptTemplateConfig.CompletionConfigBuilder.class,
-                    FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS);
             registerBuilder(
                     CompletionSKFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
             registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);

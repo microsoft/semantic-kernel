@@ -71,8 +71,14 @@ public class Example06TemplateLanguageTest {
                 kernel.getSemanticFunctionBuilder()
                         .withKernel(kernel)
                         .withPromptTemplate(functionDefinition)
-                        .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
+                        .withRequestSettings(
+                                SKBuilders.completionRequestSettings()
+                                        .temperature(0)
+                                        .topP(0)
+                                        .presencePenalty(0)
+                                        .frequencyPenalty(0)
+                                        .maxTokens(256)
+                                        .build())
                         .build();
 
         Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());

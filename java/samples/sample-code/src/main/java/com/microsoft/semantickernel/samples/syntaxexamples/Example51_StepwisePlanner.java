@@ -101,7 +101,7 @@ public class Example51_StepwisePlanner {
     System.out.println("*****************************************************");
     System.out.println("Question: " + question);
 
-    StepwisePlanner planner = new DefaultStepwisePlanner(kernel, null, null, null);
+    StepwisePlanner planner = new DefaultStepwisePlanner(kernel, null, null);
 
     var plan = planner.createPlan(question);
 

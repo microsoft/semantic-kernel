@@ -27,6 +27,7 @@
             <artifactId>semantickernel-core</artifactId>
             <!-- TODO: scope should be runtime, but VolatileMemoryStore is an issue -->
             <!-- <scope>runtime</scope> -->
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>

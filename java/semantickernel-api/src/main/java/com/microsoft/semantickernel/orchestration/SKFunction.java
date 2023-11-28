@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
  *     the function is invoked
  */
 public interface SKFunction<RequestConfiguration> {
+
     /**
      * Returns a description of the function, including parameters.
      *
@@ -76,6 +77,16 @@ public interface SKFunction<RequestConfiguration> {
      */
     @CheckReturnValue
     Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param input input provided to the function
+     * @param settings Configuration of the request
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<SKContext> invokeAsync(String input, @Nullable RequestConfiguration settings);
 
     /**
      * @return The name of the skill that this function is within

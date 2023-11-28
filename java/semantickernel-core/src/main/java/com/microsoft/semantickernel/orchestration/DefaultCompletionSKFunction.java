@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.orchestration.FunctionNotRegisteredException
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.services.AIServiceSupplier;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -51,8 +52,15 @@ public class DefaultCompletionSKFunction
             String description,
             CompletionRequestSettings requestSettings,
             SemanticFunctionConfig functionConfig,
-            @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        super(parameters, skillName, functionName, description, kernelSkillsSupplier);
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier,
+            @Nullable AIServiceSupplier aiServiceSupplier) {
+        super(
+                parameters,
+                skillName,
+                functionName,
+                description,
+                kernelSkillsSupplier,
+                aiServiceSupplier);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -163,13 +171,20 @@ public class DefaultCompletionSKFunction
             settings = this.requestSettings;
         }
 
-        if (this.aiService.get() == null) {
+        TextCompletion service;
+        if (settings.getServiceId() != null && getAiServiceSupplier() != null) {
+            service = getAiServiceSupplier().get(settings.getServiceId(), TextCompletion.class);
+        } else {
+            service = this.aiService.get();
+        }
+
+        if (service == null) {
             throw new IllegalStateException("Failed to initialise aiService");
         }
 
         CompletionRequestSettings finalSettings = settings;
 
-        return function.run(this.aiService.get(), finalSettings, context)
+        return function.run(service, finalSettings, context)
                 .map(
                         result -> {
                             return context.update(result.getVariables());
@@ -230,7 +245,16 @@ public class DefaultCompletionSKFunction
                 };
 
         this.setSkillsSupplier(kernel::getSkills);
-        this.aiService = () -> kernel.getService(null, TextCompletion.class);
+        this.setServiceSupplier(kernel::getService);
+
+        this.aiService =
+                () ->
+                        kernel.getService(
+                                this.functionConfig
+                                        .getConfig()
+                                        .getCompletionRequestSettings()
+                                        .getServiceId(),
+                                TextCompletion.class);
     }
 
     private static Mono<SKContext> performCompletionRequest(
@@ -284,10 +308,9 @@ public class DefaultCompletionSKFunction
         @Nullable private String functionName = null;
         @Nullable private String skillName = null;
         @Nullable private String description = null;
-        private PromptTemplateConfig.CompletionConfig completionConfig =
-                new PromptTemplateConfig.CompletionConfig();
         @Nullable private SemanticFunctionConfig functionConfig = null;
         @Nullable private PromptTemplateConfig promptTemplateConfig = null;
+        @Nullable private CompletionRequestSettings completionRequestSettings;
 
         @Override
         public CompletionSKFunction build() {
@@ -320,7 +343,8 @@ public class DefaultCompletionSKFunction
 
                 if (promptTemplateConfig == null) {
                     promptTemplateConfig =
-                            new PromptTemplateConfig(description, "completion", completionConfig);
+                            new PromptTemplateConfig(
+                                    description, "completion", completionRequestSettings);
                 }
 
                 PromptTemplate template =
@@ -335,8 +359,7 @@ public class DefaultCompletionSKFunction
             }
 
             CompletionRequestSettings requestSettings =
-                    CompletionRequestSettings.fromCompletionConfig(
-                            functionConfig.getConfig().getCompletionConfig());
+                    functionConfig.getConfig().getCompletionRequestSettings();
 
             PromptTemplate promptTemplate = functionConfig.getTemplate();
 
@@ -348,6 +371,7 @@ public class DefaultCompletionSKFunction
                             functionConfig.getConfig().getDescription(),
                             requestSettings,
                             functionConfig,
+                            null,
                             null);
 
             kernel.registerSemanticFunction(function);
@@ -374,9 +398,9 @@ public class DefaultCompletionSKFunction
         }
 
         @Override
-        public CompletionSKFunction.Builder withCompletionConfig(
-                PromptTemplateConfig.CompletionConfig completionConfig) {
-            this.completionConfig = completionConfig;
+        public CompletionSKFunction.Builder withRequestSettings(
+                CompletionRequestSettings completionRequestSettings) {
+            this.completionRequestSettings = completionRequestSettings;
             return this;
         }
 

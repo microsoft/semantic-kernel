@@ -5,13 +5,14 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.AbstractSkFunction;
+import com.microsoft.semantickernel.orchestration.AIFunction;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
+import com.microsoft.semantickernel.services.AIServiceSupplier;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -30,7 +31,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Standard Semantic Kernel callable plan. Plan is used to create trees of SKFunctions. */
-public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
+public class Plan extends AIFunction<CompletionRequestSettings> {
 
     private static final Pattern s_variablesRegex = Pattern.compile("\\$(\\w+)", Pattern.MULTILINE);
 
@@ -53,33 +54,40 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     public Plan(
             String goal,
             ContextVariables state,
-            @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier,
+            @Nullable AIServiceSupplier aiServiceSupplier) {
         super(
                 new ArrayList<>(),
                 Plan.class.getName(),
                 "",
                 goal,
                 Collections.emptyList(),
-                kernelSkillsSupplier);
+                kernelSkillsSupplier,
+                aiServiceSupplier);
         this.state = state;
     }
 
-    public Plan(String goal, @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        this(goal, SKBuilders.variables().build(), kernelSkillsSupplier);
+    public Plan(
+            String goal,
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier,
+            @Nullable AIServiceSupplier aiServiceSupplier) {
+        this(goal, SKBuilders.variables().build(), kernelSkillsSupplier, aiServiceSupplier);
     }
 
     public Plan(
             SKFunction<?> function,
             ContextVariables state,
             List<String> functionOutputs,
-            KernelSkillsSupplier kernelSkillsSupplier) {
+            KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier) {
         super(
                 function.describe().getParameters(),
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
                 formReturnParameters(functionOutputs),
-                kernelSkillsSupplier);
+                kernelSkillsSupplier,
+                aiServiceSupplier);
 
         this.parameters = null;
         this.function = function;
@@ -92,14 +100,16 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             @Nullable ContextVariables parameters,
             ContextVariables state,
             List<String> functionOutputs,
-            KernelSkillsSupplier kernelSkillsSupplier) {
+            KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier) {
         super(
                 function.describe().getParameters(),
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
                 formReturnParameters(functionOutputs),
-                kernelSkillsSupplier);
+                kernelSkillsSupplier,
+                aiServiceSupplier);
         this.parameters = parameters;
         this.function = function;
         this.outputs = new ArrayList<>(functionOutputs);
@@ -113,25 +123,44 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     public Plan(
             SKFunction<?> function,
             List<String> functionOutputs,
-            KernelSkillsSupplier kernelSkillsSupplier) {
-        this(function, SKBuilders.variables().build(), functionOutputs, kernelSkillsSupplier);
+            KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier) {
+        this(
+                function,
+                SKBuilders.variables().build(),
+                functionOutputs,
+                kernelSkillsSupplier,
+                aiServiceSupplier);
     }
 
-    public Plan(SKFunction<?> function, KernelSkillsSupplier kernelSkillsSupplier) {
-        this(function, SKBuilders.variables().build(), new ArrayList<>(), kernelSkillsSupplier);
+    public Plan(
+            SKFunction<?> function,
+            KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier) {
+        this(
+                function,
+                SKBuilders.variables().build(),
+                new ArrayList<>(),
+                kernelSkillsSupplier,
+                aiServiceSupplier);
     }
 
     public Plan(
             String goal,
             ContextVariables parameters,
             KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier,
             SKFunction<?>... steps) {
-        this(goal, parameters, kernelSkillsSupplier);
+        this(goal, parameters, kernelSkillsSupplier, aiServiceSupplier);
         this.addSteps(steps);
     }
 
-    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction<?>... steps) {
-        this(goal, kernelSkillsSupplier);
+    public Plan(
+            String goal,
+            KernelSkillsSupplier kernelSkillsSupplier,
+            AIServiceSupplier aiServiceSupplier,
+            SKFunction<?>... steps) {
+        this(goal, kernelSkillsSupplier, aiServiceSupplier);
         this.addSteps(steps);
     }
 
@@ -179,7 +208,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     public void addSteps(SKFunction<?>... steps) {
         List<Plan> plans =
                 Arrays.stream(steps)
-                        .map(step -> new Plan(step, getSkillsSupplier()))
+                        .map(step -> new Plan(step, getSkillsSupplier(), getAiServiceSupplier()))
                         .collect(Collectors.toList());
         this.steps.addAll(plans);
     }
