@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -15,12 +14,11 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+using Resources;
 
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenAIPlugin_AzureKeyVault
 {
-    private const string OpenAIManifestResourceName = $"{PluginResourceNames.AzureKeyVault}.ai-plugin.json";
-    private const string OpenApiSpecResourceName = $"{PluginResourceNames.AzureKeyVault}.openapi.json";
     private const string SecretName = "Foo";
     private const string SecretValue = "Bar";
 
@@ -57,23 +55,20 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
                         { "grant_type", "client_credentials" }
                     }
                 }
-            },
-            new Dictionary<string, string>()
+            }
         );
 
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var type = typeof(PluginResourceNames);
-        using StreamReader reader = new(type.Assembly.GetManifestResourceStream(type, OpenApiSpecResourceName)!);
-        var content = await reader.ReadToEndAsync().ConfigureAwait(false);
-        var messageStub = new HttpMessageHandlerStub(content);
+        var openApiSpec = EmbeddedResource.Read("22-openapi.json");
+        var messageStub = new HttpMessageHandlerStub(openApiSpec);
         var httpClient = new HttpClient(messageStub);
 
         // Import Open AI Plugin
-        var stream = type.Assembly.GetManifestResourceStream(type, OpenAIManifestResourceName);
+        var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
         var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
-            stream!,
+            openAIManifest!,
             new OpenAIFunctionExecutionParameters
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,

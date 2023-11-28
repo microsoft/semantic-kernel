@@ -132,6 +132,9 @@ public static class KernelOpenAIPluginExtensions
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
+
+            // Parse the authentication configuration using Newtonsoft.Json to support correct string enum deserialization
+            // Using System.Text.Json does not correctly map the string enum values to the enum type
             JsonSerializerSettings settings = new()
             {
                 Converters = new List<JsonConverter> { new Newtonsoft.Json.Converters.StringEnumConverter() }
@@ -148,7 +151,7 @@ public static class KernelOpenAIPluginExtensions
             var callback = executionParameters.AuthCallback;
             ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
             {
-                await callback(request, pluginName, openAIAuthConfig).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig, cancellationToken).ConfigureAwait(false);
             };
         }
 

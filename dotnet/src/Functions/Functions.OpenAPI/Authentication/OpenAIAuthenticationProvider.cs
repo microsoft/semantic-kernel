@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
@@ -37,7 +37,8 @@ public class OpenAIAuthenticationProvider
     /// <param name="request">The HTTP request message.</param>
     /// <param name="pluginName">Name of the plugin</param>
     /// <param name="openAIAuthConfig ">The <see cref="OpenAIAuthenticationConfig"/> used to authenticate.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig, CancellationToken cancellationToken = default)
     {
         if (openAIAuthConfig.Type == OpenAIAuthenticationType.None)
         {
@@ -66,14 +67,14 @@ public class OpenAIAuthenticationProvider
                     requestContent = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, OpenAIAuthorizationContentType.JSON.ToString());
                     break;
                 default:
-                    // Handle other cases as needed
-                    break;
+                    throw new SKException("Unsupported authorization content type.");
             }
 
             // Request the token
             using var client = new HttpClient();
-            var response = await client.PostAsync(openAIAuthConfig.AuthorizationUrl, requestContent).ConfigureAwait(false);
-            requestContent?.Dispose();
+            using var authRequest = new HttpRequestMessage(HttpMethod.Post, openAIAuthConfig.AuthorizationUrl) { Content = requestContent };
+            var response = await client.SendWithSuccessCheckAsync(authRequest, cancellationToken).ConfigureAwait(false);
+            requestContent.Dispose();
 
             if (!response.IsSuccessStatusCode)
             {
@@ -81,18 +82,16 @@ public class OpenAIAuthenticationProvider
             }
 
             // Read the token
-            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var tokenResponse = JsonNode.Parse(responseContent)!;
+            var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+            var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
 
             // Get the token type and value
-            scheme = tokenResponse["token_type"]?.ToString()
-                ?? throw new SKException("No token type found in the response.");
-            credential = tokenResponse["access_token"]?.ToString()
-                ?? throw new SKException("No access token found in the response.");
+            scheme = tokenResponse?.TokenType ?? throw new SKException("No token type found in the response.");
+            credential = tokenResponse?.AccessToken ?? throw new SKException("No access token found in the response.");
         }
         else
         {
-            var token = (openAIAuthConfig.VerificationTokens?[pluginName])
+            var token = openAIAuthConfig.VerificationTokens?[pluginName]
                 ?? throw new SKException("No verification token found for the provided plugin name.");
 
             scheme = openAIAuthConfig.AuthorizationType.ToString();

@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
@@ -65,7 +66,8 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
             It.Is<string>(expectedPluginName => expectedPluginName == pluginName),
-            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig!.Scope)),
+            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig!.Scope),
+            It.IsAny<CancellationToken>()),
         Times.Exactly(1));
     }
 
