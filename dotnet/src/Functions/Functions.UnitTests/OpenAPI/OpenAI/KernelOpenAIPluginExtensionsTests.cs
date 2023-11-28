@@ -59,7 +59,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
             openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>(
                 new JsonSerializerOptions
                 {
-                    Converters = { new JsonStringEnumConverter(SnakeCaseJsonNamingPolicy.Instance) },
+                    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
                 })!;
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource(resourceName);

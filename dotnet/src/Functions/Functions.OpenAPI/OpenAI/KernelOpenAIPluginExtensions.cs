@@ -20,7 +20,7 @@ public static class KernelOpenAIPluginExtensions
     private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
         new()
         {
-            Converters = { new JsonStringEnumConverter(SnakeCaseJsonNamingPolicy.Instance) },
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
         };
 
     // TODO: Review XML comments
