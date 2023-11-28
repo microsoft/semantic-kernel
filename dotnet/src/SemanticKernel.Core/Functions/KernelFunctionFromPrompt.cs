@@ -190,18 +190,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, template.Parameters, null, promptConfig.ExecutionSettings)
+        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, promptConfig.GetKernelParametersMetadata(), null, promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._promptModel = promptConfig;
+        this._promptConfig = promptConfig;
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptModel;
+    private readonly PromptTemplateConfig _promptConfig;
     private readonly IPromptTemplate _promptTemplate;
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -216,7 +216,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
     {
-        foreach (var parameter in this._promptTemplate.Parameters)
+        foreach (var parameter in this._promptConfig.InputParameters)
         {
             if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
             {
