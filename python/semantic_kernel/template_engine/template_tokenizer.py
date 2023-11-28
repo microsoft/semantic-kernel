@@ -119,7 +119,9 @@ class TemplateTokenizer(SKBaseModel):
                             )
 
                         # Extract raw block
-                        content_with_delimiters = text[block_start_pos : cursor + 1]  # noqa: E203
+                        content_with_delimiters = text[
+                            block_start_pos : cursor + 1
+                        ]  # noqa: E203
                         # Remove "{{" and "}}" delimiters and trim whitespace
                         content_without_delimiters = content_with_delimiters[
                             2:-2

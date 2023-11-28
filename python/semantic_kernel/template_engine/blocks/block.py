@@ -13,7 +13,7 @@ from semantic_kernel.utils.null_logger import NullLogger
 class Block(SKBaseModel):
     content: Optional[str] = None
     _log: Optional[Logger] = PrivateAttr(default_factory=NullLogger)
-    
+
     def __init__(
         self, content: Optional[str] = None, log: Optional[Logger] = None
     ) -> None:

@@ -14,7 +14,9 @@ class ChatMessage(SKBaseModel):
     """Class to hold chat messages."""
 
     role: Optional[str] = "assistant"
-    fixed_content: Optional[str] = Field(default=None, init_var=False, serialization_alias="content")
+    fixed_content: Optional[str] = Field(
+        default=None, init_var=False, serialization_alias="content"
+    )
     content_template: Optional[PromptTemplate] = Field(
         default=None, init_var=True, repr=False
     )
