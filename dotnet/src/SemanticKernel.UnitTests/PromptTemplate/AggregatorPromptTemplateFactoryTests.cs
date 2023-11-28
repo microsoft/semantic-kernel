@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -68,8 +67,6 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptModel = promptConfig;
         }
 
-        public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
-
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
@@ -97,8 +94,6 @@ public sealed class AggregatorPromptTemplateFactoryTests
         {
             this._promptModel = promptConfig;
         }
-
-        public IReadOnlyList<KernelParameterMetadata> Parameters => Array.Empty<KernelParameterMetadata>();
 
         public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
         {

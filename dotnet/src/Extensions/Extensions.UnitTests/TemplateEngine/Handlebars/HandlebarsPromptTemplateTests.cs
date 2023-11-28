@@ -74,36 +74,6 @@ public sealed class HandlebarsPromptTemplateTests
     }
 
     [Fact]
-    public void ItReturnsParameters()
-    {
-        // Arrange
-        var promptConfig = new PromptTemplateConfig()
-        {
-            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
-        };
-        promptConfig.InputParameters.Add(new InputParameter()
-        {
-            Name = "bar",
-            Description = "Bar",
-            DefaultValue = "Bar"
-        });
-        promptConfig.InputParameters.Add(new InputParameter()
-        {
-            Name = "baz",
-            Description = "Baz",
-            DefaultValue = "Baz"
-        });
-        promptConfig.Template = "Foo {{Bar}} {{Baz}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
-
-        // Act
-        var parameters = target.Parameters;
-
-        // Assert   
-        Assert.Equal(2, parameters.Count);
-    }
-
-    [Fact]
     public async Task ItUsesDefaultValuesAsync()
     {
         // Arrange
