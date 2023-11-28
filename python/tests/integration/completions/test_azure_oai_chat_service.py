@@ -3,14 +3,9 @@
 import os
 
 import pytest
-from test_utils import retry
+from test_utils import get_aoai_chat_api_versions, retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-
-
-def get_aoai_chat_api_versions():
-    api_versions = os.environ["AzureOpenAIChat__APIVersions"]
-    return api_versions.split(",")
 
 
 @pytest.mark.asyncio

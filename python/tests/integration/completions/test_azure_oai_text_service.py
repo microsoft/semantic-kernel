@@ -3,14 +3,9 @@
 import os
 
 import pytest
-from test_utils import retry
+from test_utils import get_aoai_api_versions, retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-
-
-def get_aoai_api_versions():
-    api_versiosn = os.environ["AzureOpenAI__APIVersions"]
-    return api_versiosn.split(",")
 
 
 @pytest.mark.asyncio
