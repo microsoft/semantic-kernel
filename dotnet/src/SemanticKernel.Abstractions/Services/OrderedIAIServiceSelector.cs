@@ -13,10 +13,10 @@ namespace Microsoft.SemanticKernel.Services;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
+    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
     {
         var serviceProvider = kernel.ServiceProvider;
-        var modelSettings = skfunction.ModelSettings;
+        var modelSettings = function.ExecutionSettings;
         if (modelSettings is null || !modelSettings.Any())
         {
             var service = serviceProvider.GetService<T>(null);
@@ -27,7 +27,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         }
         else
         {
-            AIRequestSettings? defaultRequestSettings = null;
+            PromptExecutionSettings? defaultRequestSettings = null;
             foreach (var model in modelSettings)
             {
                 if (!string.IsNullOrEmpty(model.ServiceId))
@@ -64,7 +64,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         }
 
         var names = modelSettings is not null ? string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray()) : null;
-        throw new SKException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
+        throw new KernelException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
     }
 
     private T? GetServiceByModelId<T>(IAIServiceProvider serviceProvider, string modelId) where T : IAIService

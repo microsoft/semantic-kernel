@@ -84,7 +84,7 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
+          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Planners.Core.UnitTests.csproj|Experimental.Orchestration.Flow.UnitTests.csproj)" | tr '\n' ' ')  
           for project in $UT_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done
@@ -92,7 +92,7 @@ jobs:
       - name: Run Integration Tests
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
-          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done

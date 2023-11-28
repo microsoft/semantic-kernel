@@ -26,10 +26,10 @@ public sealed class MemoryBuilder
     public ISemanticTextMemory Build()
     {
         var memoryStore = this._memoryStoreFactory?.Invoke() ??
-            throw new SKException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
+            throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
         var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
-            throw new SKException($"{nameof(ITextEmbeddingGeneration)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
+            throw new KernelException($"{nameof(ITextEmbeddingGeneration)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }

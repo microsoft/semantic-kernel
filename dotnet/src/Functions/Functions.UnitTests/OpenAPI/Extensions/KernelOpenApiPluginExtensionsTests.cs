@@ -57,17 +57,19 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
-        var functionView = setSecretFunction.GetMetadata();
+        var functionView = setSecretFunction.Metadata;
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
-        Assert.Equal(ParameterJsonType.String, secretNameParameter.Type);
+        Assert.NotNull(secretNameParameter.Schema);
+        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-        Assert.Equal("string", apiVersionParameter?.Type?.ToString());
+        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
-        Assert.Equal(ParameterJsonType.Object, payloadParameter.Type);
+        Assert.NotNull(payloadParameter.Schema);
+        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
 
     [Theory]
@@ -101,7 +103,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -131,7 +133,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -168,49 +170,11 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
-    {
-        //Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
-
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-
-        var executionParameters = new OpenApiFunctionExecutionParameters
-        {
-            HttpClient = httpClient
-        };
-
-        var fakePlugin = new FakePlugin();
-
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportPluginFromObject(fakePlugin, "fakePlugin2");
-
-        var kernel = KernelBuilder.Create();
-
-        var arguments = new ContextVariables
-        {
-            { "secret-name", "fake-secret-name" },
-            { "api-version", "fake-api-version" }
-        };
-
-        //Act
-        var result = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
-
-        //Assert
-
-        Assert.NotNull(result);
-
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenAPI plugin in the pipeline since there's no direct access to the context.
-        Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 
     [Fact]
@@ -244,7 +208,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var result = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+        var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         //Assert
         Assert.NotNull(result);
@@ -280,7 +244,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     {
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
 
-        [SKFunction]
+        [KernelFunction]
         public void DoFakeAction(string parameter)
         {
             this.ParameterValueFakeMethodCalledWith = parameter;

@@ -127,7 +127,7 @@ public class NamedArgBlockTests
     [Fact]
     public void ArgValueShouldBeNonEmpty()
     {
-        Assert.Throws<SKException>(() => new NamedArgBlock("a="));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("a="));
     }
 
     [Theory]
@@ -220,8 +220,8 @@ public class NamedArgBlockTests
         var target1 = new NamedArgBlock("a='b'");
         var target2 = new NamedArgBlock("a=$b");
         var target3 = new NamedArgBlock("a=\"b\"");
-        Assert.Throws<SKException>(() => new NamedArgBlock("foo"));
-        Assert.Throws<SKException>(() => new NamedArgBlock("foo=$bar=$baz"));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("foo"));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("foo=$bar=$baz"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

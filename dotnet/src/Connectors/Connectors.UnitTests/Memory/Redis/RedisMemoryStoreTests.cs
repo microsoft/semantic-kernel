@@ -744,7 +744,7 @@ public class RedisMemoryStoreTests
         }
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () =>
+        var ex = await Assert.ThrowsAsync<KernelException>(async () =>
         {
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);

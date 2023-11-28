@@ -16,10 +16,10 @@ public sealed class KernelExtensionTests
     public static void InvokeTwoPartTool()
     {
         //Arrange
-        var function = SKFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
         var kernel = KernelBuilder.Create();
-        kernel.Plugins.Add(new SKPlugin("Fake", new[] { function }));
+        kernel.Plugins.Add(new KernelPlugin("Fake", new[] { function }));
 
         //Act
         var tool = kernel.GetAssistantTool(TwoPartToolName);
@@ -38,6 +38,6 @@ public sealed class KernelExtensionTests
         var kernel = KernelBuilder.Create();
 
         //Act & Assert
-        Assert.Throws<SKException>(() => kernel.GetAssistantTool(toolName));
+        Assert.Throws<KernelException>(() => kernel.GetAssistantTool(toolName));
     }
 }
