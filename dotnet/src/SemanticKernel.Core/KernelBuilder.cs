@@ -65,7 +65,7 @@ public sealed class KernelBuilder
 
                 keys.Add(serviceDescriptor.ServiceKey);
             }
-            services.AddKeyedSingleton(Kernel.ServiceTypeToKeyMappingsKey, typeToKeyMappings);
+            services.AddKeyedSingleton(Kernel.KernelServiceTypeToKeyMappingsKey, typeToKeyMappings);
 
             serviceProvider = services.BuildServiceProvider();
         }
@@ -112,7 +112,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>The callback will be invoked as part of <see cref="Build"/>.</remarks>
+    /// <remarks>The callback will be invoked as part of each call to <see cref="Build"/>.</remarks>
     public KernelBuilder ConfigurePlugins(Action<ICollection<IKernelPlugin>> configurePlugins)
     {
         Verify.NotNull(configurePlugins);
@@ -128,7 +128,7 @@ public sealed class KernelBuilder
     /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
     /// <remarks>
-    /// The callback will be invoked as part of <see cref="Build"/>. It is passed the same <see cref="IServiceProvider"/>
+    /// The callback will be invoked as part of each call to <see cref="Build"/>. It is passed the same <see cref="IServiceProvider"/>
     /// that will be provided to the <see cref="Kernel"/> so that the callback can resolve services necessary to create plugins.
     /// </remarks>
     public KernelBuilder ConfigurePlugins(Action<IServiceProvider, ICollection<IKernelPlugin>> configurePlugins)

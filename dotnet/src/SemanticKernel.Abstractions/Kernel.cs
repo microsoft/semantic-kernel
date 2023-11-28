@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel
 {
     /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
-    internal const string ServiceTypeToKeyMappingsKey = nameof(ServiceTypeToKeyMappingsKey);
+    internal const string KernelServiceTypeToKeyMappingsKey = nameof(KernelServiceTypeToKeyMappingsKey);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
     private Dictionary<string, object?>? _data;
@@ -213,9 +213,12 @@ public sealed class Kernel
         // If we couldn't find the service, throw an exception.
         if (service is null)
         {
-            throw new KernelException(serviceId is null ?
-                $"Service of type '{typeof(T)}' not registered." :
-                $"Service of type '{typeof(T)}' and key '{serviceId}' not registered.");
+            string message =
+                serviceId is null ? $"Service of type '{typeof(T)}' not registered." :
+                this.Services is not IKeyedServiceProvider ? $"Key '{serviceId}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                $"Service of type '{typeof(T)}' and key '{serviceId}' not registered.";
+
+            throw new KernelException(message);
         }
 
         // Return the found service.
@@ -233,7 +236,7 @@ public sealed class Kernel
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (this.Services.GetKeyedService<Dictionary<Type, List<object?>>>(ServiceTypeToKeyMappingsKey) is { } typeToKeyMappings &&
+            if (this.Services.GetKeyedService<Dictionary<Type, List<object?>>>(KernelServiceTypeToKeyMappingsKey) is { } typeToKeyMappings &&
                 typeToKeyMappings.TryGetValue(typeof(T), out List<object?> keys))
             {
                 return keys.Select(key => this.Services.GetKeyedService<T>(key)).Where(s => s is not null)!;
