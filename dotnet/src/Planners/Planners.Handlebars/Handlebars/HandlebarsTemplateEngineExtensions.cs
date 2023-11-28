@@ -451,7 +451,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.
         // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
-        var returnType = function.GetMetadata().ReturnParameter.ParameterType;
+        var returnType = function.Metadata.ReturnParameter.ParameterType;
         var resultAsObject = result.GetValue<object?>();
 
         if (returnType is not null && !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(returnType))

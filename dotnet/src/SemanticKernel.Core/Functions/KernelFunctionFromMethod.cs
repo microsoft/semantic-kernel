@@ -79,33 +79,23 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-        new KernelFunctionMetadata(this.Name)
-        {
-            Description = this.Description,
-            Parameters = this._parameters,
-            ReturnParameter = this._returnParameter
-        };
-
-    /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        return await this._function(null, requestSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
+        return await this._function(null, executionSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var functionResult = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+        var functionResult = await this.InvokeCoreAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
         if (functionResult.Value is T)
         {
             yield return (T)functionResult.Value;
@@ -138,15 +128,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
-        PromptExecutionSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         Kernel kernel,
         ContextVariables variables,
         CancellationToken cancellationToken);
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
-    private readonly IReadOnlyList<KernelParameterMetadata> _parameters;
-    private readonly KernelReturnParameterMetadata _returnParameter;
     private readonly ILogger _logger;
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
@@ -157,16 +145,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        ILogger logger) : base(functionName, description)
+        ILogger logger) : base(functionName, description, parameters, returnParameter)
     {
         Verify.ValidFunctionName(functionName);
 
         this._logger = logger;
 
         this._function = implementationFunc;
-        this._parameters = parameters.ToArray();
-        Verify.ParametersUniqueness(this._parameters);
-        this._returnParameter = returnParameter;
     }
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
@@ -219,7 +204,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? executionSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -787,8 +772,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
-
-    private KernelFunctionMetadata? _metadata;
 
     #endregion
 }

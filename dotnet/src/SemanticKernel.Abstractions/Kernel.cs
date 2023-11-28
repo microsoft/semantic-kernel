@@ -215,7 +215,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? executionSettings)
     {
         var promptRendering = this.PromptRendering;
         if (promptRendering is null)
@@ -223,7 +223,7 @@ public sealed class Kernel
             return null;
         }
 
-        var eventArgs = new PromptRenderingEventArgs(function, variables, requestSettings);
+        var eventArgs = new PromptRenderingEventArgs(function, variables, executionSettings);
         promptRendering.Invoke(this, eventArgs);
         return eventArgs;
     }
