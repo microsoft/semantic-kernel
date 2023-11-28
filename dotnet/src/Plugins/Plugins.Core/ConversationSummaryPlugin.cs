@@ -58,7 +58,7 @@ public class ConversationSummaryPlugin
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
@@ -71,7 +71,7 @@ public class ConversationSummaryPlugin
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
@@ -84,7 +84,7 @@ public class ConversationSummaryPlugin
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(

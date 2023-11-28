@@ -90,7 +90,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
@@ -167,7 +167,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/> in streaming mode.
     /// </summary>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">SK context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -204,7 +204,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke as streaming the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">SK context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
@@ -217,7 +217,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>

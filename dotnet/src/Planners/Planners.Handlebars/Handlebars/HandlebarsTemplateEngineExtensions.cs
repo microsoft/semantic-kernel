@@ -26,7 +26,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
     /// </summary>
-    /// <param name="kernel">The Semantic Kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="contextVariables">The execution context variables.</param>
     /// <param name="template">The Handlebars template to render.</param>
     /// <param name="variables">The dictionary of variables to pass to the Handlebars template engine.</param>

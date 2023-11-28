@@ -23,7 +23,7 @@ public static class KernelExtensions
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
@@ -47,7 +47,7 @@ public static class KernelExtensions
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
@@ -78,7 +78,7 @@ public static class KernelExtensions
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
@@ -101,7 +101,7 @@ public static class KernelExtensions
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
@@ -118,7 +118,7 @@ public static class KernelExtensions
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
@@ -138,7 +138,7 @@ public static class KernelExtensions
     #region CreatePluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
@@ -154,7 +154,7 @@ public static class KernelExtensions
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
@@ -173,7 +173,7 @@ public static class KernelExtensions
     #region ImportPluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
@@ -207,7 +207,7 @@ public static class KernelExtensions
     }
 
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
@@ -266,7 +266,7 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
@@ -357,7 +357,7 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
@@ -378,7 +378,7 @@ public static class KernelExtensions
     /// <summary>
     /// Invoke a semantic function using the provided prompt template.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
@@ -401,7 +401,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
@@ -418,7 +418,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -440,7 +440,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -459,7 +459,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a plugin function.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">The name of the plugin containing the function to run.</param>
     /// <param name="functionName">The name of the function to run.</param>
     /// <param name="variables">Input to process</param>
@@ -484,7 +484,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">The target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -495,7 +495,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">Target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -506,7 +506,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">The target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -517,7 +517,7 @@ public static class KernelExtensions
     /// <summary>
     /// Run a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">Target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
