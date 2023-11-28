@@ -185,11 +185,11 @@ class BasicPlanner:
         """
 
         # Create the semantic function for the planner with the given prompt
+        available_functions_string = self._create_available_functions_string(kernel)
+        
         planner = kernel.create_semantic_function(
             prompt, max_tokens=1000, temperature=0.8
         )
-
-        available_functions_string = self._create_available_functions_string(kernel)
 
         # Create the context for the planner
         context = ContextVariables()
