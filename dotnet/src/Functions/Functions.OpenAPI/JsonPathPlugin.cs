@@ -32,7 +32,7 @@ public sealed class JsonPathPlugin
     /// <param name="jsonPath">The JsonPath query to use.</param>
     /// <returns>The value of the JSON element as a string.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided JSON string is null or whitespace.</exception>
-    [SKFunction, Description("Retrieve the value of a JSON element from a JSON string using a JsonPath query.")]
+    [KernelFunction, Description("Retrieve the value of a JSON element from a JSON string using a JsonPath query.")]
     public string GetJsonElementValue(
         [Description("JSON string")] string json,
         [Description("JSON path query.")] string jsonPath)
@@ -56,7 +56,7 @@ public sealed class JsonPathPlugin
     /// <param name="jsonPath">The JsonPath query to use.</param>
     /// <returns>A JSON string representing the collection of JSON elements.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided JSON string is null or whitespace.</exception>
-    [SKFunction, Description("Retrieve a collection of JSON elements from a JSON string using a JsonPath query.")]
+    [KernelFunction, Description("Retrieve a collection of JSON elements from a JSON string using a JsonPath query.")]
     public string GetJsonElements(
         [Description("JSON string")] string json,
         [Description("JSON path query.")] string jsonPath)

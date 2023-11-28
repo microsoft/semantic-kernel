@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using Xunit;
 
@@ -14,10 +13,11 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
-        var result = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
+        var result = target.Create(promptConfig);
 
         // Assert
         Assert.NotNull(result);
@@ -29,10 +29,11 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = "unknown-format", Template = templateString };
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +31,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string template,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -38,11 +40,11 @@ public partial class AssistantBuilder
 
         return
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(model, apiKey)
+                .AddOpenAIChatCompletion(model, apiKey)
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
                 .WithDescription(assistantKernelModel.Description.Trim())
-                .WithPlugins(plugins ?? new SKPluginCollection())
+                .WithPlugins(plugins ?? Array.Empty<IKernelPlugin>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -60,7 +62,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string definitionPath,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(definitionPath);
@@ -86,7 +88,7 @@ public partial class AssistantBuilder
     {
         return
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(model, apiKey)
+                .AddOpenAIChatCompletion(model, apiKey)
                 .WithInstructions(instructions)
                 .WithName(name)
                 .WithDescription(description)
@@ -104,13 +106,13 @@ public partial class AssistantBuilder
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
+            throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
         var chatService = new OpenAIChatCompletion(resultModel.Model, apiKey);
 
         return new Assistant(resultModel, chatService, restContext, plugins);

@@ -41,14 +41,13 @@ public static class Example62_CustomAIServiceSelector
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
-                apiKey: azureApiKey,
-                setAsDefault: true)
-            .WithOpenAIChatCompletionService(
+                apiKey: azureApiKey)
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
@@ -66,10 +65,9 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
+        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService
         {
-            var services = kernel.ServiceProvider.GetServices<T>();
-            foreach (var service in services)
+            foreach (var service in kernel.GetAllServices<T>())
             {
                 // Find the first service that has a model id that starts with "gpt-3"
                 var serviceModelId = service.GetModelId();
@@ -77,11 +75,11 @@ public static class Example62_CustomAIServiceSelector
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
-                    return (service, new OpenAIRequestSettings());
+                    return (service, new OpenAIPromptExecutionSettings());
                 }
             }
 
-            throw new SKException("Unable to find AI service for GPT 3.x.");
+            throw new KernelException("Unable to find AI service for GPT 3.x.");
         }
     }
 }

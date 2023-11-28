@@ -40,7 +40,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._endpoint = endpoint.AbsoluteUri;
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._endpoint = endpoint;
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         }
         else
         {
-            throw new SKException("No endpoint or HTTP client base address has been provided");
+            throw new KernelException("No endpoint or HTTP client base address has been provided");
         }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");

@@ -46,7 +46,7 @@ public sealed class ThreadHarness
     {
         var assistant =
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .WithName("DeleteMe")
                 .BuildAsync()
                 .ConfigureAwait(true);
@@ -67,6 +67,6 @@ public sealed class ThreadHarness
 
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
-        await Assert.ThrowsAsync<SKException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+        await Assert.ThrowsAsync<KernelException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }

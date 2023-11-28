@@ -18,7 +18,7 @@ public static class Example09_FunctionTypes
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         var variables = new ContextVariables();
@@ -29,86 +29,64 @@ public static class Example09_FunctionTypes
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // The kernel takes care of wiring the input appropriately
-        await kernel.RunAsync(
-            plugin["type01"],
-            plugin["type02"],
-            plugin["type03"],
-            plugin["type04"],
-            plugin["type05"],
-            plugin["type06"],
-            plugin["type07"],
-            plugin["type08"],
-            plugin["type09"],
-            plugin["type10"],
-            plugin["type11"],
-            plugin["type12"],
-            plugin["type13"],
-            plugin["type14"],
-            plugin["type15"],
-            plugin["type16"],
-            plugin["type17"],
-            plugin["type18"]
-        );
+        // Using Kernel.InvokeAsync
+        await kernel.InvokeAsync(plugin["type01"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type01"]);
 
-        // Using Kernel.RunAsync
-        await kernel.RunAsync(plugin["type01"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type01"]);
+        await kernel.InvokeAsync(plugin["type02"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type02"]);
 
-        await kernel.RunAsync(plugin["type02"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type02"]);
+        await kernel.InvokeAsync(plugin["type03"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type03"]);
 
-        await kernel.RunAsync(plugin["type03"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type03"]);
+        await kernel.InvokeAsync(plugin["type04"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type04"], variables);
 
-        await kernel.RunAsync(plugin["type04"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type04"]);
+        await kernel.InvokeAsync(plugin["type05"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], variables);
 
-        await kernel.RunAsync(plugin["type05"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type05"]);
+        await kernel.InvokeAsync(plugin["type06"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], variables);
 
-        await kernel.RunAsync(plugin["type06"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type06"]);
+        await kernel.InvokeAsync(plugin["type07"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], variables);
 
-        await kernel.RunAsync(plugin["type07"], variables);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type07"]);
+        await kernel.InvokeAsync(plugin["type08"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
 
-        await kernel.RunAsync("", plugin["type08"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type08"]);
+        await kernel.InvokeAsync(plugin["type09"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
 
-        await kernel.RunAsync("", plugin["type09"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type09"]);
+        await kernel.InvokeAsync(plugin["type10"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type10"]);
 
-        await kernel.RunAsync("", plugin["type10"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type10"]);
+        await kernel.InvokeAsync(plugin["type11"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type11"]);
 
-        await kernel.RunAsync("", plugin["type11"]);
-        await kernel.RunAsync("", kernel.Plugins["test"]["type11"]);
+        await kernel.InvokeAsync(plugin["type12"], variables);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type12"], variables);
 
-        await kernel.RunAsync(variables, plugin["type12"]);
-        await kernel.RunAsync(variables, kernel.Plugins["test"]["type12"]);
-
-        await kernel.RunAsync(plugin["type18"]);
-        await kernel.RunAsync(kernel.Plugins["test"]["type18"]);
+        await kernel.InvokeAsync(plugin["type18"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type18"]);
     }
 }
 
 public class LocalExamplePlugin
 {
-    [SKFunction]
+    [KernelFunction]
     public void Type01()
     {
         Console.WriteLine("Running function type 1");
     }
 
-    [SKFunction]
+    [KernelFunction]
     public string Type02()
     {
         Console.WriteLine("Running function type 2");
         return "";
     }
 
-    [SKFunction]
+    [KernelFunction]
     public async Task<string> Type03Async()
     {
         await Task.Delay(0);
@@ -116,49 +94,49 @@ public class LocalExamplePlugin
         return "";
     }
 
-    [SKFunction]
-    public void Type04(SKContext context)
+    [KernelFunction]
+    public void Type04(ContextVariables variables)
     {
         Console.WriteLine("Running function type 4");
     }
 
-    [SKFunction]
-    public string Type05(SKContext context)
+    [KernelFunction]
+    public string Type05(ContextVariables variables)
     {
         Console.WriteLine("Running function type 5");
         return "";
     }
 
-    [SKFunction]
+    [KernelFunction]
     public async Task<string> Type06Async(Kernel kernel)
     {
-        var summary = await kernel.RunAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
         Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");
         return "";
     }
 
-    [SKFunction]
-    public async Task<SKContext> Type07Async(SKContext context)
+    [KernelFunction]
+    public async Task<ContextVariables> Type07Async(ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 7");
-        return context;
+        return variables;
     }
 
-    [SKFunction]
+    [KernelFunction]
     public void Type08(string x)
     {
         Console.WriteLine("Running function type 8");
     }
 
-    [SKFunction]
+    [KernelFunction]
     public string Type09(string x)
     {
         Console.WriteLine("Running function type 9");
         return "";
     }
 
-    [SKFunction]
+    [KernelFunction]
     public async Task<string> Type10Async(string x)
     {
         await Task.Delay(0);
@@ -166,57 +144,57 @@ public class LocalExamplePlugin
         return "";
     }
 
-    [SKFunction]
-    public void Type11(string x, SKContext context)
+    [KernelFunction]
+    public void Type11(string x, ContextVariables variables)
     {
         Console.WriteLine("Running function type 11");
     }
 
-    [SKFunction]
-    public string Type12(string x, SKContext context)
+    [KernelFunction]
+    public string Type12(string x, ContextVariables variables)
     {
         Console.WriteLine("Running function type 12");
         return "";
     }
 
-    [SKFunction]
-    public async Task<string> Type13Async(string x, SKContext context)
+    [KernelFunction]
+    public async Task<string> Type13Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 13");
         return "";
     }
 
-    [SKFunction]
-    public async Task<SKContext> Type14Async(string x, SKContext context)
+    [KernelFunction]
+    public async Task<ContextVariables> Type14Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 14");
-        return context;
+        return variables;
     }
 
-    [SKFunction]
+    [KernelFunction]
     public async Task Type15Async(string x)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 15");
     }
 
-    [SKFunction]
-    public async Task Type16Async(SKContext context)
+    [KernelFunction]
+    public async Task Type16Async(ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 16");
     }
 
-    [SKFunction]
-    public async Task Type17Async(string x, SKContext context)
+    [KernelFunction]
+    public async Task Type17Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 17");
     }
 
-    [SKFunction]
+    [KernelFunction]
     public async Task Type18Async()
     {
         await Task.Delay(0);

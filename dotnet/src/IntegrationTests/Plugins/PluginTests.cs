@@ -25,7 +25,7 @@ public class PluginTests
     string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
@@ -40,7 +40,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -55,7 +55,7 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -70,7 +70,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -85,7 +85,7 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -100,7 +100,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        var result = (await kernel.RunAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+        var result = (await kernel.InvokeAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
 
         // Assert
         Assert.NotNull(result);
@@ -122,7 +122,7 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
@@ -135,7 +135,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -153,7 +153,7 @@ public class PluginTests
         // Arrange
         using (var stream = System.IO.File.OpenRead(pluginFilePath))
         {
-            var kernel = new KernelBuilder().Build();
+            var kernel = new Kernel();
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
@@ -166,7 +166,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+            await plugin[functionName].InvokeAsync(kernel, contextVariables);
         }
     }
 
@@ -183,7 +183,7 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
@@ -196,6 +196,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 }

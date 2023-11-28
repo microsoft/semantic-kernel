@@ -4,10 +4,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 /// <summary>
@@ -32,7 +32,7 @@ public static class Example07_BingAndGooglePlugins
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -78,7 +78,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.RunAsync(question, function);
+        var result = await kernel.InvokeAsync(function, question);
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
@@ -137,9 +137,9 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
+        var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.RunAsync(oracle, new(questions)
+        var answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
         {
             ["externalInformation"] = string.Empty
         });
@@ -150,16 +150,16 @@ Answer: ";
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
             var promptTemplateFactory = new KernelPromptTemplateFactory();
-            var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
+            var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
+            var information = await promptTemplate.RenderAsync(kernel, new ContextVariables());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
             // Run the semantic function again, now including information from Bing
-            answer = await kernel.RunAsync(oracle, new(questions)
+            answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
             {
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turn natural language into code",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,
