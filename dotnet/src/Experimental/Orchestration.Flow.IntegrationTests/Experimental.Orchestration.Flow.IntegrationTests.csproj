@@ -30,10 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />
-    <ProjectReference Include="..\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="testsettings.json">

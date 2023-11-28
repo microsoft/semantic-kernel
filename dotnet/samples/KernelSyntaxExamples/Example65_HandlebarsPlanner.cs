@@ -58,7 +58,7 @@ public static class Example65_HandlebarsPlanner
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",

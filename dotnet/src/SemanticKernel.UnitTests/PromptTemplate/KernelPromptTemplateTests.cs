@@ -28,7 +28,7 @@ public sealed class KernelPromptTemplateTests
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
     }
 
     [Fact]

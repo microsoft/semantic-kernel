@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -23,10 +23,11 @@ public class FunctionFromPromptTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = new KernelBuilder()
-            .WithDefaultAIService(factory.Object)
-            .Build();
+        var factory = new Mock<Func<IServiceProvider, ITextCompletion>>();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddSingleton(factory.Object);
+        }).Build();
 
         kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
@@ -47,9 +48,10 @@ public class FunctionFromPromptTests
         mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder()
-            .WithAIService("x", mockTextCompletion.Object)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("x", mockTextCompletion.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -68,35 +70,6 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
-    {
-        // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
-
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
-        var func = kernel.CreateFunctionFromPrompt(promptConfig);
-
-        // Act
-        await kernel.InvokeAsync(func);
-
-        // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
@@ -108,10 +81,11 @@ public class FunctionFromPromptTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -133,10 +107,11 @@ public class FunctionFromPromptTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -147,7 +122,7 @@ public class FunctionFromPromptTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and names service3 not registered.", exception.Message);
     }
 
     [Fact]
@@ -155,7 +130,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -178,7 +153,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -201,7 +176,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -224,7 +199,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
@@ -250,7 +225,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
         var invoked = 0;
         var invoking = 0;
@@ -285,7 +260,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -307,7 +282,7 @@ public class FunctionFromPromptTests
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -330,7 +305,7 @@ public class FunctionFromPromptTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -356,7 +331,7 @@ public class FunctionFromPromptTests
         var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
             new TestStreamingContent("chunk1"),
             new TestStreamingContent("chunk2"));
-        var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var kernel = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new ContextVariables("importance");

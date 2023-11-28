@@ -152,13 +152,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanCreateValidOpenAIFunctionManual()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new KernelBuilder()
+            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<MyPlugin>("MyPlugin"))
+            .Build();
 
-        var plugin = kernel.ImportPluginFromObject(new MyPlugin(), "MyPlugin");
-
-        var function = plugin.First();
-
-        var functionView = function.Metadata;
+        var functionView = kernel.Plugins["MyPlugin"].First().Metadata;
 
         var sut = functionView.ToOpenAIFunction();
 

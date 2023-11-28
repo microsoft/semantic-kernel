@@ -33,11 +33,6 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true
-            })
             .Build();
 
         var type = typeof(PluginResourceNames);

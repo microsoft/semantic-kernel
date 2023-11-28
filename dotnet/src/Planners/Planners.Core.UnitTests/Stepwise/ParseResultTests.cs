@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -24,7 +23,7 @@ public sealed class ParseResultTests
     public void WhenInputIsFinalAnswerReturnsFinalAnswer(string input, string expected)
     {
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
 
         var planner = new StepwisePlanner(kernel);
 
@@ -75,7 +74,7 @@ public sealed class ParseResultTests
         }
 
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
 
         var planner = new StepwisePlanner(kernel);
 
