@@ -13,61 +13,74 @@ informed:
 
 ## Decision Drivers
 
-1. The sk developer should be able to use different prompt functions against different models and providers without having to know the details of each model.
+1. A sk developer should be able to use different prompt functions against different models and service providers without having to know the specific details of each model.
 
-2. Should consistent, simple and easy for sk developer should to get the results from a function, regardless of the model used.
+2. A sk developer should be able to get results from a function in a consistant, simple and easy way regardless of the model used.
 
 ## Out of Scope
 
+- TBC
+
 ### Generic Abstractions
 
-## Services / Connectors
-
-All connectors will have one implementation per modality/model.
-
-Each provider will provide its unique Id for the modality supported, which can be used by the ServiceSelector if a `ProviderId` is defined in the `PromptModel`.
-
-Examples
-
-| Modality      | ProviderId                              | Connector Class          |
-| ------------- | --------------------------------------- | ------------------------ |
-| Chat to Text  | OpenAI.ChatCompletion                   | ChatCompletionAIService  |
-| Text to Image | OpenAI.Dalle3                           | Dalle3AIService          |
-| Text to Audio | Azure.CognitiveServices.SpeechSynthesis | SpeechSynthesisAIService |
-| Text to Video | Azure.CognitiveServices.VideoIndexer    | VideoIndexerAIService    |
-| Text to Text  | OpenAI.TextCompletion                   | TextCompletionAIService  |
-| Text to Text  | HuggingFace.TextCompletion              | TextCompletionAIService  |
-
-## Default Service Abstractions (SemanticKernel.Abstractions)
+## Default AI Service Abstractions
 
 Main `AIService` abstractions that can be used directly by the kernel execute prompt functions with any AI Models regardless of the modality.
-This abstraction all the services will need to support a generic way to get a streaming or complete (non-streaming) content.
+
+`IAIService` interface become the main abstraction for modality/model support.
+
+All connectors will have one or multiple services implementing `IAIService` for each modality/model support.
+
+Each provider will also provide its unique `ProviderId` for the modality supported which can be used by the `ServiceSelector` to select the correct service to use.
+
+Examples of `IAIService` implementations:
+
+| Modality       | ProviderId                              | Connector Class              |
+| -------------- | --------------------------------------- | ---------------------------- |
+| Chat to Text   | OpenAI.ChatCompletion                   | ChatCompletionAIService      |
+| Chat to Text   | AzureOpenAI.ChatCompletion              | AzureChatCompletionAIService |
+| Text to Image  | OpenAI.Dalle3                           | Dalle3AIService              |
+| Text to Image  | MidJourney.V5                           | MidJourneyV5AIService        |
+| Image to Image | MidJourney.V5                           | MidJourneyBlendAIService     |
+| Text to Audio  | Azure.CognitiveServices.SpeechSynthesis | SpeechSynthesisAIService     |
+| Text to Video  | Azure.CognitiveServices.VideoIndexer    | VideoIndexerAIService        |
+| Text to Text   | OpenAI.TextCompletion                   | TextCompletionAIService      |
+| Text to Text   | HuggingFace.TextCompletion              | TextCompletionAIService      |
+
+Interfaces like `ITextCompletion`, `IChatCompletion` will be removed and replaced by the `IAIService` abstraction.
+
+#### `IAIService` Example
 
 ```csharp
-
 public interface IAIService
 {
-    ...
+    string ProviderId { get; }
 
     IAsyncEnumerable<T> GetStreamingContentAsync<T>(Kernel kernel, ...);
     FunctionResult<T> GetContentAsync<T>(Kernel kernel, ...);
 }
-
-var myResult = myService.GetContentAsync<StreamingContent>(kernel, ...);
-Console.WriteLine(myResult.Content);
-
 ```
 
-Extensions to the IAIService to provide a more friendly API to the developer get the abstraction while it doesn't know the type to use in generics.
+Usage:
 
 ```csharp
+var myResult = myService.GetContentAsync<StreamingContent>(kernel, ...);
+Console.WriteLine(myResult.Content);
+```
 
+#### Convenience Extensions to the `IAIService`
+
+```csharp
 public static class IAIServiceExtensions
 {
     IAsyncEnumerable<StreamingContent> GetStreamingContentAsync(this IAIService service, Kernel kernel, ...);
     FunctionResult<CompleteContent> GetContentAsync(this IAIService service, Kernel kernel, ...);
 }
+```
 
+Usage: (Without generics)
+
+```csharp
 var myResult = myService.GetContentAsync(kernel, ...);
 Console.WriteLine(myResult.Content);
 ```
