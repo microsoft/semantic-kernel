@@ -7,6 +7,7 @@ from openai import AsyncAzureOpenAI
 from pydantic import validate_arguments
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
     OpenAIModelTypes,
@@ -15,6 +16,8 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 
 
 class AzureOpenAIConfigBase(OpenAIHandler):
+    """Internal class for configuring a connection to an Azure OpenAI service."""
+
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def __init__(
         self,
@@ -22,7 +25,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         model_type: OpenAIModelTypes,
         endpoint: Optional[HttpsUrl] = None,
         base_url: Optional[HttpsUrl] = None,
-        api_version: str = "2022-12-01",
+        api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,

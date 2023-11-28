@@ -2,11 +2,10 @@
 
 from logging import Logger
 from threading import Thread
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import torch
 import transformers
-from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -19,7 +18,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
-    task: constr(strip_whitespace=True, min_length=1)
+    task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
     generator: transformers.Pipeline
 
@@ -56,13 +55,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        device = (
-            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-        )
         super().__init__(
             model_id=model_id,
             task=task,
-            device=device,
+            device=(
+                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+            ),
             generator=transformers.pipeline(
                 task=task,
                 model=model_id,
@@ -95,13 +93,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             )
 
             completions = list()
-            if self.task == "text-generation" or self.task == "text2text-generation":
-                for response in results:
-                    completions.append(response["generated_text"])
-                if len(completions) == 1:
-                    return completions[0]
-                return completions
-
             if self.task == "summarization":
                 for response in results:
                     completions.append(response["summary_text"])
@@ -109,11 +100,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                     return completions[0]
                 return completions
 
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "Unsupported hugging face pipeline task: only \
-                    text-generation, text2text-generation, and summarization are supported.",
-            )
+            for response in results:
+                completions.append(response["generated_text"])
+            if len(completions) == 1:
+                return completions[0]
+            return completions
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)

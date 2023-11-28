@@ -61,8 +61,11 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
-    print(f"Mosscap:> {answer}")
+    answer = kernel.run_stream_async(chat_function, input_vars=context_vars)
+    print("Mosscap:> ", end="")
+    async for message in answer:
+        print(message, end="")
+    print("\n")
     return True
 
 

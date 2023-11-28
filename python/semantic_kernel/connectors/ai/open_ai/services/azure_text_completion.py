@@ -6,6 +6,7 @@ from typing import Dict, Optional, overload
 
 from openai.lib.azure import AsyncAzureADTokenProvider
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -24,7 +25,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     def __init__(
         self,
         base_url: str,
-        api_version: str = "2022-12-01",
+        api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
@@ -46,7 +47,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
             api_version: The API version to use. (Optional)
-                The default value is "2023-03-15-preview".
+                The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
             log: The logger instance to use. (Optional)
@@ -58,7 +59,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         self,
         deployment_name: str,
         endpoint: str,
-        api_version: str = "2022-12-01",
+        api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
@@ -80,7 +81,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
             api_version: The API version to use. (Optional)
-                The default value is "2023-03-15-preview".
+                The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
             log: The logger instance to use. (Optional)
@@ -92,7 +93,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         deployment_name: Optional[str] = None,
         endpoint: Optional[str] = None,
         base_url: Optional[str] = None,
-        api_version: str = "2022-12-01",
+        api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
@@ -150,7 +151,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             deployment_name=settings.get("deployment_name"),
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
-            api_version=settings.get("api_version", "2022-12-01"),
+            api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             api_key=settings["api_key"],
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
