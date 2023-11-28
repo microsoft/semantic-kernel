@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
@@ -107,12 +108,12 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -144,12 +145,12 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -185,7 +186,7 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
@@ -212,7 +213,9 @@ public static class KernelOpenApiPluginExtensions
     {
         using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
 
-        var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+
+        var parser = new OpenApiDocumentParser(loggerFactory);
 
         var operations = await parser.ParseAsync(
             documentStream,
@@ -229,13 +232,13 @@ public static class KernelOpenApiPluginExtensions
 
         KernelPlugin plugin = new(pluginName);
 
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
         foreach (var operation in operations)
         {
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                plugin.AddFunction(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, kernel.LoggerFactory, cancellationToken));
+                plugin.AddFunction(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory, cancellationToken));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {

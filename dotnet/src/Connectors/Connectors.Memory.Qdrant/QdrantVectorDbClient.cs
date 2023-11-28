@@ -36,7 +36,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         ILoggerFactory? loggerFactory = null)
     {
         this._vectorSize = vectorSize;
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }

@@ -38,15 +38,12 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
 
         if (plugins is KernelPluginCollection existing)
         {
-            this._plugins = new Dictionary<string, IKernelPlugin>(existing._plugins, StringComparer.OrdinalIgnoreCase);
+            this._plugins = new(existing._plugins, StringComparer.OrdinalIgnoreCase);
         }
         else
         {
             this._plugins = new(plugins is ICollection<IKernelPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
-            foreach (IKernelPlugin plugin in plugins)
-            {
-                this.Add(plugin);
-            }
+            this.AddRange(plugins);
         }
     }
 
@@ -125,7 +122,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         {
             if (!this.TryGetPlugin(name, out IKernelPlugin? plugin))
             {
-                throw new KeyNotFoundException($"Plugin {name} not found");
+                throw new KeyNotFoundException($"Plugin {name} not found.");
             }
 
             return plugin;

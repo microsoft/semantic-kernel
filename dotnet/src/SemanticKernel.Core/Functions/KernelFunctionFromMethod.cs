@@ -286,8 +286,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
-                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.LoggerFactory, null);
+                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))

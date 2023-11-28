@@ -57,14 +57,16 @@ public class StepwisePlanner
         // Set MaxTokens for the prompt config
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
+        ILoggerFactory loggerFactory = this._kernel.GetService<ILoggerFactory>();
+
         // Initialize prompt renderer
-        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportPluginFromObject(this, RestrictedPluginName);
 
         // Create context and logger
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = loggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -349,8 +351,7 @@ public class StepwisePlanner
         }
         else
         {
-            var textCompletion = this._kernel.GetService<ITextCompletion>();
-            aiService = textCompletion;
+            aiService = this._kernel.GetService<ITextCompletion>();
             chatHistory = new ChatHistory();
         }
 

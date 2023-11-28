@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
+/// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
 /// </summary>
 public interface IAIServiceSelector
 {
@@ -23,6 +23,6 @@ public interface IAIServiceSelector
     /// <param name="function">Semantic Kernel callable function interface</param>
     /// <returns></returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService;
+    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService;
 #pragma warning restore CA1716
 }

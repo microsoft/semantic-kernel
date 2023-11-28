@@ -37,8 +37,10 @@ public sealed class FunctionCallingStepwisePlanner
         this._kernel = kernel;
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+
         // Initialize prompt renderer
-        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
 
         // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
@@ -48,7 +50,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
 
         // Create context and logger
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = loggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>

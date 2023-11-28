@@ -30,7 +30,7 @@ public static class Example58_ConfigureRequestSettings
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,

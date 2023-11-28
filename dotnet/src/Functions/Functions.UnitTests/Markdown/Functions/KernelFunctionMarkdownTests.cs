@@ -28,7 +28,7 @@ public class KernelFunctionMarkdownTests
     public void ItShouldCreateSemanticFunctionFromMarkdown()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         var function = KernelFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");

@@ -28,6 +28,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
@@ -51,8 +54,6 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Assistants\Experimental.Assistants.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
@@ -66,6 +67,11 @@
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
     <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />

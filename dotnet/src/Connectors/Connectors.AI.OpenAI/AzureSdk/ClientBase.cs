@@ -4,17 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Prompt;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -127,8 +130,8 @@ public abstract class ClientBase
 
     private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
         string prompt,
-    PromptExecutionSettings? executionSettings,
-    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        PromptExecutionSettings? executionSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
@@ -343,6 +346,25 @@ public abstract class ClientBase
         {
             this.InternalAttributes.Add(key, value!);
         }
+    }
+
+    /// <summary>Gets options to use for an OpenAIClient</summary>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = new()
+        {
+            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+        };
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+        }
+
+        return options;
     }
 
     private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? executionSettings, out OpenAIPromptExecutionSettings settings)

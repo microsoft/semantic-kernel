@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -23,10 +24,11 @@ public class MultipleModelTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -48,10 +50,11 @@ public class MultipleModelTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -62,15 +65,13 @@ public class MultipleModelTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and names service3 not registered.", exception.Message);
     }
 
     [Theory]
-    [InlineData(new string[] { "service1" }, 1, new int[] { 1, 0, 0 })]
-    [InlineData(new string[] { "service2" }, 2, new int[] { 0, 1, 0 })]
-    [InlineData(new string[] { "service3" }, 0, new int[] { 0, 0, 1 })]
-    [InlineData(new string[] { "service4", "service1" }, 1, new int[] { 1, 0, 0 })]
-    public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int defaultServiceIndex, int[] callCount)
+    [InlineData(new string[] { "service1" }, new int[] { 1, 0, 0 })]
+    [InlineData(new string[] { "service4", "service1" }, new int[] { 1, 0, 0 })]
+    public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int[] callCount)
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -83,11 +84,12 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, defaultServiceIndex == 0)
-            .WithAIService("service2", mockTextCompletion2.Object, defaultServiceIndex == 1)
-            .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+            c.AddKeyedSingleton("service3", mockTextCompletion3.Object);
+        }).Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -120,11 +122,12 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, true)
-            .WithAIService("service2", mockTextCompletion2.Object, false)
-            .WithAIService("service3", mockTextCompletion3.Object, false)
-            .Build();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
+            c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
+            c.AddKeyedSingleton("service3", mockTextCompletion3.Object);
+        }).Build();
 
         var json = @"{
   ""template"": ""template"",
