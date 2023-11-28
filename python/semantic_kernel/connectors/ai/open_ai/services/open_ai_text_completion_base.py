@@ -51,7 +51,9 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         settings: "CompleteRequestSettings",
         logger: Optional[Logger] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
-        """Executes a completion request and streams the result.
+        """
+        Executes a completion request and streams the result.
+        Supports both chat completion and text completion.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
@@ -68,10 +70,26 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         async for partial in response:
             if len(partial.choices) == 0:
                 continue
+
             if settings.number_of_responses > 1:
+                completions = [""] * settings.number_of_responses
                 for choice in partial.choices:
-                    completions = [""] * settings.number_of_responses
-                    completions[choice.index] = choice.text
+                    if hasattr(choice, "delta") and hasattr(
+                        choice.delta, "content"
+                    ):  # Chat completion
+                        completions[choice.index] = choice.delta.content
+                    elif hasattr(choice, "text"):  # Text completion
+                        completions[choice.index] = choice.text
+                if any(completions):
                     yield completions
             else:
-                yield partial.choices[0].text
+                if hasattr(partial.choices[0], "delta") and hasattr(
+                    partial.choices[0].delta, "content"
+                ):  # Chat completion
+                    content = partial.choices[0].delta.content
+                    if content:
+                        yield content
+                elif hasattr(partial.choices[0], "text"):  # Text completion
+                    text = partial.choices[0].text
+                    if text.strip():  # Exclude empty or whitespace-only text
+                        yield text
