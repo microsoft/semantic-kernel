@@ -28,9 +28,10 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
-        KernelFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -52,9 +53,10 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
@@ -87,12 +89,13 @@ public class MultipleModelTests
             .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
         foreach (var serviceId in serviceIds)
         {
-            templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
+            promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
         }
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -124,9 +127,9 @@ public class MultipleModelTests
             .Build();
 
         var json = @"{
-  ""schema"": 1,
+  ""template"": ""template"",
   ""description"": ""Semantic function"",
-  ""models"": [
+  ""execution_settings"": [
     {
       ""service_id"": ""service2"",
       ""max_tokens"": 100,
@@ -152,8 +155,8 @@ public class MultipleModelTests
   ]
 }";
 
-        var templateConfig = PromptTemplateConfig.FromJson(json);
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = PromptTemplateConfig.FromJson(json);
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);

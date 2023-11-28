@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.Yaml;
-using Microsoft.SemanticKernel.Models;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -23,7 +23,7 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
             .Build();
 
         // Act
-        var semanticFunctionConfig = deserializer.Deserialize<PromptFunctionModel>(this._yaml);
+        var semanticFunctionConfig = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
 
         // Assert
         Assert.NotNull(semanticFunctionConfig);

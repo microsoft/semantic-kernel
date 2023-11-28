@@ -6,7 +6,6 @@ using System.Text.Json;
 using Markdig.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Models;
 
 namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 
@@ -18,7 +17,7 @@ public static class KernelFunctionMarkdown
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown resource.
     /// </summary>
-    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -49,7 +48,7 @@ public static class KernelFunctionMarkdown
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
-    /// <param name="text">Markdown representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
+    /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this function.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -69,9 +68,9 @@ public static class KernelFunctionMarkdown
     }
 
     #region Private methods
-    internal static PromptFunctionModel CreateFromPromptMarkdown(string text, string functionName)
+    internal static PromptTemplateConfig CreateFromPromptMarkdown(string text, string functionName)
     {
-        var promptFunctionModel = new PromptFunctionModel()
+        var promptFunctionModel = new PromptTemplateConfig()
         {
             Name = functionName
         };
@@ -88,10 +87,10 @@ public static class KernelFunctionMarkdown
                 else if (codeBlock.Info == "sk.execution_settings")
                 {
                     var modelSettings = codeBlock.Lines.ToString();
-                    var requestSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
-                    if (requestSettings is not null)
+                    var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
+                    if (executionSettings is not null)
                     {
-                        promptFunctionModel.ExecutionSettings.Add(requestSettings);
+                        promptFunctionModel.ExecutionSettings.Add(executionSettings);
                     }
                 }
             }

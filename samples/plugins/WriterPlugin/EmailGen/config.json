@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Write an email from the given bullet points",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,

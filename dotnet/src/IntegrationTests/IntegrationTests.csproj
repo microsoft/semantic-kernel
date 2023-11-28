@@ -10,12 +10,24 @@
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Planners\SequentialPlanner\**" />
+    <Compile Remove="Planners\StepwisePlanner\**" />
+    <EmbeddedResource Remove="Planners\SequentialPlanner\**" />
+    <EmbeddedResource Remove="Planners\StepwisePlanner\**" />
+    <None Remove="Planners\SequentialPlanner\**" />
+    <None Remove="Planners\StepwisePlanner\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Planners\PlanTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -45,8 +57,8 @@
     <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

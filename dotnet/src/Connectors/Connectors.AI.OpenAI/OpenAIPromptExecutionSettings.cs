@@ -127,12 +127,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
-    /// <param name="requestSettings">Template configuration</param>
+    /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? requestSettings, int? defaultMaxTokens = null)
+    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
-        if (requestSettings is null)
+        if (executionSettings is null)
         {
             return new OpenAIPromptExecutionSettings()
             {
@@ -140,12 +140,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             };
         }
 
-        if (requestSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
+        if (executionSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
         {
             return requestSettingsOpenAIRequestSettings;
         }
 
-        var json = JsonSerializer.Serialize(requestSettings);
+        var json = JsonSerializer.Serialize(executionSettings);
         var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
         if (openAIRequestSettings is not null)
@@ -153,7 +153,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             return openAIRequestSettings;
         }
 
-        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(requestSettings));
+        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
     }
 
     #region private ================================================================================

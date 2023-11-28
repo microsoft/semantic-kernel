@@ -372,32 +372,27 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        var promptTemplateFactory = new KernelPromptTemplateFactory();
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
         Kernel target = builder.Build();
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
-        var defaultConfig = new PromptTemplateConfig();
-        var azureConfig = PromptTemplateConfig.FromJson(
+        var defaultPromptModel = new PromptTemplateConfig(prompt) { Name = "FishMarket1" };
+        var azurePromptModel = PromptTemplateConfig.FromJson(
             @"{
-                ""models"": [
+                ""name"": ""FishMarket2"",
+                ""execution_settings"": [
                     {
                         ""max_tokens"": 256,
                         ""service_id"": ""azure-text-davinci-003""
                     }
                 ]
             }");
+        azurePromptModel.Template = prompt;
 
-        var defaultFunc = target.CreateFunctionFromPrompt(
-            promptTemplateFactory.Create(prompt, defaultConfig),
-            defaultConfig,
-            "FishMarket1");
-        var azureFunc = target.CreateFunctionFromPrompt(
-            promptTemplateFactory.Create(prompt, azureConfig),
-            azureConfig,
-            "FishMarket2");
+        var defaultFunc = target.CreateFunctionFromPrompt(defaultPromptModel);
+        var azureFunc = target.CreateFunctionFromPrompt(azurePromptModel);
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(defaultFunc));

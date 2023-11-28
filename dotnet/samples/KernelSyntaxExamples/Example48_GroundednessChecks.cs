@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -137,12 +139,13 @@ which are not grounded in the original.
 
         kernel.ImportPluginFromObject<TextPlugin>();
 
-        var planner = new SequentialPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
-        Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await plan.InvokeAsync(kernel, GroundingText);
-        Console.WriteLine(results.GetValue<string>());
+        Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
+
+        var result = plan.Invoke(new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        Console.WriteLine(result.GetValue<string>());
     }
 }
 
