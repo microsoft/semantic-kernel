@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
-/// Standard Semantic Kernel callable plan.
+/// Standard Semantic Kernel callable plan. Update.
 /// Plan is used to create trees of <see cref="KernelFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
