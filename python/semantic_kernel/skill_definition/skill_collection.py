@@ -9,7 +9,7 @@ from typing import (
     Union,
 )
 
-import pydantic as pdt
+from pydantic import Field, PrivateAttr
 
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition import constants
@@ -29,10 +29,10 @@ if TYPE_CHECKING:
 
 class SkillCollection(SkillCollectionBase):
     GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
-    read_only_skill_collection_: ReadOnlySkillCollection = pdt.Field(
+    read_only_skill_collection_: ReadOnlySkillCollection = Field(
         alias="read_only_skill_collection"
     )
-    _log: Logger = pdt.PrivateAttr(default_factory=NullLogger)
+    _log: Logger = PrivateAttr()
 
     def __init__(
         self,

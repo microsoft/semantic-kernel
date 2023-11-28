@@ -3,7 +3,7 @@
 from logging import Logger
 from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 
-import pydantic as pdt
+from pydantic import Field, PrivateAttr
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import (
@@ -25,15 +25,15 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
 
     memory: SemanticTextMemoryT
     variables: ContextVariables
-    skill_collection: ReadOnlySkillCollection = pdt.Field(
+    # This field can be used to hold anything that is not a string
+    skill_collection: ReadOnlySkillCollection = Field(
         default_factory=ReadOnlySkillCollection
     )
-    # This field can be used to hold anything that is not a string
-    _objects: Dict[str, Any] = pdt.PrivateAttr(default_factory=dict)
-    _error_occurred: bool = pdt.PrivateAttr(False)
-    _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
-    _last_error_description: str = pdt.PrivateAttr("")
-    _logger: Logger = pdt.PrivateAttr()
+    _objects: Dict[str, Any] = PrivateAttr(default_factory=dict)
+    _error_occurred: bool = PrivateAttr(False)
+    _last_exception: Optional[Exception] = PrivateAttr(None)
+    _last_error_description: str = PrivateAttr("")
+    _logger: Logger = PrivateAttr()
 
     def __init__(
         self,
