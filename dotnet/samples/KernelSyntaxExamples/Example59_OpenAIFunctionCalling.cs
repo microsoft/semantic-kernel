@@ -81,7 +81,7 @@ public static class Example59_OpenAIFunctionCalling
         chatHistory.AddUserMessage(ask);
 
         // Send request and add response to chat history
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
+        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, kernel))[0];
         chatHistory.AddAssistantMessage(chatResult);
 
         await PrintChatResultAsync(chatResult);
@@ -114,7 +114,7 @@ public static class Example59_OpenAIFunctionCalling
 
                     // Get another completion
                     executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-                    chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
+                    chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, kernel))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
                     await PrintChatResultAsync(chatResult);
@@ -159,7 +159,7 @@ public static class Example59_OpenAIFunctionCalling
         // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings, kernel))
         {
             if (chatResult.ContentUpdate is { Length: > 0 })
             {
@@ -209,7 +209,7 @@ public static class Example59_OpenAIFunctionCalling
 
                     // Get another completion
                     executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-                    var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings))[0];
+                    var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, kernel))[0];
                     chatHistory.AddAssistantMessage(chatResult);
 
                     await PrintChatResultAsync(chatResult);

@@ -21,13 +21,13 @@ public sealed class OpenAIChatCompletionTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-    private readonly OpenAIPromptExecutionSettings _requestSettings;
+    private readonly OpenAIPromptExecutionSettings _executionSettings;
 
     public OpenAIChatCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-        this._requestSettings = new()
+        this._executionSettings = new()
         {
             Functions = new List<OpenAIFunction>()
             {
@@ -70,10 +70,10 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._requestSettings.FunctionCall = "auto";
+        this._executionSettings.FunctionCall = "auto";
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._requestSettings);
+        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -91,10 +91,10 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._requestSettings.FunctionCall = "TimePlugin_Now";
+        this._executionSettings.FunctionCall = "TimePlugin_Now";
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._requestSettings);
+        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -111,10 +111,10 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._requestSettings.FunctionCall = "none";
+        this._executionSettings.FunctionCall = "none";
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._requestSettings);
+        await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -134,7 +134,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         chatHistory.AddMessage(AuthorRole.User, "Hello", new Dictionary<string, string>() { { "Name", "John Doe" } });
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(chatHistory, this._requestSettings);
+        await chatCompletion.GetChatCompletionsAsync(chatHistory, this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -155,7 +155,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         chatHistory.AddMessage(AuthorRole.User, "Hello", new Dictionary<string, string>() { { "Name", "SayHello" }, { "Arguments", "{ \"user\": \"John Doe\" }" } });
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(chatHistory, this._requestSettings);
+        await chatCompletion.GetChatCompletionsAsync(chatHistory, this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);

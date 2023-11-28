@@ -137,7 +137,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 };
             }
 
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, executionSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, executionSettings ?? defaultRequestSettings, kernel, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -173,7 +173,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, executionSettings ?? defaultRequestSettings, cancellationToken))
+        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, executionSettings ?? defaultRequestSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             yield return genericChunk;
