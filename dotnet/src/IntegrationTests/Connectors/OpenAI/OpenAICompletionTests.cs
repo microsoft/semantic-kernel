@@ -169,8 +169,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -195,8 +194,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         KernelBuilder builder = this._kernelBuilder
