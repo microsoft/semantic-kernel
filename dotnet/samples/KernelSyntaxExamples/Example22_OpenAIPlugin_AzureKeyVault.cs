@@ -73,7 +73,8 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,
                 HttpClient = httpClient,
-                EnableDynamicPayload = true
+                EnableDynamicPayload = true,
+                ServerUrlOverride = new Uri(TestConfiguration.KeyVault.Endpoint)
             });
 
         await AddSecretToAzureKeyVaultAsync(kernel, plugin);
@@ -89,7 +90,6 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         var contextVariables = new ContextVariables();
         contextVariables.Set("secret-name", SecretName);
         contextVariables.Set("value", SecretValue);
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("api-version", "7.0");
         contextVariables.Set("enabled", "true");
 
@@ -106,7 +106,6 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("secret-name", SecretName);
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("api-version", "7.0");
 
         // Run
