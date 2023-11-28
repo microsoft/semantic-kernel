@@ -7,15 +7,15 @@ consulted:
 informed:
 ---
 
-# Streaming Capability for Kernel and Functions usage - Phase 1
+# Multi Modality Services & Content Support
 
 ## Context and Problem Statement
 
 ## Decision Drivers
 
-1. The sk developer should be able to get use different prompt functions using different models and providers, without having to know the details of each model.
+1. The sk developer should be able to use different prompt functions against different models and providers without having to know the details of each model.
 
-2. The sk developer should have a consistent way to get the results from a function, regardless of the model used.
+2. Should consistent, simple and easy for sk developer should to get the results from a function, regardless of the model used.
 
 ## Out of Scope
 
@@ -40,7 +40,8 @@ Examples
 
 ## Default Service Abstractions (SemanticKernel.Abstractions)
 
-Main abstractions that can be used directly or by the kernel and the functions to consume any AI Models regardless of the modality.
+Main `AIService` abstractions that can be used directly by the kernel execute prompt functions with any AI Models regardless of the modality.
+This abstraction all the services will need to support a generic way to get a streaming or complete (non-streaming) content.
 
 ```csharp
 
@@ -52,9 +53,12 @@ public interface IAIService
     FunctionResult<T> GetContentAsync<T>(Kernel kernel, ...);
 }
 
+var myResult = myService.GetContentAsync<StreamingContent>(kernel, ...);
+Console.WriteLine(myResult.Content);
+
 ```
 
-Extensions to the IAIService to provide a more friendly API to the developer.
+Extensions to the IAIService to provide a more friendly API to the developer get the abstraction while it doesn't know the type to use in generics.
 
 ```csharp
 
@@ -64,6 +68,8 @@ public static class IAIServiceExtensions
     FunctionResult<CompleteContent> GetContentAsync(this IAIService service, Kernel kernel, ...);
 }
 
+var myResult = myService.GetContentAsync(kernel, ...);
+Console.WriteLine(myResult.Content);
 ```
 
 ### Content Abstractions
@@ -224,6 +230,142 @@ public sealed class Swagger/OpenAPIContent : JsonContent
     string Definition { get; }
     Endpoints[] Endpoints { get; }
 }
+```
+
+### Option 2 - (Deep inheritance)
+
+```csharp
+abstract class CompleteContent
+{
+	public object RawContent  { get; } // The actual content
+	public Dictionary<string, object> Metadata  { get; }
+
+    public CompleteContent(object rawContent, Dictionary<string, object>? metadata = null)
+    {
+        RawContent = rawContent;
+        Metadata = metadata ?? new();
+    }
+
+    public T GetContent<T>() => (T)this.RawContent;
+}
+
+interface IReferenceContent // : ContentBase<string> If we want to enforce the string type for referenced contents.
+{
+    public string Url { get; }
+}
+
+class MethodContent : CompleteContent
+{
+    /// .. MethodContent specific properties
+    public MethodContent(T content) : base(content)
+    {
+        this._content = content;
+    }
+
+    public T GetContent<T> => (T)this.RawContent;
+    public override object RawContent => this._content;
+}
+
+public class BinaryContent : CompleteContent
+{
+    public string Format { get; }
+    public byte[] BinaryContent { get; }
+
+    public BinaryContent(byte[] content, string format, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        Format = format;
+        this.BinaryContent = content;
+    }
+}
+
+public class ImageContent : BinaryContent
+{
+    public string Format { get; }
+    public int Width { get; }
+    public int Height { get; }
+    public byte[] ImageContent => base.BinaryContent;
+
+    public ImageContent(byte[] content, string format, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        Format = format;
+        this.BinaryContent = content;
+    }
+}
+
+public class TextContent : BinaryContent
+{
+    public Encoding Format { get; }
+    public string TextContent { get; }
+
+    // By default we will use UTF8 when providing string content
+    public TextContent(string content, Dictionary<string, object>? metadata = null)
+    : base(Encoding.UTF8.GetBytes(content), metadata)
+    {
+        this.Format = Encoding.UTF8;
+        this.TextContent = content;
+    }
+
+    public TextContent(byte[] content, Encoding format, Dictionary<string, object>? metadata = null) : base(content, metadata)
+    {
+        this.Format = format;
+        this.TextContent = format.GetString(content);
+    }
+}
+
+public class JsonContent : TextContent
+{
+    JsonElement JsonContent { get; }
+
+    public JsonContent(string content, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        this.JsonContent = JsonSerializer.Deserialize<JsonElement>(content);
+    }
+}
+
+public class ChatContent : JsonContent
+{
+    public virtual IReadOnlyList<ChatMessage> Messages { get; }
+
+    public ChatContent(IList<ChatMessage> messages, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        this.Messages = messages.ToList();
+    }
+
+    public JsonChatContent(object content, Dictionary<string, object>? metadata = null))
+    {}
+
+    public record ChatMessage (string Role, string Content);
+}
+
+public class OpenAIChatContent : ChatContent
+{
+
+    public OpenAIChatContent(string serializedOpenAIChat, Dictionary<string, object>? metadata = null)
+    : base(serializedOpenAIChat, metadata)
+    {
+
+    }
+
+    public record ChatMessage (string Role, string Content);
+}
+
+public class Swagger/OpenAPIContent : JsonContent
+{
+    string Definition { get; }
+    Endpoints[] Endpoints { get; }
+
+    public Swagger/OpenAPIContent(string content, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        this.Definition = base.JsonContent.GetProperty("definition").GetString();
+        this.Endpoints = base.JsonContent.GetProperty("endpoints").EnumerateArray().Select(e => new Endpoint(e)).ToArray();
+    }
+}
+
 ```
 
 ## How handle the current contents in `FunctionResults`?
