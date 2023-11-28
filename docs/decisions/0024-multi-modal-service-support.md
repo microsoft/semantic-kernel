@@ -346,7 +346,7 @@ Cons:
 
 - When implementing non deterministic logic the caller will need to do know if multiple results will be returned to use the correct signature.
 
-### Option 3 - Gives back a list when multiple and One element when one?
+### Option 4 - Gives back a list when multiple and One element when one?
 
 Returns a `FunctionResult<object>` which in reality can be a `FunctionResult<T>` when the result is a single content or `FunctionResult<IEnumerable<T>>` when there are multiple contents.
 
@@ -367,7 +367,7 @@ Downside:
 - Always requires a cast to get the value.
 - Extra verbosity and complexity on the caller side to know if the result is a list or not.
 
-### Option 4 - One content with multiple inner choices?
+### Option 5 - One content with multiple inner choices?
 
 Returns the classic Function Result with a Method `GetChoices<T>` to get the choice at the given index, if not provided the first choice will be returned.
 
