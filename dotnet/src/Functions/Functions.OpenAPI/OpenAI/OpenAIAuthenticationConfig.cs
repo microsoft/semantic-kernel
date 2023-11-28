@@ -63,25 +63,21 @@ public enum OpenAIAuthenticationType
     /// <summary>
     /// No authentication.
     /// </summary>
-    [EnumMember(Value = "none")]
     None,
 
     /// <summary>
     /// User HTTP authentication.
     /// </summary>
-    [EnumMember(Value = "user_http")]
     UserHttp,
 
     /// <summary>
     /// Service HTTP authentication.
     /// </summary>
-    [EnumMember(Value = "service_http")]
     ServiceHttp,
 
     /// <summary>
     /// OAuth authentication.
     /// </summary>
-    [EnumMember(Value = "oauth")]
     OAuth
 }
 
@@ -94,12 +90,10 @@ public enum OpenAIAuthorizationType
     /// <summary>
     /// Basic authorization.
     /// </summary>
-    [EnumMember(Value = "Basic")]
     Basic,
 
     /// <summary>
     /// Bearer authorization.
     /// </summary>
-    [EnumMember(Value = "Bearer")]
     Bearer
 }
