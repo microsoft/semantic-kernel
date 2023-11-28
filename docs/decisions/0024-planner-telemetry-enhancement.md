@@ -214,15 +214,15 @@ catch (Exception ex)
 In some environments, it is not inappropriate to store sensitive information, such as PII, in any services. Nonetheless, those intermediate results (generated using non-customer data) can be extremely useful for debugging purposes. Thus, we need a switch that can turn on and off telemetries that contain sensitive information.
 
 ```csharp
-// In a new TelemetryOptions.cs
-public sealed class TelemetryOptions
+// In a new InstrumentationOptions.cs
+public sealed class InstrumentationOptions
 {
   public bool IncludeSensitiveInformation { set; get; } = false;
 }
 
 // In Kernel.cs
 ...
-public TelemetryOptions Telemetry;
+public InstrumentationOptions Instrumentation;
 ...
 public Kernel(
   IAIServiceProvider aiServiceProvider,
@@ -230,18 +230,18 @@ public Kernel(
   IAIServiceSelector? serviceSelector = null,
   IDelegatingHandlerFactory? httpHandlerFactory = null,
   ILoggerFactory? loggerFactory = null
-  TelemetryOptions? telemetry = null)
+  InstrumentationOptions? instrumentation = null)
 {
   ...
-  Telemetry = telemetry ?? new TelemetryOptions { IncludeSensitiveInformation = false };
+  Instrumentation = instrumentation ?? new InstrumentationOptions { IncludeSensitiveInformation = false };
   ...
 }
 
 // In KernelBuilder.cs
 ...
-public KernelBuilder WithTelemetryOption(TelemetryOptions telemetry)
+public KernelBuilder WithInstrumentationOption(InstrumentationOptions instrumentation)
 {
-  this._telemetry = telemetry;
+  this._instrumentation = instrumentation;
   return this;
 }
 ...
@@ -332,7 +332,7 @@ ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 // Create and start an activity
 using var activity = s_activitySource.StartActivity(this.Name);
 
-if (kernel.Telemetry.IncludeSensitiveInformation)
+if (kernel.Instrumentation.IncludeSensitiveInformation)
 {
   activity?.SetTag("sk.planner.goal", goal);
   activity?.SetTag("sk.planner.plan", plan.ToPlanString());
