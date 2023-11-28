@@ -109,7 +109,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         contextVariables.Set("api-version", "7.0");
 
         // Run
-        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"]);
+        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], contextVariables);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 

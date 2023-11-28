@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -51,24 +50,19 @@ public class OpenAIAuthenticationProvider
         if (openAIAuthConfig.Type == OpenAIAuthenticationType.OAuth)
         {
             var domainOAuthValues = this._oAuthValues[openAIAuthConfig.AuthorizationUrl!.Host]
-                ?? throw new SKException("No OAuth values found for the provided authorization URL.");
+                ?? throw new KernelException("No OAuth values found for the provided authorization URL.");
 
             var values = new Dictionary<string, string>(domainOAuthValues) {
                 { "scope", openAIAuthConfig.Scope ?? "" },
             };
 
             HttpContent? requestContent = null;
-            switch (openAIAuthConfig.AuthorizationContentType)
+            requestContent = openAIAuthConfig.AuthorizationContentType switch
             {
-                case OpenAIAuthorizationContentType.FormUrlEncoded:
-                    requestContent = new FormUrlEncodedContent(values);
-                    break;
-                case OpenAIAuthorizationContentType.JSON:
-                    requestContent = new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, OpenAIAuthorizationContentType.JSON.ToString());
-                    break;
-                default:
-                    throw new SKException("Unsupported authorization content type.");
-            }
+                "application/x-www-form-urlencoded" => new FormUrlEncodedContent(values),
+                "application/json" => new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, "application/json"),
+                _ => throw new KernelException("Unsupported authorization content type."),
+            };
 
             // Request the token
             using var client = new HttpClient();
@@ -78,7 +72,7 @@ public class OpenAIAuthenticationProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SKException($"Failed to get token from {openAIAuthConfig.AuthorizationUrl}.");
+                throw new KernelException($"Failed to get token from {openAIAuthConfig.AuthorizationUrl}.");
             }
 
             // Read the token
@@ -90,17 +84,17 @@ public class OpenAIAuthenticationProvider
             }
             catch (JsonException)
             {
-                throw new SKException($"Failed to deserialize token response from {openAIAuthConfig.AuthorizationUrl}.");
+                throw new KernelException($"Failed to deserialize token response from {openAIAuthConfig.AuthorizationUrl}.");
             }
 
             // Get the token type and value
-            scheme = tokenResponse?.TokenType ?? throw new SKException("No token type found in the response.");
-            credential = tokenResponse?.AccessToken ?? throw new SKException("No access token found in the response.");
+            scheme = tokenResponse?.TokenType ?? throw new KernelException("No token type found in the response.");
+            credential = tokenResponse?.AccessToken ?? throw new KernelException("No access token found in the response.");
         }
         else
         {
             var token = openAIAuthConfig.VerificationTokens?[pluginName]
-                ?? throw new SKException("No verification token found for the provided plugin name.");
+                ?? throw new KernelException("No verification token found for the provided plugin name.");
 
             scheme = openAIAuthConfig.AuthorizationType.ToString();
             credential = token;
