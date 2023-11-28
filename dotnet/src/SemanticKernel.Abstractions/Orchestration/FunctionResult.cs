@@ -81,6 +81,16 @@ public sealed class FunctionResult
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public T? GetValue<T>()
     {
+        if (this.IsCancellationRequested)
+        {
+            throw new InvalidOperationException("Cannot get result value from cancelled function.");
+        }
+
+        if (this.IsSkipRequested)
+        {
+            throw new InvalidOperationException("Cannot get result value from skipped function.");
+        }
+
         if (this.Value is null)
         {
             return default;

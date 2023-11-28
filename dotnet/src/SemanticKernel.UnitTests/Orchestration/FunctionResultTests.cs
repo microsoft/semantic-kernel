@@ -128,4 +128,26 @@ public class FunctionResultTests
         // Act and Assert
         Assert.Equal(value, target.ToString());
     }
+
+    [Fact]
+    public void ThrowsInvalidOperationExceptionWhenCancelled()
+    {
+        // Arrange
+        string value = Guid.NewGuid().ToString();
+        FunctionResult target = new("functionName", new ContextVariables(), value) { IsCancellationRequested = true };
+
+        // Act and Assert
+        Assert.Throws<InvalidOperationException>(() => target.GetValue<string>());
+    }
+
+    [Fact]
+    public void ThrowsInvalidOperationExceptionWhenSkipped()
+    {
+        // Arrange
+        string value = Guid.NewGuid().ToString();
+        FunctionResult target = new("functionName", new ContextVariables(), value) { IsSkipRequested = true };
+
+        // Act and Assert
+        Assert.Throws<InvalidOperationException>(() => target.GetValue<string>());
+    }
 }
