@@ -3,6 +3,8 @@
 from logging import Logger
 from typing import List, Optional
 
+import sentence_transformers
+import torch
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -13,7 +15,8 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 
 
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
-    device: int
+    device: str
+    generator: sentence_transformers.SentenceTransformer
 
     def __init__(
         self,
@@ -32,23 +35,15 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        super().__init__(model_id=model_id, log=log)
-
-        try:
-            import sentence_transformers
-            import torch
-        except ImportError:
-            raise ImportError(
-                "Please ensure that torch and sentence-transformers are installed to use HuggingFaceTextEmbedding"
-            )
-
-        self.device = (
-            "cuda:" + str(device)
-            if device >= 0 and torch.cuda.is_available()
-            else "cpu"
-        )
-        self.generator = sentence_transformers.SentenceTransformer(
-            model_name_or_path=self.model_id, device=self.device
+        super().__init__(
+            model_id=model_id,
+            log=log,
+            device=(
+                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+            ),
+            generator=sentence_transformers.SentenceTransformer(
+                model_name_or_path=self.model_id, device=self.device
+            ),
         )
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:

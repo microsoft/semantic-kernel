@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 from openai.lib.azure import AsyncAzureADTokenProvider
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -24,7 +25,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
         endpoint: str,
-        api_version: str = "2022-12-01",
+        api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
@@ -49,7 +50,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             found in the Keys & Endpoint section when examining your resource in
             the Azure portal. You can use either KEY1 or KEY2.
         :param api_version: The API version to use. (Optional)
-            The default value is "2022-12-01".
+            The default value is "2023-05-15".
         :param log: The logger instance to use. (Optional)
         :param logger: Deprecated, please use log instead. (Optional)
         :param ad_auth: Whether to use Azure Active Directory authentication.
@@ -82,7 +83,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             deployment_name=settings["deployment_name"],
             endpoint=settings["endpoint"],
             api_key=settings["api_key"],
-            api_version=settings.get("api_version", "2022-12-01"),
+            api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             log=settings.get("log"),

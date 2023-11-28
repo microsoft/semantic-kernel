@@ -119,3 +119,7 @@ class MemoryRecord:
             timestamp=timestamp,
             embedding=embedding,
         )
+
+    @property
+    def id(self) -> str:
+        return self._id

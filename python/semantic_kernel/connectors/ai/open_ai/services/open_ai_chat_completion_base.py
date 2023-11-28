@@ -59,7 +59,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
     ]:
-        # TODO: tracking on token counts/etc.
+        """Executes a chat completion request and returns the result.
+
+        Arguments:
+            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            functions {List[Dict[str, Any]]} -- The functions to use for the chat completion.
+            settings {ChatRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
 
         response = await self._send_request(
             messages=messages,
@@ -97,23 +107,24 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         # parse the completion text(s) and yield them
         async for chunk in response:
-            text, index = self._parse_choices(chunk)
+            if len(chunk.choices) == 0:
+                continue
             # if multiple responses are requested, keep track of them
             if settings.number_of_responses > 1:
                 completions = [""] * settings.number_of_responses
-                completions[index] = text
+                for choice in chunk.choices:
+                    text, index = self._parse_choices(choice)
+                    completions[index] = text
                 yield completions
             # if only one response is requested, yield it
             else:
+                text, index = self._parse_choices(chunk.choices[0])
                 yield text
 
     @staticmethod
-    def _parse_choices(chunk):
+    def _parse_choices(choice) -> Tuple[str, int]:
         message = ""
-        if "role" in chunk.choices[0].delta:
-            message += chunk.choices[0].delta.role + ": "
-        if "content" in chunk.choices[0].delta:
-            message += chunk.choices[0].delta.content
+        if choice.delta.content:
+            message += choice.delta.content
 
-        index = chunk.choices[0].index
-        return message, index
+        return message, choice.index

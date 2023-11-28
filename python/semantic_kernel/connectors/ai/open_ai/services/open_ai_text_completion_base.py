@@ -65,11 +65,13 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             prompt=prompt, request_settings=settings, stream=True
         )
 
-        async for chunk in response:
+        async for partial in response:
+            if len(partial.choices) == 0:
+                continue
             if settings.number_of_responses > 1:
-                for choice in chunk.choices:
+                for choice in partial.choices:
                     completions = [""] * settings.number_of_responses
                     completions[choice.index] = choice.text
                     yield completions
             else:
-                yield chunk.choices[0].text
+                yield partial.choices[0].text
