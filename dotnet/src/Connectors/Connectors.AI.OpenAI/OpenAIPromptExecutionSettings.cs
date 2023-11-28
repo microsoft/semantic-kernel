@@ -68,7 +68,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
-    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string>? StopSequences { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
@@ -127,12 +127,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
-    /// <param name="requestSettings">Template configuration</param>
+    /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? requestSettings, int? defaultMaxTokens = null)
+    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
-        if (requestSettings is null)
+        if (executionSettings is null)
         {
             return new OpenAIPromptExecutionSettings()
             {
@@ -140,12 +140,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             };
         }
 
-        if (requestSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
+        if (executionSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
         {
             return requestSettingsOpenAIRequestSettings;
         }
 
-        var json = JsonSerializer.Serialize(requestSettings);
+        var json = JsonSerializer.Serialize(executionSettings);
         var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
         if (openAIRequestSettings is not null)
@@ -153,7 +153,27 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             return openAIRequestSettings;
         }
 
-        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(requestSettings));
+        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
+    }
+
+    /// <summary>
+    /// Create a new settings object with the values from another settings object.
+    /// </summary>
+    /// <param name="executionSettings">Template configuration</param>
+    /// <param name="defaultMaxTokens">Default max tokens</param>
+    /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    public static OpenAIPromptExecutionSettings FromRequestSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    {
+        var requestSettings = FromRequestSettings(executionSettings, defaultMaxTokens);
+
+        if (requestSettings.StopSequences?.Count == 0)
+        {
+            // Azure OpenAI WithData API does not allow to send empty array of stop sequences
+            // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
+            requestSettings.StopSequences = null;
+        }
+
+        return requestSettings;
     }
 
     #region private ================================================================================

@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionTests3
 {
-    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
@@ -45,7 +44,7 @@ public sealed class KernelFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        KernelFunction[] functions = new KernelBuilder().Build().ImportPluginFromObject(pluginInstance).ToArray();
+        KernelFunction[] functions = KernelPluginFactory.CreateFromObject(pluginInstance).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);

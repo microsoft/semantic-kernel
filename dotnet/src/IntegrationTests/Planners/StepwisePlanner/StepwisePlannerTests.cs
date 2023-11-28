@@ -3,8 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planning;
@@ -26,7 +24,6 @@ public sealed class StepwisePlannerTests : IDisposable
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
-        this._loggerFactory = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -148,63 +145,38 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
-
-        if (useChatModel)
+        return new KernelBuilder().ConfigureServices(c =>
         {
-            builder.WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
+            if (useChatModel)
+            {
+                c.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
+            else
+            {
+                c.AddAzureOpenAITextCompletion(
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
 
-        if (useEmbeddings)
-        {
-            builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
-
-        var kernel = builder.Build();
-
-        return kernel;
+            if (useEmbeddings)
+            {
+                c.AddAzureOpenAITextEmbeddingGeneration(
+                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+            }
+        }).Build();
     }
 
-    private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~StepwisePlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._loggerFactory is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 }

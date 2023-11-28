@@ -27,7 +27,7 @@ public static class Example20_HuggingFace
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletionService(
+            .WithHuggingFaceTextCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
@@ -62,7 +62,7 @@ public static class Example20_HuggingFace
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletionService(
+            .WithHuggingFaceTextCompletion(
                 model: Model,
                 endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)

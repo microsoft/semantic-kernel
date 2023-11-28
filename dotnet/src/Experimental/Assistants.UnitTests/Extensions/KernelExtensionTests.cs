@@ -18,7 +18,7 @@ public sealed class KernelExtensionTests
         //Arrange
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
-        var kernel = KernelBuilder.Create();
+        var kernel = new Kernel();
         kernel.Plugins.Add(new KernelPlugin("Fake", new[] { function }));
 
         //Act
@@ -35,7 +35,7 @@ public sealed class KernelExtensionTests
     public static void InvokeInvalidSinglePartTool(string toolName)
     {
         //Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = new Kernel();
 
         //Act & Assert
         Assert.Throws<KernelException>(() => kernel.GetAssistantTool(toolName));

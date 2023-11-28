@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -25,12 +26,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        var builder = new KernelBuilder()
-                .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLoggerFactory(this._logger);
-        Kernel target = builder.Build();
-
-        var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
+        Kernel target = new KernelBuilder()
+            .WithLoggerFactory(this._logger)
+            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
@@ -44,12 +44,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        var builder = new KernelBuilder()
-                .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLoggerFactory(this._logger);
-        Kernel target = builder.Build();
-
-        var emailFunctions = target.ImportPluginFromObject<EmailPluginFake>();
+        Kernel target = new KernelBuilder()
+            .WithLoggerFactory(this._logger)
+            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
@@ -73,12 +72,12 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
