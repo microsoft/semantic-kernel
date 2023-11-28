@@ -44,7 +44,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._config = config;
 
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }

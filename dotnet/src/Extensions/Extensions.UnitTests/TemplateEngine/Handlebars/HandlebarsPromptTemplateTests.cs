@@ -21,7 +21,7 @@ public sealed class HandlebarsPromptTemplateTests
     public HandlebarsPromptTemplateTests()
     {
         this._factory = new HandlebarsPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._kernel = new KernelBuilder().Build();
+        this._kernel = new Kernel();
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
     }
 

@@ -28,7 +28,7 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
-        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 
     /// <summary>
@@ -49,6 +49,6 @@ public static class KernelFunctionsMarkdownExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 }

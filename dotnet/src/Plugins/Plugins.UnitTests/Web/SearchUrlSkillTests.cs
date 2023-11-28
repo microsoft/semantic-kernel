@@ -22,11 +22,8 @@ public class SearchUrlPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        Kernel kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPluginFromObject<SearchUrlPlugin>("search");
+        Assert.NotNull(KernelPluginFactory.CreateFromObject<SearchUrlPlugin>("search"));
     }
 
     [Fact]

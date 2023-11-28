@@ -32,7 +32,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: deploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,

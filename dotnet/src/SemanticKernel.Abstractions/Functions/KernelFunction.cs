@@ -102,7 +102,7 @@ public abstract class KernelFunction
         CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
 
         logger.LogTrace("Function invoking.");
 
@@ -179,7 +179,7 @@ public abstract class KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
 
         logger.LogInformation("Function streaming invoking.");
 

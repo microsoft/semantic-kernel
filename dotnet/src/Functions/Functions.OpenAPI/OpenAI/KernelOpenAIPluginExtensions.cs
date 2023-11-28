@@ -2,11 +2,13 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -109,7 +111,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -140,12 +142,12 @@ public static class KernelOpenAIPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,

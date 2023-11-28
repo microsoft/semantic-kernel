@@ -21,11 +21,8 @@ public class MathPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPluginFromObject<MathPlugin>("math");
+        Assert.NotNull(KernelPluginFactory.CreateFromObject<MathPlugin>("math"));
     }
 
     [Theory]

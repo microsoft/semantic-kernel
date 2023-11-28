@@ -33,7 +33,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
     /// </summary>
     public KernelOpenAIPluginExtensionsTests()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
     }

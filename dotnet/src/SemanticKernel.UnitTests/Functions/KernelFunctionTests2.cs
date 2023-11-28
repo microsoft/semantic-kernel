@@ -25,7 +25,7 @@ public sealed class KernelFunctionTests2
 
     public KernelFunctionTests2()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
         this._logger = new Mock<ILoggerFactory>();
 
         s_expected = Guid.NewGuid().ToString("D");

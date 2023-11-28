@@ -24,11 +24,8 @@ public class TimePluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        Assert.NotNull(KernelPluginFactory.CreateFromObject<TimePlugin>("time"));
     }
 
     [Fact]

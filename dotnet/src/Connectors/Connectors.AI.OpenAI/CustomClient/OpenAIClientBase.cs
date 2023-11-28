@@ -33,7 +33,7 @@ public abstract class OpenAIClientBase
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 

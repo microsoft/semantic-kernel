@@ -61,7 +61,7 @@ public partial class AssistantBuilder
     /// Define the OpenAI chat completion service (required).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
+    public AssistantBuilder AddOpenAIChatCompletion(string model, string apiKey)
     {
         this._apiKey = apiKey;
         this._model.Model = model;

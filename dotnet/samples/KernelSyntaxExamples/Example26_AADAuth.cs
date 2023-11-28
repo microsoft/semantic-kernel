@@ -44,7 +44,7 @@ public static class Example26_AADAuth
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))

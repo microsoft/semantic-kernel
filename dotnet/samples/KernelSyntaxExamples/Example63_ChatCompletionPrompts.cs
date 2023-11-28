@@ -19,7 +19,7 @@ public static class Example63_ChatCompletionPrompts
         ";
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
