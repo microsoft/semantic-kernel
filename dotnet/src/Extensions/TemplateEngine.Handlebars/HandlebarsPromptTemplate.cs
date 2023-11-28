@@ -27,9 +27,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
-
-    /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();

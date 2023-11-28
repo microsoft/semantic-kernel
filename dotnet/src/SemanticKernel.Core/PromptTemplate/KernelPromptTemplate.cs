@@ -41,13 +41,9 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
         this._promptModel = promptConfig;
-        this._parameters = new(() => this.InitParameters());
         this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
@@ -60,34 +56,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
-
-    private List<KernelParameterMetadata> InitParameters()
-    {
-        // Parameters from prompt template configuration
-        Dictionary<string, KernelParameterMetadata> result = new(this._promptModel.InputParameters.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var p in this._promptModel.InputParameters)
-        {
-            result[p.Name] = new KernelParameterMetadata(p.Name)
-            {
-                Description = p.Description,
-                DefaultValue = p.DefaultValue
-            };
-        }
-
-        // Parameters from the template
-        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-        foreach (var variableName in variableNames)
-        {
-            if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
-            {
-                result.Add(variableName!, new KernelParameterMetadata(variableName!));
-            }
-        }
-
-        return result.Values.ToList();
-    }
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
