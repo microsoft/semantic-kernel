@@ -49,14 +49,14 @@ public static class Example10_DescribeAllPluginsAndFunctions
             functionName: "Novel",
             description: "Write a bedtime story");
 
-        var functions = kernel.Plugins.GetFunctionsMetadata();
+        var functions = kernel.Plugins.GetPluginFunctionsMetadata();
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Registered plugins and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KernelFunctionMetadata func in functions)
+        foreach (KernelPluginFunctionMetadata func in functions)
         {
             PrintFunction(func);
         }
@@ -64,9 +64,9 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-    private static void PrintFunction(KernelFunctionMetadata func)
+    private static void PrintFunction(KernelPluginFunctionMetadata func)
     {
-        Console.WriteLine($"   {func.Name}: {func.Description}");
+        Console.WriteLine($"   {func.PluginName}.{func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {

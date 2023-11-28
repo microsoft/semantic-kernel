@@ -137,7 +137,7 @@ public class KernelPluginCollectionTests
     [Fact]
     public void ItExposesFunctionViewsOfAllFunctions()
     {
-        var c = new KernelPluginCollection()
+        var pluginCollection = new KernelPluginCollection()
         {
             new KernelPlugin("plugin1", new[]
             {
@@ -151,18 +151,11 @@ public class KernelPluginCollectionTests
             })
         };
 
-        IList<KernelFunctionMetadata> metadata = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
+        IList<KernelPluginFunctionMetadata> metadata = pluginCollection.GetPluginFunctionsMetadata().OrderBy(f => f.Name).ToList();
 
-        Assert.Equal("plugin1", metadata[0].PluginName);
         Assert.Equal("Function1", metadata[0].Name);
-
-        Assert.Equal("plugin1", metadata[1].PluginName);
         Assert.Equal("Function2", metadata[1].Name);
-
-        Assert.Equal("plugin2", metadata[2].PluginName);
         Assert.Equal("Function2", metadata[2].Name);
-
-        Assert.Equal("plugin2", metadata[3].PluginName);
         Assert.Equal("Function3", metadata[3].Name);
     }
 

@@ -2,15 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel;
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Extensions for function metadata.
+/// Provides extension methods for the <see cref="KernelFunctionMetadata"/> class.
 /// </summary>
-internal static class KernelFunctionMetadataExtensions
+internal static class KernelPluginFunctionMetadataExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
@@ -59,5 +60,47 @@ internal static class KernelFunctionMetadataExtensions
 
         functionView.Parameters.Required = requiredProperties;
         return functionView;
+    }
+
+    /// <summary>
+    /// Create a manual-friendly string for a function.
+    /// </summary>
+    /// <param name="function">The function to create a manual-friendly string for.</param>
+    /// <returns>A manual-friendly string for a function.</returns>
+    internal static string ToManualString(this KernelPluginFunctionMetadata function)
+    {
+        var inputs = string.Join("\n", function.Parameters.Select(parameter =>
+        {
+            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $" (default value: {parameter.DefaultValue})";
+            return $"    - {parameter.Name}: {parameter.Description}{defaultValueString}";
+        }));
+
+        // description and inputs are indented by 2 spaces
+        // While each parameter in inputs is indented by 4 spaces
+        return $@"{function.ToFullyQualifiedName()}:
+  description: {function.Description}
+  inputs:
+{inputs}";
+    }
+
+    /// <summary>
+    /// Create a fully qualified name for a function.
+    /// </summary>
+    /// <param name="function">The function to create a fully qualified name for.</param>
+    /// <returns>A fully qualified name for a function.</returns>
+    internal static string ToFullyQualifiedName(this KernelPluginFunctionMetadata function)
+    {
+        return $"{function.PluginName}.{function.Name}";
+    }
+
+    /// <summary>
+    /// Create a string for generating an embedding for a function.
+    /// </summary>
+    /// <param name="function">The function to create a string for generating an embedding for.</param>
+    /// <returns>A string for generating an embedding for a function.</returns>
+    internal static string ToEmbeddingString(this KernelPluginFunctionMetadata function)
+    {
+        var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
+        return $"{function.Name}:\n  description: {function.Description}\n  inputs:\n{inputs}";
     }
 }

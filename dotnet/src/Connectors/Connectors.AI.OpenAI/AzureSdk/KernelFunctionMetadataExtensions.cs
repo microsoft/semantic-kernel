@@ -14,7 +14,7 @@ public static class KernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
     /// <returns>An <see cref="OpenAIFunction"/> object.</returns>
-    public static OpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata)
+    public static OpenAIFunction ToOpenAIFunction(this KernelPluginFunctionMetadata metadata)
     {
         var openAIParams = new List<OpenAIFunctionParameter>();
         foreach (KernelParameterMetadata param in metadata.Parameters)

@@ -601,7 +601,7 @@ public class KernelTests
                 Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in kernel.Plugins.GetFunctionsMetadata())
+            foreach (var function in kernel.Plugins.GetPluginFunctionsMetadata())
             {
                 variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }

@@ -106,16 +106,16 @@ public static class IKernelPluginExtensions
     /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
     /// <returns>A list of metadata over every function in the plugins collection</returns>
-    public static IList<KernelFunctionMetadata> GetFunctionsMetadata(this IEnumerable<IKernelPlugin> plugins)
+    public static IList<KernelPluginFunctionMetadata> GetPluginFunctionsMetadata(this IEnumerable<IKernelPlugin> plugins)
     {
         Verify.NotNull(plugins);
 
-        List<KernelFunctionMetadata> metadata = new();
+        List<KernelPluginFunctionMetadata> metadata = new();
         foreach (IKernelPlugin plugin in plugins)
         {
             foreach (KernelFunction function in plugin)
             {
-                metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = plugin.Name });
+                metadata.Add(new KernelPluginFunctionMetadata(function.Metadata) { PluginName = plugin.Name });
             }
         }
 

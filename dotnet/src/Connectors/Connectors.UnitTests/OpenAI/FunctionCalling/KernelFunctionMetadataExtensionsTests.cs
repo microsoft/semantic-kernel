@@ -13,12 +13,12 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoParameters()
     {
         // Arrange
-        var sut = new KernelFunctionMetadata("foo")
+        var functionMetadata = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
+        var sut = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = "bar" };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -36,12 +36,12 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoPluginName()
     {
         // Arrange
-        var sut = new KernelFunctionMetadata("foo")
+        var functionMetadata = new KernelFunctionMetadata("foo")
         {
-            PluginName = string.Empty,
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
+        var sut = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = string.Empty };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -70,13 +70,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
             Schema = withSchema ? KernelJsonSchema.Parse("{\"type\":\"integer\"}") : null,
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var functionMetadata = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
+        var sut = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = "bar" };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -100,13 +100,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
             Description = "This is param1"
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var functionMetadata = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
+        var sut = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = "bar" };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -129,12 +129,12 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ParameterType = typeof(int),
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var functionMetadata = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
         };
+        var sut = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = "bar" };
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -158,9 +158,10 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var function = plugin.First();
 
-        var functionView = function.Metadata;
+        var functionMetadata = function.Metadata;
+        var pluginFunctionMetadata = new KernelPluginFunctionMetadata(functionMetadata) { PluginName = plugin.Name };
 
-        var sut = functionView.ToOpenAIFunction();
+        var sut = pluginFunctionMetadata.ToOpenAIFunction();
 
         // Act
         var result = sut.ToFunctionDefinition();

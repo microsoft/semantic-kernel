@@ -18,7 +18,7 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        var metadata = kernel.Plugins.GetPluginFunctionsMetadata();
         Assert.NotNull(metadata);
         Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
         metadata.ToList().ForEach(function =>
@@ -39,7 +39,7 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        var metadata = kernel.Plugins.GetPluginFunctionsMetadata();
         Assert.NotNull(metadata);
         Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
         metadata.ToList().ForEach(function =>

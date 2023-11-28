@@ -42,7 +42,6 @@ public sealed class KernelFunctionMetadata
     {
         Verify.NotNull(metadata);
         this.Name = metadata.Name;
-        this.PluginName = metadata.PluginName;
         this.Description = metadata.Description;
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
@@ -59,9 +58,6 @@ public sealed class KernelFunctionMetadata
             this._name = value;
         }
     }
-
-    /// <summary>Gets the name of the plugin containing the function.</summary>
-    public string? PluginName { get; init; }
 
     /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
