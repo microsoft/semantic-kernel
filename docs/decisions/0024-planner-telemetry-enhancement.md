@@ -129,12 +129,83 @@ public interface IResultBase
   /// <summary>
   /// Model name or Id
   /// </summary>
-  string Model { get; }
+  string ModelId { get; }
 
   /// <summary>
   /// Gets the model result data.
   /// </summary>
   ModelResult ModelResult { get; }
+}
+```
+
+We also need to propagate the model Id up via KernelResult:
+
+```csharp
+// In AIFunctionResultExtensions.cs
+...
+/// <summary>
+/// Function model id key for <see cref="ModelResult"/> records.
+/// </summary>
+public const string ModelIdKey = "ModelId";
+...
+/// <summary>
+/// Returns the model Id from <see cref="FunctionResult"/> metadata.
+/// </summary>
+/// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
+public static string? GetModelId(this FunctionResult result)
+{
+  if (result.TryGetMetadataValue(ModelIdKey, out string? modelId))
+  {
+    return modelId;
+  }
+
+  return null;
+}
+
+
+// In KernelFunctionFromPrompt.cs
+...
+result.Metadata.Add(AIFunctionResultExtensions.ModelIdKey, completionResults[0].ModelId);
+...
+return result;
+```
+
+A kernel function will then retrieve the information by doing the following:
+
+```csharp
+// Note that not all services support usage details.
+if (result.GetModelId() is null)
+{
+  logger.LogInformation("Model id not found in function result.");
+  return;
+}
+var modelId = result.GetModelId();
+
+if (result.GetModelResults() is null)
+{
+  logger.LogInformation("Model results not found in function result.");
+  return;
+}
+var modelResult = result.GetModelResults().FirstOrDefault();
+var modelResultJson = modelResult?.GetJsonResult();
+
+var promptTokens = 0;
+var completionTokens = 0;
+try
+{
+  var tokenUsage = modelResultJson.GetValueOrDefault().GetProperty("Usage");
+  promptTokens = tokenUsage.GetProperty("PromptTokens").GetInt32();
+  completionTokens = tokenUsage.GetProperty("CompletionTokens").GetInt32();
+}
+catch (Exception ex) when (ex is KeyNotFoundException)
+{
+  logger.LogInformation("Usage details not found in model result.");
+  return;
+}
+catch (Exception ex)
+{
+  logger.LogError(ex, "Error while parsing usage details from model result.");
+  throw;
 }
 ```
 
@@ -191,8 +262,8 @@ Overall cons:
 Logs will be used to record interesting events while the code is running.
 
 ```csharp
-this._logger.LogInformation("{PlannerType}: Received planning request.", PlannerType, plan.ToPlanString());
-this._logger.LogInformation("{PlannerType}: Successfully created plan.", PlannerType, plan.ToPlanString());
+this._logger.LogInformation("{PlannerType}: Received planning request.", PlannerType);
+this._logger.LogInformation("{PlannerType}: Successfully created plan. Plan: {plan}", PlannerType, plan.ToPlanString());
 ```
 
 #### [Metrics](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics)
@@ -200,22 +271,17 @@ this._logger.LogInformation("{PlannerType}: Successfully created plan.", Planner
 Metrics will be used to record measurements overtime.
 
 ```csharp
-// Create a meter for grouping instruments
-Meter s_meter = new("Microsoft.SemanticKernel.Planning");
+/// <summary><see cref="Meter"/> for function-related metrics.</summary>
+private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
-// Create an instrument
-Counter<int> s_promptTokensCounter =
-    s_meter.CreateCounter<int>(
-        name: "tokens.prompt",
-        unit: "{token}",
-        description: "Number of prompt tokens used");
+/// <summary><see cref="Counter{T}"/> to keep track of the number of successful execution.</summary>
+private static readonly Counter<int> s_successCounter = s_meter.CreateCounter<int>(
+    name: "sk.function.success",
+    unit: "{execution}",
+    description: "Number of successful function executions");
 
-// Add a measurement
-s_promptTokensCounter.Add(
-  usage.PromptTokens,
-  new KeyValuePair<string, object>("ComponentType", "Planner"),
-  new KeyValuePair<string, object>("ComponentName", "CreateHandlebarsPlan")
-);
+// Add a measurement with a custom dimension to categorize measurements based on function.
+s_successCounter.Add(1, new KeyValuePair<string, object>("sk.function.name", this.Name));
 ```
 
 #### [Traces](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing)
@@ -223,20 +289,15 @@ s_promptTokensCounter.Add(
 Activities are used to track dependencies through an application, correlating work done by other components, and form a tree of activities known as a trace.
 
 ```csharp
-ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
+ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
 // Create and start an activity
-using var activity = s_activitySource.StartActivity("CreateHandlebarsPlan");
-
-// Use tags to store information useful for diagnostics
-activity?.SetTag("tokens.prompt", usage.PromptTokens);
-activity?.SetTag("tokens.completion", usage.CompletionTokens);
-// Duration is recorded within the activity. Timer is automatically stopped when the activity object is disposed.
+using var activity = s_activitySource.StartActivity(this.Name);
 
 if (config.IncludeSensitiveInfo)
 {
-  activity?.SetTag("goal", goal);
-  activity?.SetTag("steps", plan.ToPlanString());
+  activity?.SetTag("sk.planner.goal", goal);
+  activity?.SetTag("sk.planner.plan", plan.ToPlanString());
 }
 ```
 
@@ -244,12 +305,12 @@ if (config.IncludeSensitiveInfo)
 
 ```csharp
 using var traceProvider = Sdk.CreateTracerProviderBuilder()
-  .AddSource("Microsoft.SemanticKernel.*")
+  .AddSource("Microsoft.SemanticKernel*")
   .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
   .Build();
 
 using var meterProvider = Sdk.CreateMeterProviderBuilder()
-  .AddMeter("Microsoft.SemanticKernel.*")
+  .AddMeter("Microsoft.SemanticKernel*")
   .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
   .Build();
 
