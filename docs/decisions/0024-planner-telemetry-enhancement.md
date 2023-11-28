@@ -209,6 +209,44 @@ catch (Exception ex)
 }
 ```
 
+## To optionally allow the kernel to send sensitive information
+
+In some environments, it is not inappropriate to store sensitive information, such as PII, in any services. Nonetheless, those intermediate results (generated using non-customer data) can be extremely useful for debugging purposes. Thus, we need a switch that can turn on and off telemetries that contain sensitive information.
+
+```csharp
+// In a new TelemetryOptions.cs
+public sealed class TelemetryOptions
+{
+  public bool IncludeSensitiveInformation { set; get; } = false;
+}
+
+// In Kernel.cs
+...
+public TelemetryOptions Telemetry;
+...
+public Kernel(
+  IAIServiceProvider aiServiceProvider,
+  IEnumerable<IKernelPlugin>? plugins = null,
+  IAIServiceSelector? serviceSelector = null,
+  IDelegatingHandlerFactory? httpHandlerFactory = null,
+  ILoggerFactory? loggerFactory = null
+  TelemetryOptions? telemetry = null)
+{
+  ...
+  Telemetry = telemetry ?? new TelemetryOptions { IncludeSensitiveInformation = false };
+  ...
+}
+
+// In KernelBuilder.cs
+...
+public KernelBuilder WithTelemetryOption(TelemetryOptions telemetry)
+{
+  this._telemetry = telemetry;
+  return this;
+}
+...
+```
+
 ## Decision Outcome
 
 TBD
@@ -294,7 +332,7 @@ ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 // Create and start an activity
 using var activity = s_activitySource.StartActivity(this.Name);
 
-if (config.IncludeSensitiveInfo)
+if (kernel.Telemetry.IncludeSensitiveInformation)
 {
   activity?.SetTag("sk.planner.goal", goal);
   activity?.SetTag("sk.planner.plan", plan.ToPlanString());
