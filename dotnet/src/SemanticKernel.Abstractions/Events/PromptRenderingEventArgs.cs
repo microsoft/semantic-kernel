@@ -15,10 +15,10 @@ public class PromptRenderingEventArgs : KernelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="variables">Context variables related to the event</param>
-    /// <param name="requestSettings">request settings used by the AI service</param>
-    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings) : base(function, variables)
+    /// <param name="executionSettings">request settings used by the AI service</param>
+    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, PromptExecutionSettings? executionSettings) : base(function, variables)
     {
-        this.RequestSettings = requestSettings; // TODO clone these settings
+        this.RequestSettings = executionSettings; // TODO clone these settings
     }
 
     /// <summary>

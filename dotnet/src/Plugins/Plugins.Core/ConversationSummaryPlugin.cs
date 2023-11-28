@@ -41,17 +41,17 @@ public class ConversationSummaryPlugin
         this._summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
-            requestSettings: settings);
+            executionSettings: settings);
 
         this._conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
-            requestSettings: settings);
+            executionSettings: settings);
 
         this._conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
-            requestSettings: settings);
+            executionSettings: settings);
     }
 
     /// <summary>

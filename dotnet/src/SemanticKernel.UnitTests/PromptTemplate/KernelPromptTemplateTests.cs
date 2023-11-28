@@ -37,7 +37,7 @@ public sealed class KernelPromptTemplateTests
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
                        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var blocks = target.ExtractBlocks(template);
@@ -149,7 +149,7 @@ public sealed class KernelPromptTemplateTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{plugin.function}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);
@@ -174,7 +174,7 @@ public sealed class KernelPromptTemplateTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{plugin.function $myVar}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);
@@ -205,7 +205,7 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);
@@ -220,7 +220,7 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._variables));
@@ -250,7 +250,7 @@ public sealed class KernelPromptTemplateTests
         this._variables.Set("someDate", "2023-08-25T00:00:00");
 
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);
@@ -264,7 +264,7 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
         this._variables.Update("BAR");
         this._variables.Set("myVar", "BAZ");
 
@@ -323,7 +323,7 @@ public sealed class KernelPromptTemplateTests
 
         var template = "foo-{{plugin.function $myVar}}-baz";
 
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._variables);

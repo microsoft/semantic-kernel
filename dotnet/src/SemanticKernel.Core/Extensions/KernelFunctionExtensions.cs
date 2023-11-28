@@ -20,16 +20,16 @@ public static class KernelFunctionExtensions
     /// <param name="function">Function to execute</param>
     /// <param name="kernel">Kernel</param>
     /// <param name="variables">Input variables for the function</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this KernelFunction function,
         Kernel kernel,
         ContextVariables? variables = null,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return function.InvokeAsync(kernel, variables ?? new ContextVariables(), requestSettings, cancellationToken);
+        return function.InvokeAsync(kernel, variables ?? new ContextVariables(), executionSettings, cancellationToken);
     }
 
     /// <summary>
@@ -38,13 +38,13 @@ public static class KernelFunctionExtensions
     /// <param name="function">Function to execute</param>
     /// <param name="kernel">Kernel</param>
     /// <param name="input">Input string for the function</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this KernelFunction function,
         Kernel kernel,
         string input,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), requestSettings, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), executionSettings, cancellationToken);
 }

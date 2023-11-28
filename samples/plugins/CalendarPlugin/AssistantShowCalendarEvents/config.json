@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Retrieve a list of calendar events",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 100,
       "temperature": 0.2,

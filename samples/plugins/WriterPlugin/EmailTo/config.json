@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Turn bullet points into an email to someone, using a polite tone",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,
