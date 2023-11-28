@@ -68,7 +68,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
-    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string>? StopSequences { get; set; } = null;
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.

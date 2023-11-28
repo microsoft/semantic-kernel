@@ -222,11 +222,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                     {
                         yield return (T)(object)message.Content;
                     }
+                    continue;
                 }
 
                 if (typeof(T) == typeof(ChatWithDataStreamingResult))
                 {
                     yield return (T)(object)result;
+                    continue;
                 }
 
                 throw new NotSupportedException($"Type {typeof(T)} is not supported");
