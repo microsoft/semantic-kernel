@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
 /// A class for generating images using OpenAI's API.
 /// </summary>
+[Experimental("SKEXP0012")]
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>

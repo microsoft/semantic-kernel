@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
+[Experimental("SKEXP0003")]
 public interface ISemanticTextMemory
 {
     /// <summary>

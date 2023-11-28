@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
 using Azure.AI.OpenAI;
@@ -351,6 +352,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
@@ -388,6 +390,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -422,6 +425,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
@@ -459,6 +463,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -491,6 +496,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
@@ -522,6 +528,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -551,6 +558,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static KernelBuilder WithOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string modelId,
@@ -584,6 +592,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
@@ -612,6 +621,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static KernelBuilder WithOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string modelId,
@@ -640,6 +650,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0011")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
         string modelId,
         OpenAIClient openAIClient,
@@ -895,6 +906,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <remarks>
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
     /// </remarks>
+    [Experimental("SKEXP0010")]
     public static KernelBuilder WithAzureOpenAIChatCompletion(
         this KernelBuilder builder,
         AzureOpenAIChatCompletionWithDataConfig config,
@@ -925,6 +937,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <remarks>
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
     /// </remarks>
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         AzureOpenAIChatCompletionWithDataConfig config,
@@ -1081,6 +1094,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0012")]
     public static KernelBuilder WithAzureOpenAIImageGeneration(
         this KernelBuilder builder,
         string endpoint,
@@ -1114,6 +1128,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0012")]
     public static IServiceCollection AddAzureOpenAIImageGeneration(
         this IServiceCollection services,
         string endpoint,
@@ -1143,6 +1158,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0012")]
     public static KernelBuilder WithOpenAIImageGeneration(
         this KernelBuilder builder,
         string apiKey,
@@ -1172,6 +1188,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0012")]
     public static IServiceCollection AddOpenAIImageGeneration(this IServiceCollection services,
         string apiKey,
         string? orgId = null,

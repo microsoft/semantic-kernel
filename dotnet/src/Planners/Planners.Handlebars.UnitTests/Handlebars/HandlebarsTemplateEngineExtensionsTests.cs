@@ -171,7 +171,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables);
 
-        // Assert   
+        // Assert
         Assert.Equal("Foo Bar", result);
     }
 
@@ -188,7 +188,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables);
 
-        // Assert   
+        // Assert
         Assert.Equal("BazBar", result);
     }
 
@@ -205,7 +205,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables);
 
-        // Assert   
+        // Assert
         Assert.Equal("BazBar", result);
     }
 
@@ -219,7 +219,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var variables = new Dictionary<string, object?>();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
-        // Assert   
+        // Assert
         Assert.Throws<KernelException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables));
     }
 
@@ -247,7 +247,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var variables = new Dictionary<string, object?>();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
-        // Assert   
+        // Assert
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables));
     }
 

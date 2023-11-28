@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Implementation of <see cref="ISemanticTextMemory"/>. Provides methods to save, retrieve, and search for text information
 /// in a semantic memory store.
 /// </summary>
+[Experimental("SKEXP0003")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
     private readonly ITextEmbeddingGeneration _embeddingGenerator;

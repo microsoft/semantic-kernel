@@ -11,8 +11,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable SKEXP0001
-
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class CollectEmailPlugin
