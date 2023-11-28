@@ -7,6 +7,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -181,6 +183,14 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
+            .ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+                {
+                    // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+                    c.AddStandardResilienceHandler().Configure(o =>
+                    {
+                        o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                    });
+                }))
             .Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
@@ -208,6 +218,15 @@ public sealed class OpenAICompletionTests : IDisposable
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
+
+        builder.ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+            {
+                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+                c.AddStandardResilienceHandler().Configure(o =>
+                {
+                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                });
+            }));
 
         Kernel target = builder.Build();
 
