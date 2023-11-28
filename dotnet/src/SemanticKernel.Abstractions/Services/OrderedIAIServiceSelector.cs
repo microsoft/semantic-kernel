@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Services;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
 /// Uses the service id to select the preferred service provider and then returns the service and associated model settings.
 /// </summary>
-internal class OrderedIAIServiceSelector : IAIServiceSelector
+internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
