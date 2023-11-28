@@ -56,7 +56,6 @@ public record OpenAIAuthenticationConfig
 /// <summary>
 /// Represents the type of authentication for an OpenAI plugin.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OpenAIAuthenticationType
 {
     /// <summary>
@@ -83,7 +82,6 @@ public enum OpenAIAuthenticationType
 /// <summary>
 /// Represents the type of authorization for an OpenAI plugin.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OpenAIAuthorizationType
 {
     /// <summary>
