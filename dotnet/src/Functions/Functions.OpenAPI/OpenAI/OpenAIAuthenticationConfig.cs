@@ -39,7 +39,7 @@ public record OpenAIAuthenticationConfig
     /// <summary>
     /// The authorization content type.
     /// </summary>
-    public OpenAIAuthorizationContentType? AuthorizationContentType { get; set; }
+    public string? AuthorizationContentType { get; set; }
 
     /// <summary>
     /// The authorization scope.
@@ -102,23 +102,4 @@ public enum OpenAIAuthorizationType
     /// </summary>
     [EnumMember(Value = "Bearer")]
     Bearer
-}
-
-/// <summary>
-/// Represents the type of content used for authorization for an OpenAI plugin.
-/// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum OpenAIAuthorizationContentType
-{
-    /// <summary>
-    /// JSON content.
-    /// </summary>
-    [EnumMember(Value = "application/json")]
-    JSON,
-
-    /// <summary>
-    /// Form URL encoded content.
-    /// </summary>
-    [EnumMember(Value = "application/x-www-form-urlencoded")]
-    FormUrlEncoded
 }
