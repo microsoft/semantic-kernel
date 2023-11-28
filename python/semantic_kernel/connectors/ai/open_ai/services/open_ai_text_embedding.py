@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -51,6 +52,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        openai.app_info = APP_INFO
 
     async def generate_embeddings_async(
         self, texts: List[str], batch_size: Optional[int] = None

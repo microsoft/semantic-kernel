@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -105,16 +106,14 @@ public static class Example08_RetryHandler
                         outcome.Result.StatusCode));
     }
 
-    private static async Task ImportAndExecutePluginAsync(IKernel kernel)
+    private static async Task ImportAndExecutePluginAsync(Kernel kernel)
     {
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
-        var qaPlugin = kernel.ImportSemanticFunctionsFromDirectory(
-            folder,
-            "QAPlugin");
+        var qaPlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
 
         var question = "How popular is Polly library?";
 
@@ -123,7 +122,7 @@ public static class Example08_RetryHandler
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
+            var answer = await kernel.InvokeAsync(qaPlugin["Question"], question);
             InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
         }
         catch (Exception ex)

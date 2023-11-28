@@ -52,14 +52,14 @@ Second line.
 
         var expectedNodes = new List<PromptNode>
         {
-            new PromptNode("message") { Attributes = { { "role", "system" } }, Content = "Test with role in double quotes and content in new line." },
-            new PromptNode("message") { Attributes = { { "role", "user" } }, Content = "Test with role in single quotes and content in the same line." },
-            new PromptNode("message") { Attributes = { { "role", "assistant" } }, Content = "Test with multiline content.\nSecond line." },
-            new PromptNode("message") { Attributes = { { "role", "system" } }, Content = "Test line with tab." },
-            new PromptNode("message")
+            new("message") { Attributes = { { "role", "system" } }, Content = "Test with role in double quotes and content in new line." },
+            new("message") { Attributes = { { "role", "user" } }, Content = "Test with role in single quotes and content in the same line." },
+            new("message") { Attributes = { { "role", "assistant" } }, Content = "Test with multiline content.\nSecond line." },
+            new("message") { Attributes = { { "role", "system" } }, Content = "Test line with tab." },
+            new("message")
             {
                 Attributes = { { "role", "user" } },
-                ChildNodes = new List<PromptNode> { new PromptNode("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } } }
+                ChildNodes = new List<PromptNode> { new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } } }
             },
         };
 

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
@@ -234,7 +234,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, null);
 
         //Act
-        Assert.Throws<SKException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
+        Assert.Throws<KernelException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
     }
 
     [Theory]

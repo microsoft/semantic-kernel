@@ -35,29 +35,25 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization!);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextResultsAsync(text, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, cancellationToken);
     }
 }

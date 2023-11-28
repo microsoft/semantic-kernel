@@ -43,7 +43,7 @@ public static class Example37_MultiStreamingCompletion
 
     private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -53,12 +53,9 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
-
-        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<string>("Write one paragraph about why AI is awesome"))
         {
-            Console.Write(message);
+            Console.Write(chatUpdate);
         }
 
         Console.WriteLine();

@@ -20,6 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
     /// </summary>
@@ -77,25 +80,18 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextResultsAsync(text, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, cancellationToken);
     }
 }

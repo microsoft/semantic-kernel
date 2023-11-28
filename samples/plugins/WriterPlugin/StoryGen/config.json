@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Generate a list of synopsis for a novel or novella with sub-chapters",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 250,
       "temperature": 0.0,

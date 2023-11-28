@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
@@ -232,7 +232,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
     [Fact]
@@ -257,7 +257,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
     [Fact]

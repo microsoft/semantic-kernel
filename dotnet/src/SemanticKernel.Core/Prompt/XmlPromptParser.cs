@@ -31,7 +31,7 @@ public static class XmlPromptParser
             return false;
         }
 
-        foreach (XmlNode node in xmlDocument.DocumentElement.ChildNodes)
+        foreach (XmlNode node in xmlDocument.DocumentElement!.ChildNodes)
         {
             var childPromptNode = GetPromptNode(node);
 

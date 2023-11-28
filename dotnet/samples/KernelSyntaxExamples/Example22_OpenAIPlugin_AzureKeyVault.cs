@@ -66,7 +66,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
 
         // Import Open AI Plugin
         var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             PluginResourceNames.AzureKeyVault,
             openAIManifest!,
             new OpenAIFunctionExecutionParameters
@@ -84,7 +84,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         httpClient.Dispose();
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync(IKernel kernel, IDictionary<string, ISKFunction> plugin)
+    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, IKernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -94,14 +94,14 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         contextVariables.Set("enabled", "true");
 
         // Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
+        var functionResult = await kernel.InvokeAsync(plugin["SetSecret"], contextVariables);
 
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
+        var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(IKernel kernel, IDictionary<string, ISKFunction> plugin)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, IKernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -109,9 +109,9 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         contextVariables.Set("api-version", "7.0");
 
         // Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
+        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"]);
 
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
+        var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }

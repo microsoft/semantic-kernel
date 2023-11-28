@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
@@ -129,7 +129,7 @@ public class QueryStringBuilderTests
         };
 
         //Act and assert
-        Assert.Throws<SKException>(() => operation.BuildQueryString(arguments));
+        Assert.Throws<KernelException>(() => operation.BuildQueryString(arguments));
     }
 
     [Theory]
