@@ -83,7 +83,15 @@ public class OpenAIAuthenticationProvider
 
             // Read the token
             var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-            var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
+            OAuthTokenResponse? tokenResponse;
+            try
+            {
+                tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
+            }
+            catch (JsonException)
+            {
+                throw new SKException($"Failed to deserialize token response from {openAIAuthConfig.AuthorizationUrl}.");
+            }
 
             // Get the token type and value
             scheme = tokenResponse?.TokenType ?? throw new SKException("No token type found in the response.");

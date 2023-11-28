@@ -39,7 +39,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
     ///   dotnet user-secrets set "KeyVault:ClientId" "your_client_id"
     ///   dotnet user-secrets set "KeyVault:ClientSecret" "your_secret"
     ///
-    ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/src/Functions/Functions.OpenAPI/Plugins/AzureKeyVaultPlugin/ai-plugin.json
+    ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/samples/KernelSyntaxExamples/Resources/22-ai-plugin.json
     /// </summary>
     public static async Task RunAsync()
     {
