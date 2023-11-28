@@ -13,97 +13,154 @@ informed:
 
 ## Decision Drivers
 
-1. The sk developer should be able to get streaming data from the Kernel and Functions using Kernel.RunAsync or ISKFunctions.InvokeAsync methods
+1. The sk developer should be able to get use different prompt functions using different models and providers, without having to know the details of each model.
 
-2. The sk developer should be able to get the data in a generic way, so the Kernel and Functions can be able to stream data of any type, not limited to text.
-
-3. The sk developer when using streaming from a model that does not support streaming should still be able to use it with only one streaming update representing the whole data.
+2. The sk developer should have a consistent way to get the results from a function, regardless of the model used.
 
 ## Out of Scope
 
-## Considered Options
-
-### Option 1 - Generic Abstractions (Shallow inheritance)
-
-## Default Abstractions (SemanticKernel.Abstractions)
+### Generic Abstractions
 
 ## Services / Connectors
+
+All connectors will have one implementation per modality/model.
+
+Each provider will provide its unique Id for the modality supported, which can be used by the ServiceSelector if a `ProviderId` is defined in the `PromptModel`.
+
+Examples
+
+| Modality      | ProviderId                              | Connector Class          |
+| ------------- | --------------------------------------- | ------------------------ |
+| Chat to Text  | OpenAI.ChatCompletion                   | ChatCompletionAIService  |
+| Text to Image | OpenAI.Dalle3                           | Dalle3AIService          |
+| Text to Audio | Azure.CognitiveServices.SpeechSynthesis | SpeechSynthesisAIService |
+| Text to Video | Azure.CognitiveServices.VideoIndexer    | VideoIndexerAIService    |
+| Text to Text  | OpenAI.TextCompletion                   | TextCompletionAIService  |
+| Text to Text  | HuggingFace.TextCompletion              | TextCompletionAIService  |
+
+## Default Service Abstractions (SemanticKernel.Abstractions)
+
+Main abstractions that can be used directly or by the kernel and the functions to consume any AI Models regardless of the modality.
 
 ```csharp
 
 public interface IAIService
 {
-    IAsyncEnumerable<T> GetStreamingContentAsync<T>(...);
-    FunctionResult<T> GetContentAsync<T>(...);
-}
+    ...
 
-public static class IAIServiceExtensions
-{
-    IAsyncEnumerable<StreamingContent> GetStreamingContentAsync(this IAIService service, ...);
-    FunctionResult<CompleteContent> GetContentAsync(this IAIService service, ...);
+    IAsyncEnumerable<T> GetStreamingContentAsync<T>(Kernel kernel, ...);
+    FunctionResult<T> GetContentAsync<T>(Kernel kernel, ...);
 }
 
 ```
 
+Extensions to the IAIService to provide a more friendly API to the developer.
+
 ```csharp
-public interface IReferenceContent : ContentBase<string>
+
+public static class IAIServiceExtensions
+{
+    IAsyncEnumerable<StreamingContent> GetStreamingContentAsync(this IAIService service, Kernel kernel, ...);
+    FunctionResult<CompleteContent> GetContentAsync(this IAIService service, Kernel kernel, ...);
+}
+
+```
+
+### Content Abstractions
+
+Similar to the current `StreamingContent` abstraction, the abstractions below will be used to represent non-streaming (`CompleteContent`) contents returned by the models.
+
+### For content abstractions we have some options:
+
+#### Option 1 - (Shallow inheritance)
+
+This approach suggest that the majority of the specializations will rely on the `CompleteContent<T>` abstraction, and the same Content property will be used to get the actual content, regardless of the type.
+
+Main abstraction for any content type
+
+```csharp
+abstract class CompleteContent<T>
+{
+	public abstract T Content  { get; } // The actual content
+	public object InnerContent  { get; } // (Breaking glass)
+	public Dictionary<string, object> Metadata  { get; }
+
+    public CompleteContent(object innerContent, Dictionary<string, object>? metadata = null)
+    {
+        Content = content;
+        InnerContent = innerContent;
+        Metadata = metadata ?? new();
+    }
+}
+```
+
+Interface abstraction to flag contents that actually are referenced by a URL.
+
+```csharp
+interface IReferenceContent // : ContentBase<string> If we want to enforce the string type for referenced contents.
 {
 	public string Url { get; }
 }
+```
 
-/// A content that is not streamed, but returned as a whole.
-abstract class CompleteContent<T>
+When executing a method function, the result will be wrapped in a `MethodContent<T>` where T is the type returned by the method.
+
+```csharp
+class MethodContent<T> : CompleteContent<T>
 {
-	public int ChoiceIndex  { get; }
-	public object InnerContent  { get; } // (Breaking glass)
-	public Dictionary<string, object> Metadata  { get; }
-	public T Content  { get; }
-}
+    public override T Content => this._content;
 
-/// WHen executing a method function, the result will be a MethodContent<T> where T is the type returned by the method.
-public class MethodContent<T> : CompleteContent<T>
-{
-    public T Content
+    public MethodContent(T content) : base(content)
+    {
+        this._content = content;
+    }
 }
+```
 
+Most raw class, normally can be used for streaming any content´
+
+```csharp
 public class BinaryContent : ContentBase<byte[]>
 {
-	byte[] Content
+string Format { get; }
+byte[] Content
 }
 
 public class TextContent : ContentBase<string>
 {
-	public string Content
+public string Content
 }
 
 public class AudioContent<T> : ContentBase<T>
 {
-	public string Format { get; } // (Mp3, Wav, Wma)
-	string? Title
-	TimeSpan? Length
+public string Format { get; } // (Mp3, Wav, Wma)
+string? Title
+TimeSpan? Length
 }
 
 public class VideoContent<T> : ContentBase<T>
 {
-	public string Format  { get; } // (Mp4, Avi, Wmv)
-	string? Title
-	TimeSpan? Length
-	int? FramesPerSecond
-	int? Width
-	int? Height
+public string Format { get; } // (Mp4, Avi, Wmv)
+string? Title
+TimeSpan? Length
+int? FramesPerSecond
+int? Width
+int? Height
 }
 
 public class ImageContent<T> : ContentBase<T>
 {
-	public string Format { get; } // (Jpg, Png, Gif, Bmp, Tiff, Svg)
-	public string? Title { get; }
-	public int? Width  { get; }
-	public int? Height { get; }
+public string Format { get; } // (Jpg, Png, Gif, Bmp, Tiff, Svg)
+public string? Title { get; }
+public int? Width { get; }
+public int? Height { get; }
 }
 
 ```
 
 ## Specialized Abstractions: (SemanticKernel.Abstractions)
+
+Used in some scenarios where the above abstractions are not enough to represent the content. Like Chat, Json, etc.
 
 ```csharp
 
@@ -123,7 +180,7 @@ public class ChatContent : ContentBase<string>
 ```csharp
 
 // OpenAI Connector Examples
-public sealed class OpenAIChatDocument : ChatContent
+public sealed class OpenAIChatContent : ChatContent
 {
 	TooCalls[] TooCalls
 
@@ -162,7 +219,7 @@ public sealed class HtmlContent : ContentBase<HtmlElement>
     HtmlElement Content { get; }
 }
 
-public sealed class SwaggerContent : JsonContent
+public sealed class Swagger/OpenAPIContent : JsonContent
 {
     string Definition { get; }
     Endpoints[] Endpoints { get; }
