@@ -44,7 +44,10 @@ public static class ChatCompletionExtensions
         string input,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
-            => chatCompletion.GetStreamingContentAsync<StreamingContent>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
+    {
+        Verify.NotNull(input);
+        return chatCompletion.GetStreamingContentAsync<StreamingContent>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
+    }
 
     /// <summary>
     /// Get asynchronous stream of <see cref="StreamingContent"/>.
@@ -59,5 +62,8 @@ public static class ChatCompletionExtensions
         string input,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
-            => chatCompletion.GetStreamingContentAsync<T>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
+    {
+        Verify.NotNull(input);
+        return chatCompletion.GetStreamingContentAsync<T>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
+    }
 }
