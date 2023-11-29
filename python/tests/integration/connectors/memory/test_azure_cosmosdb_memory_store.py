@@ -16,6 +16,10 @@ except AssertionError:
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
+
+# Load environment variables
+(cosmos_api, cosmos_connstr) = azure_cosmos_db_settings_from_dot_env()
 
 index_name = "sk_test_vector_search_index"
 vector_dimensions = 1536
@@ -81,6 +85,8 @@ def memory_record3():
 
 async def azurecosmosdb_memorystore() -> MemoryStoreBase:
     store = await AzureCosmosDBMemoryStore.create(
+        cosmos_connstr=cosmos_connstr,
+        cosmos_api=cosmos_api,
         database_name=database_name,
         collection_name=collection_name,
         index_name=index_name,
@@ -104,7 +110,7 @@ async def test_create_get_drop_exists_collection_async():
     await store.delete_collection_async(test_collection)
 
     result = await store.does_collection_exist_async(test_collection)
-    assert result is True
+    assert result is False
 
 
 @pytest.mark.asyncio
