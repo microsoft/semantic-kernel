@@ -76,7 +76,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
-        Console.WriteLine($"\n\n======== Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : executionSettings.FunctionCall)} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -157,9 +157,12 @@ public static class Example59_OpenAIFunctionCalling
         Console.WriteLine($"User message: {ask}");
 
         // Send request
+        chatHistory.AddUserMessage(ask);
+
+        // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings))
         {
             if (chatResult.ContentUpdate is { Length: > 0 })
             {

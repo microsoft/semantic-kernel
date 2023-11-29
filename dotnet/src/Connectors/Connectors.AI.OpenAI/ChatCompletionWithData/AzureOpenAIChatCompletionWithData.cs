@@ -103,13 +103,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chat,
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
-        using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
+        using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in this.GetChatStreamingUpdatesAsync<T>(response))
