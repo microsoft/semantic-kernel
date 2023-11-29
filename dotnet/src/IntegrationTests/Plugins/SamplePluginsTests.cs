@@ -20,7 +20,7 @@ public class SamplePluginsTests
         Assert.NotNull(kernel.Plugins);
         var pluginsMetadata = kernel.Plugins.GetPluginsMetadata();
         Assert.NotNull(pluginsMetadata);
-        Assert.Equal(48, pluginsMetadata.Count); // currently we have 48 sample plugins
+        Assert.Equal(11, pluginsMetadata.Count); // currently we have 11 sample plugins
         pluginsMetadata.ToList().ForEach(pluginMetadata =>
         {
             pluginMetadata.FunctionsMetadata.ToList().ForEach(functionMetadata =>
@@ -44,7 +44,7 @@ public class SamplePluginsTests
         Assert.NotNull(kernel.Plugins);
         var pluginsMetadata = kernel.Plugins.GetPluginsMetadata();
         Assert.NotNull(pluginsMetadata);
-        Assert.Equal(48, pluginsMetadata.Count); // currently we have 48 sample plugins
+        Assert.Equal(11, pluginsMetadata.Count); // currently we have 11 sample plugins
         pluginsMetadata.ToList().ForEach(pluginMetadata =>
         {
             pluginMetadata.FunctionsMetadata.ToList().ForEach(functionMetadata =>
