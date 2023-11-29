@@ -131,7 +131,7 @@ public class LocalExamplePlugin
     public FunctionResult Type10()
     {
         Console.WriteLine("Running function type 10");
-        return new FunctionResult("");
+        return new FunctionResult(string.Empty);
     }
 
     [KernelFunction]
