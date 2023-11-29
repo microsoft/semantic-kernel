@@ -6,9 +6,7 @@ using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -47,7 +45,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
@@ -72,7 +70,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
@@ -98,30 +96,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
         this.Client = openAIClient;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
-    }
-
-    /// <summary>
-    /// Options used by the Azure OpenAI client, e.g. User Agent.
-    /// </summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
-    {
-        var options = new OpenAIClientOptions
-        {
-            Diagnostics =
-            {
-                ApplicationId = HttpHeaderValues.UserAgent,
-            }
-        };
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
-        }
-
-        return options;
     }
 
     /// <summary>

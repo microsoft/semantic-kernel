@@ -40,7 +40,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     /// </summary>
     public KernelOpenApiPluginExtensionsTests()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
@@ -198,7 +198,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
 
-        var kernel = KernelBuilder.Create();
+        var kernel = new Kernel();
 
         var arguments = new ContextVariables
         {

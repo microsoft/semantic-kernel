@@ -2,32 +2,34 @@
 
 from logging import Logger
 from threading import Thread
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
+
+import torch
+import transformers
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 
-class HuggingFaceTextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _task: str
-    _device: int
-    _log: Logger
+class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+    task: Literal["summarization", "text-generation", "text2text-generation"]
+    device: str
+    generator: transformers.Pipeline
 
     def __init__(
         self,
         model_id: str,
-        device: Optional[int] = None,
-        task: Optional[str] = None,
+        task: Optional[str] = "text2text-generation",
+        device: Optional[int] = -1,
         log: Optional[Logger] = None,
-        model_kwargs: Dict[str, Any] = None,
-        pipeline_kwargs: Dict[str, Any] = {},
+        model_kwargs: Optional[Dict[str, Any]] = None,
+        pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextCompletion class.
@@ -53,36 +55,20 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        self._model_id = model_id
-        self._task = "text2text-generation" if task is None else task
-        self._log = log if log is not None else NullLogger()
-        self._model_kwargs = model_kwargs
-        self._pipeline_kwargs = pipeline_kwargs
-
-        try:
-            import torch
-            import transformers
-        except (ImportError, ModuleNotFoundError):
-            raise ImportError(
-                "Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion"
-            )
-
-        device_map = self._pipeline_kwargs.get("device_map", None)
-        if device is None:
-            self.device = "cpu" if device_map is None else None
-        else:
-            self.device = (
-                "cuda:" + str(device)
-                if device >= 0 and torch.cuda.is_available()
-                else "cpu"
-            )
-
-        self.generator = transformers.pipeline(
-            task=self._task,
-            model=self._model_id,
-            device=self.device,
-            model_kwargs=self._model_kwargs,
-            **self._pipeline_kwargs
+        super().__init__(
+            model_id=model_id,
+            task=task,
+            device=(
+                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+            ),
+            generator=transformers.pipeline(
+                task=task,
+                model=model_id,
+                device=device,
+                model_kwargs=model_kwargs,
+                **pipeline_kwargs or {},
+            ),
+            log=log,
         )
 
     async def complete_async(
@@ -92,8 +78,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         try:
-            import transformers
-
             generation_config = transformers.GenerationConfig(
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
@@ -109,28 +93,18 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             )
 
             completions = list()
-            if self._task == "text-generation" or self._task == "text2text-generation":
-                for response in results:
-                    completions.append(response["generated_text"])
-                if len(completions) == 1:
-                    return completions[0]
-                else:
-                    return completions
-
-            elif self._task == "summarization":
+            if self.task == "summarization":
                 for response in results:
                     completions.append(response["summary_text"])
                 if len(completions) == 1:
                     return completions[0]
-                else:
-                    return completions
+                return completions
 
-            else:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    "Unsupported hugging face pipeline task: only \
-                        text-generation, text2text-generation, and summarization are supported.",
-                )
+            for response in results:
+                completions.append(response["generated_text"])
+            if len(completions) == 1:
+                return completions[0]
+            return completions
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
@@ -159,8 +133,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                     If you need multiple responses, please use the complete_async method.",
             )
         try:
-            import transformers
-
             generation_config = transformers.GenerationConfig(
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
@@ -168,7 +140,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {

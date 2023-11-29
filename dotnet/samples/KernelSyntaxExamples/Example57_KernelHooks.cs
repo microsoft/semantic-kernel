@@ -47,7 +47,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -57,7 +57,7 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
@@ -94,7 +94,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -104,7 +104,7 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
@@ -134,7 +134,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -144,9 +144,9 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
+        static void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var originalOutput = e.Variables.Input;
 
@@ -169,7 +169,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -179,7 +179,7 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -205,7 +205,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();

@@ -46,7 +46,7 @@ public static class Example45_MultiStreamingChatCompletion
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -60,19 +60,19 @@ public static class Example45_MultiStreamingChatCompletion
 
         PrepareDisplay();
         var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
-        await ProcessStreamAsyncEnumerableAsync(chatCompletion, prompt, requestSettings, consoleLinesPerResult);
+        await ProcessStreamAsyncEnumerableAsync(chatCompletion, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
 
-        Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
+        Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();
     }
 
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings requestSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, requestSettings))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);

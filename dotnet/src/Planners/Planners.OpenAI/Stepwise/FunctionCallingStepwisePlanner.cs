@@ -37,8 +37,10 @@ public sealed class FunctionCallingStepwisePlanner
         this._kernel = kernel;
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+
         // Initialize prompt renderer
-        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
 
         // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
@@ -48,7 +50,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
 
         // Create context and logger
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = loggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>
@@ -152,8 +154,8 @@ public sealed class FunctionCallingStepwisePlanner
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
-        var requestSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings, cancellationToken).ConfigureAwait(false))[0];
+        var executionSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
+        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
@@ -163,10 +165,10 @@ public sealed class FunctionCallingStepwisePlanner
 
     private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
-        var requestSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
-        requestSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        requestSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
-        return requestSettings;
+        var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
+        executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
+        executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+        return executionSettings;
     }
 
     private async Task<ChatHistory> BuildChatHistoryForInitialPlanAsync(
@@ -178,7 +180,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(this._initialPlanPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        string systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -197,7 +199,7 @@ public sealed class FunctionCallingStepwisePlanner
         var variables = new ContextVariables();
         variables.Set(GoalKey, goal);
         variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(this._stepPrompt, new PromptTemplateConfig()).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        var systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 

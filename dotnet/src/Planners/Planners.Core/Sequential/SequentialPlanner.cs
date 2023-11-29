@@ -42,7 +42,7 @@ public sealed class SequentialPlanner
             promptTemplate: promptTemplate,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new PromptExecutionSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -53,7 +53,7 @@ public sealed class SequentialPlanner
             });
 
         this._kernel = kernel;
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>

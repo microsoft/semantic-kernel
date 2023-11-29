@@ -32,7 +32,7 @@ public static class Example64_MultiplePromptTemplates
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -55,11 +55,11 @@ public static class Example64_MultiplePromptTemplates
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var function = kernel.CreateFunctionFromPrompt(
-            promptTemplate: prompt,
-            functionName: "MyFunction",
-            promptTemplateConfig: new PromptTemplateConfig()
+            promptConfig: new PromptTemplateConfig()
             {
-                TemplateFormat = templateFormat
+                Template = prompt,
+                TemplateFormat = templateFormat,
+                Name = "MyFunction",
             },
             promptTemplateFactory: promptTemplateFactory
         );

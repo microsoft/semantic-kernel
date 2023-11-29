@@ -32,7 +32,7 @@ public static class Example07_BingAndGooglePlugins
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -150,7 +150,7 @@ Answer: ";
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
             var promptTemplateFactory = new KernelPromptTemplateFactory();
-            var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
+            var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplate.RenderAsync(kernel, new ContextVariables());

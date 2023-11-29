@@ -22,7 +22,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine("======== Describe all plugins and functions ========");
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();

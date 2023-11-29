@@ -70,7 +70,7 @@ Question: {{ $input }}
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            requestSettings: new PromptExecutionSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {

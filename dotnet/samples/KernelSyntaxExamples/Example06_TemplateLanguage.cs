@@ -30,7 +30,7 @@ public static class Example06_TemplateLanguage
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -52,7 +52,7 @@ Is it weekend time (weekend/not weekend)?
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
-        var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
+        var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, new ContextVariables());
         Console.WriteLine(renderedPrompt);
 
