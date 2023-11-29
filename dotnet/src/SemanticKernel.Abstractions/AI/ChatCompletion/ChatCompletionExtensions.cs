@@ -45,7 +45,7 @@ public static class ChatCompletionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(input);
+        Verify.NotNullOrWhiteSpace(input);
         return chatCompletion.GetStreamingContentAsync<StreamingContent>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
     }
 
@@ -63,7 +63,7 @@ public static class ChatCompletionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(input);
+        Verify.NotNullOrWhiteSpace(input);
         return chatCompletion.GetStreamingContentAsync<T>(chatCompletion.CreateNewChat(input), executionSettings, cancellationToken);
     }
 }
