@@ -50,7 +50,7 @@ public interface IChatCompletion : IAIService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get streaming results for the prompt using the specified request settings.
+    /// Get streaming results for the chat history provided using the specified request settings.
     /// Each modality may support for different types of streaming result.
     /// </summary>
     /// <remarks>
