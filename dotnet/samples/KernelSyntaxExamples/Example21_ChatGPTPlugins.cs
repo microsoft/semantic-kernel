@@ -27,8 +27,7 @@ public static class Example21_ChatGptPlugins
         var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelFunctionArguments();
-        arguments["<parameter-name>"] = "<parameter-value>";
+        var arguments = new KernelFunctionArguments { ["<parameter-name>"] = "<parameter-value>" };
 
         //Run
         var functionResult = await kernel.InvokeAsync(plugin["<function-name>"], arguments);

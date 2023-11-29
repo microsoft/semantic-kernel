@@ -203,7 +203,7 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryFunctions["Save"], new KernelFunctionArguments()
+        await kernel.InvokeAsync(memoryPlugin["Save"], new KernelFunctionArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
