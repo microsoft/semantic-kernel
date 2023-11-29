@@ -30,6 +30,7 @@ from semantic_kernel.utils.settings import (
 __all__ = [
     "Kernel",
     "NullLogger",
+    "azure_cosmos_db_settings_from_dot_env",
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
     "azure_aisearch_settings_from_dot_env",
@@ -38,7 +39,6 @@ __all__ = [
     "bing_search_settings_from_dot_env",
     "mongodb_atlas_settings_from_dot_env",
     "google_palm_settings_from_dot_env",
-    "azure_cosmos_db_settings_from_dot_env",
     "redis_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",

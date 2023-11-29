@@ -36,18 +36,30 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     if use_chat_model:
         kernel.add_chat_service(
             "chat_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(
+                deployment_name="gpt-35-turbo",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(
+                deployment_name="gpt-35-turbo",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
 
     if use_embeddings:
         kernel.add_text_embedding_generation_service(
             "text_embedding",
-            sk_oai.AzureTextEmbedding("text-embedding-ada-002", endpoint, api_key),
+            sk_oai.AzureTextEmbedding(
+                deployment_name="text-embedding-ada-002",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
     return kernel
 

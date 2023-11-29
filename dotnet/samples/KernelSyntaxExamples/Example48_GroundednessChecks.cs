@@ -139,12 +139,12 @@ which are not grounded in the original.
 
         kernel.ImportPluginFromObject<TextPlugin>();
 
-        var planner = new HandlebarsPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(ask);
+        var planner = new HandlebarsPlanner();
+        var plan = await planner.CreatePlanAsync(kernel, ask);
 
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
-        var result = plan.Invoke(new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
         Console.WriteLine(result.GetValue<string>());
     }
 }

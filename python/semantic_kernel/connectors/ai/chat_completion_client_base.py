@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
@@ -37,7 +37,7 @@ class ChatCompletionClientBase(ABC):
         messages: List["ChatMessage"],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
-    ):
+    ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
