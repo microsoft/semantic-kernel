@@ -1,7 +1,9 @@
-from __future__ import annotations
+import sys
 
-# the above is needed for python 3.8 compatibility, can be removed once we drop support for 3.8
-from typing import Annotated
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 from pydantic import BaseModel, ConfigDict, UrlConstraints
 from pydantic.networks import Url
