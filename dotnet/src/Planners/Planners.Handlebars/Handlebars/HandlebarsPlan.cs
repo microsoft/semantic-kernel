@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;

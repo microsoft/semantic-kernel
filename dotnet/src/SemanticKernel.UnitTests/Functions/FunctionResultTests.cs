@@ -2,7 +2,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Orchestration;
