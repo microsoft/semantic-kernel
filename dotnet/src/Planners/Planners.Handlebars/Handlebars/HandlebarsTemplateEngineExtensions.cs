@@ -46,7 +46,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (KernelFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
+        foreach (KernelPluginFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, contextVariables, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -62,7 +62,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         Kernel kernel,
         ContextVariables contextVariables,
         IHandlebars handlebarsInstance,
-        KernelFunctionMetadata functionMetadata,
+        KernelPluginFunctionMetadata functionMetadata,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
@@ -357,7 +357,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessHashArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
+    private static void ProcessHashArguments(KernelPluginFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
     {
         // Prepare the input parameters for the function
         foreach (var param in functionMetadata.Parameters)
@@ -383,7 +383,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
+    private static void ProcessPositionalArguments(KernelPluginFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
     {
         var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
         if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)

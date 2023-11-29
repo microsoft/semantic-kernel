@@ -600,12 +600,15 @@ public class KernelTests
 
             if (kernel.Plugins == null)
             {
-                Assert.Fail("Functions collection is missing");
+                Assert.Fail("Plugins collection is missing");
             }
 
-            foreach (var function in kernel.Plugins.GetFunctionsMetadata())
+            foreach (var plugin in kernel.Plugins.GetPluginsMetadata())
             {
-                variables[$"{function.PluginName}.{function.Name}"] = function.Description;
+                foreach (var function in plugin.FunctionsMetadata)
+                {
+                    variables[$"{plugin.Name}.{function.Name}"] = function.Description;
+                }
             }
         }
     }

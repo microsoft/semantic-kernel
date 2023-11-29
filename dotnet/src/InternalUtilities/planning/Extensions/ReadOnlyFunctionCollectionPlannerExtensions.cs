@@ -120,7 +120,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    internal static async Task<IEnumerable<KernelFunctionMetadata>> GetAvailableFunctionsAsync(
+    internal static async Task<IEnumerable<KernelPluginFunctionMetadata>> GetAvailableFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery = null,
@@ -134,7 +134,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
                 && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
-        List<KernelFunctionMetadata>? result = null;
+        List<KernelPluginFunctionMetadata>? result = null;
         var semanticMemoryConfig = config.SemanticMemoryConfig;
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
@@ -144,7 +144,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         }
         else
         {
-            result = new List<KernelFunctionMetadata>();
+            result = new List<KernelPluginFunctionMetadata>();
 
             // Remember functions in memory so that they can be searched.
             await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);
@@ -205,7 +205,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private static async Task RememberFunctionsAsync(
         ISemanticTextMemory memory,
-        List<KernelFunctionMetadata> availableFunctions,
+        List<KernelPluginFunctionMetadata> availableFunctions,
         CancellationToken cancellationToken = default)
     {
         foreach (var function in availableFunctions)

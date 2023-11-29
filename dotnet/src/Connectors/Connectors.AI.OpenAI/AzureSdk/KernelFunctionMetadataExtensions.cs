@@ -13,8 +13,9 @@ public static class KernelFunctionMetadataExtensions
     /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="OpenAIFunction"/>.
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
+    /// <param name="pluginName">The plugin name</param>
     /// <returns>An <see cref="OpenAIFunction"/> object.</returns>
-    public static OpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata)
+    public static OpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata, string pluginName)
     {
         var openAIParams = new List<OpenAIFunctionParameter>();
         foreach (KernelParameterMetadata param in metadata.Parameters)
@@ -31,8 +32,8 @@ public static class KernelFunctionMetadataExtensions
 
         return new OpenAIFunction
         {
+            PluginName = pluginName ?? "",
             FunctionName = metadata.Name,
-            PluginName = metadata.PluginName ?? "",
             Description = metadata.Description,
             Parameters = openAIParams,
             ReturnParameter = new OpenAIFunctionReturnParameter

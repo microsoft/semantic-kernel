@@ -94,7 +94,7 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
-    private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
+    private List<KernelPluginFunctionMetadata> GetAvailableFunctionsManual(
         Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas,
@@ -109,29 +109,28 @@ public sealed class HandlebarsPlanner
                 && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
-        var functionsMetadata = new List<KernelFunctionMetadata>();
-        foreach (var skFunction in availableFunctions)
+        var functionsMetadata = new List<KernelPluginFunctionMetadata>();
+        foreach (var function in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
             var parametersMetadata = new List<KernelParameterMetadata>();
-            foreach (var parameter in skFunction.Parameters)
+            foreach (var parameter in function.Parameters)
             {
                 var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
                 parametersMetadata.Add(paramToAdd);
             }
 
-            var returnParameter = skFunction.ReturnParameter.ToSKParameterMetadata(skFunction.Name);
+            var returnParameter = function.ReturnParameter.ToSKParameterMetadata(function.Name);
             returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
 
             // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
-            var functionMetadata = new KernelFunctionMetadata(skFunction.Name)
+            var functionMetadata = new KernelFunctionMetadata(function.Name)
             {
-                PluginName = skFunction.PluginName,
-                Description = skFunction.Description,
+                Description = function.Description,
                 Parameters = parametersMetadata,
                 ReturnParameter = returnParameter.ToSKReturnParameterMetadata()
             };
-            functionsMetadata.Add(functionMetadata);
+            functionsMetadata.Add(new KernelPluginFunctionMetadata(functionMetadata) { PluginName = function.PluginName });
         }
 
         return functionsMetadata;
@@ -202,7 +201,7 @@ public sealed class HandlebarsPlanner
 
     private string GetHandlebarsTemplate(
         Kernel kernel, string goal,
-        List<KernelFunctionMetadata> availableFunctions,
+        List<KernelPluginFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
