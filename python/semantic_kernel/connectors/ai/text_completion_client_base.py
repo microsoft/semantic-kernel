@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+"""Base class for text completion AI services."""
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class TextCompletionClientBase(ABC):
+    """Base class for text completion AI services."""
+
     @abstractmethod
     async def complete_async(
         self,
@@ -29,7 +31,6 @@ class TextCompletionClientBase(ABC):
             Returns:
                 Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
         """
-        pass
 
     @abstractmethod
     async def complete_stream_async(
@@ -37,7 +38,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "CompleteRequestSettings",
         logger: Optional[Logger] = None,
-    ):
+    ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
@@ -49,4 +50,3 @@ class TextCompletionClientBase(ABC):
         Yields:
             A stream representing the response(s) from the LLM.
         """
-        pass

@@ -201,7 +201,6 @@ def google_palm_settings_from_dot_env() -> str:
 def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
     """
     Reads the Azure CosmosDB environment variables for the .env file.
-
     Returns:
         dict: The Azure CosmosDB environment variables
     """

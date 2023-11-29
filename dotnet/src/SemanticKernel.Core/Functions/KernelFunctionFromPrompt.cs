@@ -227,7 +227,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
-        var serviceSelector = kernel.ServiceSelector;
+        var serviceSelector = kernel.GetService<IAIServiceSelector>();
         (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);
         Verify.NotNull(textCompletion);
 

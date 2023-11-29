@@ -7,12 +7,13 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,7 +42,6 @@ public sealed class OpenAICompletionTests : IDisposable
             .Build();
 
         this._kernelBuilder = new KernelBuilder();
-        this._kernelBuilder.WithRetryBasic();
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -54,11 +54,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._logger)
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
-                apiKey: openAIConfiguration.ApiKey,
-                setAsDefault: true)
+                apiKey: openAIConfiguration.ApiKey)
             .Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
@@ -172,24 +171,26 @@ public sealed class OpenAICompletionTests : IDisposable
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
-        // Arrange
-        var retryConfig = new BasicRetryConfig();
-        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithRetryBasic(retryConfig)
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
+            .ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+                {
+                    // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+                    c.AddStandardResilienceHandler().Configure(o =>
+                    {
+                        o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                    });
+                }))
             .Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
@@ -203,26 +204,29 @@ public sealed class OpenAICompletionTests : IDisposable
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
-        // Arrange
-        var retryConfig = new BasicRetryConfig();
-        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-
         KernelBuilder builder = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper)
-            .WithRetryBasic(retryConfig);
+            .WithLoggerFactory(this._testOutputHelper);
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        builder.WithAzureTextCompletionService(
+        builder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
+
+        builder.ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+            {
+                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+                c.AddStandardResilienceHandler().Configure(o =>
+                {
+                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                });
+            }));
 
         Kernel target = builder.Build();
 
@@ -244,7 +248,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         Kernel target = this._kernelBuilder
-            .WithOpenAITextCompletionService(
+            .WithOpenAITextCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
@@ -267,7 +271,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureTextCompletionService(
+            .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
@@ -291,7 +295,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureTextCompletionService(
+            .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
@@ -439,11 +443,10 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        kernelBuilder.WithOpenAIChatCompletionService(
+        kernelBuilder.WithOpenAIChatCompletion(
             modelId: openAIConfiguration.ChatModelId,
             apiKey: openAIConfiguration.ApiKey,
-            serviceId: openAIConfiguration.ServiceId,
-            setAsDefault: true);
+            serviceId: openAIConfiguration.ServiceId);
     }
 
     private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
@@ -456,12 +459,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureTextCompletionService(
+        kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
-            serviceId: azureOpenAIConfiguration.ServiceId,
-            setAsDefault: true);
+            serviceId: azureOpenAIConfiguration.ServiceId);
     }
     private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
     {
@@ -471,12 +473,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        kernelBuilder.WithAzureTextCompletionService(
+        kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "invalid-api-key",
-            serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}",
-            setAsDefault: true);
+            serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
     }
 
     private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
@@ -489,7 +490,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAIChatCompletionService(
+        kernelBuilder.WithAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,

@@ -19,11 +19,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 internal sealed class HandlebarsTemplateEngineExtensions
 {
     /// <summary>
-    /// The key used to store the reserved output type in the dictionary of variables passed to the Handlebars template engine.
-    /// </summary>
-    public const string ReservedOutputTypeKey = "RESERVED_OUTPUT_TYPE";
-
-    /// <summary>
     /// The character used to delimit the plugin name and function name in a Handlebars template.
     /// </summary>
     public const string ReservedNameDelimiter = "-";
