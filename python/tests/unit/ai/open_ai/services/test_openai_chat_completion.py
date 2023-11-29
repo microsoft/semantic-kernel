@@ -23,7 +23,7 @@ def test_open_ai_chat_completion_init() -> None:
         log=logger,
     )
 
-    assert open_ai_chat_completion.model_id == model_id
+    assert open_ai_chat_completion.ai_model_id == model_id
     assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
 
 
@@ -59,7 +59,7 @@ def test_open_ai_chat_completion_serialize() -> None:
     logger = Logger("test_logger")
 
     settings = {
-        "model_id": model_id,
+        "ai_model_id": model_id,
         "api_key": api_key,
         "log": logger,
     }
@@ -76,7 +76,7 @@ def test_open_ai_chat_completion_serialize_with_org_id() -> None:
     logger = Logger("test_logger")
 
     settings = {
-        "model_id": model_id,
+        "ai_model_id": model_id,
         "api_key": api_key,
         "org_id": org_id,
         "log": logger,

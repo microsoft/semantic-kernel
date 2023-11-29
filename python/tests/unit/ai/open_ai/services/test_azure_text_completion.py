@@ -36,7 +36,7 @@ def test_azure_text_completion_init() -> None:
 
     assert azure_text_completion.client is not None
     assert isinstance(azure_text_completion.client, AsyncAzureOpenAI)
-    assert azure_text_completion.model_id == deployment_name
+    assert azure_text_completion.ai_model_id == deployment_name
     assert isinstance(azure_text_completion, TextCompletionClientBase)
 
 
@@ -203,7 +203,7 @@ def test_azure_text_completion_serialize() -> None:
 
     azure_text_completion = AzureTextCompletion.from_dict(settings)
     dumped_settings = azure_text_completion.to_dict()
-    assert dumped_settings["model_id"] == settings["deployment_name"]
+    assert dumped_settings["ai_model_id"] == settings["deployment_name"]
     assert settings["endpoint"] in str(dumped_settings["base_url"])
     assert settings["deployment_name"] in str(dumped_settings["base_url"])
     assert settings["api_key"] == dumped_settings["api_key"]

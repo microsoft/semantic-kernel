@@ -56,7 +56,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         super().__init__(
-            model_id=model_id,
+            ai_model_id=model_id,
             task=task,
             device=(
                 f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
@@ -140,7 +140,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_id)
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self.ai_model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {

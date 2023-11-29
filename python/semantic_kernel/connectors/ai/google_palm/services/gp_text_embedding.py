@@ -27,7 +27,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
             api_key {str} -- GooglePalm API key, see
             https://developers.generativeai.google/products/palm
         """
-        super().__init__(model_id=model_id, api_key=api_key)
+        super().__init__(ai_model_id=model_id, api_key=api_key)
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
         """
@@ -50,7 +50,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         for text in texts:
             try:
                 response = palm.generate_embeddings(
-                    model=self.model_id,
+                    model=self.ai_model_id,
                     text=text,
                 )
                 embeddings.append(array(response["embedding"]))

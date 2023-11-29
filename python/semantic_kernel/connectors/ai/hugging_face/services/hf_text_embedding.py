@@ -39,7 +39,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
             f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         )
         super().__init__(
-            model_id=model_id,
+            ai_model_id=model_id,
             log=log,
             device=resolved_device,
             generator=sentence_transformers.SentenceTransformer(

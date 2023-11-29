@@ -43,10 +43,10 @@ class OpenAIChatCompletion(
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
         super().__init__(
-            model_id=model_id,
+            ai_model_id=model_id,
             api_key=api_key,
             org_id=org_id,
-            model_type=OpenAIModelTypes.CHAT,
+            ai_model_type=OpenAIModelTypes.CHAT,
             log=log,
         )
 
@@ -60,7 +60,7 @@ class OpenAIChatCompletion(
         """
 
         return OpenAIChatCompletion(
-            model_id=settings["model_id"],
+            model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
             log=settings.get("log"),

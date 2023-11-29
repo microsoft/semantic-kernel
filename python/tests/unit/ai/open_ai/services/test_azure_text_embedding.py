@@ -35,7 +35,7 @@ def test_azure_text_embedding_init() -> None:
 
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
-    assert azure_text_embedding.model_id == deployment_name
+    assert azure_text_embedding.ai_model_id == deployment_name
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
 
 

@@ -39,7 +39,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         super().__init__(
             model_id=model_id,
             api_key=api_key,
-            model_type=OpenAIModelTypes.EMBEDDING,
+            ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
             log=log,
         )

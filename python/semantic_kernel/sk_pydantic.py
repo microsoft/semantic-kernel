@@ -1,14 +1,14 @@
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, HttpUrl
+from pydantic import BaseModel, ConfigDict, UrlConstraints
+from pydantic.networks import Url
 
-
-class HttpsUrl(HttpUrl):
-    allowed_schemes = {"https"}
+HttpsUrl = Annotated[Url, UrlConstraints(max_length=2083, allowed_schemes=["https"])]
 
 
 class SKBaseModel(BaseModel):
     """Base class for all pydantic models in the SK."""
-    
+
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
 
 

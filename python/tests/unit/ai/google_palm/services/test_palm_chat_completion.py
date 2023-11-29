@@ -31,7 +31,7 @@ def test_google_palm_chat_completion_init() -> None:
         api_key=api_key,
     )
 
-    assert gp_chat_completion.model_id == model_id
+    assert gp_chat_completion.ai_model_id == model_id
     assert gp_chat_completion.api_key == api_key
     assert isinstance(gp_chat_completion, GooglePalmChatCompletion)
 

@@ -30,7 +30,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 https://developers.generativeai.google/products/palm
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        super().__init__(model_id=model_id, api_key=api_key, log=log)
+        super().__init__(ai_model_id=model_id, api_key=api_key, log=log)
 
     async def complete_async(
         self,
@@ -87,7 +87,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             )
         try:
             response = palm.generate_text(
-                model=self.model_id,
+                model=self.ai_model_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 max_output_tokens=request_settings.max_tokens,
