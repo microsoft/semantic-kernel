@@ -18,12 +18,15 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var metadata = kernel.Plugins.GetFunctionsMetadata();
-        Assert.NotNull(metadata);
-        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
-        metadata.ToList().ForEach(function =>
+        var pluginsMetadata = kernel.Plugins.GetPluginsMetadata();
+        Assert.NotNull(pluginsMetadata);
+        Assert.Equal(48, pluginsMetadata.Count); // currently we have 48 sample plugins
+        pluginsMetadata.ToList().ForEach(pluginMetadata =>
         {
-            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
+            pluginMetadata.FunctionsMetadata.ToList().ForEach(functionMetadata =>
+            {
+                Assert.NotNull(kernel.Plugins.GetFunction(pluginMetadata.Name, functionMetadata.Name));
+            });
         });
     }
 
@@ -39,12 +42,15 @@ public class SamplePluginsTests
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var metadata = kernel.Plugins.GetFunctionsMetadata();
-        Assert.NotNull(metadata);
-        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
-        metadata.ToList().ForEach(function =>
+        var pluginsMetadata = kernel.Plugins.GetPluginsMetadata();
+        Assert.NotNull(pluginsMetadata);
+        Assert.Equal(48, pluginsMetadata.Count); // currently we have 48 sample plugins
+        pluginsMetadata.ToList().ForEach(pluginMetadata =>
         {
-            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
+            pluginMetadata.FunctionsMetadata.ToList().ForEach(functionMetadata =>
+            {
+                Assert.NotNull(kernel.Plugins.GetFunction(pluginMetadata.Name, functionMetadata.Name));
+            });
         });
     }
 }

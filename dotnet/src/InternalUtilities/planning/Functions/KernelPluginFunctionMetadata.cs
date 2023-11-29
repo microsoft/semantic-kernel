@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -44,4 +44,7 @@ public sealed class KernelPluginFunctionMetadata
     /// <summary>Gets parameter metadata for the return parameter.</summary>
     /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="KernelReturnParameterMetadata"/>.</remarks>
     public KernelReturnParameterMetadata ReturnParameter => this._metadata.ReturnParameter;
+
+    /// <summary>Gets the <see cref="KernelFunctionMetadata"/> that this instance was created from.</summary>
+    public KernelFunctionMetadata Metadata => this._metadata;
 }

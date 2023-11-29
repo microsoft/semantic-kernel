@@ -167,7 +167,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
         executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+        executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.Metadata.ToOpenAIFunction(f.PluginName ?? string.Empty)).ToList();
         return executionSettings;
     }
 

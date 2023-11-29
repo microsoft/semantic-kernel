@@ -13,7 +13,7 @@ using RepoUtils;
 public static class Example10_DescribeAllPluginsAndFunctions
 {
     /// <summary>
-    /// Print a list of all the functions imported into the kernel, including function descriptions,
+    /// Print a list of all the pluginsMetadata imported into the kernel, including function descriptions,
     /// list of parameters, parameters descriptions, etc.
     /// See the end of the file for a sample of what the output looks like.
     /// </summary>
@@ -49,16 +49,19 @@ public static class Example10_DescribeAllPluginsAndFunctions
             functionName: "Novel",
             description: "Write a bedtime story");
 
-        var functions = kernel.Plugins.GetFunctionsMetadata();
+        var pluginsMetadata = kernel.Plugins.GetPluginsMetadata();
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Registered plugins and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KernelFunctionMetadata func in functions)
+        foreach (KernelPluginMetadata pluginMetadata in pluginsMetadata)
         {
-            PrintFunction(func);
+            foreach (KernelFunctionMetadata functionMetadata in pluginMetadata.FunctionsMetadata)
+            {
+                PrintFunction(functionMetadata);
+            }
         }
 
         return Task.CompletedTask;
@@ -86,7 +89,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
 /** Sample output:
 
 *****************************************
-****** Native plugins and functions ******
+****** Native plugins and pluginsMetadata ******
 *****************************************
 
 Plugin: StaticTextPlugin
@@ -129,7 +132,7 @@ Plugin: TextPlugin
         default: ''
 
 *****************************************
-***** Semantic plugins and functions *****
+***** Semantic plugins and pluginsMetadata *****
 *****************************************
 
 Plugin: Writing

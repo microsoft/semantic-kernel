@@ -15,19 +15,18 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Arrange
         var sut = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToOpenAIFunction("bar");
 
         // Assert
         Assert.Equal(sut.Name, result.FunctionName);
-        Assert.Equal(sut.PluginName, result.PluginName);
+        Assert.Equal("bar", result.PluginName);
         Assert.Equal(sut.Description, result.Description);
-        Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
+        Assert.Equal($"bar_{sut.Name}", result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
@@ -38,17 +37,16 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Arrange
         var sut = new KernelFunctionMetadata("foo")
         {
-            PluginName = string.Empty,
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToOpenAIFunction(string.Empty);
 
         // Assert
         Assert.Equal(sut.Name, result.FunctionName);
-        Assert.Equal(sut.PluginName, result.PluginName);
+        Assert.Equal(string.Empty, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
         Assert.NotNull(result.ReturnParameter);
@@ -72,14 +70,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var sut = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToOpenAIFunction("bar");
         var outputParam = result.Parameters.First();
 
         // Assert
@@ -102,14 +99,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var sut = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToOpenAIFunction("bar");
         var outputParam = result.Parameters.First();
 
         // Assert
@@ -131,13 +127,12 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var sut = new KernelFunctionMetadata("foo")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToOpenAIFunction("bar");
         var outputParam = result.Parameters.First();
 
         // Assert
@@ -158,7 +153,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var functionView = kernel.Plugins["MyPlugin"].First().Metadata;
 
-        var sut = functionView.ToOpenAIFunction();
+        var sut = functionView.ToOpenAIFunction("bar");
 
         // Act
         var result = sut.ToFunctionDefinition();

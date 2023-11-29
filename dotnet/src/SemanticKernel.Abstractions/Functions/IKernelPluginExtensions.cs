@@ -123,6 +123,7 @@ public static class IKernelPluginExtensions
             {
                 functionsMetadata.Add(new KernelFunctionMetadata(function.Metadata));
             }
+            pluginsMetadata.Add(pluginMetadata);
         }
 
         return pluginsMetadata;

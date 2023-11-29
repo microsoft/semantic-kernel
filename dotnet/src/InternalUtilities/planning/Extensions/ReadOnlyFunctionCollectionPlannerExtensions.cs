@@ -53,7 +53,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelPluginFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -85,7 +85,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
                         .Description(description ?? string.Empty)
                         .Build()));
 
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelPluginFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
@@ -99,7 +99,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    internal static async Task<IEnumerable<KernelFunctionMetadata>> GetFunctionsAsync(
+    internal static async Task<IEnumerable<KernelPluginFunctionMetadata>> GetFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
         PlannerConfigBase config,
         string? semanticQuery,
@@ -173,13 +173,13 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             .ThenBy(x => x.Name);
     }
 
-    private static async Task<IEnumerable<KernelFunctionMetadata>> GetRelevantFunctionsAsync(
-        IEnumerable<KernelFunctionMetadata> availableFunctions,
+    private static async Task<IEnumerable<KernelPluginFunctionMetadata>> GetRelevantFunctionsAsync(
+        IEnumerable<KernelPluginFunctionMetadata> availableFunctions,
         IAsyncEnumerable<MemoryQueryResult> memories,
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var relevantFunctions = new List<KernelFunctionMetadata>();
+        var relevantFunctions = new List<KernelPluginFunctionMetadata>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);

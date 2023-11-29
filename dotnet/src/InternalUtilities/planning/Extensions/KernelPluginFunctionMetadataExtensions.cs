@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelFunctionMetadata"/> class.
 /// </summary>
-internal static class KernelFunctionMetadataExtensions
+internal static class KernelPluginFunctionMetadataExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
@@ -23,7 +23,7 @@ internal static class KernelFunctionMetadataExtensions
     /// <param name="jsonSchemaDelegate">A delegate that creates a JSON Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, Func<Type?, string?, KernelJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelPluginFunctionMetadata function, Func<Type?, string?, KernelJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
     {
         var functionView = new JsonSchemaFunctionView
         {
@@ -67,7 +67,7 @@ internal static class KernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="function">The function to create a manual-friendly string for.</param>
     /// <returns>A manual-friendly string for a function.</returns>
-    internal static string ToManualString(this KernelFunctionMetadata function)
+    internal static string ToManualString(this KernelPluginFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
@@ -88,7 +88,7 @@ internal static class KernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="function">The function to create a fully qualified name for.</param>
     /// <returns>A fully qualified name for a function.</returns>
-    internal static string ToFullyQualifiedName(this KernelFunctionMetadata function)
+    internal static string ToFullyQualifiedName(this KernelPluginFunctionMetadata function)
     {
         return $"{function.PluginName}.{function.Name}";
     }
@@ -98,7 +98,7 @@ internal static class KernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="function">The function to create a string for generating an embedding for.</param>
     /// <returns>A string for generating an embedding for a function.</returns>
-    internal static string ToEmbeddingString(this KernelFunctionMetadata function)
+    internal static string ToEmbeddingString(this KernelPluginFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
         return $"{function.Name}:\n  description: {function.Description}\n  inputs:\n{inputs}";

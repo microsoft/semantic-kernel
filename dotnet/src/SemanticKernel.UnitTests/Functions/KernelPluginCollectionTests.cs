@@ -137,7 +137,7 @@ public class KernelPluginCollectionTests
     [Fact]
     public void ItExposesFunctionViewsOfAllFunctions()
     {
-        var c = new KernelPluginCollection()
+        var plugins = new KernelPluginCollection()
         {
             new KernelPlugin("plugin1", new[]
             {
@@ -151,19 +151,15 @@ public class KernelPluginCollectionTests
             })
         };
 
-        IList<KernelPluginMetadata> metadata = c.GetPluginsMetadata().OrderBy(p => p.Name).ToList();
+        IList<KernelPluginMetadata> pluginMetadata = plugins.GetPluginsMetadata().OrderBy(p => p.Name).ToList();
 
-        Assert.Equal("plugin1", metadata[0].Name);
-        Assert.Equal("Function1", metadata[0].FunctionsMetadata[0].Name);
+        Assert.Equal("plugin1", pluginMetadata[0].Name);
+        Assert.Equal("Function1", pluginMetadata[0].FunctionsMetadata[0].Name);
+        Assert.Equal("Function2", pluginMetadata[0].FunctionsMetadata[1].Name);
 
-        Assert.Equal("plugin1", metadata[1].Name);
-        Assert.Equal("Function2", metadata[1].FunctionsMetadata[0].Name);
-
-        Assert.Equal("plugin2", metadata[2].Name);
-        Assert.Equal("Function2", metadata[2].FunctionsMetadata[0].Name);
-
-        Assert.Equal("plugin2", metadata[3].Name);
-        Assert.Equal("Function3", metadata[3].FunctionsMetadata[0].Name);
+        Assert.Equal("plugin2", pluginMetadata[1].Name);
+        Assert.Equal("Function2", pluginMetadata[1].FunctionsMetadata[0].Name);
+        Assert.Equal("Function3", pluginMetadata[1].FunctionsMetadata[1].Name);
     }
 
     [Fact]
