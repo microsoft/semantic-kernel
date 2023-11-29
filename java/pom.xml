@@ -64,22 +64,22 @@
     </properties>
 
     <modules>
-        <!-- <module>connectors/semantickernel-connectors-ai-openai</module>
-        <module>connectors/semantickernel-connectors-memory-sqlite</module>
+        <module>connectors/semantickernel-connectors-ai-openai</module>
+<!--        <module>connectors/semantickernel-connectors-memory-sqlite</module>-->
         <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
-        <module>connectors/semantickernel-connectors-memory-jdbc</module>
-        <module>connectors/semantickernel-connectors-memory-postgresql</module>
-        <module>connectors/semantickernel-connectors-memory-mysql</module> -->
+<!--        <module>connectors/semantickernel-connectors-memory-jdbc</module>-->
+<!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
+<!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
-        <!-- <module>extensions/semantickernel-planners</module>
+<!--        <module>extensions/semantickernel-planners</module>-->
         <module>extensions/semantickernel-gpt3-tokenizer</module>
-        <module>extensions/semantickernel-settings-loader</module> -->
+        <module>extensions/semantickernel-settings-loader</module>
 
-        <!-- <module>plugins/semantickernel-plugin-core</module> -->
+         <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
-        <!-- <module>semantickernel-core</module> -->
+        <module>semantickernel-core</module>
     </modules>
 
     <dependencyManagement>
@@ -717,13 +717,13 @@
             </build>
         </profile>
 
-        <profile>
-            <id>with-samples</id>
-            <modules>
-                <module>samples</module>
-                <module>api-test</module>
-            </modules>
-        </profile>
+<!--        <profile>-->
+<!--            <id>with-samples</id>-->
+<!--            <modules>-->
+<!--                <module>samples</module>-->
+<!--                <module>api-test</module>-->
+<!--            </modules>-->
+<!--        </profile>-->
         <profile>
             <id>release</id>
             <properties>

@@ -1,17 +1,17 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.functions;
 
 public class SemanticFunctionResult {
 
     private String result;
 
-    public FunctionResult() {
-    }
+    public SemanticFunctionResult() {}
 
-    public FunctionResult(String result) {
+    public SemanticFunctionResult(String result) {
         this.result = result;
     }
 
-    public String getResult () {
+    public String getResult() {
         return this.result;
     }
 }

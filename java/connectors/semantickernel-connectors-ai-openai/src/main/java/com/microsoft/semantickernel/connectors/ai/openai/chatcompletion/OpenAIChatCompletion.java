@@ -185,6 +185,11 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
     }
 
     @Override
+    public OpenAIChatHistory createNewChat() {
+        return internalCreateNewChat(null);
+    }
+
+    @Override
     public Flux<String> generateMessageStream(
             OpenAIChatHistory chat, @Nullable ChatRequestSettings requestSettings) {
         return this.getStreamingChatCompletionsAsync(chat, requestSettings)

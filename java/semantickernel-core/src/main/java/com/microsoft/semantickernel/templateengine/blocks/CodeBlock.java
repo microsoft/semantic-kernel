@@ -107,9 +107,10 @@ public final class CodeBlock extends Block implements CodeRendering {
                 function.invokeWithCustomInputAsync(
                         variables, context.getSemanticMemory(), context.getSkills());
 
+        // TODO: 1.0 fix cast
         return result.map(
                 it -> {
-                    return it.getResult();
+                    return (String) it.getResult();
                 });
     }
 
@@ -120,7 +121,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         // Function in the global skill
         if ((skillName == null || skillName.isEmpty())
                 && skills.hasFunction(fBlock.getFunctionName())) {
-            SKFunction<?> function = skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
+            SKFunction function = skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
             return function;
         }
 

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.templateengine;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import java.util.List;
@@ -33,6 +34,16 @@ public interface PromptTemplateEngine extends Buildable {
      * @return The prompt template ready to be used for an AI request
      */
     Mono<String> renderAsync(String templateText, SKContext context);
+
+    /**
+     * Given a prompt template, replace the variables with their values and execute the functions
+     * replacing their reference with the function result
+     *
+     * @param templateText Prompt template (see skprompt.txt files)
+     * @param variables ContextVariables with the associated values
+     * @return The prompt template ready to be used for an AI request
+     */
+    Mono<String> renderAsync(String templateText, ContextVariables variables);
 
     /**
      * Given a prompt template string, extract all the blocks (text, variables, function calls)

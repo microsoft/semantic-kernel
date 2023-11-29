@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import java.util.List;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
-
-import com.microsoft.semantickernel.orchestration.SKFunction;
 
 public interface ReadOnlyFunctionCollection {
 

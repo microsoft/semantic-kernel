@@ -30,7 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Standard Semantic Kernel callable plan. Plan is used to create trees of SKFunctions. */
-public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
+public class Plan extends AbstractSkFunction {
 
     private static final Pattern s_variablesRegex = Pattern.compile("\\$(\\w+)", Pattern.MULTILINE);
 
@@ -48,7 +48,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     // Outputs for the plan, used to pass information to the caller
     private List<String> outputs = new ArrayList<>();
 
-    @Nullable private SKFunction<?> function = null;
+    @Nullable private SKFunction function = null;
 
     public Plan(
             String goal,
@@ -69,7 +69,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             ContextVariables state,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
@@ -88,7 +88,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             @Nullable ContextVariables parameters,
             ContextVariables state,
             List<String> functionOutputs,
@@ -111,13 +111,13 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), functionOutputs, kernelSkillsSupplier);
     }
 
-    public Plan(SKFunction<?> function, KernelSkillsSupplier kernelSkillsSupplier) {
+    public Plan(SKFunction function, KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), new ArrayList<>(), kernelSkillsSupplier);
     }
 
@@ -125,12 +125,12 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String goal,
             ContextVariables parameters,
             KernelSkillsSupplier kernelSkillsSupplier,
-            SKFunction<?>... steps) {
+            SKFunction... steps) {
         this(goal, parameters, kernelSkillsSupplier);
         this.addSteps(steps);
     }
 
-    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction<?>... steps) {
+    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction... steps) {
         this(goal, kernelSkillsSupplier);
         this.addSteps(steps);
     }
@@ -176,7 +176,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
      *
      * @param steps The steps to add to the current plan.
      */
-    public void addSteps(SKFunction<?>... steps) {
+    public void addSteps(SKFunction... steps) {
         List<Plan> plans =
                 Arrays.stream(steps)
                         .map(step -> new Plan(step, getSkillsSupplier()))

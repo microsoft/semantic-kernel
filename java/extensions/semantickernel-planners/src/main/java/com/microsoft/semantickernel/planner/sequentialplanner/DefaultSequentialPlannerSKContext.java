@@ -47,8 +47,7 @@ public class DefaultSequentialPlannerSKContext {
             config = new SequentialPlannerRequestSettings();
         }
 
-        Mono<SortedSet<SKFunction<?>>> functions =
-                getAvailableFunctionsAsync(config, semanticQuery);
+        Mono<SortedSet<SKFunction>> functions = getAvailableFunctionsAsync(config, semanticQuery);
 
         return functions.map(
                 funcs ->
@@ -67,7 +66,7 @@ public class DefaultSequentialPlannerSKContext {
     // functions</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and
     // the excluded skills and functions.</returns>
-    public Mono<SortedSet<SKFunction<?>>> getAvailableFunctionsAsync(
+    public Mono<SortedSet<SKFunction>> getAvailableFunctionsAsync(
             SequentialPlannerRequestSettings config, @Nullable String semanticQuery) {
         Set<String> excludedSkills = config.getExcludedSkills();
         Set<String> excludedFunctions = config.getExcludedFunctions();
@@ -76,14 +75,14 @@ public class DefaultSequentialPlannerSKContext {
         // context.ThrowIfSkillCollectionNotSet();
 
         ReadOnlySkillCollection skills = delegate.getSkills();
-        List<SKFunction<?>> functions;
+        List<SKFunction> functions;
         if (skills != null) {
             functions = skills.getAllFunctions().getAll();
         } else {
             functions = Collections.emptyList();
         }
 
-        List<SKFunction<?>> availableFunctions =
+        List<SKFunction> availableFunctions =
                 functions.stream()
                         /*
                         // Is there any function that should be excluded?
@@ -99,8 +98,8 @@ public class DefaultSequentialPlannerSKContext {
                                                 && !excludedFunctions.contains(s.getName()))
                         .collect(Collectors.toList());
 
-        Comparator<SKFunction<?>> comparator =
-                Comparator.<SKFunction<?>, String>comparing(SKFunction::getSkillName)
+        Comparator<SKFunction> comparator =
+                Comparator.<SKFunction, String>comparing(SKFunction::getSkillName)
                         .thenComparing(SKFunction::getName);
 
         if (semanticQuery == null
@@ -110,7 +109,7 @@ public class DefaultSequentialPlannerSKContext {
                 || config.getRelevancyThreshold() == null) {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.
-            TreeSet<SKFunction<?>> result = new TreeSet<>(comparator);
+            TreeSet<SKFunction> result = new TreeSet<>(comparator);
             result.addAll(availableFunctions);
             return Mono.just(result);
         } else {
@@ -121,7 +120,7 @@ public class DefaultSequentialPlannerSKContext {
                                 SemanticTextMemory updatedMemory =
                                         updatedContext.getSemanticMemory();
                                 if (updatedMemory == null) {
-                                    return Mono.just(new ArrayList<SKFunction<Void>>());
+                                    return Mono.just(new ArrayList<SKFunction>());
                                 }
                                 // Search for functions that match the semantic query.
                                 return updatedMemory
@@ -143,26 +142,26 @@ public class DefaultSequentialPlannerSKContext {
                                                 .map(SKFunction::getName)
                                                 .collect(Collectors.toList());
 
-                                List<SKFunction<?>> missingFunctions =
+                                List<SKFunction> missingFunctions =
                                         getMissingFunctions(
                                                 includedFunctions, availableFunctions, added);
 
-                                ArrayList<SKFunction<?>> res = new ArrayList<>(memories);
+                                ArrayList<SKFunction> res = new ArrayList<>(memories);
                                 res.addAll(missingFunctions);
                                 return res;
                             })
                     .map(
                             res -> {
-                                TreeSet<SKFunction<?>> result = new TreeSet<>(comparator);
+                                TreeSet<SKFunction> result = new TreeSet<>(comparator);
                                 result.addAll(availableFunctions);
                                 return result;
                             });
         }
     }
 
-    private static List<SKFunction<?>> getMissingFunctions(
+    private static List<SKFunction> getMissingFunctions(
             Set<String> includedFunctions,
-            List<SKFunction<?>> availableFunctions,
+            List<SKFunction> availableFunctions,
             List<String> added) {
         return includedFunctions.stream()
                 .filter(func -> !added.contains(func))
@@ -173,8 +172,8 @@ public class DefaultSequentialPlannerSKContext {
                 .collect(Collectors.toList());
     }
 
-    public Mono<? extends List<? extends SKFunction<?>>> getRelevantFunctionsAsync(
-            List<SKFunction<?>> availableFunctions, List<MemoryQueryResult> memories) {
+    public Mono<? extends List<? extends SKFunction>> getRelevantFunctionsAsync(
+            List<SKFunction> availableFunctions, List<MemoryQueryResult> memories) {
         return Flux.fromIterable(memories)
                 .map(
                         memoryEntry ->
@@ -195,7 +194,7 @@ public class DefaultSequentialPlannerSKContext {
     /// </summary>
     /// <param name="context">The SKContext to save the functions to.</param>
     /// <param name="availableFunctions">The available functions to save.</param>
-    Mono<SKContext> rememberFunctionsAsync(List<SKFunction<?>> availableFunctions) {
+    Mono<SKContext> rememberFunctionsAsync(List<SKFunction> availableFunctions) {
         // Check if the functions have already been saved to memory.
         if (delegate.getVariables().asMap().containsKey(PlanSKFunctionsAreRemembered)) {
             return Mono.just(delegate);

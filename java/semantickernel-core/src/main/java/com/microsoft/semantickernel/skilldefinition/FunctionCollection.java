@@ -15,16 +15,16 @@ import javax.annotation.Nullable;
 
 /** A collection of functions. */
 public class FunctionCollection implements ReadOnlyFunctionCollection {
-    private final CaseInsensitiveMap<SKFunction<?>> functionCollection;
+    private final CaseInsensitiveMap<SKFunction> functionCollection;
 
     private final String skillName;
 
-    private FunctionCollection(String skillName, Map<String, SKFunction<?>> functionCollection) {
+    private FunctionCollection(String skillName, Map<String, SKFunction> functionCollection) {
         this.functionCollection = new CaseInsensitiveMap<>(functionCollection);
         this.skillName = skillName;
     }
 
-    public FunctionCollection(String skillName, List<? extends SKFunction<?>> functionCollection) {
+    public FunctionCollection(String skillName, List<? extends SKFunction> functionCollection) {
         this(
                 skillName,
                 functionCollection.stream()
@@ -41,7 +41,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     public FunctionCollection(ReadOnlyFunctionCollection value) {
         this.skillName = value.getSkillName();
         this.functionCollection =
-                new CaseInsensitiveMap<SKFunction<?>>(
+                new CaseInsensitiveMap<SKFunction>(
                         Collections.unmodifiableMap(
                                 value.getAll().stream()
                                         .collect(Collectors.toMap(SKFunction::getName, it -> it))));
@@ -53,8 +53,8 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     }
 
     @Override
-    public SKFunction<?> getFunction(String functionName) {
-        SKFunction<?> func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
+    public SKFunction getFunction(String functionName) {
+        SKFunction func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
         if (func == null) {
             throw new FunctionNotFound(
                     FunctionNotFound.ErrorCodes.FUNCTION_NOT_FOUND, functionName);
@@ -73,7 +73,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      */
     @Override
     public <T extends SKFunction> T getFunction(String functionName, @Nullable Class<T> clazz) {
-        SKFunction<?> func = getFunction(functionName);
+        SKFunction func = getFunction(functionName);
         if (clazz == null) {
             return (T) func;
         }
@@ -102,7 +102,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @return An unmodifiable list of all functions
      */
     @Override
-    public List<SKFunction<?>> getAll() {
+    public List<SKFunction> getAll() {
         return Collections.unmodifiableList(new ArrayList<>(functionCollection.values()));
     }
 
@@ -113,7 +113,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @param functionInstance
      * @return Collection for fluent callse
      */
-    public FunctionCollection put(String functionName, SKFunction<?> functionInstance) {
+    public FunctionCollection put(String functionName, SKFunction functionInstance) {
         this.functionCollection.put(functionName.toLowerCase(Locale.ROOT), functionInstance);
         return this;
     }

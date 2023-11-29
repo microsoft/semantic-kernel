@@ -1,7 +1,7 @@
-package com.microsoft.semantickernel.v1.semanticfunctions;
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,23 +9,35 @@ import java.util.Map;
 public class SemanticFunctionModel {
     @JsonProperty("name")
     private String name;
+
     @JsonProperty("template")
     private String template;
+
     @JsonProperty("template_format")
     private String templateFormat;
+
     @JsonProperty("description")
     private String description;
+
     @JsonProperty("input_variables")
     private List<VariableViewModel> inputVariables;
+
     @JsonProperty("output_variable")
     private VariableViewModel outputVariable;
+
     @JsonProperty("execution_settings")
     private List<ExecutionSettingsModel> executionSettings;
 
-    public SemanticFunctionModel () {
-    }
+    public SemanticFunctionModel() {}
 
-    public SemanticFunctionModel(String name, String template, String templateFormat, String description, List<VariableViewModel> inputVariables, VariableViewModel outputVariable, List<ExecutionSettingsModel> executionSettings) {
+    public SemanticFunctionModel(
+            String name,
+            String template,
+            String templateFormat,
+            String description,
+            List<VariableViewModel> inputVariables,
+            VariableViewModel outputVariable,
+            List<ExecutionSettingsModel> executionSettings) {
         this.name = name;
         this.template = template;
         this.templateFormat = templateFormat;
@@ -38,18 +50,27 @@ public class SemanticFunctionModel {
     public static class VariableViewModel {
         @JsonProperty("name")
         private String name;
+
         @JsonProperty("type")
         private String type;
+
         @JsonProperty("description")
         private String description;
+
         @JsonProperty("default_value")
         private Object defaultValue;
+
         @JsonProperty("is_required")
         private boolean isRequired;
 
-        public VariableViewModel () {}
+        public VariableViewModel() {}
 
-        public VariableViewModel(String name, String type, String description, Object defaultValue, boolean isRequired) {
+        public VariableViewModel(
+                String name,
+                String type,
+                String description,
+                Object defaultValue,
+                boolean isRequired) {
             this.name = name;
             this.type = type;
             this.description = description;
@@ -101,12 +122,16 @@ public class SemanticFunctionModel {
     public static class ExecutionSettingsModel {
         @JsonProperty("model_id")
         private String modelId;
+
         @JsonProperty("model_id_pattern")
         private String modelIdPattern;
+
         @JsonProperty("service_id")
         private String serviceId;
+
         @JsonProperty("temperature")
         private String temperature;
+
         @JsonProperty("additional_properties")
         private final Map<String, Object> additionalProperties;
 
@@ -118,11 +143,16 @@ public class SemanticFunctionModel {
             additionalProperties.put(propertyName, value);
         }
 
-        public ExecutionSettingsModel () {
+        public ExecutionSettingsModel() {
             this.additionalProperties = new HashMap<>();
         }
 
-        public ExecutionSettingsModel(String modelId, String modelIdPattern, String serviceId, String temperature, Map<String, Object> additionalProperties) {
+        public ExecutionSettingsModel(
+                String modelId,
+                String modelIdPattern,
+                String serviceId,
+                String temperature,
+                Map<String, Object> additionalProperties) {
             this.modelId = modelId;
             this.modelIdPattern = modelIdPattern;
             this.serviceId = serviceId;
@@ -215,4 +245,3 @@ public class SemanticFunctionModel {
         this.executionSettings = executionSettings;
     }
 }
-

@@ -1,18 +1,13 @@
-package com.microsoft.semantickernel.v1.templateengine;
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.templateengine.handlebars;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
     private String promptTemplate;
@@ -33,7 +28,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         return null;
     }
 
-    public Mono<String> renderAsync(Map<String, Object> variables) throws IOException {
+    @Override
+    public Mono<String> renderAsync(ContextVariables variables) {
         return templateEngine.renderAsync(this.promptTemplate, variables);
     }
 }

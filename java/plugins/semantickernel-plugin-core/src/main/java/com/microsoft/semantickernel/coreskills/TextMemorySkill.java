@@ -183,9 +183,10 @@ public class TextMemorySkill {
                     new MemoryException(MemoryException.ErrorCodes.UNKNOWN, "Memory not present"));
         }
 
+        // TODO: 1.0 fix cast
         // Validate parameters
         if (collection == null || collection.trim().isEmpty()) {
-            collection = context.getVariables().get(TextMemorySkill.COLLECTION_PARAM);
+            collection = (String) context.getVariables().get(TextMemorySkill.COLLECTION_PARAM);
             if (collection == null) collection = DEFAULT_COLLECTION;
         }
         final String _collection = collection;
