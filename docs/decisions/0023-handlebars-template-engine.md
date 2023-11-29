@@ -173,4 +173,4 @@ private static void RegisterSystemHelpers(
 
 **Note: This is just a prototype implementation for illustration purposes only.**
 
-Handlebars supports different object types as variables on render. This allows us to use objects other than strings in semantic functions, i.e., loop over variable arrays or access properties of complex objects, without serializing or deserializing objects before invocation.
+Handlebars supports different object types as variables on render. This opens up the option to use objects outright rather than just strings in semantic functions, i.e., loop over arrays or access properties of complex objects, without serializing or deserializing objects before invocation.
