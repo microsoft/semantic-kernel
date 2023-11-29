@@ -474,7 +474,7 @@ public abstract class ClientBase
     {
         ChatHistory chat = PrepareChatHistory(text, executionSettings, out OpenAIPromptExecutionSettings chatSettings);
 
-        return (await this.InternalGetChatResultsAsync(chat, kernel,chatSettings, cancellationToken).ConfigureAwait(false))
+        return (await this.InternalGetChatResultsAsync(chat, kernel, chatSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
