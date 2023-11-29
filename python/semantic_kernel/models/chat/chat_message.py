@@ -39,4 +39,6 @@ class ChatMessage(SKBaseModel):
         """Return the message as a dict.
         Make sure to call render_message_async first to embed the context in the content.
         """
-        return self.model_dump(exclude_none=True, by_alias=True, exclude={"content_template"})
+        return self.model_dump(
+            exclude_none=True, by_alias=True, exclude={"content_template"}
+        )

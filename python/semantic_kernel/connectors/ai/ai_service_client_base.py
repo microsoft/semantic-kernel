@@ -22,7 +22,7 @@ class AIServiceClientBase(SKBaseModel, ABC):
     ai_model_id: constr(strip_whitespace=True, min_length=1)
     log: Optional[Logger] = Field(default_factory=NullLogger)
 
-    @field_validator('log')
+    @field_validator("log")
     @classmethod
     def validate_log(cls, v):
         if v is None:
