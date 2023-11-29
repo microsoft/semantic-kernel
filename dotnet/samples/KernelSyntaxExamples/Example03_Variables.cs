@@ -20,9 +20,11 @@ public static class Example03_Variables
         Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
         var textPlugin = kernel.ImportPluginFromObject<StaticTextPlugin>();
 
-        var arguments = new KernelFunctionArguments();
-        arguments["input"] = "Today is: ";
-        arguments["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture);
+        var arguments = new KernelFunctionArguments 
+        {
+            ["input"] = "Today is: ",
+            ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
+        };
 
         var result = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
 
