@@ -181,7 +181,7 @@ class MethodContent<T> : CompleteContent<T>
 }
 ```
 
-Octect Type Content (Generaly for binary content, files, executables, etc)
+Octet Type Content (Generally for binary content, files, executables, etc)
 
 ```csharp
 class BinaryContent : ContentBase<byte[]>
@@ -195,7 +195,7 @@ class BinaryContent : ContentBase<byte[]>
 
 #### Low level abstractions (Content specific types)
 
-Text Type Content (Generaly for text content, strings, etc)
+Text Type Content (Generally for text content, strings, etc)
 
 ```csharp
 class TextContent : ContentBase<string>
@@ -315,22 +315,35 @@ public sealed class OpenAIImageContent : ImageContent<string>, IReferencedConten
 public sealed class CsvDocumentContent : ContentBase<MyCSV>
 {
 	MyCSV Content { get; }
+
+    // ctor..
 }
 
 public sealed class MarkdownContent : TextContent
 {
     bool Valid { get; }
+
+    // ctor..
 }
 
 public sealed class HtmlContent : ContentBase<HtmlElement>
 {
     HtmlElement Content { get; }
+
+    // ctor..
 }
 
 public sealed class Swagger/OpenAPIContent : JsonContent
 {
     string Definition { get; }
     Endpoints[] Endpoints { get; }
+
+    public Swagger/OpenAPIContent(string content, Dictionary<string, object>? metadata = null)
+    : base(content, metadata)
+    {
+        this.Definition = base.JsonContent.GetProperty("definition").GetString();
+        this.Endpoints = base.JsonContent.GetProperty("endpoints").EnumerateArray().Select(e => new Endpoint(e)).ToArray();
+    }
 }
 ```
 
@@ -419,7 +432,7 @@ class MethodContent : CompleteContent
 }
 ```
 
-Octect Type Content (Generaly for binary content, files, executables, etc)
+Octet Type Content (Generally for binary content, files, executables, etc)
 
 ```csharp
 public class BinaryContent : CompleteContent
@@ -438,7 +451,7 @@ public class BinaryContent : CompleteContent
 
 #### Low level abstractions (Content specific types)
 
-Text Type Content (Generaly for text content, strings, etc)
+Text Type Content (Generally for text content, strings, etc)
 
 ```csharp
 public class TextContent : BinaryContent
@@ -565,11 +578,35 @@ public sealed class OpenAIImageContent : ImageContent, IReferencedContent
 **Other potential examples**
 
 ```csharp
+// Document Model Connector Examples
+public sealed class CsvDocumentContent : TextContent
+{
+	MyCSV CSVContent { get; }
+
+    // ctor..
+}
+
+public sealed class MarkdownContent : TextContent
+{
+    string MarkdownContent { get; } => base.TextContent;
+    bool Valid { get; }
+
+    // ctor..
+}
+
+public sealed class HtmlContent : TextContent
+{
+    HtmlElement HtmlContent { get; }
+    bool Valid { get; }
+
+    // ctor..
+}
+
 public class Swagger/OpenAPIContent : JsonContent
 {
     string Definition { get; }
     Endpoints[] Endpoints { get; }
-
+    SwaggerRootDoc SwaggerContent { get; }
     public Swagger/OpenAPIContent(string content, Dictionary<string, object>? metadata = null)
     : base(content, metadata)
     {
@@ -633,18 +670,15 @@ public class FunctionResult : MethodContent<object> {
 }
 
 // Generic Function result (Default for all InvokeAsync<T> / RunAsync<T>)
-public class FunctionResult<T> : CompleteContent<T> {
+public class FunctionResult<T> where T : CompleteContent<T> {
     // ... extra properties IsCancelled, IsSkipped, etc
 
-    public CompleteContent<T> Content => this._completeContent.Content;
+    public T Content { get; }
 
-    FunctionResult(CompleteContent<T> completeContent) : base(completeContent.Content) {
-        this._completeContent = completeContent;
+    FunctionResult(T completeContent) : base(completeContent.Content) {
+        this.Content = completeContent;
     }
-
-    private CompleteContent<T> _completeContent;
 }
-
 
 ```csharp
 public static class FunctionResultExtensions {
