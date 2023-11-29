@@ -15,10 +15,6 @@ from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api impo
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
-
-# Load environment variables
-(cosmos_api, cosmos_connstr) = azure_cosmos_db_settings_from_dot_env()
 
 
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
@@ -47,8 +43,6 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     ):
         if vector_dimensions <= 0:
             raise ValueError("Vector dimensions must be a positive number.")
-        # if connection_string is None:
-        #     raise ValueError("Connection String cannot be empty.")
         if database_name is None:
             raise ValueError("Database Name cannot be empty.")
         if index_name is None:
@@ -61,6 +55,8 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
 
     @staticmethod
     async def create(
+        cosmos_connstr,
+        cosmos_api,
         database_name,
         collection_name,
         index_name,
@@ -114,7 +110,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return await self.cosmosStore.get_collections_async()
+        return await self.cosmosStore.get_collections()
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.

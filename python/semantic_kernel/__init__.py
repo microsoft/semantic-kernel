@@ -30,6 +30,7 @@ __all__ = [
     "Kernel",
     "NullLogger",
     "openai_settings_from_dot_env",
+    "azure_cosmos_db_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
     "postgres_settings_from_dot_env",
     "pinecone_settings_from_dot_env",
