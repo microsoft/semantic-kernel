@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
@@ -56,12 +55,12 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("secret-name", "<secret-name>");
-        contextVariables.Set("api-version", "7.0");
+        var arguments = new KernelFunctionArguments();
+        arguments["secret-name"] = "<secret-name>";
+        arguments["api-version"] = "7.0";
 
         // Run
-        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], contextVariables);
+        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], arguments);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
@@ -88,15 +87,15 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
-        contextVariables.Set("secret-name", "<secret-name>");
-        contextVariables.Set("api-version", "7.0");
-        contextVariables.Set("value", "<secret-value>");
-        contextVariables.Set("enabled", "<enabled>");
+        var arguments = new KernelFunctionArguments();
+        arguments["server-url"] = TestConfiguration.KeyVault.Endpoint;
+        arguments["secret-name"] = "<secret-name>";
+        arguments["api-version"] = "7.0";
+        arguments["value"] = "<secret-value>";
+        arguments["enabled"] = "<enabled>";
 
         // Run
-        var functionResult = await kernel.InvokeAsync(plugin["SetSecret"], contextVariables);
+        var functionResult = await kernel.InvokeAsync(plugin["SetSecret"], arguments);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 

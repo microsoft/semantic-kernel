@@ -52,17 +52,15 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
-    /// <param name="contextVariables">The execution context variables.</param>
-    /// <param name="variables">The variables.</param>
+    /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
-        ContextVariables contextVariables,
-        Dictionary<string, object?> variables,
+        Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
-        string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, contextVariables, this._template, variables, cancellationToken);
-        contextVariables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
+        string? result = HandlebarsTemplateEngineExtensions.Render(this._kernel, this._template, arguments, cancellationToken);
+
+        return new FunctionResult("HandlebarsPlanner", result, this._kernel.Culture);
     }
 }

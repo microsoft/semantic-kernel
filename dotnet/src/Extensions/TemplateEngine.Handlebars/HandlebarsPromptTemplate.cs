@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 
@@ -32,7 +31,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
@@ -42,15 +41,15 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = function.InvokeAsync(kernel, variables).GetAwaiter().GetResult();
-                    writer.WriteSafeString(result.GetValue<string>());
+                    var result = function.InvokeAsync(kernel, new(arguments)).GetAwaiter().GetResult();
+                    writer.WriteSafeString(result.ToString());
                 });
             }
         }
 
         var template = handlebars.Compile(this._templateString);
 
-        var prompt = template(this.GetVariables(variables));
+        var prompt = template(this.GetVariables(arguments));
 
         return await Task.FromResult(prompt).ConfigureAwait(true);
     }
@@ -77,7 +76,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         return parameters;
     }
 
-    private Dictionary<string, string> GetVariables(ContextVariables variables)
+    private Dictionary<string, string> GetVariables(IDictionary<string, string> arguments)
     {
         Dictionary<string, string> result = new();
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
@@ -88,7 +87,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        foreach (var kvp in variables)
+        foreach (var kvp in arguments)
         {
             result[kvp.Key] = kvp.Value;
         }

@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -19,22 +18,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class TaskListPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Task reminder as DateTimeOffset.
-        /// </summary>
-        public const string Reminder = "reminder";
-
-        /// <summary>
-        /// Whether to include completed tasks.
-        /// </summary>
-        public const string IncludeCompleted = "includeCompleted";
-    }
-
     private readonly ITaskManagementConnector _connector;
     private readonly ILogger _logger;
 

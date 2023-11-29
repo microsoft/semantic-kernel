@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -47,31 +51,31 @@ public sealed class FunctionResult
     internal object? Value { get; private set; } = null;
 
     /// <summary>
-    /// Instance of <see cref="ContextVariables"/> to pass in function pipeline.
+    /// The culture configured on the Kernel that executed the function.
     /// </summary>
-    internal ContextVariables Variables { get; private set; }
+    internal CultureInfo Culture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
-    /// <param name="variables">Instance of <see cref="ContextVariables"/> to pass in function pipeline.</param>
-    public FunctionResult(string functionName, ContextVariables variables)
+    public FunctionResult(string functionName)
     {
         this.FunctionName = functionName;
-        this.Variables = variables;
+        this.Culture = CultureInfo.InvariantCulture;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
     /// <param name="functionName">Name of executed function.</param>
-    /// <param name="variables">Instance of <see cref="ContextVariables"/> to pass in function pipeline.</param>
     /// <param name="value">Function result object.</param>
-    public FunctionResult(string functionName, ContextVariables variables, object? value)
-        : this(functionName, variables)
+    /// <param name="culture">The culture configured on the Kernel that executed the function.</param>
+    public FunctionResult(string functionName, object? value, CultureInfo culture)
+        : this(functionName)
     {
         this.Value = value;
+        this.Culture = culture;
     }
 
     /// <summary>
@@ -95,18 +99,12 @@ public sealed class FunctionResult
     }
 
     /// <summary>
-    /// Get typed value from metadata.
+    /// Sets function result.
     /// </summary>
-    public bool TryGetVariableValue(string key, out string value)
+    /// <param name="value">The result value.</param>
+    public void SetValue(object? value)
     {
-        if (this.Variables.TryGetValue(key, out string? valueObject))
-        {
-            value = valueObject;
-            return true;
-        }
-
-        value = default!;
-        return false;
+        this.Value = value;
     }
 
     /// <summary>
@@ -127,5 +125,78 @@ public sealed class FunctionResult
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Value?.ToString() ?? base.ToString();
+    public override string ToString()
+    {
+        var stringResult = ConvertToString(this.Value, this.Culture);
+
+        return string.IsNullOrEmpty(stringResult) ? string.Empty : stringResult!;
+    }
+
+    private static string? ConvertToString(object? value, CultureInfo culture)
+    {
+        if (value == null) { return null; }
+
+        var sourceType = value.GetType();
+
+        var converterFunction = GetTypeConverterDelegate(sourceType);
+
+        return converterFunction == null
+            ? value.ToString()
+            : converterFunction(value, culture);
+    }
+
+    private static Func<object?, CultureInfo, string?>? GetTypeConverterDelegate(Type sourceType) =>
+        s_converters.GetOrAdd(sourceType, static sourceType =>
+        {
+            // Strings just render as themselves.
+            if (sourceType == typeof(string))
+            {
+                return (input, cultureInfo) => (string)input!;
+            }
+
+            // Look up and use a type converter.
+            if (GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
+            {
+                return (input, cultureInfo) =>
+                {
+                    return converter.ConvertToString(context: null, cultureInfo, input);
+                };
+            }
+
+            return null;
+        });
+
+    private static TypeConverter? GetTypeConverter(Type sourceType)
+    {
+        if (sourceType == typeof(byte)) { return new ByteConverter(); }
+        if (sourceType == typeof(sbyte)) { return new SByteConverter(); }
+        if (sourceType == typeof(bool)) { return new BooleanConverter(); }
+        if (sourceType == typeof(ushort)) { return new UInt16Converter(); }
+        if (sourceType == typeof(short)) { return new Int16Converter(); }
+        if (sourceType == typeof(char)) { return new CharConverter(); }
+        if (sourceType == typeof(uint)) { return new UInt32Converter(); }
+        if (sourceType == typeof(int)) { return new Int32Converter(); }
+        if (sourceType == typeof(ulong)) { return new UInt64Converter(); }
+        if (sourceType == typeof(long)) { return new Int64Converter(); }
+        if (sourceType == typeof(float)) { return new SingleConverter(); }
+        if (sourceType == typeof(double)) { return new DoubleConverter(); }
+        if (sourceType == typeof(decimal)) { return new DecimalConverter(); }
+        if (sourceType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
+        if (sourceType == typeof(DateTime)) { return new DateTimeConverter(); }
+        if (sourceType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
+        if (sourceType == typeof(Uri)) { return new UriTypeConverter(); }
+        if (sourceType == typeof(Guid)) { return new GuidConverter(); }
+
+        if (sourceType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
+            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
+            Activator.CreateInstance(converterType) is TypeConverter converter)
+        {
+            return converter;
+        }
+
+        return null;
+    }
+
+    /// <summary>Converter functions for converting types to strings.</summary>
+    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
 }

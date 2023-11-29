@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
@@ -23,18 +22,18 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var variables = new ContextVariables();
+        var arguments = new Dictionary<string, string>();
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, variables));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, arguments));
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var variables = new ContextVariables();
+        var arguments = new Dictionary<string, string>();
 
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
@@ -44,7 +43,7 @@ public class CodeBlockTests
         var target = new CodeBlock("plugin.function", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, variables));
+        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, arguments));
     }
 
     [Fact]
@@ -128,11 +127,11 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
         // Arrange
-        var variables = new ContextVariables { ["varName"] = "foo" };
+        var arguments = new Dictionary<string, string> { ["varName"] = "foo" };
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal("foo", result);
@@ -142,12 +141,12 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
     {
         // Arrange
-        var variables = new ContextVariables { ["varName"] = "bar" };
+        var arguments = new Dictionary<string, string> { ["varName"] = "bar" };
         var varBlock = new VarBlock("$varName");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal("bar", result);
@@ -157,11 +156,11 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var variables = new ContextVariables();
+        var arguments = new Dictionary<string, string>();
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal("ciao", result);
@@ -171,55 +170,15 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var variables = new ContextVariables();
+        var arguments = new Dictionary<string, string>();
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLoggerFactory.Instance);
-        var result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal("arrivederci", result);
-    }
-
-    [Fact]
-    public async Task ItInvokesFunctionCloningAllVariablesAsync()
-    {
-        // Arrange
-        var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var funcBlock = new FunctionIdBlock("plugin.function");
-
-        var canary0 = string.Empty;
-        var canary1 = string.Empty;
-        var canary2 = string.Empty;
-
-        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
-        {
-            canary0 = localVariables["input"];
-            canary1 = localVariables["var1"];
-            canary2 = localVariables["var2"];
-
-            localVariables["input"] = "overridden";
-            localVariables["var1"] = "overridden";
-            localVariables["var2"] = "overridden";
-        },
-        "function");
-
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
-
-        // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
-
-        // Assert - Values are received
-        Assert.Equal("zero", canary0);
-        Assert.Equal("uno", canary1);
-        Assert.Equal("due", canary2);
-
-        // Assert - Original context is intact
-        Assert.Equal("zero", variables["input"]);
-        Assert.Equal("uno", variables["var1"]);
-        Assert.Equal("due", variables["var2"]);
     }
 
     [Fact]
@@ -229,15 +188,15 @@ public class CodeBlockTests
         const string Var = "varName";
         const string VarValue = "varValue";
 
-        var variables = new ContextVariables { [Var] = VarValue };
+        var arguments = new Dictionary<string, string> { [Var] = VarValue };
         var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
         var canary = string.Empty;
 
-        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((string input) =>
         {
-            canary = localVariables["input"];
+            canary = input;
         },
         "function");
 
@@ -245,10 +204,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Equal(VarValue, result);
+        Assert.Empty(result);
         Assert.Equal(VarValue, canary);
     }
 
@@ -258,15 +217,15 @@ public class CodeBlockTests
         // Arrange
         const string Value = "value";
 
-        ContextVariables context = new();
+        var arguments = new Dictionary<string, string>();
         var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
         var canary = string.Empty;
 
-        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((string input) =>
         {
-            canary = localVariables["input"];
+            canary = input;
         },
         "function");
 
@@ -274,10 +233,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(this._kernel, context);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Equal(Value, result);
+        Assert.Empty(result);
         Assert.Equal(Value, canary);
     }
 
@@ -289,21 +248,21 @@ public class CodeBlockTests
         const string FooValue = "bar";
         const string BobValue = "bob's value";
 
-        var variables = new ContextVariables();
-        variables.Set("bob", BobValue);
-        variables.Set("input", Value);
+        var arguments = new Dictionary<string, string>();
+        arguments["bob"] = BobValue;
+        arguments["input"] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");
 
-        var foo = string.Empty;
-        var baz = string.Empty;
+        var actualFoo = string.Empty;
+        var actualBaz = string.Empty;
 
-        var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
+        var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) =>
         {
-            foo = localVariables["foo"];
-            baz = localVariables["baz"];
+            actualFoo = foo;
+            actualBaz = baz;
         },
         "function");
 
@@ -311,11 +270,11 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
-        string result = await codeBlock.RenderCodeAsync(this._kernel, variables);
+        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Equal(FooValue, foo);
-        Assert.Equal(BobValue, baz);
-        Assert.Equal(Value, result);
+        Assert.Equal(FooValue, actualFoo);
+        Assert.Equal(BobValue, actualBaz);
+        Assert.Empty(result);
     }
 }

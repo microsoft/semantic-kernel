@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
@@ -33,7 +32,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelFunctionArguments();
         contextVariables["q"] = query;
         contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -63,7 +62,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelFunctionArguments();
         contextVariables["q"] = query;
         contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -93,7 +92,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelFunctionArguments();
         contextVariables["q"] = query;
         contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -131,7 +130,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelFunctionArguments();
         contextVariables["payload"] = payload;
 
         // Act
@@ -162,7 +161,7 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-            var contextVariables = new ContextVariables();
+            var contextVariables = new KernelFunctionArguments();
             contextVariables["payload"] = payload;
 
             // Act
@@ -192,7 +191,7 @@ public class PluginTests
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelFunctionArguments();
         contextVariables["payload"] = payload;
 
         // Act

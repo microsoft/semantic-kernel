@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using NCalc;
 
 namespace NCalcPlugins;
@@ -97,7 +96,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.InvokeAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, input).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

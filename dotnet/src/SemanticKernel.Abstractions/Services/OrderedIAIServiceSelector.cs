@@ -2,7 +2,6 @@
 
 using System.Linq;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Services;
 
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.Services;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : IAIService
+    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : IAIService
     {
         var serviceProvider = kernel.ServiceProvider;
         var modelSettings = function.ModelSettings;

@@ -3,10 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -30,9 +27,7 @@ namespace Microsoft.SemanticKernel;
 /// by an LLM or embedding.
 /// </para>
 /// <para>
-/// Functions may have any number of parameters. Parameters of type <see cref="ILogger"/> and
-/// <see cref="CancellationToken"/> are filled in from the corresponding members of the <see cref="ContextVariables"/>;
-/// <see cref="ContextVariables"/> itself may also be a parameter. A given native function may declare at
+/// Functions may have any number of parameters. A given native function may declare at
 /// most one parameter of each of these types.  All other parameters must be of a primitive .NET type or
 /// a type attributed with <see cref="TypeConverterAttribute"/>. Functions may return a <see cref="Task"/>,
 /// <see cref="ValueTask"/>, any primitive .NET type or a type attributed with <see cref="TypeConverterAttribute"/>,
