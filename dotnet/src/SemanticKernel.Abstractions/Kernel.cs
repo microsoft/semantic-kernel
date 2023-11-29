@@ -203,9 +203,9 @@ public sealed class Kernel
                     return (T)(object)NullLoggerFactory.Instance;
                 }
 
-                if (typeof(T) == typeof(IAIServiceSelector) || typeof(T) == typeof(OrderedIAIServiceSelector))
+                if (typeof(T) == typeof(IAIServiceSelector) || typeof(T) == typeof(OrderedAIServiceSelector))
                 {
-                    return (T)(object)OrderedIAIServiceSelector.Instance;
+                    return (T)(object)OrderedAIServiceSelector.Instance;
                 }
             }
         }
