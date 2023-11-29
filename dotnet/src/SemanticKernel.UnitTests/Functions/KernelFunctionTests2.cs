@@ -658,6 +658,67 @@ public sealed class KernelFunctionTests2
     }
 
     [Fact]
+    public async Task ItSupportFunctionResultAsync()
+    {
+        FunctionResult Test() => new("function-name", "fake-result", CultureInfo.InvariantCulture);
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        Assert.NotNull(function);
+
+        FunctionResult result = await function.InvokeAsync(this._kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("fake-result", result.GetValue<string>());
+        Assert.Equal("fake-result", result.ToString());
+    }
+
+    [Fact]
+    public async Task ItSupportFunctionResultTaskAsync()
+    {
+        // Arrange
+        Task<FunctionResult> Test()
+        {
+            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            return Task.FromResult(functionResult);
+        }
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        Assert.NotNull(function);
+
+        FunctionResult result = await function.InvokeAsync(this._kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("fake-result", result.GetValue<string>());
+        Assert.Equal("fake-result", result.ToString());
+    }
+
+    [Fact]
+    public async Task ItSupportFunctionResultValueTaskAsync()
+    {
+        // Arrange
+        ValueTask<FunctionResult> Test()
+        {
+            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            return ValueTask.FromResult(functionResult);
+        }
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        Assert.NotNull(function);
+
+        FunctionResult result = await function.InvokeAsync(this._kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("fake-result", result.GetValue<string>());
+        Assert.Equal("fake-result", result.ToString());
+    }
+
+    [Fact]
     public async Task ItSupportsConvertingFromManyTypesAsync()
     {
         static string Test(int a, long b, decimal c, Guid d, DateTimeOffset e, DayOfWeek? f) =>

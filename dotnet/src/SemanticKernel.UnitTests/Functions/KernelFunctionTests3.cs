@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -255,6 +256,26 @@ public sealed class KernelFunctionTests3
         {
             await Task.Delay(0);
             return "hello world";
+        }
+
+        [KernelFunction]
+        public FunctionResult ReturnsFunctionResult()
+        {
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+        }
+
+        [KernelFunction]
+        public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
+        {
+            await Task.Delay(0);
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+        }
+
+        [KernelFunction]
+        public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
+        {
+            await Task.Delay(0);
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]

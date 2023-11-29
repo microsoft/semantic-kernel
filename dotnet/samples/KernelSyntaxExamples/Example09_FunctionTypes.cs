@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -55,6 +56,9 @@ public static class Example09_FunctionTypes
 
         await kernel.InvokeAsync(plugin["type09"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
+
+        await kernel.InvokeAsync(plugin["type10"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type11"]);
     }
 }
 
@@ -122,5 +126,20 @@ public class LocalExamplePlugin
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 09");
+    }
+
+    [KernelFunction]
+    public FunctionResult Type10()
+    {
+        Console.WriteLine("Running function type 10");
+        return new FunctionResult("");
+    }
+
+    [KernelFunction]
+    public async Task<FunctionResult> Type11Async()
+    {
+        await Task.Delay(0);
+        Console.WriteLine("Running function type 10");
+        return new FunctionResult("result");
     }
 }

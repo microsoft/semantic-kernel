@@ -469,6 +469,33 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             };
         }
 
+        if (returnType == typeof(FunctionResult))
+        {
+            return static (_, functionName, result) =>
+            {
+                var functionResult = (FunctionResult?)result;
+                return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(functionName));
+            };
+        }
+
+        if (returnType == typeof(Task<FunctionResult>))
+        {
+            return async static (_, _, result) =>
+            {
+                var functionResult = await ((Task<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return functionResult;
+            };
+        }
+
+        if (returnType == typeof(ValueTask<FunctionResult>))
+        {
+            return async static (_, _, result) =>
+            {
+                var functionResult = await ((ValueTask<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return functionResult;
+            };
+        }
+
         // All other synchronous return types T.
 
         if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
