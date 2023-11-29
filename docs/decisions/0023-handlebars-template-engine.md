@@ -103,3 +103,74 @@ Effectively, there will be four buckets of helpers enabled in the Handlebars Tem
 2. Functions in the kernel
 3. Helpers helpful to prompt engineers (i.e., message, or)
 4. Utility helpers that can be used to perform simple logic or transformations on the template data or arguments (i.e., set, get, json, concat, equals, range, array)
+
+**HandlebarsPromptTemplate pseudocode**
+
+A prototype implementation of a handlebars prompt template engine with built-in helpers could look something like this:
+
+```csharp
+public async Task<string> RenderAsync(Kernel kernel, ContextVariables contextVariables, CancellationToken cancellationToken = default)
+{
+  return RenderAsync(kernel, contextVariables, new Dictionary<string, object?>(), cancellationToken);
+}
+
+// Overloaded method to support a dict of objects as template variables
+public async Task<string> RenderAsync(Kernel kernel, ContextVariables contextVariables, Dictionary<string, object?> templateVariables, CancellationToken cancellationToken = default)
+{
+  var handlebars = HandlebarsDotNet.Handlebars.Create();
+
+  RegisterKernelFunctionsAsHelpers(kernel, contextVariables, handlebars, templateVariables);
+
+  RegisterSystemHelpers(handlebars, templateVariables);
+
+  var template = handlebars.Compile(this._promptModel.Template);
+
+  var prompt = template(templateVariables);
+
+  return await Task.FromResult(prompt).ConfigureAwait(true);
+}
+
+private static void RegisterKernelFunctionsAsHelpers(
+  Kernel kernel,
+  ContextVariables contextVariables,
+  IHandlebars handlebarsInstance,
+  Dictionary<string, object?> templateVariables,
+  CancellationToken cancellationToken = default)
+{
+  foreach (IKernelPlugin plugin in kernel.Plugins)
+  {
+      foreach (KernelFunction function in plugin)
+      {
+        handlebarsInstance.RegisterHelper($"{plugin.Name}-{function.Name}", (in HelperOptions options, in Context context, in Arguments arguments)) =>
+        {
+          // 1. Get parameters from HB template arguments
+          // 2. Port parameter values to context variables
+          // 3. Invoke kernel function and write result to the template
+        }
+      }
+  }
+
+}
+
+private static void RegisterSystemHelpers(
+    IHandlebars handlebarsInstance,
+    Dictionary<string, object?> templateVariables
+)
+{
+  handlebarsInstance.RegisterHelper("customBuiltInHelper1", (in HelperOptions options, in Context context, in Arguments arguments) =>
+  {
+    ...
+  });
+
+  handlebarsInstance.RegisterHelper("customBuiltInHelper2", (in HelperOptions options, in Context context, in Arguments arguments) =>
+  {
+    ...
+  });
+
+  ...
+}
+```
+
+**Note: This is just a prototype implementation for illustration purposes only.**
+
+Handlebars supports different object types as variables on render. This allows us to use objects other than strings in semantic functions, i.e., loop over variable arrays or access properties of complex objects, without serializing or deserializing objects before invocation.
