@@ -17,14 +17,19 @@ public class StreamingChatContent : StreamingContent
     public override int ChoiceIndex { get; }
 
     /// <summary>
-    /// Function call associated to the message payload
+    /// Gets the name of the function to be called
     /// </summary>
-    public FunctionCall? FunctionCall { get; }
+    public string FunctionName { get; }
+
+    /// <summary>
+    /// Gets a function arguments fragment associated with this chunk
+    /// </summary>
+    public string FunctionArgumentUpdate { get; }
 
     /// <summary>
     /// Text associated to the message payload
     /// </summary>
-    public string? Content { get; }
+    public string? ContentUpdate { get; }
 
     /// <summary>
     /// Role of the author of the message
@@ -39,23 +44,26 @@ public class StreamingChatContent : StreamingContent
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
-    /// <param name="chatMessage">Internal Azure SDK Message update representation</param>
+    /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
     /// <param name="resultIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    public StreamingChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, int resultIndex, Dictionary<string, object> metadata) : base(chatMessage, metadata)
+    public StreamingChatContent(StreamingChatCompletionsUpdate chatUpdate, int resultIndex, Dictionary<string, object> metadata) : base(chatUpdate, metadata)
     {
         this.ChoiceIndex = resultIndex;
-        this.FunctionCall = chatMessage.FunctionCall;
-        this.Content = chatMessage.Content;
-        this.Role = new AuthorRole(chatMessage.Role.ToString());
-        this.Name = chatMessage.FunctionCall?.Name;
+        this.FunctionName = chatUpdate.FunctionName;
+        this.FunctionArgumentUpdate = chatUpdate.FunctionArgumentsUpdate;
+        this.ContentUpdate = chatUpdate.ContentUpdate;
+        if (chatUpdate.Role.HasValue)
+        {
+            this.Role = new AuthorRole(chatUpdate.Role.ToString());
+        }
     }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
 
     /// <inheritdoc/>
-    public override string ToString() => this.Content ?? string.Empty;
+    public override string ToString() => this.ContentUpdate ?? string.Empty;
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -65,23 +73,22 @@ public class StreamingChatContent : StreamingContent
     public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<StreamingChatContent> fullContent)
     {
         StringBuilder arguments = new();
-        FunctionCall? functionCall = null;
+        string? functionName = null;
         foreach (var message in fullContent)
         {
-            functionCall ??= message?.FunctionCall;
+            functionName ??= message.FunctionName;
 
-            if (message?.FunctionCall?.Arguments is not null)
+            if (message?.FunctionArgumentUpdate is not null)
             {
-                arguments.Append(message?.FunctionCall.Arguments);
+                arguments.Append(message.FunctionArgumentUpdate);
             }
         }
 
-        if (functionCall is null)
+        if (functionName is null)
         {
             return null;
         }
 
-        functionCall.Arguments = arguments.ToString();
-        return OpenAIFunctionResponse.FromFunctionCall(functionCall);
+        return OpenAIFunctionResponse.FromFunctionCall(new FunctionCall(functionName, arguments.ToString()));
     }
 }

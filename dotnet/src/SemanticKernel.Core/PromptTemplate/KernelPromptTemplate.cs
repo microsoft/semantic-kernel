@@ -30,22 +30,19 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="templateString">Prompt template string.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(promptConfig, nameof(promptConfig));
+        Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
+
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
-        this._parameters = new(() => this.InitParameters());
-        this._blocks = new(() => this.ExtractBlocks(this._templateString));
+        this._promptModel = promptConfig;
+        this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
@@ -56,37 +53,9 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
-
-    private List<KernelParameterMetadata> InitParameters()
-    {
-        // Parameters from prompt template configuration
-        Dictionary<string, KernelParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
-        {
-            result[p.Name] = new KernelParameterMetadata(p.Name)
-            {
-                Description = p.Description,
-                DefaultValue = p.DefaultValue
-            };
-        }
-
-        // Parameters from the template
-        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-        foreach (var variableName in variableNames)
-        {
-            if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
-            {
-                result.Add(variableName!, new KernelParameterMetadata(variableName!));
-            }
-        }
-
-        return result.Values.ToList();
-    }
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)

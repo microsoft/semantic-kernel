@@ -3,10 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
@@ -15,15 +12,14 @@ namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
         var arguments = new Dictionary<string, string>();
-        var target = new CodeBlock("functionName", this._logger);
+        var target = new CodeBlock("functionName");
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, arguments));
@@ -40,7 +36,7 @@ public class CodeBlockTests
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
-        var target = new CodeBlock("plugin.function", this._logger);
+        var target = new CodeBlock("plugin.function");
 
         // Act & Assert
         await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, arguments));
@@ -50,7 +46,7 @@ public class CodeBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new CodeBlock("", NullLoggerFactory.Instance);
+        var target = new CodeBlock("");
 
         // Assert
         Assert.Equal(BlockTypes.Code, target.Type);
@@ -60,7 +56,7 @@ public class CodeBlockTests
     public void ItTrimsSpaces()
     {
         // Act + Assert
-        Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
+        Assert.Equal("aa", new CodeBlock("  aa  ").Content);
     }
 
     [Fact]
@@ -72,8 +68,8 @@ public class CodeBlockTests
         var invalidBlock = new VarBlock("");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { validBlock1, validBlock2 }, "", NullLoggerFactory.Instance);
-        var codeBlock2 = new CodeBlock(new List<Block> { validBlock1, invalidBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock1 = new CodeBlock(new List<Block> { validBlock1, validBlock2 }, "");
+        var codeBlock2 = new CodeBlock(new List<Block> { validBlock1, invalidBlock }, "");
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -90,13 +86,13 @@ public class CodeBlockTests
         var namedArgBlock = new NamedArgBlock("varName='foo'");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
-        var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
-        var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "", NullLoggerFactory.Instance);
-        var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "", NullLoggerFactory.Instance);
-        var codeBlock5 = new CodeBlock(new List<Block> { funcId, varBlock, namedArgBlock }, "", NullLoggerFactory.Instance);
-        var codeBlock6 = new CodeBlock(new List<Block> { varBlock, valBlock }, "", NullLoggerFactory.Instance);
-        var codeBlock7 = new CodeBlock(new List<Block> { namedArgBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "");
+        var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "");
+        var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "");
+        var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "");
+        var codeBlock5 = new CodeBlock(new List<Block> { funcId, varBlock, namedArgBlock }, "");
+        var codeBlock6 = new CodeBlock(new List<Block> { varBlock, valBlock }, "");
+        var codeBlock7 = new CodeBlock(new List<Block> { namedArgBlock }, "");
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -130,7 +126,7 @@ public class CodeBlockTests
         var arguments = new Dictionary<string, string> { ["varName"] = "foo" };
 
         // Act
-        var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock("$varName");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -145,7 +141,7 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$varName");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { varBlock }, "");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -159,7 +155,7 @@ public class CodeBlockTests
         var arguments = new Dictionary<string, string>();
 
         // Act
-        var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock("'ciao'");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -174,7 +170,7 @@ public class CodeBlockTests
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { valBlock }, "");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -203,7 +199,7 @@ public class CodeBlockTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
         string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -232,7 +228,7 @@ public class CodeBlockTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
         string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -269,7 +265,7 @@ public class CodeBlockTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
         string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert

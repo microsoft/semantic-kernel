@@ -3,8 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -24,7 +22,6 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
-        this._loggerFactory = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -77,52 +74,26 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
-
-        builder.WithAzureOpenAIChatCompletionService(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
-
+            .WithAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         if (useEmbeddings)
         {
-            builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+            builder.WithAzureOpenAITextEmbeddingGeneration(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
-        var kernel = builder.Build();
-
-        return kernel;
+        return builder.Build();
     }
 
-    private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~FunctionCallingStepwisePlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._loggerFactory is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 }

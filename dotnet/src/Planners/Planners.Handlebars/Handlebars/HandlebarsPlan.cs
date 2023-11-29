@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 public sealed class HandlebarsPlan
 {
     /// <summary>
-    /// The kernel instance.
-    /// </summary>
-    private readonly Kernel _kernel;
-
-    /// <summary>
     /// The handlebars template representing the plan.
     /// </summary>
     private readonly string _template;
@@ -30,12 +25,10 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
-    /// <param name="kernel">Kernel instance.</param>
     /// <param name="generatedPlan">A Handlebars template representing the generated plan.</param>
     /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
-    public HandlebarsPlan(Kernel kernel, string generatedPlan, string createPlanPromptTemplate)
+    public HandlebarsPlan(string generatedPlan, string createPlanPromptTemplate)
     {
-        this._kernel = kernel;
         this._template = generatedPlan;
         this.Prompt = createPlanPromptTemplate;
     }
@@ -52,15 +45,17 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
+        Kernel kernel,
         Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
-        string? result = HandlebarsTemplateEngineExtensions.Render(this._kernel, this._template, arguments, cancellationToken);
+        string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
 
-        return new FunctionResult("HandlebarsPlanner", result, this._kernel.Culture);
+        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
     }
 }

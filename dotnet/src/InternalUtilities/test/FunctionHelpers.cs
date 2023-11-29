@@ -17,7 +17,7 @@ internal static class FunctionHelpers
         string methodName,
         params (string Name, object Value)[] variables)
     {
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 

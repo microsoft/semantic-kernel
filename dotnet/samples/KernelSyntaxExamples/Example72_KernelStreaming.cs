@@ -33,7 +33,7 @@ public static class Example72_KernelStreaming
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -56,10 +56,10 @@ public static class Example72_KernelStreaming
                 roleDisplayed = true;
             }
 
-            if (update.Content is { Length: > 0 })
+            if (update.ContentUpdate is { Length: > 0 })
             {
-                Console.Write(update.Content);
+                Console.Write(update.ContentUpdate);
             }
-        };
+        }
     }
 }

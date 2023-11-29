@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Chat with the AI",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 150,
       "temperature": 0.9,

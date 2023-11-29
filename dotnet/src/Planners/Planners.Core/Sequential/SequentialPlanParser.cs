@@ -131,7 +131,7 @@ internal static class SequentialPlanParser
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 
-                            var metadata = pluginFunction.GetMetadata();
+                            var metadata = pluginFunction.Metadata;
                             foreach (var p in metadata.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);

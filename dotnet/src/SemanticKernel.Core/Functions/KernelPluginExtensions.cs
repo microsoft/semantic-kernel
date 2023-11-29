@@ -83,22 +83,24 @@ public static class KernelPluginExtensions
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, loggerFactory);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -107,22 +109,18 @@ public static class KernelPluginExtensions
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }
@@ -131,21 +129,19 @@ public static class KernelPluginExtensions
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptTemplate">Prompt template</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction AddFunctionFromPrompt(
         this KernelPlugin plugin,
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(plugin);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, loggerFactory);
         plugin.AddFunction(function);
         return function;
     }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,20 +14,14 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="templateString">Prompt template string.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public HandlebarsPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
-        this._parameters = new(() => this.InitParameters());
+        this._promptModel = promptConfig;
     }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
@@ -47,7 +40,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        var template = handlebars.Compile(this._templateString);
+        var template = handlebars.Compile(this._promptModel.Template);
 
         var prompt = template(this.GetVariables(arguments));
 
@@ -57,29 +50,12 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
-    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
-
-    private List<KernelParameterMetadata> InitParameters()
-    {
-        List<KernelParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
-        {
-            parameters.Add(new KernelParameterMetadata(p.Name)
-            {
-                Description = p.Description,
-                DefaultValue = p.DefaultValue
-            });
-        }
-
-        return parameters;
-    }
+    private readonly PromptTemplateConfig _promptModel;
 
     private Dictionary<string, string> GetVariables(IDictionary<string, string> arguments)
     {
         Dictionary<string, string> result = new();
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        foreach (var p in this._promptModel.InputParameters)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
             {
@@ -94,7 +70,5 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         return result;
     }
-
     #endregion
-
 }

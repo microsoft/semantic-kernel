@@ -5,13 +5,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.8" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.9" />
     <PackageVersion Include="Azure.Identity" Version="1.10.3" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.0.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
     <PackageVersion Include="Markdig" Version="0.33.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.0" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
@@ -35,6 +35,8 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0" />
@@ -72,7 +74,8 @@
     <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <!-- Analyzers -->
+    <!-- Toolset -->
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.8.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>

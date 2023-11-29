@@ -235,11 +235,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
 
-    private Kernel InitializeKernel()
-    {
-        Kernel kernel = new KernelBuilder().Build();
-        return kernel;
-    }
+    private Kernel InitializeKernel() => new();
 
     private sealed class Foo
     {

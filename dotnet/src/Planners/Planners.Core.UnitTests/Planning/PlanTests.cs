@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -733,7 +732,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         plan.AddSteps(functions.ToArray());
 
         var expectedInvocations = 2;
-        var sut = new KernelBuilder().Build();
+        var sut = new Kernel();
 
         // 1 - Plan - Write poem and send email goal
         // 2 - Plan - Step 1 - WritePoem
@@ -745,13 +744,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var invokedListFunctions = new List<KernelFunctionMetadata>();
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
@@ -790,7 +789,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
             e.Cancel();
@@ -798,7 +797,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
@@ -836,10 +835,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.GetMetadata().Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -847,7 +846,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
@@ -888,16 +887,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
 
-            if (e.Function.GetMetadata().Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -942,16 +941,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
 
-            if (e.Function.GetMetadata().Name == "SendEmail")
+            if (e.Function.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -998,10 +997,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.GetMetadata().Name == "WritePoem")
+            if (e.Function.Name == "WritePoem")
             {
                 e.Skip();
             }
@@ -1009,7 +1008,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
@@ -1053,10 +1052,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
 
-            if (e.Function.GetMetadata().Name == "SendEmail")
+            if (e.Function.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1064,7 +1063,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
@@ -1096,7 +1095,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
     private void PrepareKernelAndPlan(out Kernel kernel, out Plan plan)
     {
-        kernel = new KernelBuilder().Build();
+        kernel = new Kernel();
 
         plan = new Plan("Write a poem or joke and send it in an e-mail to Kai.");
         plan.AddSteps(new[]
@@ -1115,12 +1114,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         return method.Method;
     }
 
-    private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<IKernelPlugin>? plugins = null)
+    private (Kernel kernel, Mock<IServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(IEnumerable<IKernelPlugin>? plugins = null)
     {
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
-        var kernel = new Kernel(serviceProvider.Object, plugins);
+        var kernel = new Kernel(serviceProvider.Object, plugins is not null ? new KernelPluginCollection(plugins) : null);
 
         return (kernel, serviceProvider, serviceSelector);
     }

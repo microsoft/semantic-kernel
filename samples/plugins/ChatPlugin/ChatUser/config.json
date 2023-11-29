@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "A chat bot that plays a persona or role",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 150,
       "temperature": 0.9,

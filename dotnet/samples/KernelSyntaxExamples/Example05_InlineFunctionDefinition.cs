@@ -30,7 +30,7 @@ public static class Example05_InlineFunctionDefinition
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

@@ -25,7 +25,7 @@ public sealed class KernelFunctionTests2
 
     public KernelFunctionTests2()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
         this._logger = new Mock<ILoggerFactory>();
 
         s_expected = Guid.NewGuid().ToString("D");
@@ -818,9 +818,9 @@ public sealed class KernelFunctionTests2
         // Assert
         Assert.Contains("Test", function.Name, StringComparison.Ordinal);
         Assert.Equal("Concat information", function.Description);
-        Assert.Equal("id", function.GetMetadata().Parameters[0].Name);
-        Assert.Equal("name", function.GetMetadata().Parameters[1].Name);
-        Assert.Equal("old", function.GetMetadata().Parameters[2].Name);
+        Assert.Equal("id", function.Metadata.Parameters[0].Name);
+        Assert.Equal("name", function.Metadata.Parameters[1].Name);
+        Assert.Equal("old", function.Metadata.Parameters[2].Name);
     }
 
     [Fact]
@@ -835,9 +835,9 @@ public sealed class KernelFunctionTests2
         // Assert
         Assert.Contains("Test", function.Name, StringComparison.Ordinal);
         Assert.Equal("Concat information", function.Description);
-        Assert.Equal("id", function.GetMetadata().Parameters[0].Name);
-        Assert.Equal("name", function.GetMetadata().Parameters[1].Name);
-        Assert.Equal("old", function.GetMetadata().Parameters[2].Name);
+        Assert.Equal("id", function.Metadata.Parameters[0].Name);
+        Assert.Equal("name", function.Metadata.Parameters[1].Name);
+        Assert.Equal("old", function.Metadata.Parameters[2].Name);
     }
 
     [Fact]

@@ -3,19 +3,20 @@
 from logging import Logger
 from typing import List, Optional
 
+import sentence_transformers
+import torch
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 
-class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
-    _model_id: str
-    _device: int
-    _log: Logger
+class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+    device: str
+    generator: sentence_transformers.SentenceTransformer
 
     def __init__(
         self,
@@ -34,24 +35,16 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        self._model_id = model_id
-        self._log = log if log is not None else NullLogger()
-
-        try:
-            import sentence_transformers
-            import torch
-        except ImportError:
-            raise ImportError(
-                "Please ensure that torch and sentence-transformers are installed to use HuggingFaceTextEmbedding"
-            )
-
-        self.device = (
-            "cuda:" + str(device)
-            if device >= 0 and torch.cuda.is_available()
-            else "cpu"
+        resolved_device = (
+            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         )
-        self.generator = sentence_transformers.SentenceTransformer(
-            model_name_or_path=self._model_id, device=self.device
+        super().__init__(
+            model_id=model_id,
+            log=log,
+            device=resolved_device,
+            generator=sentence_transformers.SentenceTransformer(
+                model_name_or_path=model_id, device=resolved_device
+            ),
         )
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
@@ -65,7 +58,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             ndarray -- Embeddings for the texts.
         """
         try:
-            self._log.info(f"Generating embeddings for {len(texts)} texts")
+            self.log.info(f"Generating embeddings for {len(texts)} texts")
             embeddings = self.generator.encode(texts)
             return array(embeddings)
         except Exception as e:

@@ -189,7 +189,7 @@ internal sealed class ReActEngine
         }
 
         var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
-        var functionView = function.GetMetadata();
+        var functionView = function.Metadata;
 
         var actionContextVariables = this.CreateActionContextVariables(variables, kernel, contextVariables);
 
@@ -235,7 +235,7 @@ internal sealed class ReActEngine
 
     private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = new KernelPromptTemplateFactory(kernel.GetService<ILoggerFactory>());
         var template = factory.Create(promptTemplate, config);
 
         var plugin = new KernelPlugin(RestrictedPluginName);

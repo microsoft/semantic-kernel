@@ -16,7 +16,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncShouldReturnOneChunkFromNonStreamingMethodAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var nativeContent = "Full content result";
         var sut = KernelFunctionFactory.CreateFromMethod(() => nativeContent);
 
@@ -43,7 +43,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncOnlySupportsInvokingEventAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         var invokedCalled = false;
@@ -74,7 +74,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncInvokingCancellingShouldRenderNoChunksAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -97,7 +97,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncInvokingSkippingShouldRenderNoChunksAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -120,7 +120,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncUsingInvokedEventHasNoEffectAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>

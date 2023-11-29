@@ -62,7 +62,7 @@ after this event Caroline became his wife.""";
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -126,7 +126,7 @@ which are not grounded in the original.
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -138,11 +138,12 @@ which are not grounded in the original.
 
         kernel.ImportPluginFromObject<TextPlugin>();
 
-        var planner = new HandlebarsPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(ask);
+        var planner = new HandlebarsPlanner();
+        var plan = await planner.CreatePlanAsync(kernel, ask);
+
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
-        var result = plan.Invoke(new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
         Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -47,7 +47,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -57,23 +57,23 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -94,7 +94,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -104,17 +104,17 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendering Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendering Handler - Triggered");
             e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendered Handler - Triggered");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
             Console.WriteLine(e.RenderedPrompt);
@@ -134,7 +134,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -144,9 +144,9 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        void FunctionInvokedHandler(object? sender, FunctionInvokedEventArgs e)
+        static void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var originalOutput = e.Result.ToString();
 
@@ -156,7 +156,7 @@ public static class Example57_KernelHooks
             e.Result.SetValue(newOutput);
         }
 
-        kernel.FunctionInvoked += FunctionInvokedHandler;
+        kernel.FunctionInvoked += MyChangeDataHandler;
 
         var result = await kernel.InvokeAsync(writerFunction);
 
@@ -169,7 +169,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -179,12 +179,12 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
+            executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -205,7 +205,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();

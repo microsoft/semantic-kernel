@@ -79,16 +79,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-        new KernelFunctionMetadata(this.Name)
-        {
-            Description = this.Description,
-            Parameters = this._parameters,
-            ReturnParameter = this._returnParameter
-        };
-
-    /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelFunctionArguments arguments,
@@ -142,8 +132,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
-    private readonly IReadOnlyList<KernelParameterMetadata> _parameters;
-    private readonly KernelReturnParameterMetadata _returnParameter;
     private readonly ILogger _logger;
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
@@ -154,16 +142,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        ILogger logger) : base(functionName, description)
+        ILogger logger) : base(functionName, description, parameters, returnParameter)
     {
         Verify.ValidFunctionName(functionName);
 
         this._logger = logger;
 
         this._function = implementationFunc;
-        this._parameters = parameters.ToArray();
-        Verify.ParametersUniqueness(this._parameters);
-        this._returnParameter = returnParameter;
     }
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
@@ -298,8 +283,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
-                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.LoggerFactory, null);
+                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -720,8 +705,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
-
-    private KernelFunctionMetadata? _metadata;
 
     #endregion
 }

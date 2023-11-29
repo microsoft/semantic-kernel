@@ -31,7 +31,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: deploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -53,7 +53,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
-        var promptTemplate = promptTemplateFactory.Create(FunctionDefinition, new PromptTemplateConfig());
+        var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
         Console.WriteLine(renderedPrompt);
 

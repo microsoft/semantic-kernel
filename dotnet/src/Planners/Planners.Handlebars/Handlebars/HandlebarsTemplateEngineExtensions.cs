@@ -19,11 +19,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 internal sealed class HandlebarsTemplateEngineExtensions
 {
     /// <summary>
-    /// The key used to store the reserved output type in the dictionary of variables passed to the Handlebars template engine.
-    /// </summary>
-    public const string ReservedOutputTypeKey = "RESERVED_OUTPUT_TYPE";
-
-    /// <summary>
     /// The character used to delimit the plugin name and function name in a Handlebars template.
     /// </summary>
     public const string ReservedNameDelimiter = "-";
@@ -451,7 +446,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.
         // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
-        var returnType = function.GetMetadata().ReturnParameter.ParameterType;
+        var returnType = function.Metadata.ReturnParameter.ParameterType;
         var resultAsObject = result.GetValue<object?>();
 
         if (returnType is not null && !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(returnType))

@@ -28,7 +28,7 @@ public sealed class KernelPromptTemplateTests
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
         this._arguments = new Dictionary<string, string>();
         this._arguments["input"] = Guid.NewGuid().ToString("X");
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public sealed class KernelPromptTemplateTests
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
                        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var blocks = target.ExtractBlocks(template);
@@ -149,7 +149,7 @@ public sealed class KernelPromptTemplateTests
 
         this._arguments["input"] = "INPUT-BAR";
         var template = "foo-{{plugin.function}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._arguments);
@@ -174,7 +174,7 @@ public sealed class KernelPromptTemplateTests
 
         this._arguments["myVar"] = "BAR";
         var template = "foo-{{plugin.function $myVar}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._arguments);
@@ -205,7 +205,7 @@ public sealed class KernelPromptTemplateTests
         this._arguments["input"] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._arguments);
@@ -220,7 +220,7 @@ public sealed class KernelPromptTemplateTests
         this._arguments["input"] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
@@ -250,7 +250,7 @@ public sealed class KernelPromptTemplateTests
         this._arguments["someDate"] = "2023-08-25T00:00:00";
 
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._arguments);
@@ -264,7 +264,7 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
         this._arguments["input"] = "A";
         this._arguments["myVar"] = "C";
 
@@ -316,7 +316,7 @@ public sealed class KernelPromptTemplateTests
 
         var template = "foo-{{plugin.function $myVar}}-baz";
 
-        var target = (KernelPromptTemplate)this._factory.Create(template, new PromptTemplateConfig());
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
         var result = await target.RenderAsync(this._kernel, this._arguments);

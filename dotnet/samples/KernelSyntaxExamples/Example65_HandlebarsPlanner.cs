@@ -57,7 +57,7 @@ public static class Example65_HandlebarsPlanner
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -93,7 +93,6 @@ public static class Example65_HandlebarsPlanner
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
         var allowLoopsInPlan = chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
-            kernel,
             new HandlebarsPlannerConfig()
             {
                 // Change this if you want to test with loops regardless of model selection.
@@ -103,18 +102,18 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"Goal: {goal}");
 
         // Create the plan
-        var plan = await planner.CreatePlanAsync(goal);
+        var plan = await planner.CreatePlanAsync(kernel, goal);
 
+        // Print the prompt template
         if (shouldPrintPrompt)
         {
-            // Print the prompt template
             Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }
 
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
     }
 

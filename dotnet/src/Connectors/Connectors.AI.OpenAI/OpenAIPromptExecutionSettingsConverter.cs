@@ -15,7 +15,7 @@ public sealed class OpenAIPromptExecutionSettingsConverter : JsonConverter<OpenA
     /// <inheritdoc/>
     public override OpenAIPromptExecutionSettings? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings();
+        var executionSettings = new OpenAIPromptExecutionSettings();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -34,43 +34,43 @@ public sealed class OpenAIPromptExecutionSettingsConverter : JsonConverter<OpenA
                 switch (propertyName)
                 {
                     case "TEMPERATURE":
-                        requestSettings.Temperature = reader.GetDouble();
+                        executionSettings.Temperature = reader.GetDouble();
                         break;
                     case "TOPP":
                     case "TOP_P":
-                        requestSettings.TopP = reader.GetDouble();
+                        executionSettings.TopP = reader.GetDouble();
                         break;
                     case "FREQUENCYPENALTY":
                     case "FREQUENCY_PENALTY":
-                        requestSettings.FrequencyPenalty = reader.GetDouble();
+                        executionSettings.FrequencyPenalty = reader.GetDouble();
                         break;
                     case "PRESENCEPENALTY":
                     case "PRESENCE_PENALTY":
-                        requestSettings.PresencePenalty = reader.GetDouble();
+                        executionSettings.PresencePenalty = reader.GetDouble();
                         break;
                     case "MAXTOKENS":
                     case "MAX_TOKENS":
-                        requestSettings.MaxTokens = reader.GetInt32();
+                        executionSettings.MaxTokens = reader.GetInt32();
                         break;
                     case "STOPSEQUENCES":
                     case "STOP_SEQUENCES":
-                        requestSettings.StopSequences = JsonSerializer.Deserialize<IList<string>>(ref reader, options) ?? Array.Empty<string>();
+                        executionSettings.StopSequences = JsonSerializer.Deserialize<IList<string>>(ref reader, options) ?? Array.Empty<string>();
                         break;
                     case "RESULTSPERPROMPT":
                     case "RESULTS_PER_PROMPT":
-                        requestSettings.ResultsPerPrompt = reader.GetInt32();
+                        executionSettings.ResultsPerPrompt = reader.GetInt32();
                         break;
                     case "CHATSYSTEMPROMPT":
                     case "CHAT_SYSTEM_PROMPT":
-                        requestSettings.ChatSystemPrompt = reader.GetString() ?? OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
+                        executionSettings.ChatSystemPrompt = reader.GetString() ?? OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
                         break;
                     case "TOKENSELECTIONBIASES":
                     case "TOKEN_SELECTION_BIASES":
-                        requestSettings.TokenSelectionBiases = JsonSerializer.Deserialize<IDictionary<int, int>>(ref reader, options) ?? new Dictionary<int, int>();
+                        executionSettings.TokenSelectionBiases = JsonSerializer.Deserialize<IDictionary<int, int>>(ref reader, options) ?? new Dictionary<int, int>();
                         break;
                     case "SERVICEID":
                     case "SERVICE_ID":
-                        requestSettings.ServiceId = reader.GetString();
+                        executionSettings.ServiceId = reader.GetString();
                         break;
                     default:
                         reader.Skip();
@@ -79,7 +79,7 @@ public sealed class OpenAIPromptExecutionSettingsConverter : JsonConverter<OpenA
             }
         }
 
-        return requestSettings;
+        return executionSettings;
     }
 
     /// <inheritdoc/>
