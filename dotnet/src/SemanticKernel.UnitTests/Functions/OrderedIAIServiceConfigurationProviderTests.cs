@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
@@ -18,30 +19,28 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNoServices()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, new ContextVariables(), function));
     }
 
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleAIService()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<IAIService>(new AIService());
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<IAIService>("service1", new AIService());
+        }).Build();
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<IAIService>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<IAIService>(kernel, new ContextVariables(), function);
 
         // Assert
         Assert.NotNull(aiService);
@@ -52,15 +51,16 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>(new TextCompletion());
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
         Assert.NotNull(aiService);
@@ -68,81 +68,64 @@ public class OrderedIAIServiceConfigurationProviderTests
     }
 
     [Fact]
-    public void ItAIServiceConfigurationForTextCompletionByServiceId()
+    public void ItGetsAIServiceConfigurationForTextCompletionByServiceId()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion());
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new PromptExecutionSettings() { ServiceId = "service2" };
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.NotNull(aiService);
-        Assert.Null(defaultRequestSettings);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
     [Fact]
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion());
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>
+        var kernel = new KernelBuilder().ConfigureServices(c =>
         {
-            new AIRequestSettings() { ServiceId = "service3" }
-        };
-        var configurationProvider = new OrderedIAIServiceSelector();
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new PromptExecutionSettings() { ServiceId = "service3" };
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings));
-    }
-
-    [Fact]
-    public void ItUsesDefaultServiceForNullModelSettings()
-    {
-        // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
-        var serviceProvider = serviceCollection.Build();
-        var configurationProvider = new OrderedIAIServiceSelector();
-
-        // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, null);
-
-        // Assert
-        Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Null(defaultRequestSettings);
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function));
     }
 
     [Fact]
     public void ItUsesDefaultServiceForEmptyModelSettings()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var function = kernel.CreateFunctionFromPrompt("Hello AI");
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
         Assert.Null(defaultRequestSettings);
     }
 
@@ -150,46 +133,45 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettings()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>
+        // Arrange
+        var kernel = new KernelBuilder().ConfigureServices(c =>
         {
-            new AIRequestSettings()
-        };
-        var configurationProvider = new OrderedIAIServiceSelector();
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new PromptExecutionSettings();
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Equal(modelSettings[0], defaultRequestSettings);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(executionSettings, defaultRequestSettings);
     }
 
     [Fact]
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>
+        var kernel = new KernelBuilder().ConfigureServices(c =>
         {
-            new AIRequestSettings() { ServiceId = "" }
-        };
-        var configurationProvider = new OrderedIAIServiceSelector();
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new PromptExecutionSettings() { ServiceId = "" };
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Equal(modelSettings[0], defaultRequestSettings);
+        Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(executionSettings, defaultRequestSettings);
     }
 
     [Theory]
@@ -200,40 +182,49 @@ public class OrderedIAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
-        var renderedPrompt = "Hello AI, what can you do for me?";
-        var serviceCollection = new AIServiceCollection();
-        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion());
-        serviceCollection.SetService<ITextCompletion>("service3", new TextCompletion());
-        var serviceProvider = serviceCollection.Build();
-        var modelSettings = new List<AIRequestSettings>();
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service3", new TextCompletion());
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new List<PromptExecutionSettings>();
         foreach (var serviceId in serviceIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
+            executionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
         }
-        var configurationProvider = new OrderedIAIServiceSelector();
+        var function = kernel.CreateFunctionFromPrompt(promptConfig: new PromptTemplateConfig() { Template = "Hello AI", ExecutionSettings = executionSettings });
+        var serviceSelector = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(renderedPrompt, serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
-        Assert.Equal(serviceProvider.GetService<ITextCompletion>(expectedServiceId), aiService);
+        Assert.Equal(kernel.GetService<ITextCompletion>(expectedServiceId), aiService);
         Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
     }
 
     #region private
     private sealed class AIService : IAIService
     {
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+        public string? ModelId { get; }
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+
+        public string? ModelId { get; }
+
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

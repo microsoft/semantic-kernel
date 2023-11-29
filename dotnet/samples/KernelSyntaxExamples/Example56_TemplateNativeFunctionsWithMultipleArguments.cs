@@ -4,8 +4,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -26,13 +26,13 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: deploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -41,12 +41,13 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         var variableName = "word2";
         var variableValue = " Potter";
-        var context = kernel.CreateNewContext();
-        context.Variables[variableName] = variableValue;
+
+        var variables = new ContextVariables();
+        variables[variableName] = variableValue;
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.ImportFunctions(new TextPlugin(), "text");
+        kernel.ImportPluginFromObject<TextPlugin>("text");
 
         // Semantic Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
@@ -55,16 +56,17 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new BasicPromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, context);
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
+        var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, variables);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(context.Variables, haiku);
+        var result = await kernel.InvokeAsync(haiku, variables);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:

@@ -12,13 +12,13 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 public class RestApiOperationResponseConverter : TypeConverter
 {
     /// <inheritdoc/>
-    public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+    public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
     {
         return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
     }
 
     /// <inheritdoc/>
-    public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
     {
         // Convert object content to a string based on the type of the `Content` property.
         // More granular conversion logic can be built based on the value of the `ContentType` property, if needed.

@@ -4,9 +4,8 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -15,6 +14,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// </summary>
 public abstract class OpenAIClientBase : ClientBase
 {
+    /// <summary>
+    /// Attribute name used to store the orhanization in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string OrganizationKey = "Organization";
+
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
@@ -38,9 +42,9 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.ModelId = modelId;
+        this.DeploymentOrModelName = modelId;
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
@@ -66,7 +70,7 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        this.ModelId = modelId;
+        this.DeploymentOrModelName = modelId;
         this.Client = openAIClient;
     }
 
@@ -76,31 +80,6 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
-    }
-
-    /// <summary>
-    /// Options used by the OpenAI client, e.g. User Agent.
-    /// </summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
-    {
-        var options = new OpenAIClientOptions
-        {
-            Diagnostics =
-            {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
-            }
-        };
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
-        }
-
-        return options;
+        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
     }
 }

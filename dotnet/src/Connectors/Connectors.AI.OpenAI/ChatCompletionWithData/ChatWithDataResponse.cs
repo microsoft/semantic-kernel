@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-[Serializable]
 internal sealed class ChatWithDataResponse
 {
     [JsonPropertyName("id")]

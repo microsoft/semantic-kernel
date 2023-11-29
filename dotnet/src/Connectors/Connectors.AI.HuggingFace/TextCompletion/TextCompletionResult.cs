@@ -9,17 +9,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 internal sealed class TextCompletionResult : ITextResult
 {
-    private readonly ModelResult _responseData;
+    public TextCompletionResult(TextCompletionResponse responseData) =>
+        this.ModelResult = new ModelResult(responseData);
 
-    public TextCompletionResult(TextCompletionResponse responseData)
-    {
-        this._responseData = new ModelResult(responseData);
-    }
+    public ModelResult ModelResult { get; }
 
-    public ModelResult ModelResult => this._responseData;
-
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().Text ?? string.Empty);
-    }
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(this.ModelResult.GetResult<TextCompletionResponse>().Text ?? string.Empty);
 }

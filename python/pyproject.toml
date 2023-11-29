@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.14.dev"
+version = "0.3.15.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -26,6 +26,7 @@ pytest = "7.4.2"
 ruff = "0.0.289"
 pytest-asyncio = "0.21.1"
 snoop = "0.4.3"
+pytest-pdb = "^0.3.1"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = ">=0.1,<0.3", markers = "python_version >= '3.9'" }

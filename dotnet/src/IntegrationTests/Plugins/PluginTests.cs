@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
@@ -13,8 +15,37 @@ public class PluginTests
 {
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
+    public async Task QueryKlarnaOpenAIPluginAsync(
+    string pluginEndpoint,
+    string name,
+    string functionName,
+    string query,
+    int size,
+    int budget,
+    string countryCode)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+            name,
+            new Uri(pluginEndpoint),
+            new OpenAIFunctionExecutionParameters(httpClient));
+
+        var contextVariables = new ContextVariables();
+        contextVariables["q"] = query;
+        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["countryCode"] = countryCode;
+
+        // Act
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+    }
+
+    [Theory]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaPluginAsync(
+    public async Task QueryKlarnaOpenApiPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -24,10 +55,10 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -39,7 +70,43 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+    }
+
+    [Theory]
+    [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
+    public async Task QueryKlarnaOpenApiPluginRunAsync(
+        string pluginEndpoint,
+        string name,
+        string functionName,
+        string query,
+        int size,
+        int budget,
+        string countryCode)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            name,
+            new Uri(pluginEndpoint),
+            new OpenApiFunctionExecutionParameters(httpClient));
+
+        var contextVariables = new ContextVariables();
+        contextVariables["q"] = query;
+        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["countryCode"] = countryCode;
+
+        // Act
+        var result = (await kernel.InvokeAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.ExpectedSchema);
+        Assert.NotNull(result.Content);
+        Assert.True(result.IsValid());
     }
 
     [Theory]
@@ -55,20 +122,20 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 
     [Theory]
@@ -86,20 +153,20 @@ public class PluginTests
         // Arrange
         using (var stream = System.IO.File.OpenRead(pluginFilePath))
         {
-            var kernel = new KernelBuilder().Build();
+            var kernel = new Kernel();
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportPluginFunctionsAsync(
+            var plugin = await kernel.ImportPluginFromOpenAIAsync(
                 name,
                 stream,
-                new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+            await plugin[functionName].InvokeAsync(kernel, contextVariables);
         }
     }
 
@@ -116,19 +183,19 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             pluginFilePath,
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, contextVariables);
     }
 }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -13,21 +12,22 @@ internal static class FunctionHelpers
     /// <summary>
     /// Invokes a function on a plugin instance via the kernel.
     /// </summary>
-    public static Task<KernelResult> CallViaKernelAsync(
+    public static Task<FunctionResult> CallViaKernelAsync(
         object pluginInstance,
         string methodName,
         params (string Name, object Value)[] variables)
     {
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
-        IDictionary<string, ISKFunction> functions = kernel.ImportFunctions(pluginInstance);
+        IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        SKContext context = kernel.CreateNewContext();
+        ContextVariables contextVariables = new();
+
         foreach ((string Name, object Value) pair in variables)
         {
-            context.Variables.Set(pair.Name, pair.Value.ToString());
+            contextVariables.Set(pair.Name, pair.Value.ToString());
         }
 
-        return kernel.RunAsync(context.Variables, functions[methodName]);
+        return kernel.InvokeAsync(plugin[methodName], contextVariables);
     }
 }

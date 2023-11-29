@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Summarize given text or any text document",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 500,
       "temperature": 0.0,

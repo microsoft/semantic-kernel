@@ -30,7 +30,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
+        this(HttpClientProvider.GetHttpClient(), loggerFactory)
     {
     }
 
@@ -53,7 +53,7 @@ public sealed class WebFileDownloadPlugin
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>Task.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
-    [SKFunction, Description("Downloads a file to local storage")]
+    [KernelFunction, Description("Downloads a file to local storage")]
     public async Task DownloadToFileAsync(
         [Description("URL of file to download")] Uri url,
         [Description("Path where to save file locally")] string filePath,
