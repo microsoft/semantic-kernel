@@ -223,6 +223,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
 
         // Assert
+        Assert.NotNull(aiService);
         Assert.Equal("model2", aiService.GetModelId());
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
