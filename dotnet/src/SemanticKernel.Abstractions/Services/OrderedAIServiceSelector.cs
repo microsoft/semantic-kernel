@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
@@ -11,9 +10,9 @@ namespace Microsoft.SemanticKernel.Services;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
 /// Uses the service id to select the preferred service provider and then returns the service and associated model settings.
 /// </summary>
-internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
+internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
-    public static OrderedIAIServiceSelector Instance { get; } = new();
+    public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService
@@ -46,7 +45,7 @@ internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
                 }
                 else if (!string.IsNullOrEmpty(model.ModelId))
                 {
-                    var service = this.GetServiceByModelId<T>(kernel.Services, model.ModelId!);
+                    var service = this.GetServiceByModelId<T>(kernel, model.ModelId!);
                     if (service is not null)
                     {
                         return (service, model);
@@ -71,9 +70,9 @@ internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
             $"Service of type {typeof(T)} and names {names} not registered.");
     }
 
-    private T? GetServiceByModelId<T>(IServiceProvider serviceProvider, string modelId) where T : IAIService
+    private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
-        var services = serviceProvider.GetServices<T>();
+        var services = kernel.GetAllServices<T>();
         foreach (var service in services)
         {
             string? serviceModelId = service.GetModelId();

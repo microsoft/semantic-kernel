@@ -170,6 +170,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "planning", "planning", "{A7DAB812-81CF-4931-B38C-468A3261C4C8}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\planning\PlannerConfigBase.cs = src\InternalUtilities\planning\PlannerConfigBase.cs
+		src\InternalUtilities\planning\PlannerInstrumentation.cs = src\InternalUtilities\planning\PlannerInstrumentation.cs
 		src\InternalUtilities\planning\PlanningUtilities.props = src\InternalUtilities\planning\PlanningUtilities.props
 		src\InternalUtilities\planning\SemanticMemoryConfig.cs = src\InternalUtilities\planning\SemanticMemoryConfig.cs
 	EndProjectSection
