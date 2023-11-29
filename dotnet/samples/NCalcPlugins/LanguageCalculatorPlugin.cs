@@ -139,7 +139,7 @@ Question: {{ $input }}
             }
 
             var result = expr.Evaluate();
-            return "Answer:" + result.ToString();
+            return "Answer:" + result;
         }
         catch (Exception e)
         {
