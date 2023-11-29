@@ -131,7 +131,7 @@ Answer:
 [END OF EXAMPLES]
 
 [TASK]
-Question: {{ $input }}.
+Question: {{ $question }}.
 Answer: ";
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
@@ -141,7 +141,7 @@ Answer: ";
 
         var answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
         {
-            ["input"] = question,
+            ["question"] = question,
             ["externalInformation"] = string.Empty
         });
 
@@ -162,7 +162,7 @@ Answer: ";
             // Run the semantic function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
             {
-                ["input"] = question,
+                ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information
             });

@@ -414,7 +414,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return function.InvokeAsync(kernel, input, requestSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, input, executionSettings: null, cancellationToken);
     }
 
     /// <summary>

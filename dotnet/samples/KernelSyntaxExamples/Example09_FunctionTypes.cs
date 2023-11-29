@@ -20,8 +20,6 @@ public static class Example09_FunctionTypes
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var arguments = new KernelFunctionArguments();
-
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
 
@@ -41,17 +39,17 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin["type04"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type04"]);
 
-        await kernel.InvokeAsync(plugin["type05"], arguments);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], arguments);
+        await kernel.InvokeAsync(plugin["type05"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"]);
 
-        await kernel.InvokeAsync(plugin["type06"], arguments);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], arguments);
+        await kernel.InvokeAsync(plugin["type06"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"]);
 
-        await kernel.InvokeAsync(plugin["type07"], arguments);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], arguments);
+        await kernel.InvokeAsync(plugin["type07"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"]);
 
-        await kernel.InvokeAsync(plugin["type08"], arguments);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"], arguments);
+        await kernel.InvokeAsync(plugin["type08"]);
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
 
         await kernel.InvokeAsync(plugin["type09"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
