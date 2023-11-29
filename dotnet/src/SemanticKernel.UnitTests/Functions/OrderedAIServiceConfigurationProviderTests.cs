@@ -205,19 +205,47 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
     }
 
+    [Fact]
+    public void ItGetsAIServiceConfigurationForTextCompletionByModelId()
+    {
+        // Arrange
+        var kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model1"));
+            c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model2"));
+        }).Build();
+        var variables = new ContextVariables();
+        var executionSettings = new PromptExecutionSettings() { ModelId = "model2" };
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedAIServiceSelector();
+
+        // Act
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
+
+        // Assert
+        Assert.Equal("model2", aiService.GetModelId());
+        Assert.Equal(executionSettings, defaultExecutionSettings);
+    }
+
     #region private
     private sealed class AIService : IAIService
     {
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
-
-        public string? ModelId { get; }
     }
 
     private sealed class TextCompletion : ITextCompletion
     {
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
-        public string? ModelId { get; }
+        private readonly Dictionary<string, string> _attributes = new();
+
+        public TextCompletion(string? modelId = null)
+        {
+            if (modelId is not null)
+            {
+                this._attributes.Add("ModelId", modelId);
+            }
+        }
 
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
