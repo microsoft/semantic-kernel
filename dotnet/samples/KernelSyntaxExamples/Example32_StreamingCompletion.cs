@@ -26,7 +26,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new AzureTextCompletion(
+        var textCompletion = new AzureOpenAITextCompletion(
             TestConfiguration.AzureOpenAI.DeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
