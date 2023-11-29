@@ -56,24 +56,17 @@ public class OpenAIAuthenticationProvider
                 { "scope", openAIAuthConfig.Scope ?? "" },
             };
 
-            HttpContent? requestContent = null;
-            requestContent = openAIAuthConfig.AuthorizationContentType switch
+            using HttpContent? requestContent = openAIAuthConfig.AuthorizationContentType switch
             {
                 "application/x-www-form-urlencoded" => new FormUrlEncodedContent(values),
                 "application/json" => new StringContent(JsonSerializer.Serialize(values), Encoding.UTF8, "application/json"),
-                _ => throw new KernelException("Unsupported authorization content type."),
+                _ => throw new KernelException($"Unsupported authorization content type: {openAIAuthConfig.AuthorizationContentType}"),
             };
 
             // Request the token
             using var client = new HttpClient();
             using var authRequest = new HttpRequestMessage(HttpMethod.Post, openAIAuthConfig.AuthorizationUrl) { Content = requestContent };
             var response = await client.SendWithSuccessCheckAsync(authRequest, cancellationToken).ConfigureAwait(false);
-            requestContent.Dispose();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new KernelException($"Failed to get token from {openAIAuthConfig.AuthorizationUrl}.");
-            }
 
             // Read the token
             var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);

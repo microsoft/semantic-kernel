@@ -61,8 +61,8 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         var openApiSpec = EmbeddedResource.Read("22-openapi.json");
-        var messageStub = new HttpMessageHandlerStub(openApiSpec);
-        var httpClient = new HttpClient(messageStub);
+        using var messageStub = new HttpMessageHandlerStub(openApiSpec);
+        using var httpClient = new HttpClient(messageStub);
 
         // Import Open AI Plugin
         var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
@@ -79,9 +79,6 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
 
         await AddSecretToAzureKeyVaultAsync(kernel, plugin);
         await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
-
-        messageStub.Dispose();
-        httpClient.Dispose();
     }
 
     public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, IKernelPlugin plugin)
