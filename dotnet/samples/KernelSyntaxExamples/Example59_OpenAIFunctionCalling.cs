@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 
 /**
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
