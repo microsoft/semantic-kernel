@@ -18,10 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="C:\SemanticKernel\skrepo\semantic-kernel\dotnet\src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Stepwise\InitialPlanPrompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
