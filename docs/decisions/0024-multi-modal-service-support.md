@@ -15,7 +15,13 @@ informed:
 
 1. A sk developer should be able to use different prompt functions against different models and service providers without having to know the specific details of each model.
 
-2. A sk developer should be able to get results from a function in a consistant, simple and easy way regardless of the model used.
+2. A sk developer should be able to get results from a function in a consistent, simple and easy way regardless of the model used.
+
+### Index
+
+- `AIService` Abstractions
+- `Content` Abstractions
+- `FunctionResult` Abstractions
 
 ## Out of Scope
 
@@ -23,31 +29,51 @@ informed:
 
 ### Generic Abstractions
 
-## Default AI Service Abstractions
+## `AIService` Abstractions
 
 Main `AIService` abstractions that can be used directly by the kernel execute prompt functions with any AI Models regardless of the modality.
 
 `IAIService` interface become the main abstraction for modality/model support.
 
-All connectors will have one or multiple services implementing `IAIService` for each modality/model support.
+All connectors will have one or multiple services implementing `IAIService` for each modality/model they support.
 
-Each provider will also provide its unique `ProviderId` for the modality supported which can be used by the `ServiceSelector` to select the correct service to use.
+[ ] Suggestion: Each provider can also have its unique `ProviderModalityId` for the modality supported which can be used by the `ServiceSelector` to select the correct service to use.
 
-Examples of `IAIService` implementations:
+### How connectors can implement the new `IAIService` abstraction:
 
-| Modality       | ProviderId                              | Connector Class              |
-| -------------- | --------------------------------------- | ---------------------------- |
-| Chat to Text   | OpenAI.ChatCompletion                   | ChatCompletionAIService      |
-| Chat to Text   | AzureOpenAI.ChatCompletion              | AzureChatCompletionAIService |
-| Text to Image  | OpenAI.Dalle3                           | Dalle3AIService              |
-| Text to Image  | MidJourney.V5                           | MidJourneyV5AIService        |
-| Image to Image | MidJourney.V5                           | MidJourneyBlendAIService     |
-| Text to Audio  | Azure.CognitiveServices.SpeechSynthesis | SpeechSynthesisAIService     |
-| Text to Video  | Azure.CognitiveServices.VideoIndexer    | VideoIndexerAIService        |
-| Text to Text   | OpenAI.TextCompletion                   | TextCompletionAIService      |
-| Text to Text   | HuggingFace.TextCompletion              | TextCompletionAIService      |
+| Modality       | Connector   | ProviderModalityId            | Connector Class              | ModelId                      |
+| -------------- | ----------- | ----------------------------- | ---------------------------- | ---------------------------- |
+| Text to Text   | AzureOpenAI | OpenAI.Text.Completion        | TextCompletionAIService      | text-davinci-003             |
+| Chat to Chat   | AzureOpenAI | OpenAI.Chat.Completion        | ChatCompletionAIService      | gpt-3.5-turbo, gpt-4         |
+| Chat to Chat   | AzureOpenAI | AzureOpenAI.Chat.Completion   | AzureChatCompletionAIService | gpt-4.5-turbo, gpt-4         |
+| Text to Image  | AzureOpenAI | OpenAI.Image.Creation         | Dalle3AIService              | dalle3                       |
+| Text to Audio  | AzureOpenAI | OpenAI.Audio.Speaking         | TextToAudioAIService         | tts-1, tts-2                 |
+| Audio to Text  | AzureOpenAI | OpenAI.Audio.Transcribing     | AudioToTextAIService         | whisper-1                    |
+| Text to Image  | MidJourney  | MidJourney.Image.Creation     | MidJourneyV5AIService        | V4, V4.1, V5                 |
+| Image to Image | MidJourney  | MidJourney.Image.Blending     | MidJourneyBlendAIService     | V4, V4.1, V5                 |
+| Text to Text   | HuggingFace | HuggingFace.Text.Completion   | TextCompletionAIService      | meta-llama/Llama-2-7b-hf     |
+| Text to Image  | HuggingFace | HuggingFace.Image.Creation    | HuggingFaceImageAIService    | stabilityai/stable-diffusion |
+| Text to Text   | Amazon      | AmazonBedrock.Text.Completion | TextCompletionAIService      | claude, amazon-titan         |
+| Text to Image  | Amazon      | AmazonBedrock.Image.Creation  | TextCompletionAIService      | stable-diffusion             |
 
-Interfaces like `ITextCompletion`, `IChatCompletion` will be removed and replaced by the `IAIService` abstraction.
+Interfaces like `ITextCompletion`, `IChatCompletion`, `ImageGeneration` will be removed and current implementations will now be using a `IAIService` abstraction returned by the Service Selector.
+
+### Target User experience
+
+Before:
+
+```csharp
+ var dallE = kernel.GetService<IImageGeneration>();
+ var image = await dallE.GenerateImageAsync("A cute baby sea otter", 256, 256);
+```
+
+After:
+
+```csharp
+ var dallE = kernel.GetService<IAIService>("dalle3");
+ var settings = new OpenAIImageCreationSettings { Width = 256, Height = 256 };
+ var image = await dallE.GetContentAsync<ImageContent>(kernel, "A cute baby sea otter", settings);
+```
 
 #### `IAIService` Example
 
@@ -64,11 +90,31 @@ public interface IAIService
 Usage:
 
 ```csharp
-var myResult = myService.GetContentAsync<StreamingContent>(kernel, ...);
+var chatService = kernel.GetService<IAIService>("gpt-4");
+
+// Chat Or TextCompletion
+
+// non streaming
+var myResult = chatService.GetContentAsync<CompleteContent>(kernel, ...);
 Console.WriteLine(myResult.Content);
+
+// streaming
+await foreach (var content in chatService.GetStreamingContentAsync<StreamingContent>(kernel, ...))
+{
+    Console.WriteLine(content);
+}
+
+// Image generation
+var dallE = kernel.GetService<IAIService>("dalle3");
+var settings = new OpenAIImageCreationSettings { Width = 256, Height = 256 };
+var imageContent = await dallE.GetContentAsync<ImageContent>(kernel, "A cute baby sea otter", settings);
 ```
 
 #### Convenience Extensions to the `IAIService`
+
+Those are convenient default extensions that can expose the `Content` abstractions directly without having to specify the generic type.
+
+_All the AI Services will support and return a specialized `CompleteContent` abstraction._
 
 ```csharp
 public static class IAIServiceExtensions
@@ -81,30 +127,43 @@ public static class IAIServiceExtensions
 Usage: (Without generics)
 
 ```csharp
-var myResult = myService.GetContentAsync(kernel, ...);
+var chatService = kernel.GetService<IAIService>("gpt-4");
+var myResult = chatService.GetContentAsync(kernel, ...);
 Console.WriteLine(myResult.Content);
 ```
 
-### Content Abstractions
+### **Content** Abstractions
 
-Similar to the current `StreamingContent` abstraction, the abstractions below will be used to represent non-streaming (`CompleteContent`) contents returned by the models.
-
-### For content abstractions we have some options:
+Similar on how streaming abstractions work, the abstractions below will be used to represent non-streaming contents returned by the models.
 
 #### Option 1 - (Shallow inheritance)
 
-This approach suggest that the majority of the specializations will rely on the `CompleteContent<T>` abstraction, and the same Content property will be used to get the actual content, regardless of the type.
+In this approach the majority of the specializations will rely on the `CompleteContent<T>` abstraction, and the same Content property will be used to get the actual content, regardless of the type.
 
-Main abstraction for any content type
+### Pros
+
+- All Content will have one property `Content` which will be generic to the type of the content you expect.
+- The caller needs to know what is the type of the content he is expecting, to be able to get it from the method result.
+
+Usage:
+
+```csharp
+var myResult = chatService.GetContentAsync<ChatContent>(kernel, ...);
+foreach(var message in myResult.Content) {
+    Console.WriteLine(message.Role + ": " + message.Content);
+}
+```
+
+#### High level abstractions
 
 ```csharp
 abstract class CompleteContent<T>
 {
-	public abstract T Content  { get; } // The actual content
-	public object InnerContent  { get; } // (Breaking glass)
-	public Dictionary<string, object> Metadata  { get; }
+	abstract T Content  { get; } // The actual content
+	object InnerContent  { get; } // (Breaking glass)
+	Dictionary<string, object> Metadata  { get; }
 
-    public CompleteContent(object innerContent, Dictionary<string, object>? metadata = null)
+    CompleteContent(object innerContent, Dictionary<string, object>? metadata = null)
     {
         Content = content;
         InnerContent = innerContent;
@@ -113,95 +172,109 @@ abstract class CompleteContent<T>
 }
 ```
 
-Interface abstraction to flag contents that actually are referenced by a URL.
-
-```csharp
-interface IReferenceContent // : ContentBase<string> If we want to enforce the string type for referenced contents.
-{
-	public string Url { get; }
-}
-```
-
-When executing a method function, the result will be wrapped in a `MethodContent<T>` where T is the type returned by the method.
+`KernelMethodFunction`s results will be wrapped in a `MethodContent<T>` where T is the type returned by the method.
 
 ```csharp
 class MethodContent<T> : CompleteContent<T>
 {
-    public override T Content => this._content;
+    override T Content { get; }
 
-    public MethodContent(T content) : base(content)
+    MethodContent(T content) : base(content)
     {
-        this._content = content;
+        this.Content = content;
     }
 }
 ```
 
-Most raw class, normally can be used for streaming any content´
+Octect Type Content (Generaly for binary content, files, executables, etc)
 
 ```csharp
-public class BinaryContent : ContentBase<byte[]>
+class BinaryContent : ContentBase<byte[]>
 {
-string Format { get; }
-byte[] Content
-}
+    string Format { get; }
+    byte[] Content { get; }
 
-public class TextContent : ContentBase<string>
-{
-public string Content
+    //ctor
 }
-
-public class AudioContent<T> : ContentBase<T>
-{
-public string Format { get; } // (Mp3, Wav, Wma)
-string? Title
-TimeSpan? Length
-}
-
-public class VideoContent<T> : ContentBase<T>
-{
-public string Format { get; } // (Mp4, Avi, Wmv)
-string? Title
-TimeSpan? Length
-int? FramesPerSecond
-int? Width
-int? Height
-}
-
-public class ImageContent<T> : ContentBase<T>
-{
-public string Format { get; } // (Jpg, Png, Gif, Bmp, Tiff, Svg)
-public string? Title { get; }
-public int? Width { get; }
-public int? Height { get; }
-}
-
 ```
 
-## Specialized Abstractions: (SemanticKernel.Abstractions)
+#### Low level abstractions (Content specific types)
 
-Used in some scenarios where the above abstractions are not enough to represent the content. Like Chat, Json, etc.
+Text Type Content (Generaly for text content, strings, etc)
 
 ```csharp
-
-public class JsonContent : ContentBase<JsonElement>
+class TextContent : ContentBase<string>
 {
-}
+    Encoding Format { get; } = Encoding.UTF8;
+    string Content { get; }
 
-public class ChatContent : ContentBase<string>
-{
-	public string Role
+    //ctor
 }
-
 ```
 
-## Custom Specializations (Connectors):
+Audio content
 
 ```csharp
+class AudioContent<T> : ContentBase<T>
+{
+    string Format { get; } // (Mp3, Wav, Wma)
+    string? Title { get; }
+    TimeSpan? Length { get; }
+}
+```
 
-// OpenAI Connector Examples
+Video content
+
+```csharp
+class VideoContent<T> : ContentBase<T>
+{
+    string Format { get; } // (Mp4, Avi, Wmv)
+    string? Title
+    TimeSpan? Length
+    int? FramesPerSecond
+    int? Width
+    int? Height
+}
+```
+
+Image content
+
+```csharp
+class ImageContent<T> : ContentBase<T>
+{
+    string Format { get; } // (Jpg, Png, Gif, Bmp, Tiff, Svg)
+    string? Title { get; }
+    int? Width { get; }
+    int? Height { get; }
+}
+```
+
+Json content
+
+```csharp
+class JsonContent : ContentBase<JsonElement>
+{
+}
+```
+
+Chat content (Promoted to abstractions as it became the most used content type with OpenAI)
+
+```csharp
+class ChatContent : ContentBase<ChatHistory>
+{
+}
+```
+
+#### Connector (Specialized) Abstractions:
+
+Used in scenarios where the above abstractions are not enough to represent the content. Like OpenAIChat, Swagger/OpenAPI, etc.
+
+#### OpenAI Connector Examples
+
+```csharp
 public sealed class OpenAIChatContent : ChatContent
 {
-	TooCalls[] TooCalls
+	ICollection<ToolCalls> ToolCalls { get; }
 
 	private class ToolCall {
 		public int Index { get; }
@@ -379,6 +452,17 @@ public class Swagger/OpenAPIContent : JsonContent
     }
 }
 
+```
+
+#### Useful interfaces
+
+To flag contents that actually are created and referenced by a URL.
+
+```csharp
+interface IReferencedContent
+{
+	public string ContentUrl { get; }
+}
 ```
 
 ## How handle the current contents in `FunctionResults`?
