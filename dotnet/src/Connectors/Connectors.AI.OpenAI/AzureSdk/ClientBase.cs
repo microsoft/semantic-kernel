@@ -2,10 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -18,6 +21,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Prompt;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -106,20 +110,11 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
-
         ValidateMaxTokens(textRequestSettings.MaxTokens);
+
         var options = CreateCompletionsOptions(text, textRequestSettings, this.DeploymentOrModelName);
 
-        Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
-            throw new KernelException("Text completions null response");
-        }
-
-        var responseData = response.Value;
-
+        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
         if (responseData.Choices.Count == 0)
         {
             throw new KernelException("Text completions not found");
@@ -137,13 +132,11 @@ public abstract class ClientBase
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
-
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
         var options = CreateCompletionsOptions(prompt, textRequestSettings, this.DeploymentOrModelName);
 
-        StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
-            () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+        StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         int choiceIndex = 0;
         Dictionary<string, object>? responseMetadata = null;
@@ -176,7 +169,7 @@ public abstract class ClientBase
 
     private static Dictionary<string, object> GetResponseMetadata(Completions completions)
     {
-        return new Dictionary<string, object>()
+        return new Dictionary<string, object>(3)
         {
             { $"{nameof(Completions)}.{nameof(completions.Id)}", completions.Id },
             { $"{nameof(Completions)}.{nameof(completions.Created)}", completions.Created },
@@ -186,7 +179,7 @@ public abstract class ClientBase
 
     private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object>()
+        return new Dictionary<string, object>(2)
         {
             { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Id)}", completions.Id },
             { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created },
@@ -210,14 +203,7 @@ public abstract class ClientBase
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
-            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-
-            if (response is null)
-            {
-                throw new KernelException("Text embedding null response");
-            }
-
+            Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
             if (response.Value.Data.Count == 0)
             {
                 throw new KernelException("Text embedding not found");
@@ -245,34 +231,89 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
 
+        // Convert the incoming execution settings to OpenAI settings.
         OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
-
+        bool autoInvoke = chatRequestSettings.FunctionCallBehavior?.AutoInvoke == true && kernel is not null;
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
+        ValidateAutoInvoke(autoInvoke, chatRequestSettings.ResultsPerPrompt);
 
-        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
+        // Create the Azure SDK ChatCompletionOptions instance from all available information.
+        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat, kernel, this.DeploymentOrModelName);
 
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
+        while (true)
         {
-            throw new KernelException("Chat completions null response");
+            // Make the request.
+            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+            this.CaptureUsageDetails(responseData.Usage);
+            if (responseData.Choices.Count == 0)
+            {
+                throw new KernelException("Chat completions not found");
+            }
+
+            // If we don't want to attempt to invoke any functions, just return the result.
+            // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
+            if (!autoInvoke || responseData.Choices.Count != 1)
+            {
+                return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+            }
+
+            // Get our single result and extract the function call information. If this isn't a function call, or if it is
+            // but we're unable to find the function or extract the relevant information, just return the single result.
+            ChatChoice resultChoice = responseData.Choices[0];
+            ChatResult result = new(responseData, resultChoice);
+            OpenAIFunctionResponse? functionCallResponse = null;
+            try
+            {
+                functionCallResponse = result.GetOpenAIFunctionResponse();
+            }
+            catch (JsonException e) when (resultChoice.Message.FunctionCall is not null)
+            {
+                if (this.Logger.IsEnabled(LogLevel.Error))
+                {
+                    this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", resultChoice.Message.FunctionCall.Name);
+                }
+                if (this.Logger.IsEnabled(LogLevel.Trace))
+                {
+                    this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", resultChoice.Message.FunctionCall.Arguments);
+                }
+            }
+
+            if (functionCallResponse is null ||
+                !kernel!.Plugins.TryGetFunctionAndContext(functionCallResponse, out KernelFunction? function, out ContextVariables? functionArgs))
+            {
+                return new[] { result };
+            }
+
+            // Otherwise, invoke the function.
+            string functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<string>() ?? string.Empty;
+
+            // Then add the relevant messages both to the chat options and to the chat history.
+            // The messages are added to the chat history, even though it's not strictly required, so that the additional
+            // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
+            // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
+
+            string fqn = functionCallResponse.FullyQualifiedName;
+
+            chatOptions.Messages.Add(resultChoice.Message);
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, functionResult) { Name = fqn });
+
+            chat.AddAssistantMessage(result);
+            chat.AddFunctionMessage(functionResult, fqn);
+
+            // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
+            // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
+            // forever, because on each call the service will be required to re-request that same invocation. We thus clear out
+            // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
+            if (chatRequestSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
+            {
+                chatOptions.FunctionCall = null;
+                chatOptions.Functions = null;
+            }
         }
-
-        var responseData = response.Value;
-
-        if (responseData.Choices.Count == 0)
-        {
-            throw new KernelException("Chat completions not found");
-        }
-
-        this.CaptureUsageDetails(responseData.Usage);
-
-        return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
     }
 
     private protected async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
-        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+        ChatHistory chat,
         Kernel? kernel,
         PromptExecutionSettings? executionSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -280,39 +321,128 @@ public abstract class ClientBase
         Verify.NotNull(chat);
 
         OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
-
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        var options = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
+        bool autoInvoke = chatRequestSettings.FunctionCallBehavior?.AutoInvoke == true && kernel is not null;
+        ValidateAutoInvoke(autoInvoke, chatRequestSettings.ResultsPerPrompt);
 
-        var response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
-           () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat, kernel, this.DeploymentOrModelName);
 
-        if (response is null)
+        while (true)
         {
-            throw new KernelException("Chat completions null response");
-        }
+            // Make the request.
+            var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
-        Dictionary<string, object>? responseMetadata = null;
-        await foreach (StreamingChatCompletionsUpdate update in response)
-        {
-            responseMetadata ??= GetResponseMetadata(update);
-
-            if (typeof(T) == typeof(string))
+            // Stream any response 
+            Dictionary<string, object>? responseMetadata = null;
+            StringBuilder? contentBuilder = null;
+            string? functionName = null;
+            StringBuilder? functionArgumentsBuilder = null;
+            ChatRole streamedRole = default;
+            CompletionsFinishReason finishReason = default;
+            await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                yield return (T)(object)update.ContentUpdate;
-                continue;
+                responseMetadata ??= GetResponseMetadata(update);
+                streamedRole = update.Role ?? default;
+                finishReason = update.FinishReason ?? default;
+
+                // If we're intending to invoke function calls, we need to consume that function call information.
+                if (autoInvoke)
+                {
+                    functionName ??= update.FunctionName;
+
+                    if (update.FunctionArgumentsUpdate is string funcArgs)
+                    {
+                        (functionArgumentsBuilder ??= new()).Append(funcArgs);
+                    }
+
+                    if (update.ContentUpdate is string content)
+                    {
+                        (contentBuilder ??= new()).Append(content);
+                    }
+
+                    if (functionName is not null)
+                    {
+                        // Once we start receiving function information, stop yielding the update information.
+                        continue;
+                    }
+                }
+
+                // Yield the updated content
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)update.ContentUpdate;
+                }
+                else if (typeof(T) == typeof(StreamingChatContent) || typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Type {typeof(T)} is not supported");
+                }
             }
 
-            // If the provided T is an specialized class of StreamingResultChunk interface
-            if (typeof(T) == typeof(StreamingChatContent) ||
-                typeof(T) == typeof(StreamingContent))
+            // If we don't have a function call to invoke, we're done.
+            if (!autoInvoke ||
+                finishReason != CompletionsFinishReason.FunctionCall ||
+                functionName is null)
             {
-                yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
-                continue;
+                yield break;
             }
 
-            throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            // Extract the function call information. If we're unable to find the function or extract the relevant information, we're done.
+            Debug.Assert(autoInvoke);
+            FunctionCall functionCall = new(functionName!, functionArgumentsBuilder?.ToString() ?? string.Empty);
+            OpenAIFunctionResponse? functionCallResponse = null;
+            try
+            {
+                functionCallResponse = OpenAIFunctionResponse.FromFunctionCall(functionCall);
+            }
+            catch (JsonException e)
+            {
+                if (this.Logger.IsEnabled(LogLevel.Error))
+                {
+                    this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", functionCall.Name);
+                }
+                if (this.Logger.IsEnabled(LogLevel.Trace))
+                {
+                    this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", functionCall.Arguments);
+                }
+            }
+
+            if (functionCallResponse is null ||
+                !kernel!.Plugins.TryGetFunctionAndContext(functionCallResponse, out KernelFunction? function, out ContextVariables? functionArgs))
+            {
+                yield break;
+            }
+
+            // Otherwise, invoke the function.
+            string functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<string>() ?? string.Empty;
+
+            // Then add the relevant messages both to the chat options and to the chat history.
+            // The messages are added to the chat history, even though it's not strictly required, so that the additional
+            // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
+            // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
+
+            string contents = contentBuilder?.ToString() ?? string.Empty;
+            string fqn = functionCallResponse.FullyQualifiedName;
+
+            chatOptions.Messages.Add(new(streamedRole, contents) { FunctionCall = functionCall });
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, functionResult) { Name = fqn });
+
+            chat.AddAssistantMessage(contents, functionCall);
+            chat.AddFunctionMessage(functionResult, fqn);
+
+            // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
+            // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
+            // forever, because on each call the service will be required to re-request that same invocation. We thus clear out
+            // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
+            if (chatRequestSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
+            {
+                chatOptions.FunctionCall = null;
+                chatOptions.Functions = null;
+            }
         }
     }
 
@@ -429,7 +559,11 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings executionSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory, string deploymentOrModelName)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(
+        OpenAIPromptExecutionSettings executionSettings,
+        List<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory,
+        Kernel? kernel,
+        string deploymentOrModelName)
     {
         if (executionSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -447,27 +581,31 @@ public abstract class ClientBase
             DeploymentName = deploymentOrModelName,
         };
 
-        if (executionSettings.Functions is not null)
+        switch (executionSettings.FunctionCallBehavior)
         {
-            if (executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto)
-            {
-                options.FunctionCall = FunctionDefinition.Auto;
-                options.Functions = executionSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
-            }
-            else if (executionSettings.FunctionCall != OpenAIPromptExecutionSettings.FunctionCallNone
-                    && !string.IsNullOrEmpty(executionSettings.FunctionCall))
-            {
-                var filteredFunctions = executionSettings.Functions
-                    .Where(f => f.FullyQualifiedName.Equals(executionSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                OpenAIFunction? function = filteredFunctions.FirstOrDefault();
-                if (function is not null)
+            case FunctionCallBehavior.KernelFunctions kfcb when kernel is not null:
+                // Provide all of the functions available in the kernel.
+                options.Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction().ToFunctionDefinition()).ToList();
+                if (options.Functions.Count > 0)
                 {
-                    options.FunctionCall = function.ToFunctionDefinition();
-                    options.Functions = filteredFunctions.Select(f => f.ToFunctionDefinition()).ToList();
+                    options.FunctionCall = FunctionDefinition.Auto;
                 }
-            }
+                break;
+
+            case FunctionCallBehavior.EnabledFunctions efcb:
+                // Provide only those functions explicitly provided via the options.
+                options.Functions = efcb.Functions;
+                if (options.Functions.Count > 0)
+                {
+                    options.FunctionCall = FunctionDefinition.Auto;
+                }
+                break;
+
+            case FunctionCallBehavior.RequiredFunction rufb:
+                // Require the specific function provided via the options.
+                options.Functions = rufb.FunctionArray;
+                options.FunctionCall = rufb.Function;
+                break;
         }
 
         foreach (var keyValue in executionSettings.TokenSelectionBiases)
@@ -508,6 +646,16 @@ public abstract class ClientBase
         if (maxTokens.HasValue && maxTokens < 1)
         {
             throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+        }
+    }
+
+    private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
+    {
+        if (autoInvoke && resultsPerPrompt != 1)
+        {
+            // We can remove this restriction in the future if valuable. However, multiple results per prompt is rare,
+            // and limiting this significantly curtails the complexity of the implementation.
+            throw new KernelException($"{nameof(FunctionCallBehavior)}.{nameof(FunctionCallBehavior.AutoInvoke)} may only be used with a {nameof(OpenAIPromptExecutionSettings.ResultsPerPrompt)} of 1.");
         }
     }
 

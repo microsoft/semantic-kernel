@@ -101,12 +101,15 @@ public abstract class KernelFunction
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
 
-        logger.LogTrace("Function invoking.");
-
-        cancellationToken.ThrowIfCancellationRequested();
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", variables.Select(v => $"{v.Key}:{v.Value}")));
+        }
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();

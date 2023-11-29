@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +65,7 @@ public sealed class FunctionCallingStepwisePlanner
         Verify.NotNullOrWhiteSpace(question);
 
         // Add the final answer function
-        this._kernel.ImportPluginFromObject(new UserInteraction(), "UserInteraction");
+        this._kernel.ImportPluginFromObject<UserInteraction>();
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
@@ -166,8 +165,7 @@ public sealed class FunctionCallingStepwisePlanner
     private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
         var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
-        executionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        executionSettings.Functions = this._kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
+        executionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
         return executionSettings;
     }
 

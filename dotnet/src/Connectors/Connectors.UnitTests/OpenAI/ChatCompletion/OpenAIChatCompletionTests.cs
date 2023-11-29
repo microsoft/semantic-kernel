@@ -21,45 +21,46 @@ public sealed class OpenAIChatCompletionTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+    private readonly OpenAIFunction _timepluginDate, _timepluginNow;
     private readonly OpenAIPromptExecutionSettings _executionSettings;
 
     public OpenAIChatCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._timepluginDate = new()
+        {
+            FunctionName = "Date",
+            PluginName = "TimePlugin",
+            Description = "TimePlugin.Date",
+            Parameters = new List<OpenAIFunctionParameter>()
+                    {
+                        new() {
+                            Name = "Format",
+                            Description = "Date format",
+                            ParameterType = typeof(string),
+                            IsRequired = false,
+                        }
+                    }
+        };
+        this._timepluginNow = new()
+        {
+            FunctionName = "Now",
+            PluginName = "TimePlugin",
+            Description = "TimePlugin.Now",
+            Parameters = new List<OpenAIFunctionParameter>()
+                    {
+                        new() {
+                            Name = "Format",
+                            Description = "Date format",
+                            ParameterType = typeof(string),
+                            IsRequired = false,
+                        }
+                    }
+        };
         this._executionSettings = new()
         {
-            Functions = new List<OpenAIFunction>()
-            {
-                new() {
-                    FunctionName = "Date",
-                    PluginName = "TimePlugin",
-                    Description = "TimePlugin.Date",
-                    Parameters = new List<OpenAIFunctionParameter>()
-                    {
-                        new() {
-                            Name = "Format",
-                            Description = "Date format",
-                            ParameterType = typeof(string),
-                            IsRequired = false,
-                        }
-                    }
-                },
-                new() {
-                    FunctionName = "Now",
-                    PluginName = "TimePlugin",
-                    Description = "TimePlugin.Now",
-                    Parameters = new List<OpenAIFunctionParameter>()
-                    {
-                        new() {
-                            Name = "Format",
-                            Description = "Date format",
-                            ParameterType = typeof(string),
-                            IsRequired = false,
-                        }
-                    }
-                }
-            }
+            FunctionCallBehavior = FunctionCallBehavior.EnableFunctions(new[] { this._timepluginDate, this._timepluginNow })
         };
     }
 
@@ -70,7 +71,6 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._executionSettings.FunctionCall = "auto";
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
@@ -91,7 +91,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._executionSettings.FunctionCall = "TimePlugin_Now";
+        this._executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(this._timepluginNow);
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
@@ -111,7 +111,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._executionSettings.FunctionCall = "none";
+        this._executionSettings.FunctionCallBehavior = null;
 
         // Act
         await chatCompletion.GetChatCompletionsAsync(new ChatHistory(), this._executionSettings);
