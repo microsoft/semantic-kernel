@@ -208,13 +208,13 @@ public class OrderedAIServiceConfigurationProviderTests
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model1"));
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model2"));
         }).Build();
-        var variables = new ContextVariables();
+        var arguments = new KernelFunctionArguments();
         var executionSettings = new PromptExecutionSettings() { ModelId = "model2" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function);
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, arguments);
 
         // Assert
         Assert.NotNull(aiService);
