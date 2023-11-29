@@ -28,7 +28,11 @@ async def test_azure_e2e_text_completion_with_skill(
     # Configure LLM service
     kernel.add_text_completion_service(
         "text_completion",
-        sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureTextCompletion(
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+        ),
     )
 
     # Create the semantic function
@@ -67,7 +71,11 @@ async def test_oai_text_stream_completion_with_skills(
     # Configure LLM service
     kernel.add_text_completion_service(
         "text_completion",
-        sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureTextCompletion(
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+        ),
     )
 
     # Create the semantic function

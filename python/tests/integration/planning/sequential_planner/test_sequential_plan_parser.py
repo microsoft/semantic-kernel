@@ -20,7 +20,11 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
     # Configure LLM service
     kernel.add_text_completion_service(
         "text_completion",
-        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+        sk_oai.AzureChatCompletion(
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+        ),
     )
     kernel.import_skill(EmailSkillFake(), "email")
     kernel.import_skill(SummarizeSkillFake(), "SummarizeSkill")

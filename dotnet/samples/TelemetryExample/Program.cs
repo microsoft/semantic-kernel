@@ -70,19 +70,19 @@ public sealed class Program
         });
 
         var kernel = GetKernel(loggerFactory);
-        var planner = CreatePlanner(kernel);
+        var planner = CreatePlanner();
 
         using var activity = s_activitySource.StartActivity("Main");
 
         Console.WriteLine("Operation/Trace ID:");
         Console.WriteLine(Activity.Current?.TraceId);
 
-        var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        var plan = await planner.CreatePlanAsync(kernel, "Write a poem about John Doe, then translate it into Italian.");
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -112,12 +112,9 @@ public sealed class Program
         return kernel;
     }
 
-    private static HandlebarsPlanner CreatePlanner(
-        Kernel kernel,
-        int maxTokens = 1024)
+    private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)
     {
         var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
-
-        return new HandlebarsPlanner(kernel, plannerConfig);
+        return new HandlebarsPlanner(plannerConfig);
     }
 }
