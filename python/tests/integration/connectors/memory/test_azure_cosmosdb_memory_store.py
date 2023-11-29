@@ -5,9 +5,15 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
-    AzureCosmosDBMemoryStore,
-)
+try:
+    from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
+        AzureCosmosDBMemoryStore,
+    )
+
+    azure_cosmosdb_memory_store_installed = True
+except AssertionError:
+    azure_cosmosdb_memory_store_installed = False
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
@@ -20,6 +26,11 @@ num_lists = 1
 similarity = "COS"
 collection_name = "sk_test_collection"
 database_name = "sk_test_database"
+
+pytestmark = pytest.mark.skipif(
+    not azure_cosmosdb_memory_store_installed,
+    reason="Azure CosmosDB Memory Store is not installed",
+)
 
 
 def create_embedding(non_zero_pos: int) -> np.ndarray:
