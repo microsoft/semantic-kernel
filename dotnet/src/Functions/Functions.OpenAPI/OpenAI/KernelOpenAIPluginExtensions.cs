@@ -214,9 +214,9 @@ public static class KernelOpenAIPluginExtensions
         if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
-            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
+            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request, ct) =>
             {
-                await callback(request, pluginName, openAIAuthConfig, cancellationToken).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig, ct).ConfigureAwait(false);
             };
         }
 
