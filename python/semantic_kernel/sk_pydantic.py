@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+# the above is needed for python 3.8 compatibility, can be removed once we drop support for 3.8
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, UrlConstraints
