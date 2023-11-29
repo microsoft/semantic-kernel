@@ -182,12 +182,12 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameterFuncs = new Func<Kernel, KernelFunctionArguments, CancellationToken, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
+        bool sawFirstParameter = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+                ref sawFirstParameter, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -259,13 +259,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// </summary>
     private static (Func<Kernel, KernelFunctionArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasFunctionArgumentsParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
+        ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasFunctionArgumentsParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
-        // Handle special types based on ContextVariables data. These can each show up at most once in the method signature,
-        // with the Kernel or/and the ContextVariables itself or the primary data from it mapped directly into the method's parameter.
-        // They do not get parameter metadata as they're not supplied from context variables.
+        // Handle special types. These can each show up at most once in the method signature.
 
         if (type == typeof(Kernel))
         {
@@ -299,7 +297,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (static (Kernel _, KernelFunctionArguments _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
-        // Handle context variables. These are supplied from the SKContext's Variables dictionary.
+        // Handle function arguments
 
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
@@ -307,7 +305,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
             string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals(KernelFunctionArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
-            ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
+            ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)

@@ -92,9 +92,14 @@ public class ConversationSummaryPlugin
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         string[] results = new string[paragraphs.Count];
+
+        var arguments = new KernelFunctionArguments();
+
         for (int i = 0; i < results.Length; i++)
         {
-            results[i] = (await func.InvokeAsync(kernel, new KernelFunctionArguments { { KernelFunctionArguments.InputParameterName, paragraphs[i] } }).ConfigureAwait(false)).GetValue<string>() ?? "";
+            arguments[KernelFunctionArguments.InputParameterName] = paragraphs[i];
+
+            results[i] = (await func.InvokeAsync(kernel, arguments).ConfigureAwait(false)).GetValue<string>() ?? "";
         }
 
         return string.Join("\n", results);

@@ -107,16 +107,14 @@ public abstract class KernelFunction
         cancellationToken.ThrowIfCancellationRequested();
 
         //Cloning the arguments to prevent mutation of the original ones
-        var functionArguments = arguments == null
-            ? new KernelFunctionArguments()
-            : new KernelFunctionArguments(arguments);
+        arguments ??= new KernelFunctionArguments();
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
             // Invoke pre hook, and stop if skipping requested.
-            var invokingEventArgs = kernel.OnFunctionInvoking(this, functionArguments);
+            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
             if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
                 logger.LogTrace("Function canceled or skipped prior to invocation.");
@@ -128,12 +126,12 @@ public abstract class KernelFunction
                 };
             }
 
-            var result = await this.InvokeCoreAsync(kernel, functionArguments, cancellationToken).ConfigureAwait(false);
+            var result = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             logger.LogTrace("Function succeeded.");
 
             // Invoke the post hook.
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, functionArguments, result);
+            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, arguments, result);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -184,13 +182,10 @@ public abstract class KernelFunction
 
         logger.LogInformation("Function streaming invoking.");
 
-        //Cloning the arguments to prevent mutation of the original ones
-        var functionArguments = arguments == null
-            ? new KernelFunctionArguments()
-            : new KernelFunctionArguments(arguments);
+        arguments ??= new KernelFunctionArguments();
 
         // Invoke pre hook, and stop if skipping requested.
-        var invokingEventArgs = kernel.OnFunctionInvoking(this, functionArguments);
+        var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
         if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
         {
             logger.LogTrace("Function canceled or skipped prior to invocation.");
@@ -198,7 +193,7 @@ public abstract class KernelFunction
             yield break;
         }
 
-        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, functionArguments, cancellationToken))
+        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, arguments, cancellationToken))
         {
             yield return genericChunk;
         }

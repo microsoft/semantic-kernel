@@ -59,7 +59,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
-    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
+    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
     /// </summary>
     /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>

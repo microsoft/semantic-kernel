@@ -208,7 +208,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
-    /// <summary>Add default values to the context variables if the variable is not defined</summary>
+    /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelFunctionArguments arguments)
     {
         foreach (var parameter in this._promptConfig.InputParameters)
