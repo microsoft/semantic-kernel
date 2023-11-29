@@ -231,7 +231,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             var parameters = arguments[0] as IDictionary<string, object>;
 
             // Verify that the message has a role
-            if (!parameters!.ContainsKey("role"))
+            if (!parameters!.TryGetValue("role", out _))
             {
                 throw new KernelException("Message must have a role.");
             }
