@@ -388,12 +388,45 @@ public static class KernelExtensions
         string promptTemplate,
         PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
-        string? description = null) =>
-        kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
+        string? description = null)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNull(promptTemplate);
+
+        return kernel.InvokeAsync(KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             executionSettings,
             functionName,
             description));
+    }
+    #endregion
+
+    #region InvokePromptStreamingAsync
+    /// <summary>
+    /// Invoke a prompt function using the provided prompt template.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="description">Optional description, useful for the planner</param>
+    /// <returns>Function execution result</returns>
+    public static IAsyncEnumerable<StreamingContent> InvokePromptStreamingAsync(
+        this Kernel kernel,
+        string promptTemplate,
+        PromptExecutionSettings? executionSettings = null,
+        string? functionName = null,
+        string? description = null)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNull(promptTemplate);
+
+        return KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            executionSettings,
+            functionName,
+            description).InvokeStreamingAsync<StreamingContent>(kernel);
+    }
     #endregion
 
     #region InvokeAsync
@@ -413,6 +446,7 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(function);
 
         return function.InvokeAsync(kernel, input, executionSettings: null, cancellationToken);
     }
@@ -432,6 +466,7 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(function);
 
         return function.InvokeAsync(kernel, arguments, cancellationToken);
     }

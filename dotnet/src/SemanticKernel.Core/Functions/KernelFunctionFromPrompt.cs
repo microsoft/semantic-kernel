@@ -47,6 +47,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
         var promptConfig = new PromptTemplateConfig
         {
             Name = functionName ?? RandomFunctionName(),
