@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Orchestration;
+namespace SemanticKernel.UnitTests.Functions;
 
 /// <summary>
 /// Unit tests of <see cref="FunctionResult"/>.
@@ -24,7 +24,7 @@ public class FunctionResultTests
         target.Metadata.Add(key, value);
 
         // Assert
-        Assert.True(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.True(target.TryGetMetadataValue(key, out string result));
         Assert.Equal(value, result);
     }
 
@@ -36,7 +36,7 @@ public class FunctionResultTests
         FunctionResult target = new("functionName");
 
         // Act,Assert
-        Assert.False(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.False(target.TryGetMetadataValue(key, out string result));
         Assert.Null(result);
     }
 
@@ -52,7 +52,7 @@ public class FunctionResultTests
         target.Metadata.Add(key, value);
 
         // Assert
-        Assert.False(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.False(target.TryGetMetadataValue(key, out string result));
         Assert.Null(result);
     }
 
