@@ -47,7 +47,7 @@ public sealed class ActionPlanner
         PropertyNameCaseInsensitive = true,
     };
 
-    // Planner prompt function
+    // Planner semantic function
     private readonly KernelFunction _plannerFunction;
 
     private readonly ContextVariables _contextVariables;
