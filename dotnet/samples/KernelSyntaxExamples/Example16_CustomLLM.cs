@@ -123,7 +123,7 @@ public static class Example16_CustomLLM
 
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
         {
             this.ModelId = executionSettings?.ModelId;
 
@@ -133,7 +133,7 @@ public static class Example16_CustomLLM
             });
         }
 
-        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (typeof(T) == typeof(MyStreamingContent) ||
                 typeof(T) == typeof(StreamingContent))

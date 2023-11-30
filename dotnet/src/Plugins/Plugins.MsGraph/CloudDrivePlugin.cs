@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
@@ -17,17 +16,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class CloudDrivePlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Document file path.
-        /// </summary>
-        public const string DestinationPath = "destinationPath";
-    }
-
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
 

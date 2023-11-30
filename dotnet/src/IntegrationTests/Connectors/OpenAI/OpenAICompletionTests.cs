@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -132,7 +131,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         StringBuilder fullResult = new();
         // Act
-        await foreach (var content in target.RunStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
+        await foreach (var content in target.InvokeStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
         {
             fullResult.Append(content);
         };

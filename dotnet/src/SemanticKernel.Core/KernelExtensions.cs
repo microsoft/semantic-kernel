@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -23,7 +22,7 @@ public static class KernelExtensions
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
@@ -47,7 +46,7 @@ public static class KernelExtensions
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
@@ -74,12 +73,12 @@ public static class KernelExtensions
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
 
     /// <summary>
-    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
     /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
@@ -99,9 +98,9 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
@@ -116,10 +115,10 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <returns>A function ready to use</returns>
@@ -138,7 +137,7 @@ public static class KernelExtensions
     #region CreatePluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
@@ -154,7 +153,7 @@ public static class KernelExtensions
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
@@ -173,7 +172,7 @@ public static class KernelExtensions
     #region ImportPluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
@@ -207,7 +206,7 @@ public static class KernelExtensions
     }
 
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
@@ -266,11 +265,11 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
     public static IKernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -357,11 +356,11 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
     public static IKernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -376,9 +375,9 @@ public static class KernelExtensions
 
     #region InvokePromptAsync
     /// <summary>
-    /// Invoke a semantic function using the provided prompt template.
+    /// Invoke a prompt function using the provided prompt template.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
@@ -398,27 +397,11 @@ public static class KernelExtensions
     #endregion
 
     #region InvokeAsync
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="function">A Semantic Kernel function to run</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        KernelFunction function,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.InvokeAsync(function, new ContextVariables(), cancellationToken);
-    }
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -431,98 +414,95 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        var contextVariables = new ContextVariables();
-        contextVariables.Update(input);
-
-        return kernel.InvokeAsync(function, contextVariables, cancellationToken);
+        return function.InvokeAsync(kernel, input, executionSettings: null, cancellationToken);
     }
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">A Semantic Kernel function to run</param>
-    /// <param name="variables">Input to process</param>
+    /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
     public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         KernelFunction function,
-        ContextVariables variables,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return function.InvokeAsync(kernel, variables, executionSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, arguments, cancellationToken);
     }
 
     /// <summary>
     /// Run a plugin function.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">The name of the plugin containing the function to run.</param>
     /// <param name="functionName">The name of the function to run.</param>
-    /// <param name="variables">Input to process</param>
+    /// <param name="arguments">The function arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function run.</returns>
     public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         string pluginName,
         string functionName,
-        ContextVariables? variables = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.InvokeAsync(function, variables ?? new(), cancellationToken);
+        return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
     #endregion
 
-    #region RunStreamingAsync
+    #region InvokeStreamingAsync
     /// <summary>
-    /// Run a function in streaming mode.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">The target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
-    /// <param name="variables">Input to process</param>
+    /// <param name="arguments">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, variables ?? new ContextVariables(), null, cancellationToken);
+    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
 
     /// <summary>
-    /// Run a function in streaming mode.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">Target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
-    /// <param name="variables">Input to process</param>
+    /// <param name="arguments">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, ContextVariables? variables = null, CancellationToken cancellationToken = default)
-        => kernel.RunStreamingAsync<StreamingContent>(function, variables ?? new ContextVariables(), CancellationToken.None);
+    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+        => kernel.InvokeStreamingAsync<StreamingContent>(function, arguments, CancellationToken.None);
 
     /// <summary>
-    /// Run a function in streaming mode.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">The target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, new ContextVariables(input), null, cancellationToken);
+    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, input, executionSettings: null, cancellationToken);
 
     /// <summary>
-    /// Run a function in streaming mode.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">Target kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Target function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
-        => kernel.RunStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
+    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => kernel.InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
     #endregion
 }

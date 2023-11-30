@@ -24,10 +24,10 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
     client: AsyncOpenAI
-    model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
-    prompt_tokens: int = Field(0, init=False)
-    completion_tokens: int = Field(0, init=False)
-    total_tokens: int = Field(0, init=False)
+    ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
+    prompt_tokens: int = Field(0, init_var=False)
+    completion_tokens: int = Field(0, init_var=False)
+    total_tokens: int = Field(0, init_var=False)
 
     async def _send_request(
         self,
@@ -55,7 +55,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         Returns:
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
-        chat_mode = self.model_type == OpenAIModelTypes.CHAT
+        chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
         self._validate_request(request_settings, prompt, messages, chat_mode)
         model_args = self._create_model_args(
             request_settings, stream, prompt, messages, functions, chat_mode
@@ -83,7 +83,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """Validate the request, check if the settings are present and valid."""
         try:
             assert (
-                self.model_type != OpenAIModelTypes.EMBEDDING
+                self.ai_model_type != OpenAIModelTypes.EMBEDDING
             ), "The model type is not supported for this operation, please use a text or chat model"
         except AssertionError as exc:
             raise AIException(
@@ -154,7 +154,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_embedding_request(
         self, texts: List[str], batch_size: Optional[int] = None
     ) -> ndarray:
-        if self.model_type != OpenAIModelTypes.EMBEDDING:
+        if self.ai_model_type != OpenAIModelTypes.EMBEDDING:
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
                 "The model type is not supported for this operation, please use an embedding model",

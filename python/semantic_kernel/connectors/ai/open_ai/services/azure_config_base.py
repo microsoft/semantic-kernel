@@ -4,7 +4,7 @@ from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
 from openai import AsyncAzureOpenAI
-from pydantic import validate_arguments
+from pydantic import validate_call
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
@@ -18,11 +18,11 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 class AzureOpenAIConfigBase(OpenAIHandler):
     """Internal class for configuring a connection to an Azure OpenAI service."""
 
-    @validate_arguments(config=dict(arbitrary_types_allowed=True))
+    @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(
         self,
         deployment_name: str,
-        model_type: OpenAIModelTypes,
+        ai_model_type: OpenAIModelTypes,
         endpoint: Optional[HttpsUrl] = None,
         base_url: Optional[HttpsUrl] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
@@ -37,11 +37,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 AIException.ErrorCodes.InvalidConfiguration,
                 "Please provide either api_key, ad_token or ad_token_provider",
             )
-        if not base_url and not endpoint:
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "Please provide either base_url or endpoint",
-            )
         if base_url:
             client = AsyncAzureOpenAI(
                 base_url=base_url,
@@ -51,6 +46,11 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 azure_ad_token_provider=ad_token_provider,
             )
         else:
+            if not endpoint:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    "Please provide either base_url or endpoint",
+                )
             client = AsyncAzureOpenAI(
                 azure_endpoint=endpoint,
                 azure_deployment=deployment_name,
@@ -60,10 +60,10 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 azure_ad_token_provider=ad_token_provider,
             )
         super().__init__(
-            model_id=deployment_name,
+            ai_model_id=deployment_name,
             log=log,
             client=client,
-            model_type=model_type,
+            ai_model_type=ai_model_type,
         )
 
     def to_dict(self) -> Dict[str, str]:
@@ -74,14 +74,14 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "ad_token": self.client._azure_ad_token,
             "ad_token_provider": self.client._azure_ad_token_provider,
         }
-        base = self.dict(
+        base = self.model_dump(
             exclude={
                 "prompt_tokens",
                 "completion_tokens",
                 "total_tokens",
                 "api_type",
                 "org_id",
-                "model_type",
+                "ai_model_type",
                 "client",
             },
             by_alias=True,
@@ -91,4 +91,4 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         return base
 
     def get_model_args(self) -> Dict[str, Any]:
-        return {"model": self.model_id}
+        return {"model": self.ai_model_id}
