@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 #pragma warning restore IDE0130
 
-internal class HandlebarsParameterTypeMetadata
+internal sealed class HandlebarsParameterTypeMetadata
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
-public static class PlannerInstrumentation
+internal static class PlannerInstrumentation
 {
     /// <summary><see cref="ActivitySource"/> for planning-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
