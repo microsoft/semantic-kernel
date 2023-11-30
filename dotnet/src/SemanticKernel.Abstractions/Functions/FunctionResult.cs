@@ -129,9 +129,7 @@ public sealed class FunctionResult
     /// <inheritdoc/>
     public override string ToString()
     {
-        var stringResult = ConvertToString(this.Value, this.Culture);
-
-        return string.IsNullOrEmpty(stringResult) ? string.Empty : stringResult!;
+        return ConvertToString(this.Value, this.Culture) ?? string.Empty;
     }
 
     private static string? ConvertToString(object? value, CultureInfo culture)
