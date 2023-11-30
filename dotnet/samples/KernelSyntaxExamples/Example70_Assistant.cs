@@ -33,7 +33,7 @@ public static class Example70_Assistant
 
         await RunSimpleChatAsync();
 
-        await RunWithMethodFunctionsAsync();
+        await RunWithNativeFunctionsAsync();
 
         await RunWithPromptFunctionsAsync();
 
@@ -51,7 +51,7 @@ public static class Example70_Assistant
             "Practice makes perfect.");
     }
 
-    private static async Task RunWithMethodFunctionsAsync()
+    private static async Task RunWithNativeFunctionsAsync()
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
