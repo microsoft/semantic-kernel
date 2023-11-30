@@ -315,7 +315,7 @@ public abstract class ClientBase
     {
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
 
-        ChatHistory chat = this.InternalCreateNewChat(text, chatSettings);
+        ChatHistory chat = InternalCreateNewChat(text, chatSettings);
         return (await this.InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
@@ -354,7 +354,7 @@ public abstract class ClientBase
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
     /// <returns>Chat object</returns>
-    private protected OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
+    protected static OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
         // If text is not provided, create an empty chat with the system prompt if provided
         if (string.IsNullOrWhiteSpace(text))

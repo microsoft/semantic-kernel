@@ -93,7 +93,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
-        return this.InternalCreateNewChat(instructions);
+        return InternalCreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
@@ -112,7 +112,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         Verify.NotNullOrWhiteSpace(prompt);
 
         var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
-        var chatHistory = this.InternalCreateNewChat(prompt, openAIExecutionSettings);
+        var chatHistory = InternalCreateNewChat(prompt, openAIExecutionSettings);
 
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, openAIExecutionSettings, cancellationToken);
     }
