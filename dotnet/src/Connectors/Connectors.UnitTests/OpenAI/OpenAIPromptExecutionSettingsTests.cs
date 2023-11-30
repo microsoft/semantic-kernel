@@ -19,7 +19,7 @@ public class OpenAIPromptExecutionSettingsTests
     {
         // Arrange
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(null, 128);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(null, 128);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -53,7 +53,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -70,7 +70,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -100,7 +100,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         AssertRequestSettings(executionSettings);
@@ -129,7 +129,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(executionSettings);
@@ -154,7 +154,7 @@ public class OpenAIPromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(executionSettings);
@@ -179,7 +179,7 @@ public class OpenAIPromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(executionSettings);
