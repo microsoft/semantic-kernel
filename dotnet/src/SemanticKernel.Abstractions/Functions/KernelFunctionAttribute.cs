@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Specifies that a method on a class imported as a plugin with should be included as an <see cref="KernelFunction"/>.
+/// Specifies that a method on a class imported as a plugin with should be included as a <see cref="KernelFunction"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -40,11 +40,10 @@ namespace Microsoft.SemanticKernel;
 /// or a <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/> of such a type.
 /// </para>
 /// <para>
-/// Parameters are populated based on a arguments of the same name, unless an <see cref="KernelNameAttribute"/> is
-/// used to override which argument is targeted. If no argument of the given name is present, but
+/// Parameters are populated based on a arguments of the same name. If no argument of the given name is present, but
 /// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the signature,
 /// that default value is used instead. If no default value was specified and it's the first parameter, the "input"
-/// argument will be used.  If no value is available, the invocation will fail.
+/// argument will be used.  Otherwise, if no value is available, the invocation will fail.
 /// </para>
 /// <para>
 /// For non-string parameters, the argument value is automatically converted to the appropriate type to be passed
@@ -56,7 +55,13 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelFunctionAttribute : Attribute
 {
     /// <summary>Initializes the attribute.</summary>
-    public KernelFunctionAttribute()
-    {
-    }
+    public KernelFunctionAttribute() { }
+
+    /// <summary>Initializes the attribute.</summary>
+    /// <param name="name">The name to use for the function.</param>
+    public KernelFunctionAttribute(string? name) => this.Name = name;
+
+    /// <summary>Gets the function's name.</summary>
+    /// <remarks>If null, a name will based on the name of the attributed method will be used.</remarks>
+    public string? Name { get; }
 }

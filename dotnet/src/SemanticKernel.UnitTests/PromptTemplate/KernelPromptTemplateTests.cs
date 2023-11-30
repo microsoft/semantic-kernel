@@ -188,14 +188,14 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Name"), KernelName("input")] string name,
-            [Description("Age"), KernelName("age")] int age,
-            [Description("Slogan"), KernelName("slogan")] string slogan,
-            [Description("Date"), KernelName("date")] DateTime date)
+            [Description("Name")] string input,
+            [Description("Age")] int age,
+            [Description("Slogan")] string slogan,
+            [Description("Date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
-            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
-            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan, date);
+            return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
         var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
@@ -232,14 +232,14 @@ public sealed class KernelPromptTemplateTests
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), KernelName("input")] string name,
-            [Description("Age"), KernelName("age")] int age,
-            [Description("Slogan"), KernelName("slogan")] string slogan,
-            [Description("Date"), KernelName("date")] DateTime date)
+            [Description("Input")] string input,
+            [Description("Age")] int age,
+            [Description("Slogan")] string slogan,
+            [Description("Date")] DateTime date)
         {
-            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan, date);
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
-            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
+            return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");

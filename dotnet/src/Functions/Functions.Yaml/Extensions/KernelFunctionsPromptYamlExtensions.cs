@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static class KernelFunctionsPromptYamlExtensions
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified YAML resource.
+    /// Creates a <see cref="KernelFunction"/> instance for a semantic function using the specified YAML resource.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
@@ -29,7 +29,7 @@ public static class KernelFunctionsPromptYamlExtensions
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified YAML.
+    /// Creates a <see cref="KernelFunction"/> instance for a semantic function using the specified YAML.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>

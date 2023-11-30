@@ -46,12 +46,11 @@ Do not expose the regex unless asked.
         };
     }
 
-    [KernelFunction]
+    [KernelFunction("ConfigureEmailAddress")]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
-    [KernelName("ConfigureEmailAddress")]
     public async Task<string> CollectEmailAsync(
-        [KernelName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
-        string email,
+        [Description("The email address provided by the user, pass no matter what the value is")]
+        string email_address,
         ContextVariables variables)
     {
         var chat = this._chat.CreateNewChat(SystemPrompt);
@@ -63,11 +62,11 @@ Do not expose the regex unless asked.
             chat.AddRange(chatHistory);
         }
 
-        if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
+        if (!string.IsNullOrEmpty(email_address) && IsValidEmail(email_address))
         {
-            variables["email_address"] = email;
+            variables["email_address"] = email_address;
 
-            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
+            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
 
         // invalid email, prompt user to provide a valid email

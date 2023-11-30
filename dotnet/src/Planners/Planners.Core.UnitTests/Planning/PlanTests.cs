@@ -719,13 +719,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         List<KernelFunction> functions = new();
 
         // Arrange
-        [KernelName("WritePoem")]
         static string Function2() => "Poem";
-        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function2)));
+        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function2), functionName: "WritePoem"));
 
-        [KernelName("SendEmail")]
         static string Function3() => "Sent Email";
-        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function3)));
+        functions.Add(KernelFunctionFactory.CreateFromMethod(Method(Function3), functionName: "SendEmail"));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);

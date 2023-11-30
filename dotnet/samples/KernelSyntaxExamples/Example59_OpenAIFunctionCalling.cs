@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -233,10 +234,10 @@ public static class Example59_OpenAIFunctionCalling
 
     private sealed class WidgetPlugin
     {
-        [KernelFunction, KernelName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        [KernelFunction, Description("Create a virtual widget.")]
         public string CreateWidget(
-            [System.ComponentModel.Description("Widget name")] string name,
-            [System.ComponentModel.Description("Widget color")] WidgetColor color
+            [Description("Widget name")] string name,
+            [Description("Widget color")] WidgetColor color
             )
         {
             return $"Created a {color} widget named {name}";
