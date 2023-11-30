@@ -110,9 +110,9 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-
         Verify.NotNullOrWhiteSpace(prompt);
+
+        this.LogActionDetails();
 
         var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var chatHistory = InternalCreateNewChat(prompt, openAIExecutionSettings);
