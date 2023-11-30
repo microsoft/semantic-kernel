@@ -3878,26 +3878,26 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "qdrant-client"
-version = "1.5.4"
+version = "1.6.4"
 description = "Client library for the Qdrant vector search engine"
 optional = false
-python-versions = ">=3.8,<3.12"
+python-versions = ">=3.8,<3.13"
 files = [
-    {file = "qdrant_client-1.5.4-py3-none-any.whl", hash = "sha256:b0247886c51d755f70dc1a62545f38ba5c7d72971ab533f1264fb695c21a6d8f"},
-    {file = "qdrant_client-1.5.4.tar.gz", hash = "sha256:6ffbca94f7cab23230001710b7dc04684dbc18dadf66982179a37531b4c4b178"},
+    {file = "qdrant_client-1.6.4-py3-none-any.whl", hash = "sha256:db4696978d6a62d78ff60f70b912383f1e467bda3053f732b01ddb5f93281b10"},
+    {file = "qdrant_client-1.6.4.tar.gz", hash = "sha256:bbd65f383b6a55a9ccf4e301250fa925179340dd90cfde9b93ce4230fd68867b"},
 ]
 
 [package.dependencies]
 grpcio = ">=1.41.0"
 grpcio-tools = ">=1.41.0"
 httpx = {version = ">=0.14.0", extras = ["http2"]}
-numpy = {version = ">=1.21", markers = "python_version >= \"3.8\""}
+numpy = {version = ">=1.21", markers = "python_version >= \"3.8\" and python_version < \"3.12\""}
 portalocker = ">=2.7.0,<3.0.0"
 pydantic = ">=1.10.8"
 urllib3 = ">=1.26.14,<2.0.0"
 
 [package.extras]
-fastembed = ["fastembed (==0.0.4)"]
+fastembed = ["fastembed (==0.1.1)"]
 
 [[package]]
 name = "redis"
