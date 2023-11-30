@@ -85,7 +85,7 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        var variables = new KernelFunctionArguments();
+        var variables = new KernelArguments();
         variables["input"] = summaryText;
         variables["topic"] = "people and places";
         variables["example_entities"] = "John, Jane, mother, brother, Paris, Rome";

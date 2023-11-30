@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -139,7 +138,7 @@ Answer: ";
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
+        var answer = await kernel.InvokeAsync(oracle, new KernelArguments()
         {
             ["question"] = question,
             ["externalInformation"] = string.Empty
@@ -154,13 +153,13 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, new Dictionary<string, string>());
+            var information = await promptTemplate.RenderAsync(kernel);
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // Run the semantic function again, now including information from Bing
-            answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
+            // Run the prompt function again, now including information from Bing
+            answer = await kernel.InvokeAsync(oracle, new KernelArguments()
             {
                 ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines

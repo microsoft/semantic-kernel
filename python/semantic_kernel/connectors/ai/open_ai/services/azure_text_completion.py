@@ -133,7 +133,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             log=log or logger,
-            model_type=OpenAIModelTypes.TEXT,
+            ai_model_type=OpenAIModelTypes.TEXT,
         )
 
     @classmethod

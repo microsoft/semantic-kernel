@@ -17,11 +17,11 @@ public interface IAIServiceSelector
     /// The returned value is a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/>
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">Semantic Kernel callable function interface</param>
     /// <param name="arguments">The function arguments.</param>
     /// <returns></returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService;
+    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService;
 #pragma warning restore CA1716
 }

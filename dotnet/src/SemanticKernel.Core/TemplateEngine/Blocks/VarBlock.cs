@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
@@ -63,7 +62,7 @@ internal sealed class VarBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
     /// <inheritdoc/>
-    public string Render(IDictionary<string, string>? arguments)
+    public string Render(KernelArguments? arguments)
     {
         if (arguments == null) { return string.Empty; }
 

@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-/// <summary>Overrides the default name used by a Semantic Kernel native function name or parameter.</summary>
+/// <summary>Overrides the default name used by a Semantic Kernel method function name or parameter.</summary>
 /// <remarks>
 /// By default, the method or parameter's name is used. If the method returns a task and ends with
 /// "Async", by default the suffix is removed. This attribute can be used to override such heuristics.

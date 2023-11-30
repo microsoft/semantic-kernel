@@ -73,7 +73,7 @@ public static class Example24_OpenApiPlugin_Jira
             );
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
 
         // GetIssue Function
         // Set Properties for the Get Issue operation in the openAPI.swagger.json

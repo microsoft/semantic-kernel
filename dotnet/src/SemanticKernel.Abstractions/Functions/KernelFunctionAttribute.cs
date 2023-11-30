@@ -30,8 +30,8 @@ namespace Microsoft.SemanticKernel;
 /// by an LLM or embedding.
 /// </para>
 /// <para>
-/// Functions may have any number of parameters. A given native function may declare at
-/// most one parameter of each of these types - <see cref="Kernel"/>, <see cref="KernelFunctionArguments"/>,
+/// Functions may have any number of parameters. A given method function may declare at
+/// most one parameter of each of these types - <see cref="Kernel"/>, <see cref="KernelArguments"/>,
 /// <see cref="CancellationToken"/>, <see cref="CultureInfo"/>, <see cref="ILogger"/> or <see cref="ILoggerFactory"/>.
 /// The special "input" parameter may only be declared once, and in such cases, it must be declared first.
 /// All other parameters must be of a primitive .NET type or
