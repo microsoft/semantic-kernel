@@ -44,7 +44,7 @@ public static class Example72_KernelStreaming
 
         var roleDisplayed = false;
 
-        Console.WriteLine("\n===  Semantic Function - Streaming ===\n");
+        Console.WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
         await foreach (var update in kernel.RunStreamingAsync<StreamingChatContent>(funyParagraphFunction))

@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel;
 namespace Plugins.DictionaryPlugin;
 
 /// <summary>
-/// Plugin example with two native functions, where one function gets a random word and the other returns a definition for a given word.
+/// Plugin example with two method functions, where one function gets a random word and the other returns a definition for a given word.
 /// </summary>
 public sealed class StringParamsDictionaryPlugin
 {

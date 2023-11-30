@@ -6,10 +6,10 @@ using Microsoft.SemanticKernel;
 using RepoUtils;
 
 /**
- * This example shows how to use GPT3.5 Chat model for prompts and semantic functions.
+ * This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example27_SemanticFunctionsUsingChatGPT
+public static class Example27_PromptFunctionsUsingChatGPT
 {
     public static async Task RunAsync()
     {

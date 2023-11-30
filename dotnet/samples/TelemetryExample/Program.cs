@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -82,7 +81,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());

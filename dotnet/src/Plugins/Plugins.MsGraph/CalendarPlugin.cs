@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -21,47 +20,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class CalendarPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Event start as DateTimeOffset.
-        /// </summary>
-        public const string Start = "start";
-
-        /// <summary>
-        /// Event end as DateTimeOffset.
-        /// </summary>
-        public const string End = "end";
-
-        /// <summary>
-        /// Event's location.
-        /// </summary>
-        public const string Location = "location";
-
-        /// <summary>
-        /// Event's content.
-        /// </summary>
-        public const string Content = "content";
-
-        /// <summary>
-        /// Event's attendees, separated by ',' or ';'.
-        /// </summary>
-        public const string Attendees = "attendees";
-
-        /// <summary>
-        /// The name of the top parameter used to limit the number of results returned in the response.
-        /// </summary>
-        public const string MaxResults = "maxResults";
-
-        /// <summary>
-        /// The name of the skip parameter used to skip a certain number of results in the response.
-        /// </summary>
-        public const string Skip = "skip";
-    }
-
     private readonly ICalendarConnector _connector;
     private readonly ILogger _logger;
     private static readonly JsonSerializerOptions s_options = new()
@@ -84,7 +42,7 @@ public sealed class CalendarPlugin
     }
 
     /// <summary>
-    /// Add an event to my calendar using <see cref="ContextVariables.Input"/> as the subject.
+    /// Add an event to my calendar.
     /// </summary>
     [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(

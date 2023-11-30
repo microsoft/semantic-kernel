@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
@@ -33,7 +32,7 @@ public class StepwisePlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">Optional configuration object</param>
     public StepwisePlanner(
         Kernel kernel,

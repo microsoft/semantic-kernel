@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using NCalc;
 
 namespace NCalcPlugins;
@@ -85,7 +84,7 @@ Question: {{ $input }}
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="kernel">The contextkernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [KernelFunction, KernelName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
@@ -97,7 +96,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.InvokeAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, input).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
