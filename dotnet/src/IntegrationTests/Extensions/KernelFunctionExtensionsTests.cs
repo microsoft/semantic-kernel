@@ -35,7 +35,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -53,7 +53,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
