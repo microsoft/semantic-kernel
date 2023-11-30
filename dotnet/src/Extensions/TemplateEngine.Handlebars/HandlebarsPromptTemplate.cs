@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 
-internal class HandlebarsPromptTemplate : IPromptTemplate
+internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Constructor for PromptTemplate.
