@@ -299,7 +299,7 @@ public sealed class FunctionCallingStepwisePlanner
     private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
+    /// The name to use when creating prompt functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedPluginName = "OpenAIFunctionsStepwisePlanner_Excluded";
 

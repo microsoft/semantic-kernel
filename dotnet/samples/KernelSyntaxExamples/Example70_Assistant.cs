@@ -33,9 +33,9 @@ public static class Example70_Assistant
 
         await RunSimpleChatAsync();
 
-        await RunWithNativeFunctionsAsync();
+        await RunWithMethodFunctionsAsync();
 
-        await RunWithSemanticFunctionsAsync();
+        await RunWithPromptFunctionsAsync();
 
         await RunAsFunctionAsync();
     }
@@ -51,7 +51,7 @@ public static class Example70_Assistant
             "Practice makes perfect.");
     }
 
-    private static async Task RunWithNativeFunctionsAsync()
+    private static async Task RunWithMethodFunctionsAsync()
     {
         Console.WriteLine("======== Run:WithNativeFunctions ========");
 
@@ -66,9 +66,9 @@ public static class Example70_Assistant
             "Thank you!");
     }
 
-    private static async Task RunWithSemanticFunctionsAsync()
+    private static async Task RunWithPromptFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithSemanticFunctions ========");
+        Console.WriteLine("======== Run:WithPromptFunctions ========");
 
         var plugin = new KernelPlugin("test");
         plugin.AddFunctionFromPrompt(

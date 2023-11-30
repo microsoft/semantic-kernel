@@ -33,7 +33,7 @@ internal sealed class ReActEngine
     private readonly FlowOrchestratorConfig _config;
 
     /// <summary>
-    /// The goal to use when creating semantic functions that are restricted from flow creation
+    /// The goal to use when creating prompt functions that are restricted from flow creation
     /// </summary>
     private const string RestrictedPluginName = "ReActEngine_Excluded";
 

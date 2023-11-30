@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A planner that uses semantic function to create a sequential plan.
+/// A planner that uses prompt function to create a sequential plan.
 /// </summary>
 public sealed class SequentialPlanner
 {
@@ -119,12 +119,12 @@ public sealed class SequentialPlanner
     private readonly ILogger _logger;
 
     /// <summary>
-    /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
+    /// the function flow prompt function, which takes a goal and creates an xml plan that can be executed
     /// </summary>
     private readonly KernelFunction _functionFlowFunction;
 
     /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
+    /// The name to use when creating prompt functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedPluginName = "SequentialPlanner_Excluded";
 }

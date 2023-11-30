@@ -18,12 +18,12 @@ using Resources;
  *
  * - Use the prompt template engine to render prompts, without executing them.
  *   This can be used to leverage the template engine (which executes functions internally)
- *   to generate prompts and use them programmatically, without executing them like semantic functions.
+ *   to generate prompts and use them programmatically, without executing them like prompt functions.
  *
  * - Use rendered prompts to create the context of System and User messages sent to Chat models
  *   like "gpt-3.5-turbo"
  *
- * Note: normally you would work with Semantic Functions to automatically send a prompt to a model
+ * Note: normally you would work with Prompt Functions to automatically send a prompt to a model
  *       and get a response. In this case we use the Chat model, sending a chat history object, which
  *       includes some instructions, some context (the text selected), and the user query.
  *

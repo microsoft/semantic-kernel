@@ -13,7 +13,7 @@ public static class Example06_TemplateLanguage
 {
     /// <summary>
     /// Show how to invoke a Native Function written in C#
-    /// from a Semantic Function written in natural language
+    /// from a Prompt Function written in natural language
     /// </summary>
     public static async Task RunAsync()
     {
@@ -39,7 +39,7 @@ public static class Example06_TemplateLanguage
         // Functions loaded here are available as "time.*"
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        // Semantic Function invoking time.Date and time.Time native functions
+        // Prompt Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"
 Today is: {{time.Date}}
 Current time is: {{time.Time}}
@@ -56,11 +56,11 @@ Is it weekend time (weekend/not weekend)?
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, new Dictionary<string, string>());
         Console.WriteLine(renderedPrompt);
 
-        // Run the prompt / semantic function
+        // Run the prompt / prompt function
         var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        Console.WriteLine("--- Semantic Function result");
+        Console.WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(kindOfDay);
         Console.WriteLine(result.GetValue<string>());
 
@@ -75,7 +75,7 @@ Is it weekend time (weekend/not weekend)?
             Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
             Is it weekend time (weekend/not weekend)?
 
-            --- Semantic Function result
+            --- Prompt Function result
 
             {
                 "date": "Friday, April 28, 2023",

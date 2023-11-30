@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 public class ConversationSummaryPlugin
 {
     /// <summary>
-    /// The max tokens to process in a single semantic function call.
+    /// The max tokens to process in a single prompt function call.
     /// </summary>
     private const int MaxTokens = 1024;
 
@@ -38,17 +38,17 @@ public class ConversationSummaryPlugin
         };
 
         this._summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.SummarizeConversationDefinition,
+            PromptFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             executionSettings: settings);
 
         this._conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.GetConversationActionItemsDefinition,
+            PromptFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             executionSettings: settings);
 
         this._conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.GetConversationTopicsDefinition,
+            PromptFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             executionSettings: settings);
     }

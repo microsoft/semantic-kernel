@@ -27,7 +27,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
@@ -44,7 +44,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
@@ -61,7 +61,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
@@ -78,7 +78,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
@@ -110,7 +110,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
@@ -134,7 +134,7 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
-    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
