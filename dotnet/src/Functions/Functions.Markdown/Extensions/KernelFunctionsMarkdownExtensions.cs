@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 /// <summary>
 /// Class for extensions methods to define functions using prompt markdown format.
 /// </summary>
-public static class KernelFunctionsMarkdownExtensions
+public static class MarkdownKernelExtensions
 {
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.

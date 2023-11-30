@@ -34,7 +34,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = function.InvokeAsync(kernel, new(arguments)).GetAwaiter().GetResult();
+                    var result = function.InvokeAsync(kernel, new KernelFunctionArguments(arguments)).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.ToString());
                 });
             }

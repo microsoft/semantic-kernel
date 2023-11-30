@@ -6,10 +6,11 @@ using Microsoft.SemanticKernel.AI;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
+
+#pragma warning disable CA1200 // Avoid using cref tags with a prefix
 
 /// <summary>
-/// Represents arguments of <see cref="KernelFunction.InvokeAsync"/> and "Kernel.InvokeAsync" methods.
+/// Represents arguments of <see cref="M:KernelFunction.InvokeAsync"/> and "Kernel.InvokeAsync" methods.
 /// </summary>
 public sealed class KernelFunctionArguments : Dictionary<string, string>
 {
