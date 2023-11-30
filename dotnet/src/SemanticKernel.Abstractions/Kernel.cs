@@ -248,7 +248,7 @@ public sealed class Kernel
         if (this.Services is EmptyServiceProvider)
         {
             // If the Kernel is created without a service provider, it uses a simple empty implementation.
-            // But he GetServices extension relies on the service provider special-casing enumerables.
+            // But the GetServices extension relies on the service provider special-casing enumerables.
             // Since the empty provider doesn't do that, we need to special-case it here.
             return Enumerable.Empty<T>();
         }
