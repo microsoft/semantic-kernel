@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List
+from typing import List, Optional
 
-from semantic_kernel.sk_pydantic import PydanticField
+from pydantic import PrivateAttr
+
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -21,9 +23,16 @@ from semantic_kernel.utils.null_logger import NullLogger
 # [value]          ::= "'" [text] "'" | '"' [text] '"'
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
-class CodeTokenizer(PydanticField):
+class CodeTokenizer(SKBaseModel):
+    _log: Optional[Logger] = PrivateAttr(default_factory=NullLogger)
+
     def __init__(self, log: Logger = None):
-        self.log = log or NullLogger()
+        super().__init__()
+        self._log = log or NullLogger()
+
+    @property
+    def log(self) -> Logger:
+        return self._log
 
     def tokenize(self, text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway

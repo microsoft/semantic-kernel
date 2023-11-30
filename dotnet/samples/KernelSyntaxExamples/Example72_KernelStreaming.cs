@@ -47,7 +47,7 @@ public static class Example72_KernelStreaming
         Console.WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
-        await foreach (var update in kernel.RunStreamingAsync<StreamingChatContent>(funnyParagraphFunction))
+        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatContent>(funnyParagraphFunction))
         {
             // You will be always able to know the type of the update by checking the Type property.
             if (!roleDisplayed && update.Role.HasValue)

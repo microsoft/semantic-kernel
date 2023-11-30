@@ -18,27 +18,27 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_google_palm_text_embedding_init() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     api_key = "test_api_key"
 
     # Test successful initialization
     gp_text_embed = GooglePalmTextEmbedding(
-        model_id=model_id,
+        ai_model_id=ai_model_id,
         api_key=api_key,
     )
 
-    assert gp_text_embed.model_id == model_id
+    assert gp_text_embed.ai_model_id == ai_model_id
     assert gp_text_embed.api_key == api_key
     assert isinstance(gp_text_embed, GooglePalmTextEmbedding)
 
 
 def test_google_palm_text_embedding_init_with_empty_api_key() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     # api_key = "test_api_key"
 
     with pytest.raises(ValidationError, match="api_key"):
         GooglePalmTextEmbedding(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key="",
         )
 
@@ -51,19 +51,19 @@ async def test_google_palm_text_embedding_calls_with_parameters() -> None:
         "semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding.palm",
         new=mock_gp,
     ):
-        model_id = "test_model_id"
+        ai_model_id = "test_model_id"
         api_key = "test_api_key"
         texts = ["hello world"]
         text = "hello world"
 
         gp_text_embedding = GooglePalmTextEmbedding(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
         )
 
         await gp_text_embedding.generate_embeddings_async(texts)
 
         mock_gp.generate_embeddings.assert_called_once_with(
-            model=model_id,
+            model=ai_model_id,
             text=text,
         )

@@ -117,7 +117,7 @@ public sealed class Kernel
     public CultureInfo Culture
     {
         get => this._culture;
-        set => this._culture = value ?? CultureInfo.CurrentCulture;
+        set => this._culture = value ?? CultureInfo.InvariantCulture;
     }
 
     /// <summary>
