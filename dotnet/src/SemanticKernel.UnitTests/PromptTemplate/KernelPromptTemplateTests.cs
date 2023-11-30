@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
@@ -19,7 +18,7 @@ public sealed class KernelPromptTemplateTests
 {
     private const string DateFormat = "M/d/yyyy";
     private readonly KernelPromptTemplateFactory _factory;
-    private readonly ContextVariables _variables;
+    private readonly IDictionary<string, string> _arguments;
     private readonly ITestOutputHelper _logger;
     private readonly Kernel _kernel;
 
@@ -27,7 +26,8 @@ public sealed class KernelPromptTemplateTests
     {
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
+        this._arguments = new Dictionary<string, string>();
+        this._arguments["input"] = Guid.NewGuid().ToString("X");
         this._kernel = new Kernel();
     }
 
@@ -41,7 +41,7 @@ public sealed class KernelPromptTemplateTests
 
         // Act
         var blocks = target.ExtractBlocks(template);
-        var updatedBlocks = target.RenderVariables(blocks, this._variables);
+        var updatedBlocks = target.RenderVariables(blocks, this._arguments);
 
         // Assert
         Assert.Equal(10, blocks.Count);
@@ -83,15 +83,15 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
 
         // Arrange
-        this._variables.Set("x11", "x11 value");
-        this._variables.Set("a", "a value");
-        this._variables.Set("_a", "_a value");
-        this._variables.Set("c", "c value");
-        this._variables.Set("d", "d value");
+        this._arguments["x11"] = "x11 value";
+        this._arguments["a"] = "a value";
+        this._arguments["_a"] = "_a value";
+        this._arguments["c"] = "c value";
+        this._arguments["d"] = "d value";
 
         // Act
         blocks = target.ExtractBlocks(template);
-        updatedBlocks = target.RenderVariables(blocks, this._variables);
+        updatedBlocks = target.RenderVariables(blocks, this._arguments);
 
         // Assert
         Assert.Equal(10, blocks.Count);
@@ -137,22 +137,22 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        string MyFunctionAsync(ContextVariables context)
+        string MyFunctionAsync(string input)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", context.Input);
-            return $"F({context.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", input);
+            return $"F({input})";
         }
 
         var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
-        this._variables.Update("INPUT-BAR");
+        this._arguments["input"] = "INPUT-BAR";
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -162,22 +162,22 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        string MyFunctionAsync(ContextVariables context)
+        string MyFunctionAsync(string input)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", context.Input);
-            return $"F({context.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", input);
+            return $"F({input})";
         }
 
         var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
-        this._variables.Set("myVar", "BAR");
+        this._arguments["myVar"] = "BAR";
         var template = "foo-{{plugin.function $myVar}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -202,13 +202,13 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
-        this._variables.Set("input", "Mario");
-        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        this._arguments["input"] = "Mario";
+        this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -217,13 +217,13 @@ public sealed class KernelPromptTemplateTests
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
-        this._variables.Set("input", "Mario");
-        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        this._arguments["input"] = "Mario";
+        this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._variables));
+        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
@@ -246,14 +246,14 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
-        this._variables.Set("input", "Mario");
-        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        this._arguments["input"] = "Mario";
+        this._arguments["someDate"] = "2023-08-25T00:00:00";
 
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
@@ -265,27 +265,20 @@ public sealed class KernelPromptTemplateTests
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
-        this._variables.Update("BAR");
-        this._variables.Set("myVar", "BAZ");
+        this._arguments["input"] = "A";
+        this._arguments["myVar"] = "C";
 
-        string MyFunction1Async(ContextVariables localVariables)
+        string MyFunction1Async(string input)
         {
-            this._logger.WriteLine("MyFunction1 call received, input: {0}", localVariables.Input);
-            localVariables.Update("foo");
-            return "F(OUTPUT-FOO)";
+            return input;
         }
-        string MyFunction2Async(ContextVariables localVariables)
+        string MyFunction2Async(string input)
         {
-            // Input value should be "BAR" because the variable $input is immutable in MyFunction1
-            this._logger.WriteLine("MyFunction2 call received, input: {0}", localVariables.Input);
-            localVariables.Set("myVar", "bar");
-            return localVariables.Input;
+            return "B";
         }
-        string MyFunction3Async(ContextVariables localVariables)
+        string MyFunction3Async(string myVar)
         {
-            // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
-            this._logger.WriteLine("MyFunction3 call received, input: {0}", localVariables.Input);
-            return localVariables.TryGetValue("myVar", out string? value) ? value : "";
+            return myVar;
         }
 
         var functions = new List<KernelFunction>()
@@ -298,35 +291,35 @@ public sealed class KernelPromptTemplateTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", functions));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
-        Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
+        Assert.Equal("A B C", result);
     }
 
     [Fact]
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        Task<string> MyFunctionAsync(ContextVariables localVariables)
+        Task<string> MyFunctionAsync(string input)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            this._logger.WriteLine("MyFunction call received, input: {0}", localVariables.Input);
-            return Task.FromResult(localVariables.Input);
+            this._logger.WriteLine("MyFunction call received, input: {0}", input);
+            return Task.FromResult(input);
         }
 
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
-        this._variables.Set("myVar", "BAR");
+        this._arguments["myVar"] = "BAR";
 
         var template = "foo-{{plugin.function $myVar}}-baz";
 
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._variables);
+        var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);

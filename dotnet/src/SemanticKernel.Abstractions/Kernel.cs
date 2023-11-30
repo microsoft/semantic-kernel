@@ -9,9 +9,7 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -251,48 +249,48 @@ public sealed class Kernel
     #endregion
 
     #region Helpers
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelFunctionArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
         if (this.FunctionInvoking is { } functionInvoking)
         {
-            eventArgs = new(function, variables);
+            eventArgs = new(function, arguments);
             functionInvoking.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelFunctionArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
         if (this.FunctionInvoked is { } functionInvoked)
         {
-            eventArgs = new(function, result);
+            eventArgs = new(function, arguments, result);
             functionInvoked.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? executionSettings)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelFunctionArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
         if (this.PromptRendering is { } promptRendering)
         {
-            eventArgs = new(function, variables, executionSettings);
+            eventArgs = new(function, arguments);
             promptRendering.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelFunctionArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;
         if (this.PromptRendered is { } promptRendered)
         {
-            eventArgs = new(function, variables, renderedPrompt);
+            eventArgs = new(function, arguments, renderedPrompt);
             promptRendered.Invoke(this, eventArgs);
         }
 

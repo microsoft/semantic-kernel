@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -46,18 +45,16 @@ public sealed class HandlebarsPlan
     /// Invokes the Handlebars plan.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
-    /// <param name="contextVariables">The execution context variables.</param>
-    /// <param name="variables">The variables.</param>
+    /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
         Kernel kernel,
-        ContextVariables contextVariables,
-        Dictionary<string, object?> variables,
+        Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
-        string? results = HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, this._template, variables, cancellationToken);
-        contextVariables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
+        string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
+
+        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
     }
 }

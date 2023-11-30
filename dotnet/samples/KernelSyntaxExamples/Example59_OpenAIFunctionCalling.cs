@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -92,9 +91,9 @@ public static class Example59_OpenAIFunctionCalling
         {
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelFunctionArguments? arguments))
             {
-                var result = (await kernel.InvokeAsync(func, context)).GetValue<object>();
+                var result = (await kernel.InvokeAsync(func, arguments)).GetValue<object>();
 
                 string? resultContent = null;
                 if (result is RestApiOperationResponse apiResponse)
@@ -188,9 +187,9 @@ public static class Example59_OpenAIFunctionCalling
 
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelFunctionArguments? arguments))
             {
-                var functionResult = await kernel.InvokeAsync(func, context);
+                var functionResult = await kernel.InvokeAsync(func, arguments);
 
                 var result = functionResult.GetValue<object>();
 

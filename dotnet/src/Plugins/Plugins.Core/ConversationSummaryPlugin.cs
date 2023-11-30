@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -59,50 +58,48 @@ public class ConversationSummaryPlugin
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel</param>
-    /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")] string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._summarizeConversationFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._summarizeConversationFunction, input, kernel);
 
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._conversationActionItemsFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._conversationActionItemsFunction, input, kernel);
 
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">The context variables for function execution.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._conversationTopicsFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._conversationTopicsFunction, input, kernel);
 
-    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, ContextVariables variables)
+    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         string[] results = new string[paragraphs.Count];
+
+        var arguments = new KernelFunctionArguments();
+
         for (int i = 0; i < results.Length; i++)
         {
-            variables.Update(paragraphs[i]);
-            results[i] = (await func.InvokeAsync(kernel, variables).ConfigureAwait(false)).GetValue<string>() ?? "";
+            arguments[KernelFunctionArguments.InputParameterName] = paragraphs[i];
+
+            results[i] = (await func.InvokeAsync(kernel, arguments).ConfigureAwait(false)).GetValue<string>() ?? "";
         }
 
         return string.Join("\n", results);

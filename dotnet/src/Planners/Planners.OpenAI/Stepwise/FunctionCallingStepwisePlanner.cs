@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,7 +13,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -120,12 +120,12 @@ public sealed class FunctionCallingStepwisePlanner
             }
 
             // Look up function in kernel
-            if (this._kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? pluginFunction, out ContextVariables? funcContext))
+            if (this._kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelFunctionArguments? arguments))
             {
                 try
                 {
                     // Execute function and add to result to chat history
-                    var result = (await this._kernel.InvokeAsync(pluginFunction, funcContext, cancellationToken).ConfigureAwait(false)).GetValue<object>();
+                    var result = (await this._kernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                     chatHistoryForSteps.AddFunctionMessage(ParseObjectAsString(result), functionResponse.FullyQualifiedName);
                 }
                 catch (KernelException)
@@ -177,10 +177,10 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var chatHistory = this._chatCompletion.CreateNewChat();
 
-        var variables = new ContextVariables();
+        var arguments = new Dictionary<string, string>();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
-        variables.Set(AvailableFunctionsKey, functionsManual);
-        string systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        arguments[AvailableFunctionsKey] = functionsManual;
+        string systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(this._kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(goal);
@@ -196,10 +196,10 @@ public sealed class FunctionCallingStepwisePlanner
         var chatHistory = this._chatCompletion.CreateNewChat();
 
         // Add system message with context about the initial goal/plan
-        var variables = new ContextVariables();
-        variables.Set(GoalKey, goal);
-        variables.Set(InitialPlanKey, initialPlan);
-        var systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(this._kernel, variables, cancellationToken).ConfigureAwait(false);
+        var arguments = new Dictionary<string, string>();
+        arguments[GoalKey] = goal;
+        arguments[InitialPlanKey] = initialPlan;
+        var systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(this._kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
 

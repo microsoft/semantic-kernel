@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Orchestration;
 using Plugins;
 using Resources;
 
@@ -101,11 +100,11 @@ public static class Example70_Assistant
 
         var assistants = kernel.ImportPluginFromObject(assistant, assistant.Id);
 
-        var variables = new ContextVariables
+        var arguments = new KernelFunctionArguments
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await kernel.InvokeAsync(assistants.Single(), variables);
+        var result = await kernel.InvokeAsync(assistants.Single(), arguments);
         var resultValue = result.GetValue<string>();
 
         var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
@@ -114,7 +113,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
     }
 

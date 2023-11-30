@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -27,16 +26,14 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// Renders a Handlebars template in the context of a Semantic Kernel.
     /// </summary>
     /// <param name="kernel">The Semantic Kernel.</param>
-    /// <param name="contextVariables">The execution context variables.</param>
     /// <param name="template">The Handlebars template to render.</param>
-    /// <param name="variables">The dictionary of variables to pass to the Handlebars template engine.</param>
+    /// <param name="arguments">The dictionary of arguments to pass to the Handlebars template engine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The rendered Handlebars template.</returns>
     public static string Render(
         Kernel kernel,
-        ContextVariables contextVariables,
         string template,
-        Dictionary<string, object?> variables,
+        Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
         IHandlebars handlebarsInstance = HandlebarsDotNet.Handlebars.Create(
@@ -45,53 +42,55 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 NoEscape = true
             });
 
+        var state = new Dictionary<string, string>();
+
         // Add helpers for each function
         foreach (KernelFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, contextVariables, handlebarsInstance, function, variables, cancellationToken);
+            RegisterFunctionAsHelper(kernel, state, handlebarsInstance, function, arguments, cancellationToken);
         }
 
         // Add system helpers
-        RegisterSystemHelpers(handlebarsInstance, variables);
+        RegisterSystemHelpers(handlebarsInstance, arguments);
 
         var compiledTemplate = handlebarsInstance.Compile(template);
-        return compiledTemplate(variables);
+        return compiledTemplate(arguments);
     }
 
     private static void RegisterFunctionAsHelper(
         Kernel kernel,
-        ContextVariables contextVariables,
+        IDictionary<string, string> state,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        Dictionary<string, object?> variables,
+        Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
         string fullyResolvedFunctionName = functionMetadata.PluginName + ReservedNameDelimiter + functionMetadata.Name;
 
-        handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments localArguments) =>
         {
             // Get the parameters from the template arguments
-            if (arguments.Any())
+            if (localArguments.Any())
             {
-                if (arguments[0].GetType() == typeof(HashParameterDictionary))
+                if (localArguments[0].GetType() == typeof(HashParameterDictionary))
                 {
-                    ProcessHashArguments(functionMetadata, variables, arguments[0] as IDictionary<string, object>);
+                    ProcessHashArguments(functionMetadata, arguments, localArguments[0] as IDictionary<string, object>);
                 }
                 else
                 {
-                    ProcessPositionalArguments(functionMetadata, variables, arguments);
+                    ProcessPositionalArguments(functionMetadata, arguments, localArguments);
                 }
             }
             else if (functionMetadata.Parameters.Any(p => p.IsRequired))
             {
-                throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {arguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
+                throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {localArguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
             }
 
-            InitializeContextVariables(variables, contextVariables);
+            InitializeState(arguments, state);
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeSKFunction(kernel, function, contextVariables, cancellationToken);
+            return InvokeSKFunction(kernel, function, state, cancellationToken);
         });
     }
 
@@ -413,20 +412,20 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// Initializes the variables in the SK function context with the variables maintained by the Handlebars template engine.
     /// </summary>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
-    /// <param name="contextVariables">The execution context variables of the SK function.</param>
-    private static void InitializeContextVariables(Dictionary<string, object?> variables, ContextVariables contextVariables)
+    /// <param name="state">The execution state.</param>
+    private static void InitializeState(Dictionary<string, object?> variables, IDictionary<string, string> state)
     {
         foreach (var v in variables)
         {
             var value = v.Value ?? "";
             var varString = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
-            if (contextVariables.ContainsKey(v.Key))
+            if (state.ContainsKey(v.Key))
             {
-                contextVariables[v.Key] = varString;
+                state[v.Key] = varString;
             }
             else
             {
-                contextVariables.Add(v.Key, varString);
+                state.Add(v.Key, varString);
             }
         }
     }
@@ -437,11 +436,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static object? InvokeSKFunction(
         Kernel kernel,
         KernelFunction function,
-        ContextVariables contextVariables,
+        IDictionary<string, string> state,
         CancellationToken cancellationToken = default)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, contextVariables, cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, new KernelFunctionArguments(state), cancellationToken: cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.

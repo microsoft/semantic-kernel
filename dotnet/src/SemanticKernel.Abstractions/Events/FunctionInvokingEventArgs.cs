@@ -1,7 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
 
 /// <summary>
@@ -18,8 +15,8 @@ public class FunctionInvokingEventArgs : KernelCancelEventArgs
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
-    /// <param name="variables">Context variables relevant to the event</param>
-    public FunctionInvokingEventArgs(KernelFunction function, ContextVariables variables) : base(function, variables)
+    /// <param name="arguments">Kernel function arguments</param>
+    public FunctionInvokingEventArgs(KernelFunction function, KernelFunctionArguments arguments) : base(function, arguments)
     {
     }
 
