@@ -12,7 +12,7 @@ public class PromptRenderingEventArgs : KernelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
-    public PromptRenderingEventArgs(KernelFunction function, KernelFunctionArguments arguments) : base(function, arguments)
+    public PromptRenderingEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
     {
     }
 }

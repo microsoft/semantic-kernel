@@ -12,7 +12,7 @@ public class PromptRenderedEventArgs : KernelCancelEventArgs
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
     /// <param name="renderedPrompt">Rendered prompt</param>
-    public PromptRenderedEventArgs(KernelFunction function, KernelFunctionArguments arguments, string renderedPrompt) : base(function, arguments)
+    public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments, string renderedPrompt) : base(function, arguments)
     {
         this.RenderedPrompt = renderedPrompt;
     }

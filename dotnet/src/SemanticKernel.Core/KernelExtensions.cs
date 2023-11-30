@@ -428,7 +428,7 @@ public static class KernelExtensions
     public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         KernelFunction function,
-        KernelFunctionArguments? arguments = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -449,7 +449,7 @@ public static class KernelExtensions
         this Kernel kernel,
         string pluginName,
         string functionName,
-        KernelFunctionArguments? arguments = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -469,7 +469,7 @@ public static class KernelExtensions
     /// <param name="arguments">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, KernelFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+    public static IAsyncEnumerable<T> RunStreamingAsync<T>(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         => function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
 
     /// <summary>
@@ -480,7 +480,7 @@ public static class KernelExtensions
     /// <param name="arguments">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, KernelFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+    public static IAsyncEnumerable<StreamingContent> RunStreamingAsync(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         => kernel.RunStreamingAsync<StreamingContent>(function, arguments, CancellationToken.None);
 
     /// <summary>

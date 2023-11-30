@@ -15,7 +15,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
-    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService
+    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
     {
         var executionSettings = function.ExecutionSettings;
         if (executionSettings is null || !executionSettings.Any())

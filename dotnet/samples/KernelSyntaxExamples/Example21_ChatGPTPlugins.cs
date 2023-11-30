@@ -27,7 +27,7 @@ public static class Example21_ChatGptPlugins
         var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelFunctionArguments { ["<parameter-name>"] = "<parameter-value>" };
+        var arguments = new KernelArguments { ["<parameter-name>"] = "<parameter-value>" };
 
         //Run
         var functionResult = await kernel.InvokeAsync(plugin["<function-name>"], arguments);
@@ -43,7 +43,7 @@ public static class Example21_ChatGptPlugins
 
         //var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 
-        //var arguments = new KernelFunctionArguments();
+        //var arguments = new KernelArguments();
         //arguments["q"] = "Laptop";      // A precise query that matches one very small category or product that needs to be searched for to find the products the user is looking for. If the user explicitly stated what they want, use that as a query. The query is as specific as possible to the product name or category mentioned by the user in its singular form, and don't contain any clarifiers like latest, newest, cheapest, budget, premium, expensive or similar. The query is always taken from the latest topic, if there is a new topic a new query is started.
         //arguments["size"] = "3";        // number of products returned
         //arguments["budget"] = "200";    // maximum price of the matching product in local currency, filters results

@@ -32,7 +32,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -62,7 +62,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -92,7 +92,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -130,7 +130,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["payload"] = payload;
 
         // Act
@@ -161,7 +161,7 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-            var arguments = new KernelFunctionArguments();
+            var arguments = new KernelArguments();
             arguments["payload"] = payload;
 
             // Act
@@ -191,7 +191,7 @@ public class PluginTests
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["payload"] = payload;
 
         // Act
