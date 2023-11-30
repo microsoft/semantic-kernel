@@ -89,7 +89,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
             ["secret-name"] = SecretName,
             ["value"] = SecretValue,
             ["api-version"] = "7.0",
-            ["enabled"] = "<enabled>",
+            ["enabled"] = "true",
         };
 
         // Run
