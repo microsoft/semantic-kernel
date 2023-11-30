@@ -31,7 +31,7 @@ execution_settings:
     max_tokens:        256
     stop_sequences:    []
   - model_id:          gpt-3.5
-    temperature:       1.0
+    temperature:       0.0
     top_p:             0.0
     presence_penalty:  0.0
     frequency_penalty: 0.0

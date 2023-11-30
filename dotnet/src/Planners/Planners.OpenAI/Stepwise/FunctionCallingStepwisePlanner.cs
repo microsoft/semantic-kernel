@@ -71,8 +71,12 @@ public sealed class FunctionCallingStepwisePlanner
         var clonedKernel = kernel.Clone();
         clonedKernel.ImportPluginFromObject(new UserInteraction(), "UserInteraction");
 
+        var executeStepFunction = kernel.CreateFunctionFromMethod(this.ExecuteNextStepAsync);
+
+
         // Create and invoke a kernel function to generate the initial plan
-        var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYaml(EmbeddedResource.Read("Stepwise.GeneratePlan.yaml"));
+        var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYaml(this._yaml);
+        //var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYaml(EmbeddedResource.Read("Stepwise.GeneratePlan.yaml"));
         //var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYamlResource("Stepwise.GeneratePlan.yaml");
         var args = new KernelFunctionArguments();
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
@@ -88,6 +92,7 @@ public sealed class FunctionCallingStepwisePlanner
         //await this.ValidateTokenCountAsync(chatHistoryForPlan, clonedKernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         //string initialPlan = (await chatCompletion.GenerateMessageAsync(chatHistoryForPlan, openAIExecutionSettings, cancellationToken).ConfigureAwait(false));
 
+        
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, chatCompletion, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
 
         for (int i = 0; i < this.Config.MaxIterations; i++)
@@ -165,31 +170,28 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
     // PerformStepAsync / ExecuteStepAsync
-    /*[KernelFunction]
+    [KernelFunction]
     public async Task<IChatResult> ExecuteNextStepAsync(
         [Description("The goal or question to answer")] string question,
-        string initialPlan,
+        [Description("The step-by-step plan to satisfy the goal")] string initialPlan,
+        [Description("The chat history for plan execution")] string chatHistory,
         Kernel kernel,
-        PromptExecutionSettings executionSettings,
+        //PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
         IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.GetType());
-        var promptTemplateFactory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILogger logger = loggerFactory.CreateLogger(this.GetType());
 
-        var openAIExecutionSettings = executionSettings as OpenAIPromptExecutionSettings ?? new OpenAIPromptExecutionSettings();
+        //var openAIExecutionSettings = executionSettings as OpenAIPromptExecutionSettings ?? new OpenAIPromptExecutionSettings();
+        //var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
 
-
-        var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, kernel, chatCompletion, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
-
-        // For each step, request another completion to select a function for that step
-        //chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-        //var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, openAIExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
-        //chatHistoryForSteps.AddAssistantMessage(chatResult);
-
-    }*/
+        // TODO: get execution settings from kernel?
+        var openAIExecutionSettings = new OpenAIPromptExecutionSettings();
+        return await this.GetCompletionWithFunctionsAsync(new ChatHistory(), kernel, chatCompletion, openAIExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
+    }
 
     #region private
 
@@ -384,6 +386,48 @@ public sealed class FunctionCallingStepwisePlanner
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedPluginName = "FunctionCallingStepwisePlanner_Excluded"; // TODO: too long?
+
+    private readonly string _yaml = @"
+    template_format: semantic-kernel
+    template: |
+      <message role=""system"">
+      You are an expert at generating plans from a given GOAL. Think step by step and determine a plan to satisfy the specified GOAL using only the FUNCTIONS provided to you. You can also make use of your own knowledge while forming an answer but you must not use functions that are not provided. Once you have come to a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.
+
+      [FUNCTIONS]
+
+      {{$available_functions}}
+
+      [END FUNCTIONS]
+
+      To create the plan, follow these steps:
+      0. Each step should be something that is capable of being done by the list of available functions.
+      1. Steps can use output from one or more previous steps as input, if appropriate.
+      2. The plan should be as short as possible.
+      </message>
+      <message role=""user"">{{$goal}}</message>
+    description:     Generate a step-by-step plan to satisfy a given goal
+    name:            GeneratePlan
+    input_parameters:
+      - name:          available_functions
+        description:   A list of functions that can be used to generate the plan
+      - name:          goal
+        description:   The goal to satisfy
+    execution_settings:
+      - model_id:          gpt-4
+        temperature:       1.0
+        top_p:             0.0
+        presence_penalty:  0.0
+        frequency_penalty: 0.0
+        max_tokens:        256
+        stop_sequences:    []
+      - model_id:          gpt-3.5
+        temperature: 0.0
+        top_p:             0.0
+        presence_penalty:  0.0
+        frequency_penalty: 0.0
+        max_tokens:        256
+        stop_sequences:    []
+";
 
     #endregion private
 
