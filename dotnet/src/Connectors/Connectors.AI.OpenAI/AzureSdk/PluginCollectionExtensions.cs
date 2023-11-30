@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public static class PluginCollectionExtensions
 {
     /// <summary>
-    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelFunctionArguments"/> with its parameters.
+    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <param name="response">The <see cref="OpenAIFunctionResponse"/> object.</param>
@@ -21,7 +21,7 @@ public static class PluginCollectionExtensions
         this IReadOnlyKernelPluginCollection plugins,
         OpenAIFunctionResponse response,
         [NotNullWhen(true)] out KernelFunction? availableFunction,
-        [NotNullWhen(true)] out KernelFunctionArguments? arguments)
+        [NotNullWhen(true)] out KernelArguments? arguments)
     {
         availableFunction = null;
         arguments = null;
@@ -33,7 +33,7 @@ public static class PluginCollectionExtensions
         }
 
         // Add parameters to arguments
-        arguments = new KernelFunctionArguments();
+        arguments = new KernelArguments();
         foreach (var parameter in response.Parameters)
         {
             arguments[parameter.Key] = parameter.Value.ToString();

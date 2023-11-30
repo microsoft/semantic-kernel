@@ -64,7 +64,7 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService
+        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
         {
             foreach (var service in kernel.GetAllServices<T>())
             {

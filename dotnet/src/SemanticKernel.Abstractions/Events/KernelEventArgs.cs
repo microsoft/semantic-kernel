@@ -15,7 +15,7 @@ public abstract class KernelEventArgs : EventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
-    internal KernelEventArgs(KernelFunction function, KernelFunctionArguments arguments)
+    internal KernelEventArgs(KernelFunction function, KernelArguments arguments)
     {
         Verify.NotNull(function);
 
@@ -32,7 +32,7 @@ public abstract class KernelEventArgs : EventArgs
     /// <summary>
     /// Kernel function arguments.
     /// </summary>
-    public KernelFunctionArguments Arguments { get; }
+    public KernelArguments Arguments { get; }
 
     /// <summary>
     /// Metadata for storing additional information about function execution result.

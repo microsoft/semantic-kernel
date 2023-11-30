@@ -277,12 +277,12 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(KernelFunctionArguments variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
         {
             try
             {
                 // Extract function arguments from context
-                var arguments = new Dictionary<string, string>();
+                var arguments = new KernelArguments();
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name

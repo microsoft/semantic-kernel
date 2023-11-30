@@ -20,7 +20,7 @@ public static class KernelFunctionExtensions
     /// <param name="function">Function to execute</param>
     /// <param name="kernel">Kernel</param>
     /// <param name="input">Input string for the function</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for prompt functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(this KernelFunction function,
@@ -29,10 +29,10 @@ public static class KernelFunctionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        KernelFunctionArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
         if (!string.IsNullOrEmpty(input))
         {
-            (arguments ??= new()).Add(KernelFunctionArguments.InputParameterName, input);
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
         }
 
         return function.InvokeAsync(kernel, arguments, cancellationToken);
@@ -44,7 +44,7 @@ public static class KernelFunctionExtensions
     /// <param name="function">Target function</param>
     /// <param name="kernel">The kernel</param>
     /// <param name="input">Input string for the function</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for prompt functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
     public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this KernelFunction function,
@@ -53,10 +53,10 @@ public static class KernelFunctionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        KernelFunctionArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
         if (!string.IsNullOrEmpty(input))
         {
-            (arguments ??= new()).Add(KernelFunctionArguments.InputParameterName, input);
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
         }
 
         return function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);

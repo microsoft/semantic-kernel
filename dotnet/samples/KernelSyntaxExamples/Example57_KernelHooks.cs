@@ -153,7 +153,7 @@ public static class Example57_KernelHooks
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.Result.SetValue(newOutput);
+            e.SetResultValue(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;
