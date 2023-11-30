@@ -192,7 +192,7 @@ public static class Example15_TextMemoryPlugin
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemoryPlugin, store and retrieve memories through the Kernel.
         //
-        // This enables semantic functions and the AI (via Planners) to access memories
+        // This enables prompt functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
@@ -269,15 +269,15 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Semantic Function
+        // PART 3: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text completion model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Semantic Function ==");
+        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
 
-        // Build a semantic function that uses memory to find facts
+        // Build a prompt function that uses memory to find facts
         const string RecallFunctionDefinition = @"
 Consider only the facts below when answering questions:
 

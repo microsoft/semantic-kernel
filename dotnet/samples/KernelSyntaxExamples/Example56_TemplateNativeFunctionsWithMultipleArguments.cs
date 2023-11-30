@@ -12,7 +12,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 {
     /// <summary>
     /// Show how to invoke a Native Function written in C# with multiple arguments
-    /// from a Semantic Function written in natural language
+    /// from a Prompt Function written in natural language
     /// </summary>
     public static async Task RunAsync()
     {
@@ -45,7 +45,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Functions loaded here are available as "text.*"
         kernel.ImportPluginFromObject<TextPlugin>("text");
 
-        // Semantic Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
+        // Prompt Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
  Write a haiku about the following: {{text.Concat input='Harry' input2=$word2}}
 ";
@@ -57,11 +57,11 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
         Console.WriteLine(renderedPrompt);
 
-        // Run the prompt / semantic function
+        // Run the prompt / prompt function
         var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        Console.WriteLine("--- Semantic Function result");
+        Console.WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(haiku, arguments);
         Console.WriteLine(result.GetValue<string>());
 
@@ -71,7 +71,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
  Write a haiku about the following: Harry Potter
 
---- Semantic Function result
+--- Prompt Function result
 A boy with a scar,
 Wizarding world he explores,
 Harry Potter's tale.
