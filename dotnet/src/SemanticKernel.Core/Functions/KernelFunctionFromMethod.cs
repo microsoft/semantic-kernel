@@ -32,7 +32,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class KernelFunctionFromMethod : KernelFunction
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -156,11 +156,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (functionName is null)
         {
-            // Get the name to use for the function.  If the function has an SKName attribute, we use that.
+            // Get the name to use for the function.  If the function has a KernelFunction attribute and it contains a name, we use that.
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by SKName so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelNameAttribute>(inherit: true)?.Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.Name?.Trim();
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
@@ -300,9 +300,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
-            // Use either the parameter's name or an override from an applied SKName attribute.
-            KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
-            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
+            string name = SanitizeMetadataName(parameter.Name ?? "");
             bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
