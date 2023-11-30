@@ -24,10 +24,10 @@ public static class WeaviateMemoryBuilderExtensions
         string? apiKey,
         string? apiVersion = null)
     {
-        builder.WithMemoryStore((loggerFactory, httpHandlerFactory) =>
+        builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, null, loggerFactory),
+                HttpClientProvider.GetHttpClient(injectedClient),
                 apiKey,
                 endpoint,
                 apiVersion,
@@ -53,10 +53,10 @@ public static class WeaviateMemoryBuilderExtensions
         string? apiKey = null,
         string? apiVersion = null)
     {
-        builder.WithMemoryStore((loggerFactory, httpHandlerFactory) =>
+        builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
                 apiKey,
                 endpoint,
                 apiVersion,

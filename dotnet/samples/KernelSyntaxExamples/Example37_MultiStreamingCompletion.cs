@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -34,14 +36,14 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        IChatCompletion chatCompletion = new OpenAIChatCompletion(
+        ITextCompletion textCompletion = new OpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(chatCompletion);
+        await ChatCompletionStreamAsync(textCompletion);
     }
 
-    private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
+    private static async Task ChatCompletionStreamAsync(ITextCompletion textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -53,11 +55,48 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<string>("Write one paragraph about why AI is awesome"))
-        {
-            Console.Write(chatUpdate);
-        }
+        var consoleLinesPerResult = 10;
+
+        PrepareDisplay();
+        var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
+        await ProcessStreamAsyncEnumerableAsync(textCompletion, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
+
+        Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Break enough lines as the current console window size to display the results
+    /// </summary>
+    private static void PrepareDisplay()
+    {
+        for (int i = 0; i < Console.WindowHeight - 2; i++)
+        {
+            Console.WriteLine();
+        }
+    }
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
+    {
+        var messagePerChoice = new Dictionary<int, string>();
+        await foreach (var textUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, executionSettings))
+        {
+            string newContent = string.Empty;
+            Console.SetCursorPosition(0, textUpdate.ChoiceIndex * consoleLinesPerResult);
+
+            if (textUpdate.ContentUpdate is { Length: > 0 })
+            {
+                newContent += textUpdate.ContentUpdate;
+            }
+
+            if (!messagePerChoice.ContainsKey(textUpdate.ChoiceIndex))
+            {
+                messagePerChoice.Add(textUpdate.ChoiceIndex, string.Empty);
+            }
+            messagePerChoice[textUpdate.ChoiceIndex] += newContent;
+
+            Console.Write(messagePerChoice[textUpdate.ChoiceIndex]);
+        }
     }
 }

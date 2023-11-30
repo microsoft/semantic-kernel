@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -34,7 +33,6 @@ public static class Example24_OpenApiPlugin_Jira
     public static async Task RunAsync()
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        var contextVariables = new ContextVariables();
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
@@ -75,43 +73,40 @@ public static class Example24_OpenApiPlugin_Jira
             );
         }
 
+        var arguments = new KernelFunctionArguments();
+
         // GetIssue Function
-        {
-            // Set Properties for the Get Issue operation in the openAPI.swagger.json
-            // Make sure the issue exists in your Jira instance or it will return a 404
-            contextVariables.Set("issueKey", "TEST-1");
+        // Set Properties for the Get Issue operation in the openAPI.swagger.json
+        // Make sure the issue exists in your Jira instance or it will return a 404
+        arguments["issueKey"] = "TEST-1";
 
-            // Run operation via the semantic kernel
-            var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], contextVariables);
+        // Run operation via the semantic kernel
+        var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
 
-            Console.WriteLine("\n\n\n");
-            var formattedContent = JsonSerializer.Serialize(
-                result.GetValue<RestApiOperationResponse>(),
-                new JsonSerializerOptions()
-                {
-                    WriteIndented = true
-                });
-            Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
-        }
+        Console.WriteLine("\n\n\n");
+        var formattedContent = JsonSerializer.Serialize(
+            result.GetValue<RestApiOperationResponse>(),
+            new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            });
+        Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
 
         // AddComment Function
-        {
-            // Set Properties for the AddComment operation in the openAPI.swagger.json
-            // Make sure the issue exists in your Jira instance or it will return a 404
-            contextVariables.Set("issueKey", "TEST-2");
-            contextVariables.Set(RestApiOperation.PayloadArgumentName, "{\"body\": \"Here is a rad comment\"}");
+        arguments["issueKey"] = "TEST-2";
+        arguments[RestApiOperation.PayloadArgumentName] = "{\"body\": \"Here is a rad comment\"}";
 
-            // Run operation via the semantic kernel
-            var result = await kernel.InvokeAsync(jiraFunctions["AddComment"], contextVariables);
+        // Run operation via the semantic kernel
+        result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
 
-            Console.WriteLine("\n\n\n");
-            var formattedContent = JsonSerializer.Serialize(
-                result.GetValue<RestApiOperationResponse>(),
-                new JsonSerializerOptions()
-                {
-                    WriteIndented = true
-                });
-            Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
-        }
+        Console.WriteLine("\n\n\n");
+
+        formattedContent = JsonSerializer.Serialize(
+            result.GetValue<RestApiOperationResponse>(),
+            new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            });
+        Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
     }
 }

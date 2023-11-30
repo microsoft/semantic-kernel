@@ -37,7 +37,7 @@ kernel.add_chat_service(
     sk_oai.AzureChatCompletion(
         deployment_name,
         endpoint,
-        api_key,
+        api_key=api_key,
         api_version=api_version,
     ),
 )

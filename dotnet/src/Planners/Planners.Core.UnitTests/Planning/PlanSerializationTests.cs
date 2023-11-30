@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
     public void CanSerializePlan()

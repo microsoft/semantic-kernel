@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
@@ -27,15 +27,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
-        string pluginDirectoryName,
-        HttpClient? httpClient = null)
+        string pluginDirectoryName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -46,15 +44,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
-        string pluginName,
-        HttpClient? httpClient = null)
+        string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -65,15 +61,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
-        string pluginName,
-        HttpClient? httpClient = null)
+        string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName, httpClient);
+        IKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -84,13 +78,11 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
-        string pluginDirectoryName,
-        HttpClient? httpClient = null)
+        string pluginDirectoryName)
     {
         const string ProtoFile = "grpc.proto";
 
@@ -105,13 +97,11 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory
-              .CreateLogger(typeof(KernelGrpcExtensions))
-              .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.CreatePluginFromGrpc(stream, pluginDirectoryName, httpClient);
+        return kernel.CreatePluginFromGrpc(stream, pluginDirectoryName);
     }
 
     /// <summary>
@@ -120,26 +110,22 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
-        string pluginName,
-        HttpClient? httpClient = null)
+        string pluginName)
     {
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory
-              .CreateLogger(typeof(KernelGrpcExtensions))
-              .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.CreatePluginFromGrpc(stream, pluginName, httpClient);
+        return kernel.CreatePluginFromGrpc(stream, pluginName);
     }
 
     /// <summary>
@@ -148,13 +134,11 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
-    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
     public static IKernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
-        string pluginName,
-        HttpClient? httpClient = null)
+        string pluginName)
     {
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
@@ -166,17 +150,19 @@ public static class KernelGrpcExtensions
 
         var plugin = new KernelPlugin(pluginName);
 
-        var client = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, httpClient, kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+
+        var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
 
         var runner = new GrpcOperationRunner(client);
 
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(KernelGrpcExtensions));
         foreach (var operation in operations)
         {
             try
             {
                 logger.LogTrace("Registering gRPC function {0}.{1}", pluginName, operation.Name);
-                plugin.AddFunction(CreateGrpcFunction(runner, operation, kernel.LoggerFactory));
+                plugin.AddFunction(CreateGrpcFunction(runner, operation, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -205,39 +191,17 @@ public static class KernelGrpcExtensions
     {
         var operationParameters = operation.GetParameters();
 
-        async Task<ContextVariables> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
+        async Task<JsonObject> ExecuteAsync(KernelFunctionArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
-                var arguments = new Dictionary<string, string>();
-
-                //Extract function arguments from context
-                foreach (var parameter in operationParameters)
-                {
-                    //A try to resolve argument parameter name.
-                    if (variables.TryGetValue(parameter.Name, out string? value))
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{operation.Name}' gRPC function.");
-                }
-
-                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    variables.Update(result.ToString());
-                }
+                return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 loggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
-
-            return variables;
         }
 
         return KernelFunctionFactory.CreateFromMethod(

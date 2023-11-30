@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -17,14 +16,14 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncShouldReturnOneChunkFromNonStreamingMethodAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var nativeContent = "Full content result";
         var sut = KernelFunctionFactory.CreateFromMethod(() => nativeContent);
 
         var chunkCount = 0;
         StreamingContent? lastChunk = null;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
             lastChunk = chunk;
@@ -44,7 +43,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncOnlySupportsInvokingEventAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         var invokedCalled = false;
@@ -62,7 +61,7 @@ public class FunctionFromMethodTests
         };
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
         }
 
@@ -75,7 +74,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncInvokingCancellingShouldRenderNoChunksAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -85,7 +84,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }
@@ -98,7 +97,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncInvokingSkippingShouldRenderNoChunksAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -108,7 +107,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }
@@ -121,7 +120,7 @@ public class FunctionFromMethodTests
     public async Task InvokeStreamingAsyncUsingInvokedEventHasNoEffectAsync()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -133,7 +132,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }

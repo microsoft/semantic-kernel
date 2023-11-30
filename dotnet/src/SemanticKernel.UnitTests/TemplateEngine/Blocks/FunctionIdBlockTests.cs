@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -13,7 +12,7 @@ public class FunctionIdBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new FunctionIdBlock("", NullLoggerFactory.Instance);
+        var target = new FunctionIdBlock("");
 
         // Assert
         Assert.Equal(BlockTypes.FunctionId, target.Type);
@@ -23,7 +22,7 @@ public class FunctionIdBlockTests
     public void ItTrimsSpaces()
     {
         // Act + Assert
-        Assert.Equal("aa", new FunctionIdBlock("  aa  ", NullLoggerFactory.Instance).Content);
+        Assert.Equal("aa", new FunctionIdBlock("  aa  ").Content);
     }
 
     [Theory]

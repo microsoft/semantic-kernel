@@ -23,7 +23,7 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -34,9 +34,10 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync(kernel,
-            "Sci-fi",
-            executionSettings: new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        var functionResult = await myFunction.InvokeAsync(kernel, new KernelFunctionArguments(new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 })
+        {
+            [KernelFunctionArguments.InputParameterName] = "Sci-fi"
+        });
 
         Console.WriteLine(functionResult.GetValue<string>());
         Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
@@ -64,7 +65,7 @@ public static class Example43_GetModelResult
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
+            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
@@ -79,7 +80,7 @@ public static class Example43_GetModelResult
         }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-        string OutputExceptionDetail(Exception? exception)
+        static string OutputExceptionDetail(Exception? exception)
         {
             return exception switch
             {

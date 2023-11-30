@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -62,9 +62,10 @@ internal sealed class VarBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(IDictionary<string, string>? arguments)
     {
-        if (variables == null) { return string.Empty; }
+        if (arguments == null) { return string.Empty; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
@@ -73,7 +74,7 @@ internal sealed class VarBlock : Block, ITextRendering
             throw new KernelException(ErrMsg);
         }
 
-        if (variables.TryGetValue(this.Name, out string? value))
+        if (arguments.TryGetValue(this.Name, out string? value))
         {
             return value;
         }

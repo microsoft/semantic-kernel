@@ -26,6 +26,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
@@ -48,8 +50,6 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-    <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
@@ -57,6 +57,12 @@
     <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   
   <ItemGroup>

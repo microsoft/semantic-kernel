@@ -7,8 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -184,8 +182,7 @@ public class KernelFunctionMetadataTests
     private static async Task ValidFunctionNameAsync()
     {
         var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName));
-        var variables = new ContextVariables(string.Empty);
-        var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), variables);
+        var result = await function.InvokeAsync(new Kernel(new Mock<IServiceProvider>().Object));
     }
 
     private static MethodInfo Method(Delegate method)

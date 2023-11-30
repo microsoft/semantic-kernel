@@ -4,6 +4,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -30,8 +31,8 @@ def test_google_palm_text_completion_init() -> None:
         api_key=api_key,
     )
 
-    assert gp_text_completion._model_id == model_id
-    assert gp_text_completion._api_key == api_key
+    assert gp_text_completion.model_id == model_id
+    assert gp_text_completion.api_key == api_key
     assert isinstance(gp_text_completion, GooglePalmTextCompletion)
 
 
@@ -39,9 +40,7 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
     # api_key = "test_api_key"
 
-    with pytest.raises(
-        ValueError, match="The Google PaLM API key cannot be `None` or empty"
-    ):
+    with pytest.raises(ValidationError, match="api_key"):
         GooglePalmTextCompletion(
             model_id=model_id,
             api_key="",

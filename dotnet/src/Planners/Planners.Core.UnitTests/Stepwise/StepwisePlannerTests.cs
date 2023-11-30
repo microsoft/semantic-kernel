@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -14,7 +13,7 @@ public sealed class StepwisePlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
 
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new StepwisePlannerConfig()

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
@@ -101,6 +102,18 @@ public sealed class PromptTemplateConfig
         /// </summary>
         [JsonPropertyName("is_required")]
         public bool IsRequired { get; set; } = true;
+    }
+
+    /// <summary>
+    /// Return the input parameters metadata.
+    /// </summary>
+    internal List<KernelParameterMetadata> GetKernelParametersMetadata()
+    {
+        return this.InputParameters.Select(p => new KernelParameterMetadata(p.Name)
+        {
+            Description = p.Description,
+            DefaultValue = p.DefaultValue
+        }).ToList();
     }
 
     /// <summary>

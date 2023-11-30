@@ -88,9 +88,7 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
-        var kernel = new KernelBuilder().Build();
-
-        var gamePlugin = kernel.ImportPluginFromObject(new GuessingGame(), nameof(GuessingGame));
+        var gamePlugin = KernelPluginFactory.CreateFromObject<GuessingGame>();
 
         var assistant =
             await AssistantBuilder.FromTemplateAsync(

@@ -20,7 +20,12 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
         deployment_name = "text-embedding-ada-002"
 
     kernel.add_text_embedding_generation_service(
-        "aoai-ada", sk_oai.AzureTextEmbedding(deployment_name, endpoint, api_key)
+        "aoai-ada",
+        sk_oai.AzureTextEmbedding(
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+        ),
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
@@ -46,7 +51,11 @@ async def test_batch_azure_embeddings(get_aoai_config):
     else:
         deployment_name = "ada-002"
 
-    embeddings_service = sk_oai.AzureTextEmbedding(deployment_name, endpoint, api_key)
+    embeddings_service = sk_oai.AzureTextEmbedding(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+    )
     texts = ["hello world", "goodbye world"]
     results = await embeddings_service.generate_embeddings_async(texts)
     batch_results = await embeddings_service.generate_embeddings_async(

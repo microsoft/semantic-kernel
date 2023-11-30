@@ -44,7 +44,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._config = config;
 
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
@@ -66,7 +66,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         Verify.NotNull(chat);
 
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -79,7 +79,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
@@ -94,7 +94,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
         var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
 
@@ -103,13 +103,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chat,
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
-        using var request = this.GetRequest(chat, chatRequestSettings, isStreamEnabled: true);
+        using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in this.GetChatStreamingUpdatesAsync<T>(response))
@@ -222,11 +222,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                     {
                         yield return (T)(object)message.Content;
                     }
+                    continue;
                 }
 
                 if (typeof(T) == typeof(ChatWithDataStreamingResult))
                 {
                     yield return (T)(object)result;
+                    continue;
                 }
 
                 throw new NotSupportedException($"Type {typeof(T)} is not supported");
