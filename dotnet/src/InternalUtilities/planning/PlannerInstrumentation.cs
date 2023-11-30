@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
-internal static class PlannerInstrumentation
+internal static partial class PlannerInstrumentation
 {
     /// <summary><see cref="ActivitySource"/> for planning-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
@@ -39,39 +39,62 @@ internal static class PlannerInstrumentation
 
         using var _ = s_activitySource.StartActivity(plannerName);
 
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Plan creation started. Goal: {Goal}", goal); // Sensitive data, logging as trace, disabled by default
-        }
-        else if (logger.IsEnabled(LogLevel.Information))
-        {
-            logger.LogInformation("Plan creation started.");
-        }
+        logger.LogPlanCreationStarted();
+        logger.LogGoal(goal);
 
         TagList tags = new() { { "sk.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
-
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Plan created. Plan:\n{Plan}", planToString(plan));
-            }
+            logger.LogPlanCreatedWithPlan(planToString(plan));
 
             return plan;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Plan creation failed. Error: {Message}", ex.Message);
+            logger.LogPlanCreationError(ex, ex.Message);
             tags.Add("error.type", ex.GetType().FullName);
             throw;
         }
         finally
         {
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-            logger.LogInformation("Plan creation duration: {Duration}ms.", duration.TotalMilliseconds);
+            logger.LogPlanCreationDuration(duration.TotalMilliseconds);
             s_createPlanDuration.Record(duration.TotalSeconds, in tags);
         }
     }
+
+    #region Logging helpers
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "Plan creation started.")]
+    static partial void LogPlanCreationStarted(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
+        Message = "Goal: {Goal}")]
+    static partial void LogGoal(this ILogger logger, string goal);
+
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Information,
+        Message = "Plan created. Plan:\n{Plan}")]
+    static partial void LogPlanCreatedWithPlan(this ILogger logger, string plan);
+
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Error,
+        Message = "Plan creation failed. Error: {Message}")]
+    static partial void LogPlanCreationError(this ILogger logger, Exception exception, string message);
+
+    [LoggerMessage(
+        EventId = 4,
+        Level = LogLevel.Information,
+        Message = "Plan creation duration: {Duration}ms.")]
+    static partial void LogPlanCreationDuration(this ILogger logger, double duration);
+
+    #endregion
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Functions;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -105,11 +106,7 @@ public abstract class KernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
-        }
+        logger.LogFunctionInvokingWithArguments(this.Name, arguments);
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -119,8 +116,7 @@ public abstract class KernelFunction
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
             if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
-
+                logger.LogFunctionCanceledPriorToInvoking();
                 return new FunctionResult(this.Name)
                 {
                     IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
@@ -130,17 +126,13 @@ public abstract class KernelFunction
 
             var result = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-            logger.LogTrace("Function succeeded.");
+            logger.LogFunctionInvokedSuccess();
 
             // Invoke the post hook.
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, arguments, result);
 
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Function invocation {Completion}: {Result}",
-                    invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed",
-                    result.Value);
-            }
+            logger.LogFunctionInvokedStatus(invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed");
+            logger.LogFunctionInvokedResult(result.Value);
 
             result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
             result.IsRepeatRequested = invokedEventArgs?.IsRepeatRequested ?? false;
@@ -150,20 +142,14 @@ public abstract class KernelFunction
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            if (logger.IsEnabled(LogLevel.Error))
-            {
-                logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
-            }
+            logger.LogFunctionError(ex, ex.Message);
             throw;
         }
         finally
         {
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function completed. Duration: {Duration}ms", duration.TotalMilliseconds);
-            }
+            logger.LogFunctionComplete(duration.TotalMilliseconds);
         }
     }
 
@@ -182,16 +168,15 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
 
-        logger.LogInformation("Function streaming invoking.");
-
         arguments ??= new KernelArguments();
+
+        logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
 
         // Invoke pre hook, and stop if skipping requested.
         var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
         if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
         {
-            logger.LogTrace("Function canceled or skipped prior to invocation.");
-
+            logger.LogFunctionCanceledPriorToInvoking();
             yield break;
         }
 

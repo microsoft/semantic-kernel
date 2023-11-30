@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.AI;
 
 #pragma warning disable IDE0130
@@ -49,4 +50,10 @@ public sealed class KernelArguments : Dictionary<string, string>
     /// Gets or sets the prompt execution settings
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings { get; set; }
+
+    /// <summary>
+    /// Returns a comma-separated string that represents the kernel argument.
+    /// </summary>
+    /// <returns>A string that represents the kernel argument.</returns>
+    public override string ToString() => string.Join(", ", this.Select(v => $"{v.Key}:{v.Value}"));
 }
