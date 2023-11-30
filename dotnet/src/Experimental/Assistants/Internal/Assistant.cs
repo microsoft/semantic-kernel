@@ -87,53 +87,52 @@ internal sealed class Assistant : IAssistant
 
         if (plugins is not null)
         {
-            builder.ConfigurePlugins(
-                c =>
+            builder.ConfigurePlugins(c =>
+            {
+                foreach (var plugin in plugins)
                 {
-                    foreach (var plugin in plugins)
-                    {
-                        c.Add(plugin);
-                    }
-                });
+                    c.Add(plugin);
+                }
+            });
         }
 
         this.Kernel = builder.Build();
     }
 
-/// <inheritdoc/>
-public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
-{
-    return ChatThread.CreateAsync(this._restContext, cancellationToken);
-}
+    /// <inheritdoc/>
+    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
+    {
+        return ChatThread.CreateAsync(this._restContext, cancellationToken);
+    }
 
-/// <inheritdoc/>
-public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
-{
-    return ChatThread.GetAsync(this._restContext, id, cancellationToken);
-}
+    /// <inheritdoc/>
+    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
 
-/// <summary>
-/// Marshal thread run through <see cref="KernelFunction"/> interface.
-/// </summary>
-/// <param name="input">The user input</param>
-/// <param name="cancellationToken">A cancellation token.</param>
-/// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-[KernelFunction, Description("Provide input to assistant a response")]
-public async Task<AssistantResponse> AskAsync(
-    [Description("The input for the assistant.")]
+    /// <summary>
+    /// Marshal thread run through <see cref="KernelFunction"/> interface.
+    /// </summary>
+    /// <param name="input">The user input</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
+    [KernelFunction, Description("Provide input to assistant a response")]
+    public async Task<AssistantResponse> AskAsync(
+        [Description("The input for the assistant.")]
         string input,
-    CancellationToken cancellationToken = default)
-{
-    var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
-    await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-    var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
-    var response =
-        new AssistantResponse
-        {
-            ThreadId = thread.Id,
-            Response = string.Concat(message.Select(m => m.Content)),
-        };
+        CancellationToken cancellationToken = default)
+    {
+        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
+        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
+        var response =
+            new AssistantResponse
+            {
+                ThreadId = thread.Id,
+                Response = string.Concat(message.Select(m => m.Content)),
+            };
 
-    return response;
-}
+        return response;
+    }
 }
