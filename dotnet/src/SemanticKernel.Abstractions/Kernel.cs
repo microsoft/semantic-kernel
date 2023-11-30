@@ -29,7 +29,7 @@ public sealed class Kernel
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
     private Dictionary<string, object?>? _data;
     /// <summary><see cref="CultureInfo"/> to be used by any operations that need access to the culture, a format provider, etc.</summary>
-    private CultureInfo _culture = CultureInfo.CurrentCulture;
+    private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
 
@@ -108,8 +108,8 @@ public sealed class Kernel
     /// Gets the culture currently associated with this context.
     /// </summary>
     /// <remarks>
-    /// The culture defaults to <see cref="CultureInfo.CurrentCulture"/> if not explicitly set.
-    /// It may be set to another culture, such as <see cref="CultureInfo.InvariantCulture"/>,
+    /// The culture defaults to <see cref="CultureInfo.InvariantCulture"/> if not explicitly set.
+    /// It may be set to another culture, such as <see cref="CultureInfo.CurrentCulture"/>,
     /// and any functions invoked within the context can consult this property for use in
     /// operations like formatting and parsing.
     /// </remarks>
