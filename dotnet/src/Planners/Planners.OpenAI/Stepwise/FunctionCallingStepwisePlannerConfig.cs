@@ -45,8 +45,8 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     /// </summary>
     public int MinIterationTimeMs { get; set; }
 
-    /// <summary>
+    /*/// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
-    public OpenAIPromptExecutionSettings? ModelSettings { get; set; }
+    public OpenAIPromptExecutionSettings? ModelSettings { get; set; }*/
 }
