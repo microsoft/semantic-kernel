@@ -244,13 +244,11 @@ Do not expose the regex unless asked.
             };
         }
 
-        [KernelFunction]
+        [KernelFunction("ConfigureEmailAddress")]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [KernelName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [KernelName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
-            string email,
+            string email_address,
             ContextVariables variables)
         {
             var chat = this._chat.CreateNewChat(SystemPrompt);
@@ -287,17 +285,16 @@ Do not expose the regex unless asked.
     {
         [KernelFunction]
         [Description("Send email")]
-        [KernelName("SendEmail")]
         public string SendEmail(
-            [KernelName("email_addresses")][Description("target email addresses")]
-            string emailAddress,
-            [KernelName("answer")][Description("answer, which is going to be the email content")]
+            [Description("target email addresses")]
+            string email_addresses,
+            [Description("answer, which is going to be the email content")]
             string answer,
             ContextVariables variables)
         {
             var contract = new Email()
             {
-                Address = emailAddress,
+                Address = email_addresses,
                 Content = answer,
             };
 
