@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -14,6 +13,8 @@ using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettin
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
+
+#pragma warning disable SKEXP0001
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
@@ -104,16 +105,12 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = new KernelBuilder()
+        return new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithRetryBasic()
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
-                alsoAsTextCompletion: true);
-
-        return builder;
+                apiKey: azureOpenAIConfiguration.ApiKey);
     }
 
     private readonly ILoggerFactory _logger;

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -14,16 +15,16 @@ public static class Example28_ActionPlanner
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string samplesDirectory = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "SummarizePlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "WriterPlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "FunPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "WriterPlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(samplesDirectory, "FunPlugin"));
 
         // Create an optional config for the ActionPlanner. Use this to exclude plugins and functions if needed
         var config = new ActionPlannerConfig();

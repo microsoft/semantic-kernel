@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Given text, annotate all recognized entities. You specify the tags to use.",
-  "models": [
+  "execution_settings": [
       {
       "max_tokens": 256,
       "temperature": 0.0,

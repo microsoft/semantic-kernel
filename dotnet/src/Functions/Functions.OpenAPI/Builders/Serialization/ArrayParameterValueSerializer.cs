@@ -38,7 +38,7 @@ internal static class ArrayParameterValueSerializer
     /// <returns>A string containing the serialized parameter.</returns>
     public static string SerializeArrayAsDelimitedValues(JsonArray array, string delimiter)
     {
-        var values = new List<string>();
+        var values = new List<string?>();
 
         foreach (var item in array)
         {

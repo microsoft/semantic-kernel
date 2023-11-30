@@ -19,7 +19,6 @@ using RepoUtils;
  * - Shared tokens
  * - etc.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example26_AADAuth
 {
@@ -42,10 +41,10 @@ public static class Example26_AADAuth
             ExcludeAzurePowerShellCredential = true
         };
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            // Add Azure chat completion service using DefaultAzureCredential AAD auth
-            .WithAzureChatCompletionService(
+            // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))

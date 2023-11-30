@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Summarize given text in two sentences or less",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 100,
       "temperature": 0.0,

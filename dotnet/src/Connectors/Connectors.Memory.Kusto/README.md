@@ -14,7 +14,7 @@ using Kusto.Data;
 var connectionString = new KustoConnectionStringBuilder("https://kvc123.eastus.kusto.windows.net").WithAadUserPromptAuthentication();
 KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(ConsoleLogger.Log)
     .WithOpenAITextCompletionService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
     .WithOpenAITextEmbeddingGenerationService(modelId: TestConfiguration.OpenAI.EmbeddingModelId,apiKey: TestConfiguration.OpenAI.ApiKey)

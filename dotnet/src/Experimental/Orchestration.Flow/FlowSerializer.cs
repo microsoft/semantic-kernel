@@ -16,6 +16,13 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// </summary>
 public static class FlowSerializer
 {
+    /// <summary>Options for <see cref="DeserializeFromJson"/>.</summary>
+    private static readonly JsonSerializerOptions s_deserializeOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
+
     /// <summary>
     /// Deserialize flow from yaml
     /// </summary>
@@ -39,17 +46,8 @@ public static class FlowSerializer
     /// <returns>the <see cref="Flow"/> instance</returns>
     public static Flow? DeserializeFromJson(string json)
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-        };
-
-        var flow = JsonSerializer.Deserialize<FlowModel>(json, options);
-        if (flow is null)
-        {
+        var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
             throw new JsonException("Failed to deserialize flow");
-        }
 
         return UpCast(flow);
     }
