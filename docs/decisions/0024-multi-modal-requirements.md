@@ -36,12 +36,9 @@ template_format: handlebars
 description: Creates an image of the specified topic
 name: CreateImage
 input_parameters:
-  - name: name
-    description: The name of the person to greet
-    default_value: John
-  - name: language
-    description: The language to generate the greeting in
-    default_value: English
+  - name: topic
+    description: The topic to generate an image of
+    default_value: dog
 ```
 
 Based on this example prompt, the return type could be one of the following:
@@ -83,12 +80,10 @@ template_format: handlebars
 description: Creates an image of the specified topic
 name: CreateImage
 input_parameters:
-  - name: name
-    description: The name of the person to greet
-    default_value: John
-  - name: language
-    description: The language to generate the greeting in
-    default_value: English
+input_parameters:
+  - name: topic
+    description: The topic to generate an image of
+    default_value: dog
 output_parameters:
   - description: The image that was generated
     type: Image
@@ -108,7 +103,7 @@ is _guaranteed_ to return the correct type. For example, the following code coul
 whenever the output is specified as an `Image`.
 
 ```csharp
-private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
+private sealed class CustomAIServiceSelector : IAIServiceSelector
 {
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService
     {
@@ -268,7 +263,7 @@ It is unrealistic to expect the `IAIServiceSelector` to enumerate all of these i
 Ideally, the `IAIServiceSelector` should be able to easily deduce the supported output types of a service in a single line of code.
 
 ```csharp
-private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
+private sealed class CustomAIServiceSelector : IAIServiceSelector
 {
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService
     {
