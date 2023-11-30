@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for Handlebars functionality.
 /// </summary>
