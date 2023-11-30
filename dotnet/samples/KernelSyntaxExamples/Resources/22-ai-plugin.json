@@ -12,7 +12,7 @@
     },
     "api": {
         "type": "openapi",
-        "url": "file:///./openapi.json"
+        "url": "file:///./22-openapi.json"
     },
     "logo_url": "",
     "contact_email": "",

@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using RepoUtils;
 using Resources;
 
@@ -66,7 +65,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         // Import Open AI Plugin
         var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
-            PluginResourceNames.AzureKeyVault,
+            "AzureKeyVaultPlugin",
             openAIManifest!,
             new OpenAIFunctionExecutionParameters
             {
