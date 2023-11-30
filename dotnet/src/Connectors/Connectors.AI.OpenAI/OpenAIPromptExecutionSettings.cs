@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
-[JsonConverter(typeof(OpenAIPromptExecutionSettingsConverter))]
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>

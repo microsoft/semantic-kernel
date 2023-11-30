@@ -55,7 +55,7 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
-    public void ItShould()
+    public void ItShouldSupportCreatingOpenAIExecutionSettings()
     {
         // Arrange
         var deserializer = new DeserializerBuilder()
@@ -69,8 +69,9 @@ public class KernelFunctionYamlTests
 
         // Assert
         Assert.NotNull(executionSettings);
-        Assert.Equal("SayHello", executionSettings.ModelId);
+        Assert.Equal("gpt-4", executionSettings.ModelId);
         Assert.Equal(1.0, executionSettings.Temperature);
+        Assert.Equal(0.0, executionSettings.TopP);
     }
 
     private readonly string _yamlNoExecutionSettings = @"
