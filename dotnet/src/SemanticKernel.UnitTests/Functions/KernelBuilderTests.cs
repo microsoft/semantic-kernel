@@ -45,11 +45,11 @@ public class KernelBuilderTests
     {
         CultureInfo last = new("fr-FR");
 
-        KernelBuilder builder = new KernelBuilder().WithCulture(CultureInfo.InvariantCulture);
-        Assert.Same(CultureInfo.InvariantCulture, builder.Build().Culture);
+        KernelBuilder builder = new KernelBuilder().WithCulture(CultureInfo.CurrentCulture);
+        Assert.Same(CultureInfo.CurrentCulture, builder.Build().Culture);
 
         builder.WithCulture(null);
-        Assert.Same(CultureInfo.CurrentCulture, builder.Build().Culture);
+        Assert.Same(CultureInfo.InvariantCulture, builder.Build().Culture);
 
         builder.WithCulture(last);
         Assert.Same(last, builder.Build().Culture);
