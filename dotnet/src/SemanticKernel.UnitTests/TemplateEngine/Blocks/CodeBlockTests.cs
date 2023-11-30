@@ -120,7 +120,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
         // Arrange
-        var arguments = new Dictionary<string, string> { ["varName"] = "foo" };
+        var arguments = new KernelArguments { ["varName"] = "foo" };
 
         // Act
         var codeBlock = new CodeBlock("$varName");
@@ -134,7 +134,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
     {
         // Arrange
-        var arguments = new Dictionary<string, string> { ["varName"] = "bar" };
+        var arguments = new KernelArguments { ["varName"] = "bar" };
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -179,7 +179,7 @@ public class CodeBlockTests
         const string Var = "varName";
         const string VarValue = "varValue";
 
-        var arguments = new Dictionary<string, string> { [Var] = VarValue };
+        var arguments = new KernelArguments { [Var] = VarValue };
         var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
@@ -238,7 +238,7 @@ public class CodeBlockTests
         const string FooValue = "bar";
         const string BobValue = "bob's value";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
         arguments["input"] = Value;
 

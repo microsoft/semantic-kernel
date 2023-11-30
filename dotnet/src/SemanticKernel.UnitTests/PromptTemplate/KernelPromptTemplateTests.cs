@@ -18,7 +18,7 @@ public sealed class KernelPromptTemplateTests
 {
     private const string DateFormat = "M/d/yyyy";
     private readonly KernelPromptTemplateFactory _factory;
-    private readonly IDictionary<string, string> _arguments;
+    private readonly KernelArguments _arguments;
     private readonly ITestOutputHelper _logger;
     private readonly Kernel _kernel;
 
@@ -26,7 +26,7 @@ public sealed class KernelPromptTemplateTests
     {
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._arguments = new Dictionary<string, string>();
+        this._arguments = new KernelArguments();
         this._arguments["input"] = Guid.NewGuid().ToString("X");
         this._kernel = new Kernel();
     }

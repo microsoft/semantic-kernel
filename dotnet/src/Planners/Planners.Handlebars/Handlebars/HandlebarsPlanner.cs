@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -34,7 +35,7 @@ public sealed class HandlebarsPlanner
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created plan.</returns>
@@ -45,8 +46,13 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        // TODO (@teresaqhoang): Add instrumentation without depending on planners.core
-        return this.CreatePlanCoreAsync(kernel, goal, cancellationToken);
+        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
+                => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
+            static (HandlebarsPlan plan) => plan.ToString(),
+            this, kernel, goal, logger, cancellationToken);
     }
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)

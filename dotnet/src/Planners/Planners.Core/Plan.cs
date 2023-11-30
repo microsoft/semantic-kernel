@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -216,7 +215,7 @@ public sealed class Plan
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
@@ -295,7 +294,7 @@ public sealed class Plan
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="input">Plan input</param>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
@@ -310,7 +309,7 @@ public sealed class Plan
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
@@ -397,7 +396,7 @@ public sealed class Plan
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>

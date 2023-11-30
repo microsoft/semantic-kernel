@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -54,7 +53,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
     }
 
     /// <inheritdoc/>
-    public string Render(IDictionary<string, string>? arguments)
+    public string Render(KernelArguments? arguments)
     {
         return this.Content;
     }
