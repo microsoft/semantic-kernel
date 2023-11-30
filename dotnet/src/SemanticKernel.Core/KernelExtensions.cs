@@ -380,18 +380,21 @@ public static class KernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="arguments">The operation arguments</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>Function execution result</returns>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        KernelArguments? arguments = null)
+        KernelArguments? arguments = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            arguments?.ExecutionSettings);
+            arguments?.ExecutionSettings,
+            promptTemplateFactory: promptTemplateFactory);
 
         return kernel.InvokeAsync(function, arguments);
     }
@@ -404,12 +407,14 @@ public static class KernelExtensions
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="arguments">The operation arguments</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Function execution result</returns>
     public static IAsyncEnumerable<StreamingContent> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -417,7 +422,8 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            arguments?.ExecutionSettings);
+            arguments?.ExecutionSettings,
+            promptTemplateFactory: promptTemplateFactory);
 
         return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
     }
