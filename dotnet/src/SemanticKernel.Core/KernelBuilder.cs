@@ -55,10 +55,10 @@ public sealed class KernelBuilder
             // that such functionality will work when KernelBuilder is used to build the kernel but not when the IServiceProvider
             // is created via other means, such as if Kernel is directly created by DI. However, it allows us to create the APIs
             // the way we want them for the longer term and then subsequently fix the implementation when M.E.DI is fixed.
-            Dictionary<Type, List<object?>> typeToKeyMappings = new();
+            Dictionary<Type, HashSet<object?>> typeToKeyMappings = new();
             foreach (ServiceDescriptor serviceDescriptor in services)
             {
-                if (!typeToKeyMappings.TryGetValue(serviceDescriptor.ServiceType, out List<object?>? keys))
+                if (!typeToKeyMappings.TryGetValue(serviceDescriptor.ServiceType, out HashSet<object?>? keys))
                 {
                     typeToKeyMappings[serviceDescriptor.ServiceType] = keys = new();
                 }
