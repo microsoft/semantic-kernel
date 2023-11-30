@@ -24,7 +24,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string>? arguments = null, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
@@ -34,7 +34,8 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = function.InvokeAsync(kernel, new(arguments)).GetAwaiter().GetResult();
+                    KernelArguments? functionArguments = arguments is not null ? new KernelArguments(arguments) : null;
+                    var result = function.InvokeAsync(kernel, functionArguments).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.ToString());
                 });
             }
@@ -52,15 +53,21 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
-    private Dictionary<string, string> GetVariables(IDictionary<string, string> arguments)
+    private Dictionary<string, string> GetVariables(IDictionary<string, string>? arguments)
     {
         Dictionary<string, string> result = new();
+
         foreach (var p in this._promptModel.InputParameters)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
             {
                 result[p.Name] = p.DefaultValue;
             }
+        }
+
+        if (arguments == null)
+        {
+            return result;
         }
 
         foreach (var kvp in arguments)

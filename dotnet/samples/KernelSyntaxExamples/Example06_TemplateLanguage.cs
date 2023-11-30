@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -53,7 +52,7 @@ Is it weekend time (weekend/not weekend)?
         Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
-        var renderedPrompt = await promptTemplate.RenderAsync(kernel, new Dictionary<string, string>());
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel);
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
