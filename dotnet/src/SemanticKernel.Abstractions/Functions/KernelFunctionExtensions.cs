@@ -22,7 +22,7 @@ public static class KernelFunctionExtensions
     public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
         this KernelFunction function,
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);

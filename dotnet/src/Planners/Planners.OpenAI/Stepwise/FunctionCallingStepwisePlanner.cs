@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -119,7 +118,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
 
             // Look up function in kernel
-            if (this._kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelFunctionArguments? arguments))
+            if (this._kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelArguments? arguments))
             {
                 try
                 {
@@ -175,7 +174,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var chatHistory = this._chatCompletion.CreateNewChat();
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
         arguments[AvailableFunctionsKey] = functionsManual;
         string systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(this._kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -194,7 +193,7 @@ public sealed class FunctionCallingStepwisePlanner
         var chatHistory = this._chatCompletion.CreateNewChat();
 
         // Add system message with context about the initial goal/plan
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments[GoalKey] = goal;
         arguments[InitialPlanKey] = initialPlan;
         var systemMessage = await this._promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(this._kernel, arguments, cancellationToken).ConfigureAwait(false);

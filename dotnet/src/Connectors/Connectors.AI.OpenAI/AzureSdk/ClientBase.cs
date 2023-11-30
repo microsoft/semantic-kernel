@@ -278,7 +278,7 @@ public abstract class ClientBase
             }
 
             if (functionCallResponse is null ||
-                !kernel!.Plugins.TryGetFunctionAndArguments(functionCallResponse, out KernelFunction? function, out KernelFunctionArguments? functionArgs))
+                !kernel!.Plugins.TryGetFunctionAndArguments(functionCallResponse, out KernelFunction? function, out KernelArguments? functionArgs))
             {
                 return new[] { result };
             }
@@ -411,7 +411,7 @@ public abstract class ClientBase
             }
 
             if (functionCallResponse is null ||
-                !kernel!.Plugins.TryGetFunctionAndArguments(functionCallResponse, out KernelFunction? function, out KernelFunctionArguments? functionArgs))
+                !kernel!.Plugins.TryGetFunctionAndArguments(functionCallResponse, out KernelFunction? function, out KernelArguments? functionArgs))
             {
                 yield break;
             }

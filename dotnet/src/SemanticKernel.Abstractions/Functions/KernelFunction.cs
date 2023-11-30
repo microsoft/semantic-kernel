@@ -95,7 +95,7 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
-        KernelFunctionArguments? arguments = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -109,7 +109,7 @@ public abstract class KernelFunction
         }
 
         //Cloning the arguments to prevent mutation of the original ones
-        arguments ??= new KernelFunctionArguments();
+        arguments ??= new KernelArguments();
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -176,7 +176,7 @@ public abstract class KernelFunction
     /// <returns>A asynchronous list of streaming content chunks</returns>
     public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
-        KernelFunctionArguments? arguments = null,
+        KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -184,7 +184,7 @@ public abstract class KernelFunction
 
         logger.LogInformation("Function streaming invoking.");
 
-        arguments ??= new KernelFunctionArguments();
+        arguments ??= new KernelArguments();
 
         // Invoke pre hook, and stop if skipping requested.
         var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
@@ -212,7 +212,7 @@ public abstract class KernelFunction
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -224,17 +224,17 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken);
 
     #region private
-    private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, KernelFunctionArguments arguments, FunctionResult result)
+    private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, KernelArguments arguments, FunctionResult result)
     {
         var eventArgs = kernel.OnFunctionInvoked(this, arguments, result);
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, result.Value, result.Culture)
+            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata

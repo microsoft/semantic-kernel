@@ -147,7 +147,7 @@ public sealed class KernelFunctionTests2
             return "abc";
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["someVar"] = s_expected;
 
         // Act
@@ -175,7 +175,7 @@ public sealed class KernelFunctionTests2
             return "abc";
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["someVar"] = s_expected;
 
         // Act
@@ -205,7 +205,7 @@ public sealed class KernelFunctionTests2
             s_actual = canary;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["canary"] = s_expected;
 
         // Act
@@ -234,7 +234,7 @@ public sealed class KernelFunctionTests2
             s_actual = s_expected + input;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = ".blah";
 
         // Act
@@ -263,7 +263,7 @@ public sealed class KernelFunctionTests2
             return input;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "foo-bar";
 
         // Act
@@ -291,7 +291,7 @@ public sealed class KernelFunctionTests2
             return Task.FromResult("hello there");
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = string.Empty;
 
         // Act
@@ -319,7 +319,7 @@ public sealed class KernelFunctionTests2
             actualKernel = kernel;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
 
         // Act
         Action<Kernel> method = Test;
@@ -345,7 +345,7 @@ public sealed class KernelFunctionTests2
             return "new data";
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = s_expected;
 
         // Act
@@ -370,7 +370,7 @@ public sealed class KernelFunctionTests2
             return Task.FromResult("new data");
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = s_expected;
 
         // Act
@@ -397,7 +397,7 @@ public sealed class KernelFunctionTests2
             return new ValueTask();
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "test";
 
         // Act
@@ -422,7 +422,7 @@ public sealed class KernelFunctionTests2
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = string.Empty;
 
         // Act
@@ -447,7 +447,7 @@ public sealed class KernelFunctionTests2
             return default;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = string.Empty;
 
         // Act
@@ -474,7 +474,7 @@ public sealed class KernelFunctionTests2
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -500,7 +500,7 @@ public sealed class KernelFunctionTests2
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "x y z";
 
         // Act
@@ -525,7 +525,7 @@ public sealed class KernelFunctionTests2
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
@@ -544,7 +544,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(string input) => "Result: " + input;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "input value";
 
         // Act
@@ -563,7 +563,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(string other) => "Result: " + other;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "input value";
 
         // Act
@@ -582,7 +582,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(int something, long orother) => "Result: " + (something + orother);
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "42";
         arguments["orother"] = "8";
 
@@ -602,7 +602,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(string other) => "Result: " + other;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "input value";
         arguments["other"] = "other value";
 
@@ -622,7 +622,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test([KernelName("input"), Description("description")] string other) => "Result: " + other;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "input value";
         arguments["other"] = "other value";
 
@@ -642,7 +642,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(string? input = null, string? other = null) => "Result: " + (other is null);
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "input value";
 
         // Act
@@ -723,7 +723,7 @@ public sealed class KernelFunctionTests2
         static string Test(int a, long b, decimal c, Guid d, DateTimeOffset e, DayOfWeek? f) =>
             $"{a} {b} {c} {d} {e:R} {f}";
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["a"] = "1";
         arguments["b"] = "-2";
         arguments["c"] = "1234";
@@ -747,7 +747,7 @@ public sealed class KernelFunctionTests2
     {
         static int Test(MyCustomType mct) => mct.Value * 2;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["mct"] = "42";
 
         // Act
@@ -781,7 +781,7 @@ public sealed class KernelFunctionTests2
     public async Task ItSupportsConvertingFromToManyTypesAsync()
     {
         // Arrange
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["input"] = "1";
 
         async Task AssertResult(Delegate d, object? expected, string? expectedString)
@@ -819,7 +819,7 @@ public sealed class KernelFunctionTests2
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
         // Arrange
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         KernelFunction func = KernelFunctionFactory.CreateFromMethod((double input) => input * 2, functionName: "Test");
         FunctionResult result;
 
@@ -853,7 +853,7 @@ public sealed class KernelFunctionTests2
     {
         static string Test(Guid g) => g.ToString();
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["g"] = "7e08cc00-1d71-4558-81ed-69929499dxyz";
 
         // Act
@@ -915,10 +915,10 @@ public sealed class KernelFunctionTests2
         var function4 = KernelFunctionFactory.CreateFromMethod(Method(TestBool));
 
         // Act
-        FunctionResult result1 = await function1.InvokeAsync(this._kernel, new KernelFunctionArguments { { "input", "42" } });
-        FunctionResult result2 = await function2.InvokeAsync(this._kernel, new KernelFunctionArguments { { "input", "3.14" } });
-        FunctionResult result3 = await function3.InvokeAsync(this._kernel, new KernelFunctionArguments { { "input", "test-string" } });
-        FunctionResult result4 = await function4.InvokeAsync(this._kernel, new KernelFunctionArguments { { "input", "true" } });
+        FunctionResult result1 = await function1.InvokeAsync(this._kernel, new KernelArguments { { "input", "42" } });
+        FunctionResult result2 = await function2.InvokeAsync(this._kernel, new KernelArguments { { "input", "3.14" } });
+        FunctionResult result3 = await function3.InvokeAsync(this._kernel, new KernelArguments { { "input", "test-string" } });
+        FunctionResult result4 = await function4.InvokeAsync(this._kernel, new KernelArguments { { "input", "true" } });
 
         // Assert
         Assert.Equal(42, result1.GetValue<int>());
@@ -940,7 +940,7 @@ public sealed class KernelFunctionTests2
         // Arrange
         static MyCustomType TestCustomType(MyCustomType instance) => instance;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["instance"] = "42";
 
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestCustomType));
@@ -976,7 +976,7 @@ public sealed class KernelFunctionTests2
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsyncEnumerableTypeAsync));
 
         // Act
-        FunctionResult result = await function.InvokeAsync(this._kernel, new KernelFunctionArguments());
+        FunctionResult result = await function.InvokeAsync(this._kernel, new KernelArguments());
 
         // Assert
         Assert.NotNull(result);
@@ -999,7 +999,7 @@ public sealed class KernelFunctionTests2
     public async Task ItPropagatesOriginalExceptionTypeAsync()
     {
         // Arrange
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         Exception expected = new FormatException("expected");
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(() => { throw expected; });
 

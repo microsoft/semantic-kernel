@@ -58,7 +58,7 @@ public sealed class ComplexParamsDictionaryPlugin
 /// </summary>
 /// <remarks>
 /// <see cref="TypeConverter"/> is used to represent complex object as meaningful string, so
-/// it can be passed to AI for further processing using semantic functions.
+/// it can be passed to AI for further processing using prompt functions.
 /// It's possible to choose any format (e.g. XML, JSON, YAML) to represent your object.
 /// </remarks>
 [TypeConverter(typeof(DictionaryEntryConverter))]

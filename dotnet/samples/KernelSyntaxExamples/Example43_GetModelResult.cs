@@ -34,9 +34,9 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync(kernel, new KernelFunctionArguments(new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 })
+        var functionResult = await myFunction.InvokeAsync(kernel, new KernelArguments(new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 })
         {
-            [KernelFunctionArguments.InputParameterName] = "Sci-fi"
+            [KernelArguments.InputParameterName] = "Sci-fi"
         });
 
         Console.WriteLine(functionResult.GetValue<string>());

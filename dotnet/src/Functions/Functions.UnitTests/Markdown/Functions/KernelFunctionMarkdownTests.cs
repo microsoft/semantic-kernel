@@ -9,7 +9,7 @@ namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 public class KernelFunctionMarkdownTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionConfigFromMarkdown()
+    public void ItShouldCreatePromptFunctionConfigFromMarkdown()
     {
         // Arrange
         // Act
@@ -25,7 +25,7 @@ public class KernelFunctionMarkdownTests
     }
 
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromMarkdown()
+    public void ItShouldCreatePromptFunctionFromMarkdown()
     {
         // Arrange
         var kernel = new Kernel();

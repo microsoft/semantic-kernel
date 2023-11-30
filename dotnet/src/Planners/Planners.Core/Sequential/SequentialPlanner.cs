@@ -23,7 +23,7 @@ public sealed class SequentialPlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
         Kernel kernel,

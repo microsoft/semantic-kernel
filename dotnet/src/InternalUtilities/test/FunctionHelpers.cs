@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.UnitTests;
 
-/// <summary>Test helpers for working with native functions.</summary>
+/// <summary>Test helpers for working with method functions.</summary>
 internal static class FunctionHelpers
 {
     /// <summary>
@@ -20,7 +20,7 @@ internal static class FunctionHelpers
 
         IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        KernelFunctionArguments arguments = new();
+        KernelArguments arguments = new();
 
         foreach ((string Name, object Value) pair in variables)
         {
