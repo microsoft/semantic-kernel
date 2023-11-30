@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
