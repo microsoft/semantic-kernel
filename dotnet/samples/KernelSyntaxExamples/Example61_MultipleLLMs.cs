@@ -79,7 +79,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           executionSettings: new PromptExecutionSettings()
+           new PromptExecutionSettings()
            {
                ModelId = modelId
            });
