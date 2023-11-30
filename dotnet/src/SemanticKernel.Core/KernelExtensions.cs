@@ -20,7 +20,7 @@ public static class KernelExtensions
 {
     #region CreateFunctionFromMethod
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -43,7 +43,7 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

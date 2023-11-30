@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 public static class KernelFunctionMarkdown
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown resource.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown resource.
     /// </summary>
     /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="functionName">The name of the function.</param>
@@ -46,7 +46,7 @@ public static class KernelFunctionMarkdown
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
     /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="functionName">The name of the function.</param>
