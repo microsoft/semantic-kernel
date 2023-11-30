@@ -14,6 +14,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class HandlebarsKernelExtensions
 {
+    private static readonly HandlebarsPromptTemplateFactory s_promptTemplateFactory = new();
+
     /// <summary>
     /// Invoke a prompt function using the provided Handlebars prompt template.
     /// </summary>
@@ -28,5 +30,5 @@ public static class HandlebarsKernelExtensions
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             executionSettings,
-            promptTemplateFactory: new HandlebarsPromptTemplateFactory()));
+            promptTemplateFactory: s_promptTemplateFactory));
 }
