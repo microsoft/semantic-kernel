@@ -2,8 +2,6 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -63,18 +61,19 @@ internal sealed class VarBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(KernelArguments? arguments)
     {
-        if (variables == null) { return string.Empty; }
+        if (arguments == null) { return string.Empty; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
             const string ErrMsg = "Variable rendering failed, the variable name is empty";
             this.Logger.LogError(ErrMsg);
-            throw new SKException(ErrMsg);
+            throw new KernelException(ErrMsg);
         }
 
-        if (variables.TryGetValue(this.Name, out string? value))
+        if (arguments.TryGetValue(this.Name, out string? value))
         {
             return value;
         }

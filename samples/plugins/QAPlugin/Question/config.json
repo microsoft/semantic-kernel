@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Answer any question",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 100,
       "temperature": 0.0,

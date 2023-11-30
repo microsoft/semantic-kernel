@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Stepwise.UnitTests;
+namespace Microsoft.SemanticKernel.Planning.Stepwise.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class StepwisePlannerTests
@@ -14,8 +13,8 @@ public sealed class StepwisePlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
+
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new StepwisePlannerConfig()
         {
@@ -23,7 +22,7 @@ public sealed class StepwisePlannerTests
         };
 
         // Act
-        var planner = new StepwisePlanner(kernel.Object, config);
+        var planner = new StepwisePlanner(kernel, config);
 
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());

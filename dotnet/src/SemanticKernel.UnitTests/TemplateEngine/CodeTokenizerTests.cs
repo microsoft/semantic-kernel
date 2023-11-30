@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -121,8 +120,8 @@ public class CodeTokenizerTests
     {
         // Arrange
         var template1 = "x.y first=$foo second='bar'";
-        var parameters = new ContextVariables();
-        parameters.Set("foo", "fooValue");
+        var arguments = new KernelArguments();
+        arguments["foo"] = "fooValue";
 
         // Act
         var blocks1 = this._target.Tokenize(template1);
@@ -140,12 +139,12 @@ public class CodeTokenizerTests
         Assert.Equal("first=$foo", secondBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, secondBlock?.Type);
         Assert.Equal("first", secondBlock?.Name);
-        Assert.Equal("fooValue", secondBlock?.GetValue(parameters));
+        Assert.Equal("fooValue", secondBlock?.GetValue(arguments));
 
         Assert.Equal("second='bar'", thirdBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, thirdBlock?.Type);
         Assert.Equal("second", thirdBlock?.Name);
-        Assert.Equal("bar", thirdBlock?.GetValue(parameters));
+        Assert.Equal("bar", thirdBlock?.GetValue(arguments));
     }
 
     [Fact]
@@ -207,7 +206,7 @@ public class CodeTokenizerTests
     public void ItThrowsWhenSeparatorsAreMissing(string template)
     {
         // Act & Assert
-        Assert.Throws<SKException>(() => this._target.Tokenize(template));
+        Assert.Throws<KernelException>(() => this._target.Tokenize(template));
     }
 
     [Theory]
@@ -216,7 +215,7 @@ public class CodeTokenizerTests
     public void ItThrowsWhenArgValueIsMissing(string template, string expectedErrorMessage)
     {
         // Act & Assert
-        var exception = Assert.Throws<SKException>(() => this._target.Tokenize(template));
+        var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal(expectedErrorMessage, exception.Message);
     }
 }

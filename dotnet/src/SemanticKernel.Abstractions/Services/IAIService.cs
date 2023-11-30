@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Represents an empty interface for AI services.
+/// Represents an AI service.
 /// </summary>
 public interface IAIService
 {

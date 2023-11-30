@@ -44,7 +44,7 @@ public static class PineconeUtils
     /// </summary>
     public const PodType DefaultPodType = PodType.P1X1;
 
-    internal static JsonSerializerOptions DefaultSerializerOptions => new()
+    internal static JsonSerializerOptions DefaultSerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
@@ -54,11 +54,7 @@ public static class PineconeUtils
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonNode,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        Converters =
-        {
-            new PodTypeJsonConverter(),
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-        }
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
     /// <summary>

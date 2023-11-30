@@ -42,7 +42,7 @@ var prompt = @"{{$input}}
 
 One line TLDR with the fewest words.";
 
-var summarize = kernel.CreateSemanticFunction(prompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 100 });
+var summarize = kernel.CreateSemanticFunction(prompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
 
 string text1 = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -81,8 +81,8 @@ string summarizePrompt = @"{{$input}}
 
 Give me a TLDR with the fewest words.";
 
-var translator = kernel.CreateSemanticFunction(translationPrompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 200 });
-var summarize = kernel.CreateSemanticFunction(summarizePrompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 100 });
+var translator = kernel.CreateSemanticFunction(translationPrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 200 });
+var summarize = kernel.CreateSemanticFunction(summarizePrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
 
 string inputText = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.

@@ -4,8 +4,10 @@ from logging import Logger
 from typing import List, Optional, Union
 
 import google.generativeai as palm
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
@@ -14,25 +16,21 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 
 
-class GooglePalmTextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
+class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+    api_key: constr(strip_whitespace=True, min_length=1)
 
-    def __init__(self, model_id: str, api_key: str) -> None:
+    def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
         Arguments:
             model_id {str} -- GooglePalm model name, see
-            https://developers.generativeai.google/models/language
+                https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
-            https://developers.generativeai.google/products/palm
+                https://developers.generativeai.google/products/palm
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        if not api_key:
-            raise ValueError("The Google PaLM API key cannot be `None` or empty`")
-
-        self._model_id = model_id
-        self._api_key = api_key
+        super().__init__(model_id=model_id, api_key=api_key, log=log)
 
     async def complete_async(
         self,
@@ -44,8 +42,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
         if request_settings.number_of_responses > 1:
             return [candidate["output"] for candidate in response.candidates]
-        else:
-            return response.result
+        return response.result
 
     async def complete_stream_async(
         self,
@@ -82,7 +79,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 f"but was {request_settings.max_tokens}",
             )
         try:
-            palm.configure(api_key=self._api_key)
+            palm.configure(api_key=self.api_key)
         except Exception as ex:
             raise PermissionError(
                 "Google PaLM service failed to configure. Invalid API key provided.",
@@ -90,7 +87,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             )
         try:
             response = palm.generate_text(
-                model=self._model_id,
+                model=self.model_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 max_output_tokens=request_settings.max_tokens,

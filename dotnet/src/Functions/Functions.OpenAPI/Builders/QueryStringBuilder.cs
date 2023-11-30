@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -38,7 +37,7 @@ internal static class QueryStringBuilder
                 //Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
                 {
-                    throw new SKException($"No argument found for the `{parameter.Name}` required parameter");
+                    throw new KernelException($"No argument found for the `{parameter.Name}` required parameter");
                 }
 
                 //Skipping not required parameter if no argument provided for it.
@@ -49,7 +48,7 @@ internal static class QueryStringBuilder
 
             if (!s_queryStringParameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new SKException($"The query string parameter `{parameterStyle}` serialization style is not supported.");
+                throw new KernelException($"The query string parameter `{parameterStyle}` serialization style is not supported.");
             }
 
             //Serializing the parameter and adding it to the query string if there's an argument for it.

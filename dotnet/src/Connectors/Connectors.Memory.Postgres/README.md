@@ -41,7 +41,7 @@ NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
 PostgresMemoryStore memoryStore = new PostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public" */);
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(ConsoleLogger.Logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
