@@ -42,7 +42,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 NoEscape = true
             });
 
-        var state = new Dictionary<string, string>();
+        var state = new KernelArguments();
 
         // Add helpers for each function
         foreach (KernelFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
@@ -59,7 +59,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
     private static void RegisterFunctionAsHelper(
         Kernel kernel,
-        IDictionary<string, string> state,
+        KernelArguments state,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
         Dictionary<string, object?> arguments,
@@ -413,7 +413,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// </summary>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="state">The execution state.</param>
-    private static void InitializeState(Dictionary<string, object?> variables, IDictionary<string, string> state)
+    private static void InitializeState(Dictionary<string, object?> variables, KernelArguments state)
     {
         foreach (var v in variables)
         {
@@ -436,7 +436,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static object? InvokeSKFunction(
         Kernel kernel,
         KernelFunction function,
-        IDictionary<string, string> state,
+        KernelArguments state,
         CancellationToken cancellationToken = default)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
