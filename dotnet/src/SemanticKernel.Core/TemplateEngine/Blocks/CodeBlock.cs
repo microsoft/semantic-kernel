@@ -70,7 +70,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(Kernel kernel, IDictionary<string, string>? arguments = null, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -92,19 +92,17 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, IDictionary<string, string>? arguments)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
     {
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            arguments = this.EnrichFunctionArguments(arguments ?? new Dictionary<string, string>());
+            arguments = this.EnrichFunctionArguments(arguments ?? new KernelArguments());
         }
         try
         {
-            KernelArguments? kernelArguments = arguments is not null ? new KernelArguments(arguments) : null;
-
-            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, kernelArguments).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments).ConfigureAwait(false);
 
             return result.ToString();
         }
@@ -145,7 +143,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
-    private IDictionary<string, string> EnrichFunctionArguments(IDictionary<string, string> arguments)
+    private KernelArguments EnrichFunctionArguments(KernelArguments arguments)
     {
         // Clone the context to avoid unexpected and hard to test input mutation
         var firstArg = this._tokens[1];

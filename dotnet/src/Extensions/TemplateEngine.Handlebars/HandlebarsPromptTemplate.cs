@@ -24,7 +24,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string>? arguments = null, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
@@ -34,8 +34,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    KernelArguments? functionArguments = arguments is not null ? new KernelArguments(arguments) : null;
-                    var result = function.InvokeAsync(kernel, functionArguments).GetAwaiter().GetResult();
+                    var result = function.InvokeAsync(kernel, arguments).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.ToString());
                 });
             }
@@ -53,7 +52,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
-    private Dictionary<string, string> GetVariables(IDictionary<string, string>? arguments)
+    private Dictionary<string, string> GetVariables(KernelArguments? arguments)
     {
         Dictionary<string, string> result = new();
 

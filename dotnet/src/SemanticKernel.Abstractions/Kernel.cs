@@ -189,7 +189,6 @@ public sealed class Kernel
             service = this.Services.GetService<T>();
             if (service is null && this.Services is IKeyedServiceProvider)
             {
-                // Get the last to approximate the same behavior as GetKeyedService when there are multiple identical keys.
                 service = this.GetAllServices<T>().LastOrDefault();
             }
 
@@ -226,6 +225,7 @@ public sealed class Kernel
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
     /// <returns>An enumerable of all instances of the specified service that are registered.</returns>
+    /// <remarks>There is no guaranteed ordering on the results.</remarks>
     public IEnumerable<T> GetAllServices<T>() where T : class
     {
         if (this.Services is IKeyedServiceProvider)
@@ -234,12 +234,22 @@ public sealed class Kernel
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (this.Services.GetKeyedService<Dictionary<Type, List<object?>>>(KernelServiceTypeToKeyMappingsKey) is { } typeToKeyMappings &&
-                typeToKeyMappings.TryGetValue(typeof(T), out List<object?> keys))
+            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappingsKey) is { } typeToKeyMappings)
             {
-                return keys.Select(key => this.Services.GetKeyedService<T>(key)).Where(s => s is not null)!;
-            }
+                if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?> keys))
+                {
+                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key)).Where(s => s is not null)!;
+                }
 
+                return Enumerable.Empty<T>();
+            }
+        }
+
+        if (this.Services is EmptyServiceProvider)
+        {
+            // If the Kernel is created without a service provider, it uses a simple empty implementation.
+            // But the GetServices extension relies on the service provider special-casing enumerables.
+            // Since the empty provider doesn't do that, we need to special-case it here.
             return Enumerable.Empty<T>();
         }
 

@@ -66,7 +66,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             log=log or logger,
-            model_type=OpenAIModelTypes.EMBEDDING,
+            ai_model_type=OpenAIModelTypes.EMBEDDING,
         )
 
     @classmethod

@@ -67,7 +67,7 @@ public sealed class OpenAIImageGeneration : IImageGeneration
     public IReadOnlyDictionary<string, string> Attributes => this._core.InternalAttributes;
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))

@@ -57,17 +57,13 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this._core.Attributes;
 
-    /// <summary>
-    /// Generates an embedding from the given <paramref name="data"/>.
-    /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>List of embeddings</returns>
+    /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this._core.LogActionDetails();
-        return this._core.GetEmbeddingsAsync(data, cancellationToken);
+        return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 }

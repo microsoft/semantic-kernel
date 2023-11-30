@@ -3,11 +3,10 @@
 from logging import Logger
 from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
 
-import pydantic as pdt
+from pydantic import ConfigDict, Field, PrivateAttr
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import constants
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
@@ -19,13 +18,11 @@ if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 
-class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
+class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
     GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
-    data: Dict[str, Dict[str, SKFunction]] = pdt.Field(default_factory=dict)
-    _log: Logger = pdt.PrivateAttr()
-
-    class Config:
-        allow_mutation = False
+    data: Dict[str, Dict[str, SKFunction]] = Field(default_factory=dict)
+    _log: Logger = PrivateAttr(default_factory=NullLogger)
+    model_config = ConfigDict(frozen=False)
 
     def __init__(
         self,
