@@ -333,7 +333,7 @@ public class FunctionFromPromptTests
         var kernel = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
-        var variables = new KernelFunctionArguments { { "input", "importance" } };
+        var variables = new KernelArguments { { "input", "importance" } };
 
         var chunkCount = 0;
         // Act

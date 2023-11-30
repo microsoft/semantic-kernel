@@ -63,7 +63,7 @@ public static class Example64_MultiplePromptTemplates
             promptTemplateFactory: promptTemplateFactory
         );
 
-        var arguments = new KernelFunctionArguments()
+        var arguments = new KernelArguments()
         {
             { "name", "Bob" }
         };

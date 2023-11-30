@@ -191,7 +191,7 @@ public static class KernelGrpcExtensions
     {
         var operationParameters = operation.GetParameters();
 
-        async Task<JsonObject> ExecuteAsync(KernelFunctionArguments arguments, CancellationToken cancellationToken)
+        async Task<JsonObject> ExecuteAsync(KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
             {

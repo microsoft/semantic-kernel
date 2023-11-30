@@ -29,10 +29,10 @@ public static class KernelFunctionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        KernelFunctionArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
         if (!string.IsNullOrEmpty(input))
         {
-            (arguments ??= new()).Add(KernelFunctionArguments.InputParameterName, input);
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
         }
 
         return function.InvokeAsync(kernel, arguments, cancellationToken);
@@ -53,10 +53,10 @@ public static class KernelFunctionExtensions
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        KernelFunctionArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
         if (!string.IsNullOrEmpty(input))
         {
-            (arguments ??= new()).Add(KernelFunctionArguments.InputParameterName, input);
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
         }
 
         return function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);

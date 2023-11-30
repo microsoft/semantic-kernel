@@ -6,12 +6,12 @@ using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
-public class KernelFunctionArgumentsTests
+public class KernelArgumentsTests
 {
     [Fact]
     public void ItCanBeCreatedWithNoArguments()
     {
-        KernelFunctionArguments sut = new() { };
+        KernelArguments sut = new() { };
 
         Assert.Null(sut.ExecutionSettings);
         Assert.Empty(sut);
@@ -24,7 +24,7 @@ public class KernelFunctionArgumentsTests
         var executionSettings = new PromptExecutionSettings();
 
         // Act
-        KernelFunctionArguments sut = new(executionSettings) { };
+        KernelArguments sut = new(executionSettings) { };
 
         // Assert
         Assert.Equal(executionSettings, sut.ExecutionSettings);
@@ -35,7 +35,7 @@ public class KernelFunctionArgumentsTests
     public void ItCanBeCreatedWithArgumentsOnly()
     {
         // Arrange & Act
-        KernelFunctionArguments sut = new() { { "fake-key", "fake-value" } };
+        KernelArguments sut = new() { { "fake-key", "fake-value" } };
 
         // Assert
         Assert.Null(sut.ExecutionSettings);
@@ -52,7 +52,7 @@ public class KernelFunctionArgumentsTests
         var executionSettings = new PromptExecutionSettings();
 
         // Act
-        KernelFunctionArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
+        KernelArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
 
         // Assert
         Assert.Equal(executionSettings, sut.ExecutionSettings);
@@ -67,7 +67,7 @@ public class KernelFunctionArgumentsTests
     {
         //Constructor 1
         var executionSettings = new PromptExecutionSettings();
-        KernelFunctionArguments sut = new(executionSettings) { { "FAKE-key", "fake-value" } };
+        KernelArguments sut = new(executionSettings) { { "FAKE-key", "fake-value" } };
         Assert.True(sut.ContainsKey("fake-key"));
 
         //Constructor 2
@@ -76,7 +76,7 @@ public class KernelFunctionArgumentsTests
         Assert.True(sut.ContainsKey("fake-key"));
 
         //Constructor 3
-        KernelFunctionArguments other = new() { { "FAKE-key", "fake-value" } };
+        KernelArguments other = new() { { "FAKE-key", "fake-value" } };
         sut = new(other);
         Assert.True(sut.ContainsKey("fake-key"));
     }
@@ -88,7 +88,7 @@ public class KernelFunctionArgumentsTests
         IDictionary<string, string> source = new Dictionary<string, string> { { "fake-key", "fake-value" } };
 
         // Act
-        KernelFunctionArguments sut = new(source);
+        KernelArguments sut = new(source);
 
         // Assert
         Assert.Single(sut);
@@ -103,10 +103,10 @@ public class KernelFunctionArgumentsTests
     {
         // Arrange
         var executionSettings = new PromptExecutionSettings();
-        var other = new KernelFunctionArguments(executionSettings) { { "Fake-key", "fake-value" } };
+        var other = new KernelArguments(executionSettings) { { "Fake-key", "fake-value" } };
 
         // Act
-        KernelFunctionArguments sut = new(other);
+        KernelArguments sut = new(other);
 
         // Assert
         Assert.Single(sut);
