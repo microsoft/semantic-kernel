@@ -18,19 +18,16 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var arguments = new Dictionary<string, string>();
         var target = new CodeBlock("functionName");
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, arguments));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel));
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var arguments = new Dictionary<string, string>();
-
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
@@ -39,7 +36,7 @@ public class CodeBlockTests
         var target = new CodeBlock("plugin.function");
 
         // Act & Assert
-        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, arguments));
+        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel));
     }
 
     [Fact]
@@ -152,11 +149,10 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var arguments = new Dictionary<string, string>();
+        var codeBlock = new CodeBlock("'ciao'");
 
         // Act
-        var codeBlock = new CodeBlock("'ciao'");
-        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
         Assert.Equal("ciao", result);
@@ -166,12 +162,11 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var arguments = new Dictionary<string, string>();
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { valBlock }, "");
-        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
         Assert.Equal("arrivederci", result);
@@ -213,7 +208,6 @@ public class CodeBlockTests
         // Arrange
         const string Value = "value";
 
-        var arguments = new Dictionary<string, string>();
         var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -229,7 +223,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        string result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
         Assert.Empty(result);
