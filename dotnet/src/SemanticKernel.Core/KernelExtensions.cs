@@ -391,7 +391,7 @@ public static class KernelExtensions
         string? description = null)
     {
         Verify.NotNull(kernel);
-        Verify.NotNull(promptTemplate);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
 
         return kernel.InvokeAsync(KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
@@ -419,7 +419,7 @@ public static class KernelExtensions
         string? description = null)
     {
         Verify.NotNull(kernel);
-        Verify.NotNull(promptTemplate);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
