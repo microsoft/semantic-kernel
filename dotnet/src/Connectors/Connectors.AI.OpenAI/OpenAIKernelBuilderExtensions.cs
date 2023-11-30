@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable IDE0039 // Use local function
 
 namespace Microsoft.SemanticKernel;
 
