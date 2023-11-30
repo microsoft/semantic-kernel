@@ -37,4 +37,7 @@ public sealed class RestApiOperationResponse
         this.ContentType = contentType;
         this.ExpectedSchema = expectedSchema;
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Content?.ToString() ?? string.Empty;
 }

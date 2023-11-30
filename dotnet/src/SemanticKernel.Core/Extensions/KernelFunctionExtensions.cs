@@ -18,7 +18,7 @@ public static class KernelFunctionExtensions
     /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>
     /// <param name="function">Function to execute</param>
-    /// <param name="kernel">Kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="input">Input string for the function</param>
     /// <param name="executionSettings">LLM completion settings (for prompt functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -42,7 +42,7 @@ public static class KernelFunctionExtensions
     /// Invoke the <see cref="KernelFunction"/> in streaming mode.
     /// </summary>
     /// <param name="function">Target function</param>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="input">Input string for the function</param>
     /// <param name="executionSettings">LLM completion settings (for prompt functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

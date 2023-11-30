@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -16,18 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 [JsonConverter(typeof(OpenAIPromptExecutionSettingsConverter))]
 public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
-    /// <summary>
-    /// Value for <see cref="FunctionCall"/> to indicate that the model
-    /// can optionally generate a function call from <see cref="Functions"/>.
-    /// </summary>
-    public const string FunctionCallAuto = "auto";
-
-    /// <summary>
-    /// Value for <see cref="FunctionCall"/> to indicate that no
-    /// function call should be generated.
-    /// </summary>
-    public const string FunctionCallNone = "none";
-
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
@@ -103,16 +91,36 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
-    /// Possible values are <see cref="FunctionCallNone"/>, <see cref="FunctionCallAuto"/>,
-    /// or the name of a specific function that OpenAI should use to respond to the chat
-    /// request. If the latter, this function must exist in <see cref="OpenAIPromptExecutionSettings.Functions"/>.
+    /// Gets or sets the behavior for how function calls are handled.
     /// </summary>
-    public string? FunctionCall { get; set; } = null;
-
-    /// <summary>
-    /// The set of functions to choose from if function calling is enabled by the model.
-    /// </summary>
-    public IList<OpenAIFunction>? Functions { get; set; } = null;
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable all function calling, set the property to null (the default).</item>
+    /// <item>
+    /// To request that the model use a specific function, set the property to an instance returned
+    /// from <see cref="FunctionCallBehavior.RequireFunction"/>.
+    /// </item>
+    /// <item>
+    /// To allow the model to request one of any number of functions, set the property to an
+    /// instance returned from <see cref="FunctionCallBehavior.EnableFunctions"/>, called with
+    /// a list of the functions available.
+    /// </item>
+    /// <item>
+    /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
+    /// set the property to <see cref="FunctionCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// send the information about the functions and not handle the response in any special manner, or
+    /// <see cref="FunctionCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// invoke the function and send the result back to the service.
+    /// </item>
+    /// </list>
+    /// For all options where an instance is provided, auto-invoke behavior may be selected. If the service
+    /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
+    /// resolve that function from the functions available in the <see cref="Kernel"/>, and if found, rather
+    /// than returning the response back to the caller, it will handle the request automatically, invoking
+    /// the function, and sending back the result. The intermediate messages will be retained in the
+    /// <see cref="ChatHistory"/> if an instance was provided.
+    /// </remarks>
+    public FunctionCallBehavior? FunctionCallBehavior { get; set; }
 
     /// <summary>
     /// Default value for chat system property.
