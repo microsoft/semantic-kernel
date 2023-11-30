@@ -9,17 +9,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// OpenAI chat completion client.
-/// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
+public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
 {
+    private readonly OpenAIClientCore _core;
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
@@ -33,10 +33,12 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization);
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
+
+        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
     /// <summary>
@@ -48,13 +50,15 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     public OpenAIChatCompletion(
         string modelId,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
+
+        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.Attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -62,14 +66,14 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsync(chat, executionSettings, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetChatResultsAsync(chat, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
-        return InternalCreateNewChat(instructions);
+        return OpenAIClientCore.CreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
@@ -78,18 +82,23 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsTextAsync(text, executionSettings, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetChatResultsAsTextAsync(text, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(prompt);
-        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, cancellationToken);
+        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, cancellationToken);
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, cancellationToken);
+    }
 }

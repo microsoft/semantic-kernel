@@ -4,7 +4,9 @@ using System.Net;
 using Azure;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.

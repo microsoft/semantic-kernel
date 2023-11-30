@@ -60,6 +60,6 @@ public static class IAIServiceExtensions
     /// <returns></returns>
     public static string? GetAttribute(this IAIService service, string key)
     {
-        return service.Attributes?.TryGetValue(key, out var value) == true ? value as string : null;
+        return service.Attributes?.TryGetValue(key, out string value) == true ? value : null;
     }
 }

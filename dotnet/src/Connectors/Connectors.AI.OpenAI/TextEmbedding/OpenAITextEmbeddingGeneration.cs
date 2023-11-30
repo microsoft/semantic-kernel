@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -16,8 +15,10 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// OpenAI text embedding service.
 /// </summary>
-public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbeddingGeneration
+public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
 {
+    private readonly OpenAIClientCore _core;
+
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
@@ -31,10 +32,11 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
-    ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
+
+        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -46,14 +48,14 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
     public OpenAITextEmbeddingGeneration(
         string modelId,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null
-    ) : base(modelId, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
+        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => this._core.Attributes;
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
@@ -65,7 +67,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetEmbeddingsAsync(data, cancellationToken);
     }
 }

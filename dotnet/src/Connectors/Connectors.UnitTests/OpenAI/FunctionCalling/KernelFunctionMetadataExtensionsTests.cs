@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
