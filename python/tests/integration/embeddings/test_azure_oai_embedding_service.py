@@ -49,7 +49,7 @@ async def test_batch_azure_embeddings(get_aoai_config):
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
 
     else:
-        deployment_name = "ada-002"
+        deployment_name = "text-embedding-ada-002"
 
     embeddings_service = sk_oai.AzureTextEmbedding(
         deployment_name=deployment_name,

@@ -41,7 +41,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncDoesNotRunWhenCancelledAsync()
+    public async Task InvokeAsyncDoesNotRunWhenCancelledAsync()
     {
         // Arrange
         var kernel = new Kernel();
@@ -55,7 +55,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncRunsWhenNotCancelledAsync()
+    public async Task InvokeAsyncRunsWhenNotCancelledAsync()
     {
         // Arrange
         var kernel = new Kernel();
@@ -97,7 +97,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationAsync()
+    public async Task InvokeAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -133,7 +133,7 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in sut.RunStreamingAsync(function)) { }
+        await foreach (var chunk in sut.InvokeStreamingAsync(function)) { }
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -157,7 +157,7 @@ public class KernelTests
 
         // Act
         int chunksCount = 0;
-        await foreach (var chunk in sut.RunStreamingAsync(function))
+        await foreach (var chunk in sut.InvokeStreamingAsync(function))
         {
             chunksCount++;
         }
@@ -187,7 +187,7 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in sut.RunStreamingAsync(functions["GetAnyValue"]))
+        await foreach (var chunk in sut.InvokeStreamingAsync(functions["GetAnyValue"]))
         {
         }
 
@@ -223,7 +223,7 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in sut.RunStreamingAsync(function))
+        await foreach (var chunk in sut.InvokeStreamingAsync(function))
         {
         }
 
@@ -234,7 +234,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunStreamingAsyncDoesNotHandlePostInvocationAsync()
+    public async Task InvokeStreamingAsyncDoesNotHandlePostInvocationAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -248,7 +248,7 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in sut.RunStreamingAsync(function))
+        await foreach (var chunk in sut.InvokeStreamingAsync(function))
         {
         }
 
@@ -258,7 +258,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
+    public async Task InvokeAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -282,7 +282,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
+    public async Task InvokeAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -305,7 +305,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
+    public async Task InvokeAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -330,7 +330,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
+    public async Task InvokeAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -366,7 +366,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPostInvocationAsync()
+    public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
         // Arrange
         var sut = new Kernel();
@@ -388,7 +388,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = new Kernel();
         var function = KernelFunctionFactory.CreateFromMethod(() => { });
@@ -409,7 +409,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = new Kernel();
         var function = KernelFunctionFactory.CreateFromMethod(() => { });

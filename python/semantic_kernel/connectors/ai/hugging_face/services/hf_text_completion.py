@@ -24,7 +24,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
         log: Optional[Logger] = None,
@@ -35,7 +35,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Initializes a new instance of the HuggingFaceTextCompletion class.
 
         Arguments:
-            model_id {str} -- Hugging Face model card string, see
+            ai_model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/models
             device {Optional[int]} -- Device to run the model on, defaults to CPU, 0+ for GPU,
                                    -- None if using device_map instead. (If both device and device_map
@@ -56,14 +56,14 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         super().__init__(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             task=task,
             device=(
                 f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
             ),
             generator=transformers.pipeline(
                 task=task,
-                model=model_id,
+                model=ai_model_id,
                 device=device,
                 model_kwargs=model_kwargs,
                 **pipeline_kwargs or {},
@@ -140,7 +140,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_id)
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self.ai_model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {

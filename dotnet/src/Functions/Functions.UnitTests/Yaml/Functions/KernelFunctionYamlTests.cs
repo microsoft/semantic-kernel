@@ -1,18 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Functions.Yaml;
 using Microsoft.SemanticKernel.Functions.Yaml.Functions;
 using Xunit;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
 
 public class KernelFunctionYamlTests
 {
     [Fact]
-    public void ItShouldCreateFunctionFromPromptYamlWithNoModelSettings()
+    public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
     {
         // Arrange
         // Act
-        var function = KernelFunctionYaml.FromPromptYaml(this._yamlNoModelSettings);
+        var function = KernelFunctionYaml.FromPromptYaml(this._yamlNoExecutionSettings);
 
         // Assert
         Assert.NotNull(function);
@@ -36,7 +41,7 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
-    public void ItShouldCreateFunctionFromPromptYamlWithCustomModelSettings()
+    public void ItShouldCreateFunctionFromPromptYamlWithCustomExecutionSettings()
     {
         // Arrange
         // Act
@@ -49,7 +54,27 @@ public class KernelFunctionYamlTests
         Assert.Equal(2, function.Metadata.Parameters.Count);
     }
 
-    private readonly string _yamlNoModelSettings = @"
+    [Fact]
+    public void ItShouldSupportCreatingOpenAIExecutionSettings()
+    {
+        // Arrange
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
+            .Build();
+        var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
+
+        // Act
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(promptFunctionModel.ExecutionSettings[0]);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal("gpt-4", executionSettings.ModelId);
+        Assert.Equal(1.0, executionSettings.Temperature);
+        Assert.Equal(0.0, executionSettings.TopP);
+    }
+
+    private readonly string _yamlNoExecutionSettings = @"
     template_format: semantic-kernel
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
