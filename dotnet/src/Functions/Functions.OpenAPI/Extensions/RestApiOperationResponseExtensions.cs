@@ -35,21 +35,13 @@ public static class RestApiOperationResponseExtensions
             return true;
         }
 
-        switch (response.ContentType)
+        return response.ContentType switch
         {
-            case "application/json":
-                return ValidateJson(response);
-
-            case "application/xml":
-                return ValidateXml(response);
-
-            case "text/plain":
-            case "text/html":
-                return ValidateTextHtml(response);
-
-            default:
-                return true;
-        }
+            "application/json" => ValidateJson(response),
+            "application/xml" => ValidateXml(response),
+            "text/plain" or "text/html" => ValidateTextHtml(response),
+            _ => true,
+        };
     }
 
     private static bool ValidateJson(RestApiOperationResponse response)
@@ -57,7 +49,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            var contentDoc = JsonDocument.Parse(response.Content.ToString());
+            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }
@@ -78,7 +70,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            var contentDoc = JsonDocument.Parse($"\"{response.Content}\"");
+            using var contentDoc = JsonDocument.Parse($"\"{response.Content}\"");
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -185,7 +185,7 @@ public class TemplateTokenizerTests
         // Assert
         Assert.Single(blocks);
         Assert.Equal(BlockTypes.Code, blocks[0].Type);
-        Assert.Equal(template[2..^2].Trim(), blocks[0].Content);
+        Assert.Equal(template.Substring(2, template.Length - 4).Trim(), blocks[0].Content);
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public class TemplateTokenizerTests
         var template = "{{ not='valid' }}";
 
         // Assert
-        var ex = Assert.Throws<SKException>(() =>
+        var ex = Assert.Throws<KernelException>(() =>
         {
             // Act
             this._target.Tokenize(template);

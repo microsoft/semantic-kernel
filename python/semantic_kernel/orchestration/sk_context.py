@@ -25,10 +25,10 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
 
     memory: SemanticTextMemoryT
     variables: ContextVariables
-    # This field can be used to hold anything that is not a string
     skill_collection: ReadOnlySkillCollection = pdt.Field(
         default_factory=ReadOnlySkillCollection
     )
+    # This field can be used to hold anything that is not a string
     _objects: Dict[str, Any] = pdt.PrivateAttr(default_factory=dict)
     _error_occurred: bool = pdt.PrivateAttr(False)
     _last_exception: Optional[Exception] = pdt.PrivateAttr(None)

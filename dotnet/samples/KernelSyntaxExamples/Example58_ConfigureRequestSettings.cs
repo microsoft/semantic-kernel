@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -29,9 +28,9 @@ public static class Example58_ConfigureRequestSettings
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -42,9 +41,9 @@ public static class Example58_ConfigureRequestSettings
 
         // Option 1:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
-        var result = await kernel.InvokeSemanticFunctionAsync(
+        var result = await kernel.InvokePromptAsync(
             prompt,
-            new OpenAIRequestSettings()
+            new OpenAIPromptExecutionSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
@@ -57,6 +56,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function using the implicitly set request settings
         string configPayload = @"{
           ""schema"": 1,
+          ""name"": ""HelloAI"",
           ""description"": ""Say hello to an AI"",
           ""type"": ""completion"",
           ""completion"": {
@@ -67,10 +67,11 @@ public static class Example58_ConfigureRequestSettings
             ""frequency_penalty"": 0.0
           }
         }";
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateSemanticFunction(prompt, templateConfig!, "HelloAI");
+        var promptConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
+        promptConfig.Template = prompt;
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
-        result = await kernel.RunAsync(func);
+        result = await kernel.InvokeAsync(func);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):

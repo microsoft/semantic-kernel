@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace;
@@ -38,8 +38,7 @@ public abstract class HuggingFaceClientBase
 
         this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
-
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
 
         this.ClientAttributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
         this.ClientAttributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
@@ -60,12 +59,12 @@ public abstract class HuggingFaceClientBase
 
         if (string.IsNullOrEmpty(endpoint) && (httpClient == null || httpClient.BaseAddress == null))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new KernelException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._model = model;
         this._apiKey = apiKey;
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._endpoint = endpoint;
 
         this.ClientAttributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
@@ -81,8 +80,7 @@ public abstract class HuggingFaceClientBase
     {
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");

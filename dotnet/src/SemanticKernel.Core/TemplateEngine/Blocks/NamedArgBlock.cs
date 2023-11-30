@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -28,7 +27,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// </summary>
     /// <param name="text">Raw text parsed from the prompt template.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
@@ -36,7 +35,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         if (argParts.Length != 2)
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
-            throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
+            throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
         this.Name = argParts[0];
@@ -45,7 +44,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         if (argValue.Length == 0)
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
-            throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
+            throw new KernelException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
         if (argValue[0] == Symbols.VarPrefix)
@@ -60,33 +59,29 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
-    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
+    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
     /// </summary>
-    /// <param name="variables">Variables to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
+    /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>
-    internal string GetValue(ContextVariables? variables)
+    internal string GetValue(IDictionary<string, string>? arguments)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
         {
-            return this._valBlock!.Render(variables);
+            return this._valBlock!.Render(arguments);
         }
 
         var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock)
         {
-            return this._argValueAsVarBlock!.Render(variables);
+            return this._argValueAsVarBlock!.Render(arguments);
         }
 
         return string.Empty;
     }
 
-    /// <summary>
-    /// Renders the named arg block.
-    /// </summary>
-    /// <param name="variables"></param>
-    /// <returns></returns>
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(IDictionary<string, string>? arguments)
     {
         return this.Content;
     }
@@ -152,15 +147,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
 
         string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
-        switch (trimmedParts?.Length)
+        return (trimmedParts?.Length) switch
         {
-            case (2):
-                return $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}";
-            case (1):
-                return trimmedParts[0];
-            default:
-                return null;
-        }
+            1 => trimmedParts[0],
+            2 => $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}",
+            _ => null,
+        };
     }
 
     private static string[] GetTrimmedParts(string? text)

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -149,12 +148,12 @@ public sealed class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                                 ?? throw new SKException($"No value for the '{headerName} header is found.'");
+                                 ?? throw new KernelException($"No value for the '{headerName} header is found.'");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)
             {
-                throw new SKException($"No value for the '{headerName} header is found.'");
+                throw new KernelException($"No value for the '{headerName} header is found.'");
             }
 
             //Parameter is not required and no default value provided.
@@ -194,7 +193,7 @@ public sealed class RestApiOperation
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
-                throw new SKException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
+                throw new KernelException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
             }
 
             return parameterMetadata.DefaultValue;

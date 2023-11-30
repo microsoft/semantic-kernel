@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data.Common;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -68,7 +68,7 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".create table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, Telemetry.HttpUserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 
@@ -87,7 +87,7 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".drop table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, Telemetry.HttpUserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 

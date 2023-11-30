@@ -3,12 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
@@ -44,27 +44,47 @@ public sealed class HuggingFaceTextCompletion : HuggingFaceClientBase, ITextComp
     public IReadOnlyDictionary<string, string> Attributes => this.ClientAttributes;
 
     /// <inheritdoc/>
-    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException("Streaming capability is not supported");
-    }
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            // Gets the non streaming content and returns as one complete result
+            var content = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+
+            // If the provided T is a string, return the completion as is
+            if (typeof(T) == typeof(string))
+            {
+                yield return (T)(object)content;
+                continue;
+            }
+
+            // If the provided T is an specialized class of StreamingContent interface
+            if (typeof(T) == typeof(StreamingTextContent) ||
+                typeof(T) == typeof(StreamingContent))
+            {
+                yield return (T)(object)new StreamingTextContent(content, 1, result);
+            }
+
+            throw new NotSupportedException($"Type {typeof(T)} is not supported");
+        }
+    }
+
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {
@@ -79,7 +99,7 @@ public sealed class HuggingFaceTextCompletion : HuggingFaceClientBase, ITextComp
 
         if (completionResponse is null)
         {
-            throw new SKException("Unexpected response from model")
+            throw new KernelException("Unexpected response from model")
             {
                 Data = { { "ResponseData", body } },
             };

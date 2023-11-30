@@ -154,20 +154,11 @@ public class PineconeDocument
             .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
-        return JsonSerializer.Serialize(distinctMetadata, s_jsonSerializerOptions);
+        return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
 
     internal UpdateVectorRequest ToUpdateRequest()
     {
         return UpdateVectorRequest.FromPineconeDocument(this);
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }

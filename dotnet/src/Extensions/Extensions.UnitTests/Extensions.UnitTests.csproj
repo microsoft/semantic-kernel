@@ -25,8 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
   </ItemGroup>
 </Project>

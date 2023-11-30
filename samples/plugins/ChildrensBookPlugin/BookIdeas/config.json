@@ -1,7 +1,7 @@
 {
     "schema": 1,
     "description": "Given a topic description generate a number of children's book ideas with short descriptions",
-    "models": [
+    "execution_settings": [
         {
             "max_tokens": 2000,
             "temperature": 0.5,

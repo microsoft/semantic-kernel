@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
@@ -33,11 +32,6 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true
-            })
             .Build();
 
         var type = typeof(PluginResourceNames);
@@ -46,7 +40,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import an Open AI Plugin via Stream
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters
@@ -56,14 +50,14 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("secret-name", "<secret-name>");
-        contextVariables.Set("api-version", "7.0");
+        var arguments = new KernelFunctionArguments();
+        arguments["secret-name"] = "<secret-name>";
+        arguments["api-version"] = "7.0";
 
         // Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
+        var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], arguments);
 
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
+        var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
@@ -78,7 +72,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters
@@ -88,17 +82,19 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
-        contextVariables.Set("secret-name", "<secret-name>");
-        contextVariables.Set("api-version", "7.0");
-        contextVariables.Set("value", "<secret-value>");
-        contextVariables.Set("enabled", "<enabled>");
+        var arguments = new KernelFunctionArguments
+        {
+            ["server-url"] = TestConfiguration.KeyVault.Endpoint,
+            ["secret-name"] = "<secret-name>",
+            ["api-version"] = "7.0",
+            ["value"] = "<secret-value>",
+            ["enabled"] = "<enabled>",
+        };
 
         // Run
-        var kernelResult = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
+        var functionResult = await kernel.InvokeAsync(plugin["SetSecret"], arguments);
 
-        var result = kernelResult.GetValue<RestApiOperationResponse>();
+        var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -36,7 +35,7 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
 
         return message is not null ?
             Task.FromResult<ChatMessage>(new AzureOpenAIChatMessage(message.Role, message.Content)) :
-            Task.FromException<ChatMessage>(new SKException("No message found"));
+            Task.FromException<ChatMessage>(new KernelException("No message found"));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)

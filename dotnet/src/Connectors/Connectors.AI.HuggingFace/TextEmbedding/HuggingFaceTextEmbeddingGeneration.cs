@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -62,7 +61,6 @@ public sealed class HuggingFaceTextEmbeddingGeneration : HuggingFaceClientBase, 
     }
 
     #region private ================================================================================
-
     /// <summary>
     /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
@@ -84,6 +82,5 @@ public sealed class HuggingFaceTextEmbeddingGeneration : HuggingFaceClientBase, 
 
         return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
     }
-
     #endregion
 }

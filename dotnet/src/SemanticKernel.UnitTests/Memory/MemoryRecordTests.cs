@@ -173,8 +173,10 @@ public class MemoryRecordTests
 
         // Act
         string serializedRecord = JsonSerializer.Serialize(memoryRecord);
-        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
-        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
+#pragma warning disable CA1307 // Specify StringComparison for clarity; overload not available on .NET Framework
+        jsonString = jsonString.Replace("\n", string.Empty);
+        jsonString = jsonString.Replace(" ", string.Empty);
+#pragma warning restore CA1307
 
         // Assert
         Assert.Equal(jsonString, serializedRecord);
@@ -204,8 +206,10 @@ public class MemoryRecordTests
 
         // Act
         string serializedMetadata = memoryRecord.GetSerializedMetadata();
-        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
-        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
+#pragma warning disable CA1307 // Specify StringComparison for clarity; overload not available on .NET Framework
+        jsonString = jsonString.Replace("\n", string.Empty);
+        jsonString = jsonString.Replace(" ", string.Empty);
+#pragma warning restore CA1307
 
         // Assert
         Assert.Equal(jsonString, serializedMetadata);

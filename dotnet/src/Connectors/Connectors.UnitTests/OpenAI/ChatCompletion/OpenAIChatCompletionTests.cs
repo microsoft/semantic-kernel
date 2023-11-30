@@ -21,7 +21,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-    private readonly OpenAIRequestSettings _requestSettings;
+    private readonly OpenAIPromptExecutionSettings _requestSettings;
 
     public OpenAIChatCompletionTests()
     {
@@ -40,7 +40,6 @@ public sealed class OpenAIChatCompletionTests : IDisposable
                         new() {
                             Name = "Format",
                             Description = "Date format",
-                            Type = "string",
                             ParameterType = typeof(string),
                             IsRequired = false,
                         }
@@ -55,7 +54,6 @@ public sealed class OpenAIChatCompletionTests : IDisposable
                         new() {
                             Name = "Format",
                             Description = "Date format",
-                            Type = "string",
                             ParameterType = typeof(string),
                             IsRequired = false,
                         }

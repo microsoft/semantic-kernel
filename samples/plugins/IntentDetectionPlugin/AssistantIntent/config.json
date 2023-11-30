@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Given a query and a list of possible intents, detect which intent the input matches",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 100,
       "temperature": 0.1,
