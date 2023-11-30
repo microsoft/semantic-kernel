@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.Grpc;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Xunit;
@@ -57,7 +58,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act
@@ -87,7 +88,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
         arguments.Add("address", "https://fake-random-test-host-from-args");
 
@@ -121,7 +122,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act

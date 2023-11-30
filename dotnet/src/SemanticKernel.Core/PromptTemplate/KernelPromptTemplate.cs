@@ -45,7 +45,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, IDictionary<string, string>? arguments = null, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         return await this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
@@ -90,7 +90,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    internal async Task<string> RenderAsync(IList<Block> blocks, Kernel kernel, IDictionary<string, string>? arguments, CancellationToken cancellationToken = default)
+    internal async Task<string> RenderAsync(IList<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
@@ -131,7 +131,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="blocks">List of blocks, typically all the blocks found in a template.</param>
     /// <param name="arguments">Arguments to use for rendering.</param>
     /// <returns>An updated list of blocks where Variable Blocks have rendered to Text Blocks.</returns>
-    internal IList<Block> RenderVariables(IList<Block> blocks, IDictionary<string, string>? arguments)
+    internal IList<Block> RenderVariables(IList<Block> blocks, KernelArguments? arguments)
     {
         this._logger.LogTrace("Rendering variables");
         return blocks.Select(block => block.Type != BlockTypes.Variable

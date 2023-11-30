@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -62,7 +61,7 @@ internal sealed class ValBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
     /// <inheritdoc/>
-    public string Render(IDictionary<string, string>? arguments)
+    public string Render(KernelArguments? arguments)
     {
         return this._value;
     }
