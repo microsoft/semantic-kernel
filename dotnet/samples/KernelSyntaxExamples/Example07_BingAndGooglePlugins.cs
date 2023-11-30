@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
@@ -131,16 +131,17 @@ Answer:
 [END OF EXAMPLES]
 
 [TASK]
-Question: {{ $input }}.
+Question: {{ $question }}.
 Answer: ";
 
-        var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        Console.WriteLine(questions);
+        var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
+        Console.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
+        var answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
         {
+            ["question"] = question,
             ["externalInformation"] = string.Empty
         });
 
@@ -153,14 +154,15 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, new ContextVariables());
+            var information = await promptTemplate.RenderAsync(kernel, new Dictionary<string, string>());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
             // Run the semantic function again, now including information from Bing
-            answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
+            answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
             {
+                ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information
             });

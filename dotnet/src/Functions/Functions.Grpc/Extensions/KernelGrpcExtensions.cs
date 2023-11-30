@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
@@ -192,39 +191,17 @@ public static class KernelGrpcExtensions
     {
         var operationParameters = operation.GetParameters();
 
-        async Task<ContextVariables> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
+        async Task<JsonObject> ExecuteAsync(KernelFunctionArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
-                var arguments = new Dictionary<string, string>();
-
-                //Extract function arguments from context
-                foreach (var parameter in operationParameters)
-                {
-                    //A try to resolve argument parameter name.
-                    if (variables.TryGetValue(parameter.Name, out string? value))
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{operation.Name}' gRPC function.");
-                }
-
-                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    variables.Update(result.ToString());
-                }
+                return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 loggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
-
-            return variables;
         }
 
         return KernelFunctionFactory.CreateFromMethod(

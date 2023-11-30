@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -20,32 +19,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class EmailPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Email recipients, separated by ',' or ';'.
-        /// </summary>
-        public const string Recipients = "recipients";
-
-        /// <summary>
-        /// Email subject.
-        /// </summary>
-        public const string Subject = "subject";
-
-        /// <summary>
-        /// The name of the top parameter used to limit the number of results returned in the response.
-        /// </summary>
-        public const string MaxResults = "maxResults";
-
-        /// <summary>
-        /// The name of the skip parameter used to skip a certain number of results in the response.
-        /// </summary>
-        public const string Skip = "skip";
-    }
-
     private readonly IEmailConnector _connector;
     private readonly ILogger _logger;
     private static readonly JsonSerializerOptions s_options = new()
@@ -75,7 +48,7 @@ public sealed class EmailPlugin
         => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
-    /// Send an email using <see cref="ContextVariables.Input"/> as the body.
+    /// Send an email.
     /// </summary>
     [KernelFunction, Description("Send an email to one or more recipients.")]
     public async Task SendEmailAsync(

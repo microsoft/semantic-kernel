@@ -88,7 +88,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetChatResultsAsync(chat, kernel, executionSettings, cancellationToken);
+        return this.InternalGetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -105,7 +105,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetChatResultsAsTextAsync(text, kernel, executionSettings, cancellationToken);
+        return this.InternalGetChatResultsAsTextAsync(text, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -116,6 +116,16 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(prompt);
-        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, kernel, executionSettings, cancellationToken);
+        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

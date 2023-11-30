@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -66,16 +65,13 @@ public sealed class HandlebarsPlanner
         // Get the chat completion results
         var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var contextVariables = new ContextVariables();
-        contextVariables.Update(completionResults);
-
-        if (contextVariables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
-            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{contextVariables.Input}");
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
-        Match match = Regex.Match(contextVariables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(completionResults, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new KernelException("Could not find the plan in the results");
@@ -207,7 +203,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var variables = new Dictionary<string, object?>()
+        var arguments = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
@@ -219,7 +215,7 @@ public sealed class HandlebarsPlanner
                 { "lastError", this._config.LastError }
             };
 
-        return HandlebarsTemplateEngineExtensions.Render(kernel, new ContextVariables(), plannerTemplate, variables);
+        return HandlebarsTemplateEngineExtensions.Render(kernel, plannerTemplate, arguments);
     }
 
     private static string MinifyHandlebarsTemplate(string template)

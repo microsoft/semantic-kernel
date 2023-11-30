@@ -65,7 +65,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, kernel, executionSettings, cancellationToken);
+        return this.InternalGetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -75,6 +75,6 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, kernel, executionSettings, cancellationToken);
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 }

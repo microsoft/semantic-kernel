@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 /**
@@ -23,12 +22,12 @@ public static class Example35_GrpcPlugins
         var plugin = kernel.ImportPluginFromGrpcFile("<path-to-.proto-file>", "<plugin-name>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("address", "<gRPC-server-address>");
-        contextVariables.Set("payload", "<gRPC-request-message-as-json>");
+        var arguments = new KernelFunctionArguments();
+        arguments["address"] = "<gRPC-server-address>";
+        arguments["payload"] = "<gRPC-request-message-as-json>";
 
         // Run
-        var result = await kernel.InvokeAsync(plugin["<operation-name>"], contextVariables);
+        var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
         Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
     }
