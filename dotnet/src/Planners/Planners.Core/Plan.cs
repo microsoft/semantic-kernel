@@ -312,7 +312,7 @@ public sealed class Plan
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">Context variables</param>
-    /// <param name="executionSettings">LLM completion settings (for prompt functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(

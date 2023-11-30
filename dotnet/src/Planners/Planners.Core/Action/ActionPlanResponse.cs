@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Planning.Action;
 
 /// <summary>
-/// Plan data structure returned by the basic planner prompt function
+/// Plan data structure returned by the basic planner semantic function
 /// </summary>
 internal sealed class ActionPlanResponse
 {

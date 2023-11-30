@@ -671,7 +671,7 @@ public class StepwisePlanner
     private readonly PromptTemplateConfig _promptConfig;
 
     /// <summary>
-    /// The name to use when creating prompt functions that are restricted from plan creation
+    /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedPluginName = "StepwisePlanner_Excluded";
 
