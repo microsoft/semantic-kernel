@@ -23,16 +23,13 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class SemanticFunction extends DefaultSemanticSKFunction {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
     private String name;
     private String pluginName;
     private String description;
     private List<SemanticFunctionModel.ExecutionSettingsModel> executionSettings;
     private List<SemanticFunctionModel.VariableViewModel> inputParameters;
-    private SemanticAsyncTask<SemanticFunctionResult> function;
-    private HandlebarsPromptTemplate promptTemplate;
-    @Nullable private DefaultTextCompletionSupplier aiService;
+    private PromptTemplate promptTemplate;
 
     public SemanticFunction(
             String name,
@@ -46,7 +43,7 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
         this.pluginName = pluginName;
         this.description = description;
         this.executionSettings = executionSettings;
-        this.promptTemplate = (HandlebarsPromptTemplate) promptTemplate;
+        this.promptTemplate = promptTemplate;
         this.inputParameters = inputParameters;
     }
 
@@ -70,15 +67,9 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
                 .build();
     }
 
-    public Mono<SemanticFunctionResult> invokeAsync(ContextVariables variables) throws IOException {
-
-        if (function == null) {
-            throw new FunctionNotRegisteredException(
-                    FunctionNotRegisteredException.ErrorCodes.FUNCTION_NOT_REGISTERED,
-                    this.getName());
-        }
-
-        if (this.aiService.get() == null) {
+    public Mono<SemanticFunctionResult> invokeAsync(Kernel kernel, ContextVariables input) throws IOException {
+        TextCompletion client = kernel.getService(null, TextCompletion.class);
+        if (client == null) {
             throw new IllegalStateException("Failed to initialise aiService");
         }
 
@@ -86,48 +77,39 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
                 this.executionSettings.get(0);
 
         // TODO: 1.0 fix settings
-        CompletionRequestSettings finalSettings = new CompletionRequestSettings(0.9, 0, 0, 0, 1000);
+        CompletionRequestSettings requestSettings = new CompletionRequestSettings(0.9, 0, 0, 0, 1000);
 
-        return function.run(this.aiService.get(), finalSettings, variables);
-    }
+        return this.promptTemplate
+                        .renderAsync(input)
+                        .flatMap(
+                                prompt ->
+                                        performCompletionRequest(
+                                                client, requestSettings, prompt))
+                        .doOnError(
+                                ex -> {
+                                    LOGGER.warn(
+                                            "Something went wrong while rendering the semantic"
+                                                    + " function or while executing the text"
+                                                    + " completion. Function: {}.{}. Error: {}",
+                                            getSkillName(),
+                                            getName(),
+                                            ex.getMessage());
 
-    @Override
-    public void registerOnKernel(Kernel kernel) {
-        this.function =
-                (TextCompletion client,
-                        CompletionRequestSettings requestSettings,
-                        ContextVariables input) -> {
-                    return promptTemplate
-                            .renderAsync(input)
-                            .flatMap(
-                                    prompt ->
-                                            performCompletionRequest(
-                                                    client, requestSettings, prompt))
-                            .doOnError(
-                                    ex -> {
+                                    // Common message when you attempt to send text completion
+                                    // requests to a chat completion model:
+                                    //    "logprobs, best_of and echo parameters are not
+                                    // available on gpt-35-turbo model"
+                                    if (ex instanceof HttpResponseException
+                                            && ((HttpResponseException) ex)
+                                            .getResponse()
+                                            .getStatusCode()
+                                            == 400
+                                            && ex.getMessage()
+                                            .contains(
+                                                    "parameters are not available"
+                                                            + " on")) {
                                         LOGGER.warn(
-                                                "Something went wrong while rendering the semantic"
-                                                        + " function or while executing the text"
-                                                        + " completion. Function: {}.{}. Error: {}",
-                                                getSkillName(),
-                                                getName(),
-                                                ex.getMessage());
-
-                                        // Common message when you attempt to send text completion
-                                        // requests to a chat completion model:
-                                        //    "logprobs, best_of and echo parameters are not
-                                        // available on gpt-35-turbo model"
-                                        if (ex instanceof HttpResponseException
-                                                && ((HttpResponseException) ex)
-                                                                .getResponse()
-                                                                .getStatusCode()
-                                                        == 400
-                                                && ex.getMessage()
-                                                        .contains(
-                                                                "parameters are not available"
-                                                                        + " on")) {
-                                            LOGGER.warn(
-                                                    "This error indicates that you have attempted"
+                                                "This error indicates that you have attempted"
                                                         + " to use a chat completion model in a"
                                                         + " text completion service. Try using a"
                                                         + " chat completion service instead when"
@@ -135,12 +117,8 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
                                                         + " building your service use"
                                                         + " SKBuilders.chatCompletion() rather than"
                                                         + " SKBuilders.textCompletionService().");
-                                        }
-                                    });
-                };
-
-        this.setSkillsSupplier(kernel::getSkills);
-        this.aiService = () -> kernel.getService(null, TextCompletion.class);
+                                    }
+                                });
     }
 
     private static Mono<SemanticFunctionResult> performCompletionRequest(
@@ -173,6 +151,11 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
     @Override
     protected Mono<SKContext> invokeAsyncInternal(SKContext context, @Nullable Object settings) {
         return null;
+    }
+
+    @Override
+    public void registerOnKernel(Kernel kernel) {
+
     }
 
     public static class Builder implements Buildable {
