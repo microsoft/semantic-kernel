@@ -62,7 +62,7 @@ public class StepwisePlanner
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
 
-        // Import native functions
+        // Import method functions
         this._nativeFunctions = this._kernel.ImportPluginFromObject(this, RestrictedPluginName);
 
         // Create context and logger
@@ -641,7 +641,7 @@ public class StepwisePlanner
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Planner native functions
+    /// Planner method functions
     /// </summary>
     private readonly IKernelPlugin _nativeFunctions;
 

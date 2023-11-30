@@ -12,7 +12,7 @@ using RepoUtils;
 public static class Example06_TemplateLanguage
 {
     /// <summary>
-    /// Show how to invoke a Native Function written in C#
+    /// Show how to invoke a Method Function written in C#
     /// from a Semantic Function written in natural language
     /// </summary>
     public static async Task RunAsync()
@@ -39,7 +39,7 @@ public static class Example06_TemplateLanguage
         // Functions loaded here are available as "time.*"
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        // Semantic Function invoking time.Date and time.Time native functions
+        // Semantic Function invoking time.Date and time.Time method functions
         const string FunctionDefinition = @"
 Today is: {{time.Date}}
 Current time is: {{time.Time}}

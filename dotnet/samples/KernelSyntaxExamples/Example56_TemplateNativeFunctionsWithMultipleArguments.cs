@@ -11,7 +11,7 @@ using RepoUtils;
 public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 {
     /// <summary>
-    /// Show how to invoke a Native Function written in C# with multiple arguments
+    /// Show how to invoke a Method Function written in C# with multiple arguments
     /// from a Semantic Function written in natural language
     /// </summary>
     public static async Task RunAsync()
@@ -45,7 +45,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Functions loaded here are available as "text.*"
         kernel.ImportPluginFromObject<TextPlugin>("text");
 
-        // Semantic Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
+        // Semantic Function invoking text.Concat method function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
  Write a haiku about the following: {{text.Concat input='Harry' input2=$word2}}
 ";

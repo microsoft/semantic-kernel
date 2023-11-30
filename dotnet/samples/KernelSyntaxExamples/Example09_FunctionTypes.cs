@@ -13,7 +13,7 @@ public static class Example09_FunctionTypes
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Native function types ========");
+        Console.WriteLine("======== Method Function types ========");
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
