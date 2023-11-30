@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Planning;
 using Moq;
 using Xunit;

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 #pragma warning disable CA1024
 
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
 /// Represents a result from a model execution.
