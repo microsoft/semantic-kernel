@@ -456,7 +456,7 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            args.Result.SetValue(ExpectedValue);
+            args.SetResultValue(ExpectedValue);
         };
 
         // Act
