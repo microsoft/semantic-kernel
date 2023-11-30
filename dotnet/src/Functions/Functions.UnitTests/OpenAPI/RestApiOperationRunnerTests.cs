@@ -137,7 +137,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new(),
             payload: null
         );
 
