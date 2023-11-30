@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -30,9 +29,7 @@ public sealed class FunctionCallingStepwisePlanner
     public FunctionCallingStepwisePlanner(
         FunctionCallingStepwisePlannerConfig? config = null)
     {
-        // Set up Config and prompt templates
         this.Config = config ?? new();
-        this._initialPlanPrompt = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.InitialPlanPrompt.txt");
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
     }
@@ -47,7 +44,6 @@ public sealed class FunctionCallingStepwisePlanner
     public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
         string question,
         Kernel kernel,
-        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(question);
@@ -55,40 +51,18 @@ public sealed class FunctionCallingStepwisePlanner
         IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
         ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
         ILogger logger = loggerFactory.CreateLogger(this.GetType());
-
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
-
-        // TODO: confirm openai or throw
-
-        //var openAIExecutionSettings = executionSettings as OpenAIPromptExecutionSettings ?? new OpenAIPromptExecutionSettings();
-        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 
         // Set max tokens on request settings. Should be minimum of model settings max tokens and planner config max completion tokens
         //this._executionSettings.MaxTokens = Math.Min(this.Config.MaxCompletionTokens, this._executionSettings.MaxTokens ?? int.MaxValue);
 
-        // Add the final answer function
+        // Clone the kernel and modify it to add the final answer function
         var clonedKernel = kernel.Clone();
         clonedKernel.ImportPluginFromObject<UserInteraction>();
 
-        var executeStepFunction = clonedKernel.CreateFunctionFromMethod(this.ExecuteNextStepAsync);
-
         // Create and invoke a kernel function to generate the initial plan
-        var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYaml(this._yaml);
-        //var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYaml(EmbeddedResource.Read("Stepwise.GeneratePlan.yaml"));
-        //var generatePlanFunction = clonedKernel.CreateFunctionFromPromptYamlResource("Stepwise.GeneratePlan.yaml");
-        var args = new KernelArguments();
-        string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
-        args[AvailableFunctionsKey] = functionsManual;
-        args[GoalKey] = question;
-        var generatePlanResult = await clonedKernel.InvokeAsync(generatePlanFunction, args, cancellationToken).ConfigureAwait(false);
-
-        var initialPlan = generatePlanResult.GetValue<string>() ?? string.Empty; //  TODO: throw if empty?
-
-        // Request completion for initial plan
-        //var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, clonedKernel, chatCompletion, logger, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
-        //openAIExecutionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallNone;
-        //await this.ValidateTokenCountAsync(chatHistoryForPlan, clonedKernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
-        //string initialPlan = (await chatCompletion.GenerateMessageAsync(chatHistoryForPlan, openAIExecutionSettings, clonedKernel, cancellationToken).ConfigureAwait(false));
+        var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, chatCompletion, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
 
@@ -102,7 +76,7 @@ public sealed class FunctionCallingStepwisePlanner
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, openAIExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
+            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.AddAssistantMessage(chatResult);
 
             // Check for function response
@@ -166,30 +140,6 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
-    // PerformStepAsync / ExecuteStepAsync
-    [KernelFunction]
-    public async Task<IChatResult> ExecuteNextStepAsync(
-        [Description("The goal or question to answer")] string question,
-        [Description("The step-by-step plan to satisfy the goal")] string initialPlan,
-        [Description("The chat history for plan execution")] string chatHistory,
-        Kernel kernel,
-        //PromptExecutionSettings? executionSettings,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNullOrWhiteSpace(question);
-        Verify.NotNull(kernel);
-        IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
-        ILogger logger = loggerFactory.CreateLogger(this.GetType());
-
-        //var openAIExecutionSettings = executionSettings as OpenAIPromptExecutionSettings ?? new OpenAIPromptExecutionSettings();
-        //var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
-
-        // TODO: get execution settings from kernel?
-        var openAIExecutionSettings = new OpenAIPromptExecutionSettings();
-        return await this.GetCompletionWithFunctionsAsync(new ChatHistory(), kernel, chatCompletion, openAIExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
-    }
-
     #region private
 
     private async Task<IChatResult> GetCompletionWithFunctionsAsync(
@@ -200,8 +150,6 @@ public sealed class FunctionCallingStepwisePlanner
     ILogger logger,
     CancellationToken cancellationToken)
     {
-        //openAIExecutionSettings.FunctionCall = OpenAIPromptExecutionSettings.FunctionCallAuto;
-        //openAIExecutionSettings.Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList();
         openAIExecutionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
@@ -213,25 +161,18 @@ public sealed class FunctionCallingStepwisePlanner
         return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, logger, false, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<ChatHistory> BuildChatHistoryForInitialPlanAsync(
-        string goal,
-        Kernel kernel,
-        IChatCompletion chatCompletion,
-        ILogger logger,
-        KernelPromptTemplateFactory promptTemplateFactory,
-        CancellationToken cancellationToken)
+    // Create and invoke a kernel function to generate the initial plan
+    private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        var chatHistory = chatCompletion.CreateNewChat();
-
-        var arguments = new KernelArguments();
+        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(EmbeddedResource.Read("Stepwise.GeneratePlan.yaml"));
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
-        arguments[AvailableFunctionsKey] = functionsManual;
-        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(this._initialPlanPrompt)).RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-        chatHistory.AddSystemMessage(systemMessage);
-        chatHistory.AddUserMessage(goal);
-
-        return chatHistory;
+        var generatePlanArgs = new KernelArguments
+        {
+            [AvailableFunctionsKey] = functionsManual,
+            [GoalKey] = question
+        };
+        var generatePlanResult = await kernel.InvokeAsync(generatePlanFunction, generatePlanArgs, cancellationToken).ConfigureAwait(false);
+        return generatePlanResult.GetValue<string>() ?? string.Empty; //  TODO: throw if empty?
     }
 
     private async Task<ChatHistory> BuildChatHistoryForStepAsync(
@@ -245,9 +186,11 @@ public sealed class FunctionCallingStepwisePlanner
         var chatHistory = chatCompletion.CreateNewChat();
 
         // Add system message with context about the initial goal/plan
-        var arguments = new KernelArguments();
-        arguments[GoalKey] = goal;
-        arguments[InitialPlanKey] = initialPlan;
+        var arguments = new KernelArguments
+        {
+            [GoalKey] = goal,
+            [InitialPlanKey] = initialPlan
+        };
         var systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(this._stepPrompt)).RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
@@ -349,26 +292,10 @@ public sealed class FunctionCallingStepwisePlanner
     /// </summary>
     private FunctionCallingStepwisePlannerConfig Config { get; }
 
-    // Context used to access the list of functions in the kernel
-    //private readonly Kernel _kernel;
-    //private readonly IChatCompletion _chatCompletion;
-    //private readonly ILogger? _logger;
-    //private readonly OpenAIPromptExecutionSettings _executionSettings;
-
-    /// <summary>
-    /// The prompt (system message) used to generate the initial set of steps to perform.
-    /// </summary>
-    private readonly string _initialPlanPrompt;
-
     /// <summary>
     /// The prompt (system message) for performing the steps.
     /// </summary>
     private readonly string _stepPrompt;
-
-    /// <summary>
-    /// The prompt renderer to use for the system step
-    /// </summary>
-    //private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
@@ -384,48 +311,6 @@ public sealed class FunctionCallingStepwisePlanner
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedPluginName = "FunctionCallingStepwisePlanner_Excluded"; // TODO: too long?
-
-    private readonly string _yaml = @"
-    template_format: semantic-kernel
-    template: |
-      <message role=""system"">
-      You are an expert at generating plans from a given GOAL. Think step by step and determine a plan to satisfy the specified GOAL using only the FUNCTIONS provided to you. You can also make use of your own knowledge while forming an answer but you must not use functions that are not provided. Once you have come to a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.
-
-      [FUNCTIONS]
-
-      {{$available_functions}}
-
-      [END FUNCTIONS]
-
-      To create the plan, follow these steps:
-      0. Each step should be something that is capable of being done by the list of available functions.
-      1. Steps can use output from one or more previous steps as input, if appropriate.
-      2. The plan should be as short as possible.
-      </message>
-      <message role=""user"">{{$goal}}</message>
-    description:     Generate a step-by-step plan to satisfy a given goal
-    name:            GeneratePlan
-    input_parameters:
-      - name:          available_functions
-        description:   A list of functions that can be used to generate the plan
-      - name:          goal
-        description:   The goal to satisfy
-    execution_settings:
-      - model_id:          gpt-4
-        temperature:       1.0
-        top_p:             0.0
-        presence_penalty:  0.0
-        frequency_penalty: 0.0
-        max_tokens:        256
-        stop_sequences:    []
-      - model_id:          gpt-3.5
-        temperature: 0.0
-        top_p:             0.0
-        presence_penalty:  0.0
-        frequency_penalty: 0.0
-        max_tokens:        256
-        stop_sequences:    []
-";
 
     #endregion private
 
