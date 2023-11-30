@@ -11,11 +11,11 @@ using Microsoft.SemanticKernel;
  * This example shows different ways how to define and execute method functions using custom and primitive types.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example60_AdvancedNativeFunctions
+public static class Example60_AdvancedMethodFunctions
 {
     public static async Task RunAsync()
     {
-        await NativeFunctionsChainingAsync();
+        await MethodFunctionsChainingAsync();
     }
 
     #region Method Functions Chaining
@@ -23,7 +23,7 @@ public static class Example60_AdvancedNativeFunctions
     /// <summary>
     /// This example executes Function1, which in turn executes Function2.
     /// </summary>
-    private static async Task NativeFunctionsChainingAsync()
+    private static async Task MethodFunctionsChainingAsync()
     {
         Console.WriteLine("Running Method Function Chaining example...");
 

@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example56_TemplateNativeFunctionsWithMultipleArguments
+public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
@@ -16,7 +16,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== TemplateNativeFunctionsWithMultipleArguments ========");
+        Console.WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
