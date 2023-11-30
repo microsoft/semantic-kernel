@@ -43,7 +43,7 @@ public static class Example63_ChatCompletionPrompts
         Console.WriteLine(chatPromptResult);
 
         Console.WriteLine("Chat Prompt Streaming Result:");
-        await foreach (var message in kernel.RunStreamingAsync<string>(chatSemanticFunction))
+        await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
         {
             Console.Write(message);
         }
