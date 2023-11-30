@@ -120,8 +120,6 @@ private sealed class CustomAIServiceSelector : IAIServiceSelector
         }
 
         // Otherwise, get another service
-
-        throw new KernelException("Unable to find AI service for GPT 3.x.");
     }
 }
 ```
@@ -280,8 +278,6 @@ private sealed class CustomAIServiceSelector : IAIServiceSelector
         }
 
         // Otherwise, get another service
-
-        throw new KernelException("Unable to find AI service for GPT 3.x.");
     }
 }
 ```
