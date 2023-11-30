@@ -126,17 +126,17 @@ public class LocalExamplePlugin
     }
 
     [KernelFunction]
-    public FunctionResult Type10()
+    public FunctionResult Type10(Kernel kernel)
     {
         Console.WriteLine("Running function type 10");
-        return new FunctionResult(new Kernel(), string.Empty);
+        return new FunctionResult(kernel, string.Empty);
     }
 
     [KernelFunction]
-    public async Task<FunctionResult> Type11Async()
+    public async Task<FunctionResult> Type11Async(Kernel kernel)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 10");
-        return new FunctionResult(new Kernel(), "result");
+        return new FunctionResult(kernel, "result");
     }
 }
