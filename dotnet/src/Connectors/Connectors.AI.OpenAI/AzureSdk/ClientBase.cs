@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
