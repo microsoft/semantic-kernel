@@ -10,7 +10,7 @@ There are two main scenarios we need to support:
 For #2, we believe that our current interfaces for ITextCompletion and IChatCompletion are sufficient for professional developers.
 We believe this is true because both the input and output are already strongly typed.
 
-What's not supported today is #1. This is because the our Prompt function implementation only can return FunctionResults with `ITextResult`
+What's not supported today is #1. This is because our Prompt function implementation only can return `FunctionResults` with `ITextResult`
 content. To ensure we don't "boil the ocean" it's _ok_ (and expected) that this implementation does not change, however we need to ensure
 our interfaces are sufficient to support additional types in the future.
 
@@ -52,13 +52,13 @@ Based on this example prompt, the return type could be one of the following:
 - Chat message (which could be a combination of any of the above)
 
 Because of this ambiguity, the `IAIServiceSelector` does not have enough information to determine which service should be used to process the prompt.
-As a result, the `IAIServiceSelector` may choose to select an `ITextCompletion` service (which only returns text) when the developer really wanted a
+As a result, the `IAIServiceSelector` may choose to select an `ITextCompletion` service (which only returns text) when the prompt engineer really wanted an
 `IImageGeneration` service (which returns an image).
 
 For example, the following code would not work as expected if the `IAIServiceSelector` returned an `ITextCompletion` service.
 
 ```csharp
-// During invocation the IAIServiceSelector would select an ITextCompletion service...
+// During invocation the IAIServiceSelector could select an ITextCompletion service because it doesn't know better...
 FunctionResult chatMessage = await kernel.InvokeAsync(conversationSummaryPlugin["SummarizeConversation"], ChatTranscript);
 
 // Getting the image url would fail because the value is a string
@@ -225,8 +225,9 @@ can be called by prompt functions. The interfaces that must be updated are:
 
 - ITextCompletion
 - IChatCompletion
+- And _maybe_ IAIService
 
-\_All other services (e.g., IImageGeneration) are marked experimental, so they can be ignored for right now.
+_All other services (e.g., IImageGeneration) are marked experimental, so they can be ignored for right now._
 
 ### Requirement #3: Make it easy to select a service with a required return type
 
