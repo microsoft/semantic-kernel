@@ -380,24 +380,18 @@ public static class KernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="arguments">The operation arguments</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
     /// <returns>Function execution result</returns>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        KernelArguments? arguments = null,
-        string? functionName = null,
-        string? description = null)
+        KernelArguments? arguments = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            arguments?.ExecutionSettings,
-            functionName,
-            description);
+            arguments?.ExecutionSettings);
 
         return kernel.InvokeAsync(function, arguments);
     }
@@ -405,21 +399,17 @@ public static class KernelExtensions
 
     #region InvokePromptStreamingAsync
     /// <summary>
-    /// Invoke a prompt function using the provided prompt template.
+    /// Invoke a prompt function using the provided prompt template and stream the results.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
     /// <param name="arguments">The operation arguments</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Function execution result</returns>
     public static IAsyncEnumerable<StreamingContent> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
-        string? functionName = null,
-        string? description = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -427,9 +417,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            arguments?.ExecutionSettings,
-            functionName,
-            description);
+            arguments?.ExecutionSettings);
 
         return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
     }
