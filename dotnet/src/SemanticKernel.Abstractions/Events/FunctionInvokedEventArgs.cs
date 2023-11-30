@@ -13,6 +13,16 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     public bool IsRepeatRequested => this._repeatRequested;
 
     /// <summary>
+    /// Function result
+    /// </summary>
+    public FunctionResult Result { get; }
+
+    /// <summary>
+    /// Function result value
+    /// </summary>
+    internal object? ResultValue { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
@@ -22,10 +32,8 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     {
         this.Metadata = result.Metadata;
         this.Result = result;
+        this.ResultValue = result.Value;
     }
-
-    /// <summary>Function result</summary>
-    public FunctionResult Result { get; }
 
     /// <summary>
     /// Repeat the current function invocation.
@@ -33,6 +41,15 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     public void Repeat()
     {
         this._repeatRequested = true;
+    }
+
+    /// <summary>
+    /// Set the function result value.
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetResultValue(object? value)
+    {
+        this.ResultValue = value;
     }
 
     private bool _repeatRequested;

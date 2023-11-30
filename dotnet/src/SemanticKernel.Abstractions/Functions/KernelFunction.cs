@@ -231,7 +231,7 @@ public abstract class KernelFunction
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, result.Value, result.Culture)
+            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
