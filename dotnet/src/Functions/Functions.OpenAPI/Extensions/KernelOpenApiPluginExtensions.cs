@@ -27,7 +27,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -48,7 +48,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -69,7 +69,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -90,7 +90,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -127,7 +127,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -168,7 +168,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>

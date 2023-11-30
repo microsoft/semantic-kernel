@@ -24,7 +24,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Imports gRPC document from a directory.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
@@ -41,7 +41,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Imports gRPC document from a file.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
@@ -58,7 +58,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Registers an gRPC plugin.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
@@ -75,7 +75,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Imports gRPC document from a directory.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
@@ -107,7 +107,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Imports gRPC document from a file.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
@@ -131,7 +131,7 @@ public static class KernelGrpcExtensions
     /// <summary>
     /// Registers an gRPC plugin.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>

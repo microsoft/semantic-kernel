@@ -30,7 +30,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -51,7 +51,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -72,7 +72,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -93,7 +93,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -125,7 +125,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -164,7 +164,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>

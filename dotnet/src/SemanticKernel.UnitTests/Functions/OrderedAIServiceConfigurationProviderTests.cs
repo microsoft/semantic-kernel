@@ -76,7 +76,7 @@ public class OrderedAIServiceConfigurationProviderTests
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service2" };
-        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
@@ -98,7 +98,7 @@ public class OrderedAIServiceConfigurationProviderTests
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service3" };
-        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
@@ -137,7 +137,7 @@ public class OrderedAIServiceConfigurationProviderTests
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
         }).Build();
         var executionSettings = new PromptExecutionSettings();
-        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
@@ -158,7 +158,7 @@ public class OrderedAIServiceConfigurationProviderTests
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
         }).Build();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "" };
-        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
@@ -242,12 +242,12 @@ public class OrderedAIServiceConfigurationProviderTests
             }
         }
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
