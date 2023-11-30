@@ -19,7 +19,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str,
         api_key: str,
         org_id: Optional[str] = None,
         log: Optional[Logger] = None,
@@ -28,7 +28,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         Initializes a new instance of the OpenAITextCompletion class.
 
         Arguments:
-            model_id {str} -- OpenAI model name, see
+            ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             api_key {str} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys
@@ -37,9 +37,9 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 account belongs to multiple organizations.
         """
         super().__init__(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
-            model_type=OpenAIModelTypes.EMBEDDING,
+            ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
             log=log,
         )
@@ -54,7 +54,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         """
 
         return OpenAITextEmbedding(
-            model_id=settings["model_id"],
+            ai_model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
             log=settings.get("log"),

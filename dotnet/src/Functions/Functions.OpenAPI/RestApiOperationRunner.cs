@@ -121,7 +121,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The task execution result.</returns>
     public Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
-        IDictionary<string, string> arguments,
+        KernelArguments arguments,
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -230,7 +230,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, string> arguments)
+    private HttpContent? BuildOperationPayload(RestApiOperation operation, KernelArguments arguments)
     {
         if (operation?.Method != HttpMethod.Put && operation?.Method != HttpMethod.Post)
         {
@@ -262,7 +262,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, KernelArguments arguments)
     {
         //Build operation payload dynamically
         if (this._enableDynamicPayload)
@@ -293,7 +293,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="arguments">The arguments.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name.</param>
     /// <returns>The JSON object.</returns>
-    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, IDictionary<string, string> arguments, string? propertyNamespace = null)
+    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, KernelArguments arguments, string? propertyNamespace = null)
     {
         var result = new JsonObject();
 
@@ -372,7 +372,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private HttpContent BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, KernelArguments arguments)
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var propertyValue))
         {
@@ -406,7 +406,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    private Uri BuildsOperationUrl(RestApiOperation operation, KernelArguments arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 

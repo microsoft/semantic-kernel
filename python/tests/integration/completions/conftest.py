@@ -24,7 +24,7 @@ def setup_hf_text_completion_function(create_kernel, request):
     kernel.add_text_completion_service(
         request.param[0],
         sk_hf.HuggingFaceTextCompletion(
-            model_id=request.param[0], task=request.param[1]
+            ai_model_id=request.param[0], task=request.param[1]
         ),
     )
 
@@ -72,7 +72,7 @@ def setup_summarize_function(create_kernel):
     kernel.add_text_completion_service(
         "facebook/bart-large-cnn",
         sk_hf.HuggingFaceTextCompletion(
-            model_id="facebook/bart-large-cnn", task="summarization"
+            ai_model_id="facebook/bart-large-cnn", task="summarization"
         ),
     )
 
@@ -164,7 +164,7 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
     api_key = get_gp_config
     # Configure LLM service
     palm_text_completion = sk_gp.GooglePalmTextCompletion(
-        model_id="models/text-bison-001", api_key=api_key
+        ai_model_id="models/text-bison-001", api_key=api_key
     )
     kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
 
