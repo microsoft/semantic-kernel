@@ -80,7 +80,7 @@ public sealed class KernelFunctionTests3
     }
 
     [Fact]
-    public async Task ItCanImportNativeFunctionsAsync()
+    public async Task ItCanImportMethodFunctionsAsync()
     {
         // Arrange
         var canary = false;
@@ -112,7 +112,7 @@ public sealed class KernelFunctionTests3
     }
 
     [Fact]
-    public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
+    public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
         // Arrange
         var arguments = new KernelArguments();

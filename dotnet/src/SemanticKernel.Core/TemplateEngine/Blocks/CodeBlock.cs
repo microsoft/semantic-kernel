@@ -70,7 +70,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, IDictionary<string, string>? arguments = null, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -92,20 +92,19 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, IDictionary<string, string> arguments)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, IDictionary<string, string>? arguments)
     {
-        // Clone the arguments to avoid unexpected mutations
-        IDictionary<string, string> mutableArguments = new Dictionary<string, string>(arguments);
-
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            mutableArguments = this.EnrichFunctionArguments(mutableArguments);
+            arguments = this.EnrichFunctionArguments(arguments ?? new Dictionary<string, string>());
         }
         try
         {
-            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, new KernelArguments(mutableArguments)).ConfigureAwait(false);
+            KernelArguments? kernelArguments = arguments is not null ? new KernelArguments(arguments) : null;
+
+            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, kernelArguments).ConfigureAwait(false);
 
             return result.ToString();
         }

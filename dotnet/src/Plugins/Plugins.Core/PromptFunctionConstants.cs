@@ -2,7 +2,7 @@
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
-internal static class SemanticFunctionConstants
+internal static class PromptFunctionConstants
 {
     internal const string SummarizeConversationDefinition =
         @"BEGIN CONTENT TO SUMMARIZE:
