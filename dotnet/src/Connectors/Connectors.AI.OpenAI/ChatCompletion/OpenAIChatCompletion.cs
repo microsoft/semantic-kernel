@@ -20,6 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
 {
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
@@ -54,7 +57,8 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public ChatHistory CreateNewChat(string? instructions = null)
+        => InternalCreateNewChat(instructions);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -64,24 +68,39 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
+
         return this.InternalGetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return InternalCreateNewChat(instructions);
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNullOrWhiteSpace(prompt);
+
         this.LogActionDetails();
-        return this.InternalGetChatResultsAsTextAsync(text, executionSettings, kernel, cancellationToken);
+
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var chatHistory = InternalCreateNewChat(prompt, openAIExecutionSettings);
+
+        return this.InternalGetChatResultsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        this.LogActionDetails();
+
+        return this.InternalGetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -91,6 +110,8 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
+
         Verify.NotNullOrWhiteSpace(prompt);
 
         var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
@@ -101,5 +122,9 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
 
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+    {
+        this.LogActionDetails();
+
+        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+    }
 }

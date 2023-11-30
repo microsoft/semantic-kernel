@@ -74,15 +74,30 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
-        var chat = InternalCreateNewChat(text, chatExecutionSettings);
+        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
+
+        return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+
+        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
         return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()

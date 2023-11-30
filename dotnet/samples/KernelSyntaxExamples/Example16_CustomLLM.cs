@@ -123,7 +123,7 @@ public static class Example16_CustomLLM
 
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
         {
             this.ModelId = executionSettings?.ModelId;
 
