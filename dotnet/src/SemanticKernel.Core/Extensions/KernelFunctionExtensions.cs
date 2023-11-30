@@ -5,9 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Class that holds extension methods for objects implementing KernelFunction.

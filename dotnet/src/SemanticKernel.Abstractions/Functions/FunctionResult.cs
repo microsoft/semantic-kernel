@@ -7,9 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Function result after execution.

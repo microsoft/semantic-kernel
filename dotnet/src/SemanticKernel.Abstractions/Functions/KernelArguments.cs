@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents arguments for various SK component methods, such as KernelFunction.InvokeAsync, Kernel.InvokeAsync, IPromptTemplate.RenderAsync, and more.

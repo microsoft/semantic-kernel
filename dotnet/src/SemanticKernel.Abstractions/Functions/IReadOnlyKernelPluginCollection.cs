@@ -3,9 +3,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0130
-
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides a read-only collection of <see cref="IKernelPlugin"/>s.</summary>

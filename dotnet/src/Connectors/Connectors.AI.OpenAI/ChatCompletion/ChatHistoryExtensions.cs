@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.

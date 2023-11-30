@@ -21,8 +21,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>

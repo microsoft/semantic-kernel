@@ -18,11 +18,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
-#pragma warning disable IDE0039 // Use local function
 #pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable IDE0130
 
-// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
 
 /// <summary>

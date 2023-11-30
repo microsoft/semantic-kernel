@@ -7,10 +7,7 @@
 // This was copied from https://github.com/dotnet/runtime/blob/39b9607807f29e48cae4652cd74735182b31182e/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 // and updated to have the scope of the attributes be internal.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-// ReSharper disable once CheckNamespace
 namespace System.Diagnostics.CodeAnalysis;
-#pragma warning restore IDE0130
 
 #if !NETCOREAPP
 
