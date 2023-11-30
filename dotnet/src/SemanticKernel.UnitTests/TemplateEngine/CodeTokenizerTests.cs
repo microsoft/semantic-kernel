@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -121,7 +120,7 @@ public class CodeTokenizerTests
     {
         // Arrange
         var template1 = "x.y first=$foo second='bar'";
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments["foo"] = "fooValue";
 
         // Act

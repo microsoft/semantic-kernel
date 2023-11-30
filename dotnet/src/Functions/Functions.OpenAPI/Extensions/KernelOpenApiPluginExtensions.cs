@@ -282,7 +282,7 @@ public static class KernelOpenApiPluginExtensions
             try
             {
                 // Extract function arguments from context
-                var arguments = new Dictionary<string, string>();
+                var arguments = new KernelArguments();
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
