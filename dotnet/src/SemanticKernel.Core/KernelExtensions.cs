@@ -73,12 +73,12 @@ public static class KernelExtensions
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
 
     /// <summary>
-    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
     /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
@@ -98,7 +98,7 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
@@ -115,10 +115,10 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <returns>A function ready to use</returns>
@@ -269,7 +269,7 @@ public static class KernelExtensions
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
     public static IKernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -360,7 +360,7 @@ public static class KernelExtensions
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
     public static IKernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -375,7 +375,7 @@ public static class KernelExtensions
 
     #region InvokePromptAsync
     /// <summary>
-    /// Invoke a semantic function using the provided prompt template.
+    /// Invoke a prompt function using the provided prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
