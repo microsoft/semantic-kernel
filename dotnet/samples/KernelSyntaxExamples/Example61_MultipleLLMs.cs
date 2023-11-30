@@ -11,7 +11,7 @@ using RepoUtils;
 public static class Example61_MultipleLLMs
 {
     /// <summary>
-    /// Show how to run a semantic function and specify a specific service to use.
+    /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
     public static async Task RunAsync()
     {

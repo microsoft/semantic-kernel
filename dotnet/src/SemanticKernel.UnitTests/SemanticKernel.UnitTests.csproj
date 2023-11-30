@@ -36,4 +36,8 @@
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Orchestration\" />
+  </ItemGroup>
+
 </Project>

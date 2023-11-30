@@ -15,9 +15,9 @@ namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 public static class KernelFunctionMarkdown
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown resource.
+    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown resource.
     /// </summary>
-    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
+    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -46,9 +46,9 @@ public static class KernelFunctionMarkdown
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.
+    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
-    /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the semantic function</param>
+    /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="functionName">The name of the function.</param>
     /// <param name="pluginName">The optional name of the plug-in associated with this function.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>

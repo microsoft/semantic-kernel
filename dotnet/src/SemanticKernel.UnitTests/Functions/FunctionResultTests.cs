@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Orchestration;
+using System.Globalization;
+using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Orchestration;
+namespace SemanticKernel.UnitTests.Functions;
 
 /// <summary>
 /// Unit tests of <see cref="FunctionResult"/>.
@@ -17,13 +18,13 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables());
+        FunctionResult target = new("functionName");
 
         // Act
         target.Metadata.Add(key, value);
 
         // Assert
-        Assert.True(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.True(target.TryGetMetadataValue(key, out string result));
         Assert.Equal(value, result);
     }
 
@@ -32,10 +33,10 @@ public class FunctionResultTests
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables());
+        FunctionResult target = new("functionName");
 
         // Act,Assert
-        Assert.False(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.False(target.TryGetMetadataValue(key, out string result));
         Assert.Null(result);
     }
 
@@ -45,13 +46,13 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         int value = 42;
-        FunctionResult target = new("functionName", new ContextVariables());
+        FunctionResult target = new("functionName");
 
         // Act
         target.Metadata.Add(key, value);
 
         // Assert
-        Assert.False(target.TryGetMetadataValue<string>(key, out string result));
+        Assert.False(target.TryGetMetadataValue(key, out string result));
         Assert.Null(result);
     }
 
@@ -60,7 +61,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables(), value);
+        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -70,7 +71,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName", new ContextVariables());
+        FunctionResult target = new("functionName");
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -81,7 +82,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", new ContextVariables(), value);
+        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -93,10 +94,9 @@ public class FunctionResultTests
         // Arrange
         string functionName = Guid.NewGuid().ToString();
         string pluginName = Guid.NewGuid().ToString();
-        ContextVariables context = new();
 
         // Act
-        FunctionResult target = new(functionName, context);
+        FunctionResult target = new(functionName);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
@@ -107,11 +107,10 @@ public class FunctionResultTests
     {
         // Arrange
         string functionName = Guid.NewGuid().ToString();
-        ContextVariables context = new();
         string value = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName, new ContextVariables(), value);
+        FunctionResult target = new(functionName, value, CultureInfo.InvariantCulture);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
@@ -123,7 +122,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables(), value);
+        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());

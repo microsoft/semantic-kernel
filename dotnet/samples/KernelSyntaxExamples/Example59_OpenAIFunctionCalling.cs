@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -76,7 +75,7 @@ public static class Example59_OpenAIFunctionCalling
 
     private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
-        Console.WriteLine($"\n\n======== Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : "Specific (TimePlugin.Date)")} ========\n");
+        Console.WriteLine($"\n\n======== Function Call - {(executionSettings.FunctionCall == OpenAIPromptExecutionSettings.FunctionCallAuto ? "Automatic" : executionSettings.FunctionCall)} ========\n");
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
 
@@ -92,9 +91,9 @@ public static class Example59_OpenAIFunctionCalling
         {
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelArguments? arguments))
             {
-                var result = (await kernel.InvokeAsync(func, context)).GetValue<object>();
+                var result = (await kernel.InvokeAsync(func, arguments)).GetValue<object>();
 
                 string? resultContent = null;
                 if (result is RestApiOperationResponse apiResponse)
@@ -157,9 +156,12 @@ public static class Example59_OpenAIFunctionCalling
         Console.WriteLine($"User message: {ask}");
 
         // Send request
+        chatHistory.AddUserMessage(ask);
+
+        // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings))
         {
             if (chatResult.ContentUpdate is { Length: > 0 })
             {
@@ -185,9 +187,9 @@ public static class Example59_OpenAIFunctionCalling
 
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelArguments? arguments))
             {
-                var functionResult = await kernel.InvokeAsync(func, context);
+                var functionResult = await kernel.InvokeAsync(func, arguments);
 
                 var result = functionResult.GetValue<object>();
 
