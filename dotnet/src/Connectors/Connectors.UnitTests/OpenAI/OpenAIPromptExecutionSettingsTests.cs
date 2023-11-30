@@ -19,7 +19,7 @@ public class OpenAIPromptExecutionSettingsTests
     {
         // Arrange
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(null, 128);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(null, 128);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -53,7 +53,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -70,7 +70,7 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -100,14 +100,14 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         AssertRequestSettings(executionSettings);
     }
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesPascalCase()
+    public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesAsStrings()
     {
         // Arrange
         PromptExecutionSettings actualSettings = new()
@@ -115,21 +115,21 @@ public class OpenAIPromptExecutionSettingsTests
             ServiceId = "service",
             ExtensionData = new Dictionary<string, object>()
             {
-                { "Temperature", 0.7 },
-                { "TopP", 0.7 },
-                { "FrequencyPenalty", 0.7 },
-                { "PresencePenalty", 0.7 },
-                { "ResultsPerPrompt", 2 },
-                { "StopSequences", new[] { "foo", "bar" } },
-                { "ChatSystemPrompt", "chat system prompt" },
-                { "MaxTokens", 128 },
-                { "ServiceId", "service" },
-                { "TokenSelectionBiases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } }
+                { "temperature", "0.7" },
+                { "top_p", "0.7" },
+                { "frequency_penalty", "0.7" },
+                { "presence_penalty", "0.7" },
+                { "results_per_prompt", "2" },
+                { "stop_sequences", new [] { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "max_tokens", "128" },
+                { "service_id", "service" },
+                { "token_selection_biases", new Dictionary<string, string>() { { "1", "2" }, { "3", "4" } } }
             }
         };
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         AssertRequestSettings(executionSettings);
@@ -154,32 +154,7 @@ public class OpenAIPromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
-
-        // Assert
-        AssertRequestSettings(executionSettings);
-    }
-
-    [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromJsonPascalCase()
-    {
-        // Arrange
-        var json = @"{
-  ""Temperature"": 0.7,
-  ""TopP"": 0.7,
-  ""FrequencyPenalty"": 0.7,
-  ""PresencePenalty"": 0.7,
-  ""ResultsPerPrompt"": 2,
-  ""StopSequences"": [ ""foo"", ""bar"" ],
-  ""ChatSystemPrompt"": ""chat system prompt"",
-  ""TokenSelectionBiases"": { ""1"": 2, ""3"": 4 },
-  ""ServiceId"": ""service"",
-  ""MaxTokens"": 128
-}";
-        var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
-
-        // Act
-        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         AssertRequestSettings(executionSettings);

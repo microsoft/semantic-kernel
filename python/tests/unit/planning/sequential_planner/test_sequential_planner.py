@@ -51,7 +51,7 @@ async def test_it_can_create_plan_async(goal):
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(), memory=memory, skill_collection=skills
         )
         context.variables.update("MOCK FUNCTION CALLED")
@@ -71,10 +71,10 @@ async def test_it_can_create_plan_async(goal):
     expected_functions = [x[0] for x in input]
     expected_skills = [x[1] for x in input]
 
-    context = SKContext.construct(
+    context = SKContext.model_construct(
         variables=ContextVariables(), memory=memory, skill_collection=skills
     )
-    return_context = SKContext.construct(
+    return_context = SKContext.model_construct(
         variables=ContextVariables(), memory=memory, skill_collection=skills
     )
     plan_string = """
@@ -133,11 +133,11 @@ async def test_invalid_xml_throws_async():
     skills.get_functions_view.return_value = functionsView
 
     plan_string = "<plan>notvalid<</plan>"
-    return_context = SKContext.construct(
+    return_context = SKContext.model_construct(
         variables=ContextVariables(plan_string), memory=memory, skill_collection=skills
     )
 
-    context = SKContext.construct(
+    context = SKContext.model_construct(
         variables=ContextVariables(), memory=memory, skill_collection=skills
     )
 
