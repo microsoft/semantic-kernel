@@ -47,7 +47,7 @@ def test_azure_text_completion_init_with_empty_deployment_name() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(ValidationError, match="model_id"):
+    with pytest.raises(ValidationError, match="ai_model_id"):
         AzureTextCompletion(
             deployment_name="",
             endpoint=endpoint,

@@ -19,7 +19,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str,
         api_key: str,
         org_id: Optional[str] = None,
         log: Optional[Logger] = None,
@@ -28,7 +28,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Initialize an OpenAITextCompletion service.
 
         Arguments:
-            model_id {str} -- OpenAI model name, see
+            ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             api_key {str} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys
@@ -38,7 +38,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
         super().__init__(
-            ai_model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
             org_id=org_id,
             log=log,
@@ -55,7 +55,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         """
 
         return OpenAITextCompletion(
-            model_id=settings["ai_model_id"],
+            ai_model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
             log=settings.get("log"),

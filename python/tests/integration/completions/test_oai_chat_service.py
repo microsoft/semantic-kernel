@@ -21,7 +21,7 @@ async def test_oai_chat_service_with_skills(
     kernel.add_chat_service(
         "chat-gpt",
         sk_oai.OpenAIChatCompletion(
-            model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
+            ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
         ),
     )
 

@@ -21,7 +21,7 @@ async def test_oai_text_completion_with_skills(
     kernel.add_chat_service(
         "davinci-003",
         sk_oai.OpenAITextCompletion(
-            model_id="text-davinci-003", api_key=api_key, org_id=org_id
+            ai_model_id="text-davinci-003", api_key=api_key, org_id=org_id
         ),
     )
 

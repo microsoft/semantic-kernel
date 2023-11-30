@@ -29,7 +29,7 @@ class GooglePalmChatCompletion(
 
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str,
         api_key: str,
         message_history: Optional[ChatResponse] = None,
         log: Optional[Logger] = None,
@@ -38,7 +38,7 @@ class GooglePalmChatCompletion(
         Initializes a new instance of the GooglePalmChatCompletion class.
 
         Arguments:
-            model_id {str} -- GooglePalm model name, see
+            ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
@@ -46,7 +46,7 @@ class GooglePalmChatCompletion(
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
         super().__init__(
-            ai_model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
             log=log,
         )
