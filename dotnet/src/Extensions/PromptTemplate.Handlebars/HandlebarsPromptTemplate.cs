@@ -7,7 +7,7 @@ using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {

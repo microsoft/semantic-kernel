@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Implementation of <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.
