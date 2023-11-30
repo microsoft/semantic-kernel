@@ -103,13 +103,13 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
 
+        // Ensure arguments are initialized.
+        arguments ??= new KernelArguments();
+
         if (logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
         }
-
-        //Cloning the arguments to prevent mutation of the original ones
-        arguments ??= new KernelArguments();
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
