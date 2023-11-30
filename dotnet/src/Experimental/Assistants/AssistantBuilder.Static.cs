@@ -113,8 +113,7 @@ public partial class AssistantBuilder
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
-        var chatService = new OpenAIChatCompletion(resultModel.Model, apiKey);
 
-        return new Assistant(resultModel, chatService, restContext, plugins);
+        return new Assistant(resultModel, restContext, plugins);
     }
 }

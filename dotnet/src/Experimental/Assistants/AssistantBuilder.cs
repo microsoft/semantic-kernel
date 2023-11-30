@@ -51,7 +51,6 @@ public partial class AssistantBuilder
         return
             await Assistant.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
-                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
                 this._model,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);

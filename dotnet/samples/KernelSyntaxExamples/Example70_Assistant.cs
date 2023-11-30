@@ -105,9 +105,7 @@ public static class Example70_Assistant
             ["input"] = "Practice makes perfect."
         };
         var result = await kernel.InvokeAsync(assistants.Single(), arguments);
-        var resultValue = result.GetValue<string>();
-
-        var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
+        var response = result.GetValue<AssistantResponse>();
         Console.WriteLine(
             response?.Response ??
             $"No response from assistant: {assistant.Id}");
