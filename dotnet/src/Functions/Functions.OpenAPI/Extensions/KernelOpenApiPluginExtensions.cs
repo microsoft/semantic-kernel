@@ -112,7 +112,7 @@ public static class KernelOpenApiPluginExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -149,7 +149,7 @@ public static class KernelOpenApiPluginExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -212,7 +212,7 @@ public static class KernelOpenApiPluginExtensions
     {
         using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         var parser = new OpenApiDocumentParser(loggerFactory);
 

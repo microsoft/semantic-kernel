@@ -111,7 +111,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -147,7 +147,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,

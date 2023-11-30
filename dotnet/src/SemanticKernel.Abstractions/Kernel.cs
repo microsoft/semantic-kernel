@@ -105,12 +105,12 @@ public sealed class Kernel
 
     #region Additional Transient State
     /// <summary>
-    /// Gets the culture currently associated with this context.
+    /// Gets the culture currently associated with this <see cref="Kernel"/>.
     /// </summary>
     /// <remarks>
     /// The culture defaults to <see cref="CultureInfo.CurrentCulture"/> if not explicitly set.
     /// It may be set to another culture, such as <see cref="CultureInfo.InvariantCulture"/>,
-    /// and any functions invoked within the context can consult this property for use in
+    /// and any functions invoked with this <see cref="Kernel"/> can consult this property for use in
     /// operations like formatting and parsing.
     /// </remarks>
     [AllowNull]
@@ -119,6 +119,14 @@ public sealed class Kernel
         get => this._culture;
         set => this._culture = value ?? CultureInfo.CurrentCulture;
     }
+
+    /// <summary>
+    /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    /// <remarks>
+    /// This behaves the same as calling <see cref="GetService{ILoggerFactory}"/>.
+    /// </remarks>
+    public ILoggerFactory LoggerFactory => this.GetService<ILoggerFactory>();
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.

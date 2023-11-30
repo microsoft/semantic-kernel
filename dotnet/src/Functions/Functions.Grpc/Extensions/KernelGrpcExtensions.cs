@@ -97,7 +97,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -121,7 +121,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -150,7 +150,7 @@ public static class KernelGrpcExtensions
 
         var plugin = new KernelPlugin(pluginName);
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
 
