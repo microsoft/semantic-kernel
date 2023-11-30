@@ -620,7 +620,7 @@ public sealed class KernelFunctionTests2
     [Fact]
     public async Task ItSupportsOverridingNameWithAttributeAsync()
     {
-        static string Test([KernelName("input"), Description("description")] string other) => "Result: " + other;
+        static string Test([Description("description")] string input) => "Result: " + input;
 
         var arguments = new KernelArguments();
         arguments["input"] = "input value";
@@ -870,7 +870,7 @@ public sealed class KernelFunctionTests2
     public void ItExposesMetadataFromDelegate()
     {
         [Description("Concat information")]
-        static string Test(Guid id, string name, [KernelName("old")] int age) => $"{id} {name} {age}";
+        static string Test(Guid id, string name, int old) => $"{id} {name} {old}";
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -887,7 +887,7 @@ public sealed class KernelFunctionTests2
     public void ItExposesMetadataFromMethodInfo()
     {
         [Description("Concat information")]
-        static string Test(Guid id, string name, [KernelName("old")] int age) => $"{id} {name} {age}";
+        static string Test(Guid id, string name, int old) => $"{id} {name} {old}";
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
