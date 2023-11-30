@@ -277,7 +277,7 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(KernelFunctionArguments variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
         {
             try
             {

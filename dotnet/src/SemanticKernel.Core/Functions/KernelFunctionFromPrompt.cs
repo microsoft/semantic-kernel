@@ -119,7 +119,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(arguments);
@@ -156,7 +156,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(arguments);
@@ -208,7 +208,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
-    private void AddDefaultValues(KernelFunctionArguments arguments)
+    private void AddDefaultValues(KernelArguments arguments)
     {
         foreach (var parameter in this._promptConfig.InputParameters)
         {
@@ -219,7 +219,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextCompletion, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelFunctionArguments arguments, CancellationToken cancellationToken)
+    private async Task<(ITextCompletion, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.GetService<IAIServiceSelector>();
         (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, this, arguments);

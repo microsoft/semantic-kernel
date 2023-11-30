@@ -16,7 +16,7 @@ public class FunctionInvokingEventArgs : KernelCancelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
-    public FunctionInvokingEventArgs(KernelFunction function, KernelFunctionArguments arguments) : base(function, arguments)
+    public FunctionInvokingEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
     {
     }
 

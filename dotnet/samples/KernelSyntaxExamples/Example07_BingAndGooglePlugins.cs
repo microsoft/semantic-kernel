@@ -139,7 +139,7 @@ Answer: ";
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
+        var answer = await kernel.InvokeAsync(oracle, new KernelArguments()
         {
             ["question"] = question,
             ["externalInformation"] = string.Empty
@@ -160,7 +160,7 @@ Answer: ";
             Console.WriteLine(information);
 
             // Run the semantic function again, now including information from Bing
-            answer = await kernel.InvokeAsync(oracle, new KernelFunctionArguments()
+            answer = await kernel.InvokeAsync(oracle, new KernelArguments()
             {
                 ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines

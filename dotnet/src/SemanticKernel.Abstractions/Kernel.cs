@@ -249,7 +249,7 @@ public sealed class Kernel
     #endregion
 
     #region Helpers
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelFunctionArguments arguments)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
         if (this.FunctionInvoking is { } functionInvoking)
@@ -261,7 +261,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelFunctionArguments arguments, FunctionResult result)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
         if (this.FunctionInvoked is { } functionInvoked)
@@ -273,7 +273,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelFunctionArguments arguments)
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
         if (this.PromptRendering is { } promptRendering)
@@ -285,7 +285,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelFunctionArguments arguments, string renderedPrompt)
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;
         if (this.PromptRendered is { } promptRendered)

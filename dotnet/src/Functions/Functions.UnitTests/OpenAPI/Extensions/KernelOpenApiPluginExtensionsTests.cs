@@ -199,7 +199,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         var kernel = new Kernel();
 
-        var arguments = new KernelFunctionArguments
+        var arguments = new KernelArguments
         {
             { "secret-name", "fake-secret-name" },
             { "api-version", "fake-api-version" }
@@ -226,9 +226,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
     #region private ================================================================================
 
-    private KernelFunctionArguments GetFakeFunctionArguments()
+    private KernelArguments GetFakeFunctionArguments()
     {
-        return new KernelFunctionArguments
+        return new KernelArguments
         {
             ["secret-name"] = "fake-secret-name",
             ["api-version"] = "fake-api-version",

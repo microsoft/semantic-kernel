@@ -85,7 +85,7 @@ public sealed class KernelFunctionTests3
         // Arrange
         var canary = false;
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
@@ -115,7 +115,7 @@ public sealed class KernelFunctionTests3
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["done"] = "NO";
 
         // Note: This is an important edge case that affects the function signature and how delegates
