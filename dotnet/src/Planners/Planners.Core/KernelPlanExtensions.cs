@@ -2,7 +2,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130

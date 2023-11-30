@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
