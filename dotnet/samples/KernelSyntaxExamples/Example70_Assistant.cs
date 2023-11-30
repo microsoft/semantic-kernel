@@ -33,7 +33,7 @@ public static class Example70_Assistant
 
         await RunSimpleChatAsync();
 
-        await RunWithNativeFunctionsAsync();
+        await RunWithMethodFunctionsAsync();
 
         await RunWithPromptFunctionsAsync();
 
@@ -51,9 +51,9 @@ public static class Example70_Assistant
             "Practice makes perfect.");
     }
 
-    private static async Task RunWithNativeFunctionsAsync()
+    private static async Task RunWithMethodFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithNativeFunctions ========");
+        Console.WriteLine("======== Run:WithMethodFunctions ========");
 
         IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 

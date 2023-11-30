@@ -8,15 +8,15 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example56_TemplateNativeFunctionsWithMultipleArguments
+public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 {
     /// <summary>
-    /// Show how to invoke a Native Function written in C# with multiple arguments
+    /// Show how to invoke a Method Function written in C# with multiple arguments
     /// from a Prompt Function written in natural language
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== TemplateNativeFunctionsWithMultipleArguments ========");
+        Console.WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -45,7 +45,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Functions loaded here are available as "text.*"
         kernel.ImportPluginFromObject<TextPlugin>("text");
 
-        // Prompt Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
+        // Prompt Function invoking text.Concat method function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
  Write a haiku about the following: {{text.Concat input='Harry' input2=$word2}}
 ";
