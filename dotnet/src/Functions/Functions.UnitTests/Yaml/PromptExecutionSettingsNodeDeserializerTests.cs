@@ -14,7 +14,7 @@ namespace SemanticKernel.Functions.UnitTests.Yaml;
 public sealed class PromptExecutionSettingsNodeDeserializerTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
+    public void ItShouldCreatePromptFunctionFromYamlWithCustomModelSettings()
     {
         // Arrange
         var deserializer = new DeserializerBuilder()

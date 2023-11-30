@@ -12,7 +12,7 @@ internal static class TestHelpers
 {
     internal static void ImportAllSamplePlugins(Kernel kernel)
     {
-        ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins",
+        ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins",
             "ChatPlugin",
             "SummarizePlugin",
             "WriterPlugin",
@@ -28,7 +28,7 @@ internal static class TestHelpers
 
     internal static void ImportAllSampleSkills(Kernel kernel)
     {
-        ImportSampleSemanticFunctions(kernel, "../../../../../../samples/skills",
+        ImportSamplePromptFunctions(kernel, "../../../../../../samples/skills",
             "ChatSkill",
             "SummarizeSkill",
             "WriterSkill",
@@ -44,10 +44,10 @@ internal static class TestHelpers
 
     internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
-        return ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
+        return ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
     }
 
-    internal static IReadOnlyKernelPluginCollection ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
+    internal static IReadOnlyKernelPluginCollection ImportSamplePromptFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))

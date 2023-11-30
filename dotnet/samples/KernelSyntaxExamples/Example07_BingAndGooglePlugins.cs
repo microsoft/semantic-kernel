@@ -158,7 +158,7 @@ Answer: ";
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // Run the semantic function again, now including information from Bing
+            // Run the prompt function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelArguments()
             {
                 ["question"] = question,

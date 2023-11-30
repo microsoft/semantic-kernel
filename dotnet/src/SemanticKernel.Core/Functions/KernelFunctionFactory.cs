@@ -64,9 +64,9 @@ public static class KernelFunctionFactory
     // TODO: Revise these Create method XML comments
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
     /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
@@ -83,7 +83,7 @@ public static class KernelFunctionFactory
         KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
 
     /// <summary>
-    /// Create a semantic function instance, given a prompt function model.
+    /// Create a prompt function instance, given a prompt function model.
     /// </summary>
     /// <param name="promptConfig">Prompt configuration model</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
@@ -95,7 +95,7 @@ public static class KernelFunctionFactory
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
 
     /// <summary>
-    /// Create a semantic function instance, given a prompt function model.
+    /// Create a prompt function instance, given a prompt function model.
     /// </summary>
     /// <param name="promptTemplate">Prompt template</param>
     /// <param name="promptConfig">Prompt configuration model</param>
