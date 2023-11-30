@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Dict, Optional, overload
+from typing import Dict, Optional, Union, overload
 
 from openai.lib.azure import AsyncAzureADTokenProvider
 
@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+from semantic_kernel.sk_pydantic import HttpsUrl
 
 
 class AzureChatCompletion(
@@ -29,7 +30,7 @@ class AzureChatCompletion(
     @overload
     def __init__(
         self,
-        base_url: str,
+        base_url: Union[HttpsUrl, str],
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
@@ -45,9 +46,11 @@ class AzureChatCompletion(
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
-            endpoint: The endpoint of the Azure deployment. This value
+            base_url: The url of the Azure deployment. This value
                 can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal.
+                your resource from the Azure portal, the base_url consists of the endpoint,
+                followed by /openai/deployments/{deployment_name}/,
+                use endpoint if you only want to supply the endpoint.
             api_key: The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
@@ -63,7 +66,7 @@ class AzureChatCompletion(
     def __init__(
         self,
         deployment_name: str,
-        endpoint: str,
+        endpoint: Union[HttpsUrl, str],
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
@@ -81,7 +84,7 @@ class AzureChatCompletion(
                 under Management > Deployments in Azure OpenAI Studio.
             endpoint: The endpoint of the Azure deployment. This value
                 can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal.
+                your resource from the Azure portal, the endpoint should end in openai.azure.com.
             api_key: The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
@@ -96,8 +99,8 @@ class AzureChatCompletion(
     def __init__(
         self,
         deployment_name: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        base_url: Optional[str] = None,
+        endpoint: Optional[Union[HttpsUrl, str]] = None,
+        base_url: Optional[Union[HttpsUrl, str]] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
@@ -114,9 +117,15 @@ class AzureChatCompletion(
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
+            base_url: The url of the Azure deployment. This value
+                can be found in the Keys & Endpoint section when examining
+                your resource from the Azure portal, the base_url consists of the endpoint,
+                followed by /openai/deployments/{deployment_name}/,
+                use endpoint if you only want to supply the endpoint.
             endpoint: The endpoint of the Azure deployment. This value
                 can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal.
+                your resource from the Azure portal, the endpoint should end in openai.azure.com.
+                If both base_url and endpoint are supplied, base_url will be used.
             api_key: The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
@@ -129,7 +138,10 @@ class AzureChatCompletion(
         """
         if logger:
             logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
-
+        if isinstance(endpoint, str):
+            endpoint = HttpsUrl(endpoint)
+        if isinstance(base_url, str):
+            base_url = HttpsUrl(base_url)
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint,
@@ -139,7 +151,7 @@ class AzureChatCompletion(
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             log=log or logger,
-            model_type=OpenAIModelTypes.CHAT,
+            ai_model_type=OpenAIModelTypes.CHAT,
         )
 
     @classmethod

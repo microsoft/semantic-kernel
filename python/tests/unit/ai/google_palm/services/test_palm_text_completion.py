@@ -22,27 +22,27 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_google_palm_text_completion_init() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     api_key = "test_api_key"
 
     # Test successful initialization
     gp_text_completion = GooglePalmTextCompletion(
-        model_id=model_id,
+        ai_model_id=ai_model_id,
         api_key=api_key,
     )
 
-    assert gp_text_completion.model_id == model_id
+    assert gp_text_completion.ai_model_id == ai_model_id
     assert gp_text_completion.api_key == api_key
     assert isinstance(gp_text_completion, GooglePalmTextCompletion)
 
 
 def test_google_palm_text_completion_init_with_empty_api_key() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     # api_key = "test_api_key"
 
     with pytest.raises(ValidationError, match="api_key"):
         GooglePalmTextCompletion(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key="",
         )
 
@@ -58,11 +58,11 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
         "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
         new=mock_gp,
     ):
-        model_id = "test_model_id"
+        ai_model_id = "test_model_id"
         api_key = "test_api_key"
         prompt = "hello world"
         gp_text_completion = GooglePalmTextCompletion(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
         )
         settings = CompleteRequestSettings()
@@ -70,7 +70,7 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
         mock_gp.generate_text.assert_called_once_with(
-            model=model_id,
+            model=ai_model_id,
             prompt=prompt,
             temperature=settings.temperature,
             max_output_tokens=settings.max_tokens,

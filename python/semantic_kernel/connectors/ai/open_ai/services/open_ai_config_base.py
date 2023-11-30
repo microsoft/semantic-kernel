@@ -4,7 +4,7 @@ from logging import Logger
 from typing import Any, Dict, Optional
 
 from openai import AsyncOpenAI
-from pydantic import Field, validate_arguments
+from pydantic import Field, validate_call
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
@@ -15,22 +15,22 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
 
 
 class OpenAIConfigBase(OpenAIHandler):
-    @validate_arguments(config=dict(arbitrary_types_allowed=True))
+    @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str = Field(min_length=1),
         api_key: str = Field(min_length=1),
-        model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
+        ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
         org_id: Optional[str] = None,
         log: Optional[Logger] = None,
     ) -> None:
         # TODO: add SK user-agent here
         client = AsyncOpenAI(api_key=api_key, organization=org_id)
         super().__init__(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             client=client,
             log=log,
-            model_type=model_type,
+            ai_model_type=ai_model_type,
         )
 
     def to_dict(self) -> Dict[str, str]:
@@ -42,13 +42,13 @@ class OpenAIConfigBase(OpenAIHandler):
         }
         if self.client.organization:
             client_settings["org_id"] = self.client.organization
-        base = self.dict(
+        base = self.model_dump(
             exclude={
                 "prompt_tokens",
                 "completion_tokens",
                 "total_tokens",
                 "api_type",
-                "model_type",
+                "ai_model_type",
                 "client",
             },
             by_alias=True,
@@ -59,5 +59,5 @@ class OpenAIConfigBase(OpenAIHandler):
 
     def get_model_args(self) -> Dict[str, Any]:
         return {
-            "model": self.model_id,
+            "model": self.ai_model_id,
         }
