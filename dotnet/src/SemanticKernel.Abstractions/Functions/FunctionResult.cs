@@ -53,31 +53,26 @@ public sealed class FunctionResult
     internal object? Value { get; private set; } = null;
 
     /// <summary>
-    /// The culture configured on the Kernel that executed the function.
-    /// </summary>
-    internal CultureInfo Culture { get; set; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
+    /// <param name="kernel">The kernel.</param>
     /// <param name="functionName">Name of executed function.</param>
-    public FunctionResult(string functionName)
+    public FunctionResult(Kernel kernel, string functionName)
     {
+        this._kernel = kernel;
         this.FunctionName = functionName;
-        this.Culture = CultureInfo.InvariantCulture;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
+    /// <param name="kernel">The kernel.</param>
     /// <param name="functionName">Name of executed function.</param>
     /// <param name="value">Function result object.</param>
-    /// <param name="culture">The culture configured on the Kernel that executed the function.</param>
-    public FunctionResult(string functionName, object? value, CultureInfo culture)
-        : this(functionName)
+    public FunctionResult(Kernel kernel, string functionName, object? value)
+        : this(kernel, functionName)
     {
         this.Value = value;
-        this.Culture = culture;
     }
 
     /// <summary>
@@ -120,7 +115,7 @@ public sealed class FunctionResult
     /// <inheritdoc/>
     public override string ToString()
     {
-        return ConvertToString(this.Value, this.Culture) ?? string.Empty;
+        return ConvertToString(this.Value, this._kernel.Culture) ?? string.Empty;
     }
 
     private static string? ConvertToString(object? value, CultureInfo culture)
@@ -190,4 +185,6 @@ public sealed class FunctionResult
 
     /// <summary>Converter functions for converting types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
+
+    private readonly Kernel _kernel;
 }

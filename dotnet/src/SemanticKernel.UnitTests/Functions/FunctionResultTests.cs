@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -18,7 +17,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
+        FunctionResult target = new(new Kernel(), "functionName");
 
         // Act
         target.Metadata.Add(key, value);
@@ -33,7 +32,7 @@ public class FunctionResultTests
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
+        FunctionResult target = new(new Kernel(), "functionName");
 
         // Act,Assert
         Assert.False(target.TryGetMetadataValue(key, out string result));
@@ -46,7 +45,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         int value = 42;
-        FunctionResult target = new("functionName");
+        FunctionResult target = new(new Kernel(), "functionName");
 
         // Act
         target.Metadata.Add(key, value);
@@ -61,7 +60,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
+        FunctionResult target = new(new Kernel(), "functionName", value);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -71,7 +70,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName");
+        FunctionResult target = new(new Kernel(), "functionName");
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -82,7 +81,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
+        FunctionResult target = new(new Kernel(), "functionName", value);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -96,7 +95,7 @@ public class FunctionResultTests
         string pluginName = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName);
+        FunctionResult target = new(new Kernel(), functionName);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
@@ -110,7 +109,7 @@ public class FunctionResultTests
         string value = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName, value, CultureInfo.InvariantCulture);
+        FunctionResult target = new(new Kernel(), functionName, value);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
@@ -122,7 +121,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture);
+        FunctionResult target = new(new Kernel(), "functionName", value);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());

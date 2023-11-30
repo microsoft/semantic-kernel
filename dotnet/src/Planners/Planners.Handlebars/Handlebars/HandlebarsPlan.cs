@@ -55,6 +55,6 @@ public sealed class HandlebarsPlan
     {
         string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
 
-        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
+        return new FunctionResult(kernel, "HandlebarsPlanner", result);
     }
 }

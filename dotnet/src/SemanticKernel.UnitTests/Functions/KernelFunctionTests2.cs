@@ -659,7 +659,7 @@ public sealed class KernelFunctionTests2
     [Fact]
     public async Task ItSupportFunctionResultAsync()
     {
-        FunctionResult Test() => new("function-name", "fake-result", CultureInfo.InvariantCulture);
+        FunctionResult Test() => new(new Kernel(), "function-name", "fake-result");
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
@@ -679,7 +679,7 @@ public sealed class KernelFunctionTests2
         // Arrange
         Task<FunctionResult> Test()
         {
-            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            var functionResult = new FunctionResult(new Kernel(), "function-name", "fake-result");
             return Task.FromResult(functionResult);
         }
 
@@ -701,7 +701,7 @@ public sealed class KernelFunctionTests2
         // Arrange
         ValueTask<FunctionResult> Test()
         {
-            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            var functionResult = new FunctionResult(new Kernel(), "function-name", "fake-result");
             return ValueTask.FromResult(functionResult);
         }
 
