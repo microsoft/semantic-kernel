@@ -72,6 +72,14 @@ public sealed class OpenAIPromptExecutionSettingsConverter : JsonConverter<OpenA
                     case "SERVICE_ID":
                         executionSettings.ServiceId = reader.GetString();
                         break;
+                    case "FUNCTIONCALLBEHAVIOR":
+                    case "FUNCTION_CALL_BEHAVIOR":
+                        executionSettings.FunctionCallBehavior = reader.GetString()?.ToUpperInvariant() switch
+                        {
+                            "AUTOINVOKEKERNELFUNCTIONS" or "AUTO_INVOKE_KERNEL_FUNCTIONS" => FunctionCallBehavior.AutoInvokeKernelFunctions,
+                            _ => null,
+                        };
+                        break;
                     default:
                         reader.Skip();
                         break;

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -24,7 +23,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
         StreamingContent? lastChunk = null;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
             lastChunk = chunk;
@@ -62,7 +61,7 @@ public class FunctionFromMethodTests
         };
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
         }
 
@@ -85,7 +84,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }
@@ -108,7 +107,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }
@@ -133,7 +132,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, new ContextVariables()))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
         {
             chunkCount++;
         }

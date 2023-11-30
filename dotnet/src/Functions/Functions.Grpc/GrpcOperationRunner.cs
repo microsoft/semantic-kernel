@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -48,7 +47,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation run.</returns>
-    public async Task<JsonObject> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<JsonObject> RunAsync(GrpcOperation operation, KernelArguments arguments, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(operation);
         Verify.NotNull(arguments);
@@ -105,7 +104,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, IDictionary<string, string> arguments)
+    private string GetAddress(GrpcOperation operation, KernelArguments arguments)
     {
         if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
@@ -153,7 +152,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="type">The operation request data type.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation request instance.</returns>
-    private object GenerateOperationRequest(GrpcOperation operation, Type type, IDictionary<string, string> arguments)
+    private object GenerateOperationRequest(GrpcOperation operation, Type type, KernelArguments arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
         if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out var payload))

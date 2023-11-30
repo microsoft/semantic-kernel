@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 /// <summary>
 /// Options for REST API operation run.
 /// </summary>
-internal class RestApiOperationRunOptions
+internal sealed class RestApiOperationRunOptions
 {
     /// <summary>
     /// Override for REST API operation server URL.

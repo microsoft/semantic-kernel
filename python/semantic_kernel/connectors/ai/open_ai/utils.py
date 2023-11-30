@@ -1,5 +1,7 @@
 from logging import Logger
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+from openai.types.chat import ChatCompletion
 
 from semantic_kernel import Kernel, SKContext
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
@@ -182,3 +184,26 @@ async def chat_completion_with_function_call(
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
+
+
+def _parse_message(
+    message: ChatCompletion, logger: Optional[Logger] = None
+) -> Tuple[Optional[str], Optional[FunctionCall]]:
+    """
+    Parses the message.
+
+    Arguments:
+        message {OpenAIObject} -- The message to parse.
+
+    Returns:
+        Tuple[Optional[str], Optional[Dict]] -- The parsed message.
+    """
+    content = message.content if hasattr(message, "content") else None
+    function_call = message.function_call if hasattr(message, "function_call") else None
+    if function_call:
+        function_call = FunctionCall(
+            name=function_call.name,
+            arguments=function_call.arguments,
+        )
+
+    return (content, function_call)
