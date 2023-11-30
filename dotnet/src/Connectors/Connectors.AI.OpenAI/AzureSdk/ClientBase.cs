@@ -308,33 +308,14 @@ public abstract class ClientBase
         }
     }
 
-    /// <summary>
-    /// Create a new empty chat instance
-    /// </summary>
-    /// <param name="instructions">Optional chat instructions for the AI service</param>
-    /// <returns>Chat object</returns>
-    private protected static OpenAIChatHistory InternalCreateNewChat(string? instructions = null)
-    {
-        return new OpenAIChatHistory(instructions);
-    }
-
-    /// <summary>
-    /// Create a new chat instance based on chat history.
-    /// </summary>
-    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
-    /// <returns>Chat object</returns>
-    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
-    {
-        return new OpenAIChatHistory(chatHistory);
-    }
-
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
-        ChatHistory chat = PrepareChatHistory(text, executionSettings, out OpenAIPromptExecutionSettings chatSettings);
+        OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
 
+        ChatHistory chat = this.InternalCreateNewChat(text, chatSettings);
         return (await this.InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
@@ -367,17 +348,34 @@ public abstract class ClientBase
         return options;
     }
 
-    private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? executionSettings, out OpenAIPromptExecutionSettings settings)
+    /// <summary>
+    /// Create a new empty chat instance
+    /// </summary>
+    /// <param name="text">Optional chat instructions for the AI service</param>
+    /// <param name="executionSettings">Execution settings</param>
+    /// <returns>Chat object</returns>
+    private protected OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
-        settings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
-
-        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        // If text is not provided, create an empty chat with the system prompt if provided
+        if (string.IsNullOrWhiteSpace(text))
         {
-            return InternalCreateNewChat(chatHistory);
+            return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
         }
 
-        var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
-        chat.AddUserMessage(text);
+        // Try to parse the text as a chat history
+        if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        {
+            return new OpenAIChatHistory(chatHistory);
+        }
+
+        // If settings is not provided, create a new chat with the text as the system prompt
+        var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
+        if (executionSettings is not null)
+        {
+            // If settings is provided, add the prompt as the user message
+            chat.AddUserMessage(text!);
+        }
+
         return chat;
     }
 
