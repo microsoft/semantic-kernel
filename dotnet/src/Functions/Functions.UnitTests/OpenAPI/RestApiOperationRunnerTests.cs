@@ -65,7 +65,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -137,7 +137,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
