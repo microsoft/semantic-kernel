@@ -54,9 +54,6 @@ public sealed class FunctionCallingStepwisePlanner
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
         var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 
-        // Set max tokens on request settings. Should be minimum of model settings max tokens and planner config max completion tokens
-        //this._executionSettings.MaxTokens = Math.Min(this.Config.MaxCompletionTokens, this._executionSettings.MaxTokens ?? int.MaxValue);
-
         // Clone the kernel and modify it to add the final answer function
         var clonedKernel = kernel.Clone();
         clonedKernel.ImportPluginFromObject<UserInteraction>();
@@ -172,7 +169,7 @@ public sealed class FunctionCallingStepwisePlanner
             [GoalKey] = question
         };
         var generatePlanResult = await kernel.InvokeAsync(generatePlanFunction, generatePlanArgs, cancellationToken).ConfigureAwait(false);
-        return generatePlanResult.GetValue<string>() ?? string.Empty; //  TODO: throw if empty?
+        return generatePlanResult.GetValue<string>() ?? throw new KernelException("Failed get a completion for the plan.");
     }
 
     private async Task<ChatHistory> BuildChatHistoryForStepAsync(
@@ -298,6 +295,11 @@ public sealed class FunctionCallingStepwisePlanner
     private readonly string _stepPrompt;
 
     /// <summary>
+    /// The name to use when creating semantic functions that are restricted from plan creation
+    /// </summary>
+    private const string RestrictedPluginName = "FunctionCallingStepwisePlanner_Excluded";
+
+    /// <summary>
     /// The user message to add to the chat history for each step of the plan.
     /// </summary>
     private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.";
@@ -306,11 +308,6 @@ public sealed class FunctionCallingStepwisePlanner
     private const string AvailableFunctionsKey = "available_functions";
     private const string InitialPlanKey = "initial_plan";
     private const string GoalKey = "goal";
-
-    /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
-    /// </summary>
-    private const string RestrictedPluginName = "FunctionCallingStepwisePlanner_Excluded"; // TODO: too long?
 
     #endregion private
 
