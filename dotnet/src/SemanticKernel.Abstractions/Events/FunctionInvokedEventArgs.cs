@@ -18,7 +18,7 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
     /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(KernelFunction function, KernelFunctionArguments arguments, FunctionResult result) : base(function, arguments)
+    public FunctionInvokedEventArgs(KernelFunction function, KernelArguments arguments, FunctionResult result) : base(function, arguments)
     {
         this.Metadata = result.Metadata;
         this.Result = result;

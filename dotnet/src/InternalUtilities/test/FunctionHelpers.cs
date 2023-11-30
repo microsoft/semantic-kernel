@@ -20,7 +20,7 @@ internal static class FunctionHelpers
 
         IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        KernelFunctionArguments arguments = new();
+        KernelArguments arguments = new();
 
         foreach ((string Name, object Value) pair in variables)
         {
