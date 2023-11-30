@@ -7,14 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
+internal sealed class ChatWithDataStreamingResult
 {
     public ModelResult ModelResult { get; }
 
@@ -31,16 +29,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         this._choice = choice;
     }
 
-    public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
-    {
-        var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
-
-        var result = new SKChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
-
-        return await Task.FromResult<ChatMessageBase>(result).ConfigureAwait(false);
-    }
-
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
@@ -50,25 +39,15 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         }
     }
 
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken))
-        {
-            if (result.Content is string content and { Length: > 0 })
-            {
-                yield return content;
-            }
-        }
-    }
-
-    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
-        return message.Content;
-    }
-
     #region private ================================================================================
+    private async Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
+
+        var result = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
+
+        return await Task.FromResult<ChatMessage>(result).ConfigureAwait(false);
+    }
 
     private readonly ChatWithDataStreamingChoice _choice;
 

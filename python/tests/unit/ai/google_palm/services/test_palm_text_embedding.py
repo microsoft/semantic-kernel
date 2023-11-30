@@ -4,6 +4,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
@@ -26,8 +27,8 @@ def test_google_palm_text_embedding_init() -> None:
         api_key=api_key,
     )
 
-    assert gp_text_embed._model_id == model_id
-    assert gp_text_embed._api_key == api_key
+    assert gp_text_embed.model_id == model_id
+    assert gp_text_embed.api_key == api_key
     assert isinstance(gp_text_embed, GooglePalmTextEmbedding)
 
 
@@ -35,9 +36,7 @@ def test_google_palm_text_embedding_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
     # api_key = "test_api_key"
 
-    with pytest.raises(
-        ValueError, match="The Google PaLM API key cannot be `None` or empty"
-    ):
+    with pytest.raises(ValidationError, match="api_key"):
         GooglePalmTextEmbedding(
             model_id=model_id,
             api_key="",

@@ -3,11 +3,10 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal sealed class DeleteVectorsRequest : IValidatable
+internal sealed class DeleteVectorsRequest
 {
     [JsonPropertyName("points")]
     public List<string> Ids { get; set; }
@@ -15,12 +14,6 @@ internal sealed class DeleteVectorsRequest : IValidatable
     public static DeleteVectorsRequest DeleteFrom(string collectionName)
     {
         return new DeleteVectorsRequest(collectionName);
-    }
-
-    public void Validate()
-    {
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
-        Verify.NotNullOrEmpty(this.Ids, "The list of vectors to delete is NULL or empty");
     }
 
     public DeleteVectorsRequest DeleteVector(string qdrantPointId)
@@ -39,7 +32,9 @@ internal sealed class DeleteVectorsRequest : IValidatable
 
     public HttpRequestMessage Build()
     {
-        this.Validate();
+        Verify.NotNullOrWhiteSpace(this._collectionName, "collectionName");
+        Verify.NotNullOrEmpty(this.Ids, "The list of vectors to delete is NULL or empty");
+
         return HttpRequest.CreatePostRequest(
             $"collections/{this._collectionName}/points/delete",
             payload: this);

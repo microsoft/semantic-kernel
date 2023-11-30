@@ -9,28 +9,17 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Chat message history representation
 /// </summary>
-public class ChatHistory : List<ChatMessageBase>
+public class ChatHistory : List<ChatMessage>
 {
-    private sealed class ChatMessage : ChatMessageBase
-    {
-        public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
-        {
-        }
-    }
-
-    /// <summary>
-    /// List of messages in the chat
-    /// </summary>
-    public List<ChatMessageBase> Messages => this;
-
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    public void AddMessage(AuthorRole authorRole, string content)
+    /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    public void AddMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties = null)
     {
-        this.Add(new ChatMessage(authorRole, content));
+        this.Add(new ChatMessage(authorRole, content, additionalProperties));
     }
 
     /// <summary>
@@ -39,9 +28,10 @@ public class ChatHistory : List<ChatMessageBase>
     /// <param name="index">Index of the message to insert</param>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    public void InsertMessage(int index, AuthorRole authorRole, string content)
+    /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    public void InsertMessage(int index, AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties = null)
     {
-        this.Insert(index, new ChatMessage(authorRole, content));
+        this.Insert(index, new ChatMessage(authorRole, content, additionalProperties));
     }
 
     /// <summary>

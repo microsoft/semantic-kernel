@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -60,17 +61,30 @@ public static class Example33_StreamingChat
 
         // Second bot assistant message
         await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
+
+        Console.WriteLine("\n------------------------");
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory, AuthorRole authorRole)
+    private static async Task StreamMessageOutputAsync(IChatCompletion chatCompletion, ChatHistory chatHistory, AuthorRole authorRole)
     {
+        bool roleWritten = false;
+
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
 
-        await foreach (string message in chatGPT.GenerateMessageStreamAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory))
         {
-            fullMessage += message;
-            Console.Write(message);
+            if (!roleWritten && chatUpdate.Role.HasValue)
+            {
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.ContentUpdate}\n");
+                roleWritten = true;
+            }
+
+            if (chatUpdate.ContentUpdate is { Length: > 0 })
+            {
+                fullMessage += chatUpdate.ContentUpdate;
+                Console.Write(chatUpdate.ContentUpdate);
+            }
         }
 
         Console.WriteLine("\n------------------------");
@@ -82,7 +96,7 @@ public static class Example33_StreamingChat
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");

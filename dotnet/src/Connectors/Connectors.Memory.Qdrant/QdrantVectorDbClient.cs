@@ -12,8 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-using Microsoft.SemanticKernel.Diagnostics;
-using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Verify;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -37,7 +36,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         ILoggerFactory? loggerFactory = null)
     {
         this._vectorSize = vectorSize;
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
@@ -57,7 +56,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;
@@ -176,8 +175,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     {
         this._logger.LogDebug("Deleting vector by point ID");
 
-        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
-        Verify.NotNull(pointIds, "Qdrant point IDs are NULL");
+        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNull(pointIds);
 
         using var request = DeleteVectorsRequest.DeleteFrom(collectionName)
             .DeleteRange(pointIds)
@@ -251,8 +250,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     public async Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Upserting vectors");
-        Verify.NotNull(vectorData, "The vector data entries are NULL");
-        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
+        Verify.NotNull(vectorData);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
         using var request = UpsertVectorRequest.Create(collectionName)
             .UpsertRange(vectorData)
@@ -465,7 +464,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
     private static Uri SanitizeEndpoint(string endpoint, int? port = null)
     {
-        Verify.IsValidUrl(nameof(endpoint), endpoint, false, true, false);
+        Verify.ValidateUrl(endpoint);
 
         UriBuilder builder = new(endpoint);
         if (port.HasValue) { builder.Port = port.Value; }
@@ -480,7 +479,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         //Apply endpoint override if it's specified.
         if (this._endpointOverride != null)
         {
-            request.RequestUri = new Uri(this._endpointOverride, request.RequestUri);
+            request.RequestUri = new Uri(this._endpointOverride, request.RequestUri!);
         }
 
         HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);

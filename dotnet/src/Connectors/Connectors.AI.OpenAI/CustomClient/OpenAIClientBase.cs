@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
@@ -20,20 +22,30 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 public abstract class OpenAIClientBase
 {
     /// <summary>
+    /// Key used to store the organizarion in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string OrganizationKey = "Organization";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    private protected Dictionary<string, string> InternalAttributes = new();
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
     }
 
     /// <summary>
@@ -51,7 +63,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new SKException("Embeddings not found");
+            throw new KernelException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => e.Values).ToList();
@@ -73,6 +85,19 @@ public abstract class OpenAIClientBase
     {
         var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
+    }
+
+    /// <summary>
+    /// Add attribute to the internal attribute dictionary if the value is not null or empty.
+    /// </summary>
+    /// <param name="key">Attribute key</param>
+    /// <param name="value">Attribute value</param>
+    private protected void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this.InternalAttributes.Add(key, value!);
+        }
     }
 
     #region private ================================================================================
@@ -98,10 +123,10 @@ public abstract class OpenAIClientBase
 
     private protected T JsonDeserialize<T>(string responseJson)
     {
-        var result = Json.Deserialize<T>(responseJson);
+        var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive);
         if (result is null)
         {
-            throw new SKException("Response JSON parse error");
+            throw new KernelException("Response JSON parse error");
         }
 
         return result;

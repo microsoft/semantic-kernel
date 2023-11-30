@@ -182,36 +182,29 @@ class SKFunction(SKFunctionBase):
 
             try:
                 if function_config.has_chat_prompt:
-                    as_chat_prompt = function_config.prompt_template
+                    chat_prompt = function_config.prompt_template
 
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     completion = ""
-                    messages = await as_chat_prompt.render_messages_async(context)
-                    async for steam_message in client.complete_chat_stream_async(
+                    messages = await chat_prompt.render_messages_async(context)
+                    async for partial_content in client.complete_chat_stream_async(
                         messages, request_settings
                     ):
-                        completion += steam_message
-                        yield steam_message
-
-                    # Add the last message from the rendered chat prompt
-                    # (which will be the user message) and the response
-                    # from the model (the assistant message)
-                    _, content = messages[-1]
-                    as_chat_prompt.add_user_message(content)
-                    as_chat_prompt.add_assistant_message(completion)
-
-                    # Update context
+                        completion += partial_content
+                        yield partial_content
+                    # Use the full completion to update the chat_prompt_template and context
+                    chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
 
                     completion = ""
-                    async for stream_message in client.complete_stream_async(
+                    async for partial_content in client.complete_stream_async(
                         prompt, request_settings
                     ):
-                        completion += stream_message
-                        yield stream_message
+                        completion += partial_content
+                        yield partial_content
                     context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"

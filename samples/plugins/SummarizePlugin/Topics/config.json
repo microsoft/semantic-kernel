@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Analyze given text or document and extract key topics worth remembering",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 128,
       "temperature": 0.0,

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
@@ -48,16 +48,15 @@ public class RestApiOperationTests
             new Dictionary<string, string>()
         );
 
-        var arguments = new Dictionary<string, string>
-        {
-            { "server-url", "https://fake-random-test-host-override" }
-        };
+        var fakeHostUrlOverride = "https://fake-random-test-host-override";
+
+        var arguments = new Dictionary<string, string>();
 
         // Act
-        var url = sut.BuildOperationUrl(arguments);
+        var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
 
         // Assert
-        Assert.Equal("https://fake-random-test-host-override/", url.OriginalString);
+        Assert.Equal(fakeHostUrlOverride, url.OriginalString.TrimEnd('/'));
     }
 
     [Fact]
@@ -144,17 +143,18 @@ public class RestApiOperationTests
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
+        var fakeHostUrlOverride = "https://fake-random-test-host-override";
+
         var arguments = new Dictionary<string, string>
         {
-            { "server-url", "https://fake-random-test-host-override" },
             { "fake-path", "fake-path-value" },
         };
 
         // Act
-        var url = sut.BuildOperationUrl(arguments);
+        var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
 
         // Assert
-        Assert.Equal("https://fake-random-test-host-override/fake-path-value/", url.OriginalString);
+        Assert.Equal($"{fakeHostUrlOverride}/fake-path-value/", url.OriginalString);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
     [Fact]
@@ -257,7 +257,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
     [Fact]
