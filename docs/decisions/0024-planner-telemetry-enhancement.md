@@ -80,15 +80,15 @@ Contoso is a company that is developing an AI application using SK.
       | Function | TellJoke | 1m
       | Function | WriteAndTellJoke | 1.5m
       | Planner | CreateHandlebarsPlan | 2m
-  - Success count for planners
-    - Description: A planner run is considered successful when it generates a valid plan.
+  - Success/failure count for planners
+    - Description: A planner run is considered successful when it generates a valid plan. A plan is valid when the model response is successfully parsed into a plan of desired format and it contains one or more steps.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
       | ComponentType | ComponentName | Fail | Success
       |---|---|---|---|
       | Planner | CreateHandlebarsPlan | 5 | 95
       | Planner | CreateHSequentialPlan | 20 | 80
-  - Success count for plans
+  - Success/failure count for plans
     - Description: A plan execution is considered successful when all steps in the plan are executed successfully.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
@@ -207,6 +207,20 @@ catch (Exception ex)
   logger.LogError(ex, "Error while parsing usage details from model result.");
   throw;
 }
+
+
+logger.LogInformation(
+  "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+  promptTokens, completionTokens);
+
+TagList tags = new() {
+  { "sk.function.name", this.Name },
+  { "sk.function.model_id", modelId }
+};
+
+// The metrics will be created as private static class members.
+s_promptTokensCounter.Add(promptTokens, in tags);
+s_completionTokenCounter.Add(completionTokens, in tags);
 ```
 
 ## To optionally allow the kernel to send sensitive information
