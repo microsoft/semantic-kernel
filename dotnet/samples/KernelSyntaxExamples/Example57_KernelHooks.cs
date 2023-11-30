@@ -109,7 +109,7 @@ public static class Example57_KernelHooks
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
             Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendering Handler - Triggered");
-            e.Variables.Set("style", "Seinfeld");
+            e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
@@ -148,12 +148,12 @@ public static class Example57_KernelHooks
 
         static void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.Variables.Input;
+            var originalOutput = e.Result.ToString();
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.Variables.Update(newOutput);
+            e.Result.SetValue(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;

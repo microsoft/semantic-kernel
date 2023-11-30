@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
@@ -19,10 +18,10 @@ public interface IAIServiceSelector
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
     /// <param name="kernel">The kernel</param>
-    /// <param name="variables">Context variables</param>
     /// <param name="function">Semantic Kernel callable function interface</param>
+    /// <param name="arguments">The function arguments.</param>
     /// <returns></returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService;
+    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService;
 #pragma warning restore CA1716
 }

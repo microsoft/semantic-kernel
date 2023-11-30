@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using RepoUtils;
 
@@ -64,12 +63,12 @@ public static class Example64_MultiplePromptTemplates
             promptTemplateFactory: promptTemplateFactory
         );
 
-        var variables = new ContextVariables()
+        var arguments = new KernelFunctionArguments()
         {
             { "name", "Bob" }
         };
 
-        var result = await kernel.InvokeAsync(function, variables);
+        var result = await kernel.InvokeAsync(function, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 }

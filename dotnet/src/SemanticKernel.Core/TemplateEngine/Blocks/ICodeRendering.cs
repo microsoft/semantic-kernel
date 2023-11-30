@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -15,8 +15,8 @@ internal interface ICodeRendering
     /// Render the block using the given context, potentially using external I/O.
     /// </summary>
     /// <param name="kernel">The kernel</param>
-    /// <param name="variables">The variables</param>
+    /// <param name="arguments">The arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Rendered content</returns>
-    public Task<string> RenderCodeAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default);
+    public Task<string> RenderCodeAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default);
 }

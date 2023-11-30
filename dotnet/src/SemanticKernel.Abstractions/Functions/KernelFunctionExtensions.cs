@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Functions;
 
@@ -17,17 +16,15 @@ public static class KernelFunctionExtensions
     /// </summary>
     /// <param name="function">Target function</param>
     /// <param name="kernel">The kernel</param>
-    /// <param name="variables">SK context variables</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
     public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
         this KernelFunction function,
         Kernel kernel,
-        ContextVariables? variables = null,
-        PromptExecutionSettings? executionSettings = null,
+        KernelFunctionArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        return function.InvokeStreamingAsync<StreamingContent>(kernel, variables ?? new ContextVariables(), executionSettings, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
     }
 }

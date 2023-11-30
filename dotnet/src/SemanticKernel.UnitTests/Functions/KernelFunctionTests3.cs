@@ -2,12 +2,12 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
@@ -76,22 +76,23 @@ public sealed class KernelFunctionTests3
         }
 
         // Assert
-        Assert.Equal(4, count);
+        Assert.Equal(3, count);
     }
 
     [Fact]
     public async Task ItCanImportNativeFunctionsAsync()
     {
         // Arrange
-        var variables = new ContextVariables();
-        variables["done"] = "NO";
+        var canary = false;
+
+        var arguments = new KernelFunctionArguments();
+        arguments["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
-        async Task ExecuteAsync(ContextVariables contextIn)
+        async Task ExecuteAsync(string done)
         {
-            Assert.Equal("NO", contextIn["done"]);
-            contextIn["canary"] = "YES";
-
+            Assert.Equal("NO", done);
+            canary = true;
             await Task.Delay(0);
         }
 
@@ -102,31 +103,31 @@ public sealed class KernelFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, variables);
+        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Equal("YES", variables["canary"]);
-        Assert.Equal("YES", result.Variables["canary"]);
+        Assert.True(canary);
+        Assert.Null(result.GetValue<object?>());
+        Assert.Empty(result.ToString());
     }
 
     [Fact]
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var variables = new ContextVariables();
-        variables["done"] = "NO";
+        var arguments = new KernelFunctionArguments();
+        arguments["done"] = "NO";
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
         //       This scenario is used for gRPC functions.
         string variableOutsideTheFunction = "foo";
 
-        async Task ExecuteAsync(ContextVariables variables)
+        async Task<string> ExecuteAsync(string done)
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
-            variables["canary"] = "YES";
-
             await Task.Delay(0);
+            return referenceToExternalVariable;
         }
 
         // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
@@ -135,10 +136,11 @@ public sealed class KernelFunctionTests3
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, variables);
+        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Equal("YES", variables["canary"]);
+        Assert.Equal(variableOutsideTheFunction, result.GetValue<string>());
+        Assert.Equal(variableOutsideTheFunction, result.ToString());
     }
 
     private sealed class InvalidPlugin
@@ -150,11 +152,6 @@ public sealed class KernelFunctionTests3
 
         [KernelFunction]
         public void Invalid2(string y, CustomUnknownType n)
-        {
-        }
-
-        [KernelFunction]
-        public void Invalid3(ContextVariables context1, ContextVariables context2)
         {
         }
 
@@ -200,125 +197,49 @@ public sealed class KernelFunctionTests3
         }
 
         [KernelFunction]
-        public void Type04(ContextVariables context)
+        public void Type04(string input)
         {
         }
 
         [KernelFunction]
-        public void Type04Nullable(ContextVariables? variables)
+        public void Type04Nullable(string? input)
         {
         }
 
         [KernelFunction]
-        public string Type05(ContextVariables context)
-        {
-            return "";
-        }
-
-        [KernelFunction]
-        public string? Type05Nullable(ContextVariables? variables)
-        {
-            return null;
-        }
-
-        [KernelFunction]
-        public async Task<string> Type06Async(ContextVariables context)
-        {
-            await Task.Delay(0);
-            return "";
-        }
-
-        [KernelFunction]
-        public async Task Type07Async(ContextVariables context)
-        {
-            await Task.Delay(0);
-        }
-
-        [KernelFunction]
-        public void Type08(string input)
-        {
-        }
-
-        [KernelFunction]
-        public void Type08Nullable(string? input)
-        {
-        }
-
-        [KernelFunction]
-        public string Type09(string input)
+        public string Type05(string input)
         {
             return "";
         }
 
         [KernelFunction]
-        public string? Type09Nullable(string? input = null)
+        public string? Type05Nullable(string? input = null)
         {
             return "";
         }
 
         [KernelFunction]
-        public async Task<string> Type10Async(string input)
+        public async Task<string> Type06Async(string input)
         {
             await Task.Delay(0);
             return "";
         }
 
         [KernelFunction]
-        public async Task<string?> Type10NullableAsync(string? input)
+        public async Task<string?> Type06NullableAsync(string? input)
         {
             await Task.Delay(0);
             return "";
         }
 
         [KernelFunction]
-        public void Type11(string input, ContextVariables context)
-        {
-        }
-
-        [KernelFunction]
-        public void Type11Nullable(string? input = null, ContextVariables? variables = null)
-        {
-        }
-
-        [KernelFunction]
-        public string Type12(string input, ContextVariables context)
-        {
-            return "";
-        }
-
-        [KernelFunction]
-        public async Task<string> Type13Async(string input, ContextVariables context)
-        {
-            await Task.Delay(0);
-            return "";
-        }
-
-        [KernelFunction]
-        public async Task Type14Async(string input, ContextVariables context)
+        public async Task Type07Async(string input)
         {
             await Task.Delay(0);
         }
 
         [KernelFunction]
-        public async Task Type15Async(string input)
-        {
-            await Task.Delay(0);
-        }
-
-        [KernelFunction]
-        public async Task Type16Async(ContextVariables context)
-        {
-            await Task.Delay(0);
-        }
-
-        [KernelFunction]
-        public async Task Type17Async(string input, ContextVariables context)
-        {
-            await Task.Delay(0);
-        }
-
-        [KernelFunction]
-        public async Task Type18Async()
+        public async Task Type08Async()
         {
             await Task.Delay(0);
         }
@@ -337,9 +258,23 @@ public sealed class KernelFunctionTests3
         }
 
         [KernelFunction]
-        public async ValueTask ReturnsValueTaskContextAsync(ContextVariables context)
+        public FunctionResult ReturnsFunctionResult()
+        {
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+        }
+
+        [KernelFunction]
+        public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
         {
             await Task.Delay(0);
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+        }
+
+        [KernelFunction]
+        public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
+        {
+            await Task.Delay(0);
+            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]

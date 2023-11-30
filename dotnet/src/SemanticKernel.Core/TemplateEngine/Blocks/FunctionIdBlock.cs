@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -53,7 +53,8 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         return true;
     }
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(IDictionary<string, string>? arguments)
     {
         return this.Content;
     }

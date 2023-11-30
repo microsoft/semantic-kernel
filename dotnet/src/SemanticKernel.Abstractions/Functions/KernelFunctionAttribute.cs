@@ -2,11 +2,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -30,23 +30,24 @@ namespace Microsoft.SemanticKernel;
 /// by an LLM or embedding.
 /// </para>
 /// <para>
-/// Functions may have any number of parameters. Parameters of type <see cref="ILogger"/> and
-/// <see cref="CancellationToken"/> are filled in from the corresponding members of the <see cref="ContextVariables"/>;
-/// <see cref="ContextVariables"/> itself may also be a parameter. A given native function may declare at
-/// most one parameter of each of these types.  All other parameters must be of a primitive .NET type or
+/// Functions may have any number of parameters. A given native function may declare at
+/// most one parameter of each of these types - <see cref="Kernel"/>, <see cref="KernelFunctionArguments"/>,
+/// <see cref="CancellationToken"/>, <see cref="CultureInfo"/>, <see cref="ILogger"/> or <see cref="ILoggerFactory"/>.
+/// The special "input" parameter may only be declared once, and in such cases, it must be declared first.
+/// All other parameters must be of a primitive .NET type or
 /// a type attributed with <see cref="TypeConverterAttribute"/>. Functions may return a <see cref="Task"/>,
 /// <see cref="ValueTask"/>, any primitive .NET type or a type attributed with <see cref="TypeConverterAttribute"/>,
 /// or a <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/> of such a type.
 /// </para>
 /// <para>
-/// Parameters are populated based on a context variable of the same name, unless an <see cref="KernelNameAttribute"/> is
-/// used to override which context variable is targeted. If no context variable of the given name is present, but
-/// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the siguatre,
+/// Parameters are populated based on a arguments of the same name, unless an <see cref="KernelNameAttribute"/> is
+/// used to override which argument is targeted. If no argument of the given name is present, but
+/// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the signature,
 /// that default value is used instead. If no default value was specified and it's the first parameter, the "input"
-/// context variable will be used.  If no value is available, the invocation will fail.
+/// argument will be used.  If no value is available, the invocation will fail.
 /// </para>
 /// <para>
-/// For non-string parameters, the context variable value is automatically converted to the appropriate type to be passed
+/// For non-string parameters, the argument value is automatically converted to the appropriate type to be passed
 /// in based on the <see cref="TypeConverter"/> for the specified type. Similarly, return values are automatically converted
 /// back to strings via the associated <see cref="TypeConverter"/>.
 /// </para>

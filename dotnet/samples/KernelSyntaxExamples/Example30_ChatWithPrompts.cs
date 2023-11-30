@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 using Resources;
@@ -70,9 +69,8 @@ public static class Example30_ChatWithPrompts
         // We could also use a variable, this is just to show that the prompt can invoke functions.
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        // We need a kernel context to store some information to pass to the prompts and the list
-        // of available plugins needed to render prompt templates.
-        var variables = new ContextVariables
+        // Adding required arguments referenced by the prompt templates.
+        var arguments = new KernelFunctionArguments
         {
             // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
             ["selectedText"] = selectedText,
@@ -91,12 +89,12 @@ public static class Example30_ChatWithPrompts
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, variables);
+        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, arguments);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, variables);
+        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, arguments);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers

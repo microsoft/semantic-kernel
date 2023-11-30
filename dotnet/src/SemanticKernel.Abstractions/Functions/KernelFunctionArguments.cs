@@ -14,6 +14,11 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelFunctionArguments : Dictionary<string, string>
 {
     /// <summary>
+    /// The main input parameter name.
+    /// </summary>
+    public const string InputParameterName = "input";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunctionArguments"/> class with the specified AI request settings.
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>

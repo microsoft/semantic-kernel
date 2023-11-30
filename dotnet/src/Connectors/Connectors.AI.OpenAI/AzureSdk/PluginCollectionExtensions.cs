@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -11,21 +10,21 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public static class PluginCollectionExtensions
 {
     /// <summary>
-    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="ContextVariables"/> with its parameters.
+    /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelFunctionArguments"/> with its parameters.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
     /// <param name="response">The <see cref="OpenAIFunctionResponse"/> object.</param>
     /// <param name="availableFunction">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/></param>
-    /// <param name="availableContext">When this method returns, the context variables containing parameters for the function; otherwise, <see langword="null"/></param>
+    /// <param name="arguments">When this method returns, the arguments for the function; otherwise, <see langword="null"/></param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
-    public static bool TryGetFunctionAndContext(
+    public static bool TryGetFunctionAndArguments(
         this IReadOnlyKernelPluginCollection plugins,
         OpenAIFunctionResponse response,
         [NotNullWhen(true)] out KernelFunction? availableFunction,
-        [NotNullWhen(true)] out ContextVariables? availableContext)
+        [NotNullWhen(true)] out KernelFunctionArguments? arguments)
     {
         availableFunction = null;
-        availableContext = null;
+        arguments = null;
 
         if (!plugins.TryGetFunction(response.PluginName, response.FunctionName, out availableFunction))
         {
@@ -33,11 +32,11 @@ public static class PluginCollectionExtensions
             return false;
         }
 
-        // Add parameters to context variables
-        availableContext = new ContextVariables();
+        // Add parameters to arguments
+        arguments = new KernelFunctionArguments();
         foreach (var parameter in response.Parameters)
         {
-            availableContext.Set(parameter.Key, parameter.Value.ToString());
+            arguments[parameter.Key] = parameter.Value.ToString();
         }
 
         return true;

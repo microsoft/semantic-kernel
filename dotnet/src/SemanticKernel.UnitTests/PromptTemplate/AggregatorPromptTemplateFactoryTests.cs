@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.PromptTemplate;
@@ -67,7 +67,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptModel = promptConfig;
         }
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
@@ -95,7 +95,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptModel = promptConfig;
         }
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
