@@ -91,7 +91,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelFunctionArguments? arguments))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelArguments? arguments))
             {
                 var result = (await kernel.InvokeAsync(func, arguments)).GetValue<object>();
 
@@ -187,7 +187,7 @@ public static class Example59_OpenAIFunctionCalling
 
             // If the function returned by OpenAI is an KernelFunctionFactory registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelFunctionArguments? arguments))
+            if (kernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? func, out KernelArguments? arguments))
             {
                 var functionResult = await kernel.InvokeAsync(func, arguments);
 

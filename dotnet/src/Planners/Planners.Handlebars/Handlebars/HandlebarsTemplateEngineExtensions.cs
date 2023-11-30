@@ -440,7 +440,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         CancellationToken cancellationToken = default)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, new KernelFunctionArguments(state), cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, new KernelArguments(state), cancellationToken: cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.

@@ -22,6 +22,6 @@ public interface IAIServiceSelector
     /// <param name="arguments">The function arguments.</param>
     /// <returns></returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelFunctionArguments arguments) where T : class, IAIService;
+    (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService;
 #pragma warning restore CA1716
 }
