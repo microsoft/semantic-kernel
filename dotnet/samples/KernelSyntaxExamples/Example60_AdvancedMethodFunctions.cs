@@ -8,24 +8,24 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
 /**
- * This example shows different ways how to define and execute native functions using custom and primitive types.
+ * This example shows different ways how to define and execute method functions using custom and primitive types.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example60_AdvancedNativeFunctions
+public static class Example60_AdvancedMethodFunctions
 {
     public static async Task RunAsync()
     {
-        await NativeFunctionsChainingAsync();
+        await MethodFunctionsChainingAsync();
     }
 
-    #region Native Functions Chaining
+    #region Method Functions Chaining
 
     /// <summary>
     /// This example executes Function1, which in turn executes Function2.
     /// </summary>
-    private static async Task NativeFunctionsChainingAsync()
+    private static async Task MethodFunctionsChainingAsync()
     {
-        Console.WriteLine("Running Native Function Chaining example...");
+        Console.WriteLine("Running Method Function Chaining example...");
 
         var kernel = new KernelBuilder().Build();
 
@@ -39,7 +39,7 @@ public static class Example60_AdvancedNativeFunctions
     }
 
     /// <summary>
-    /// Plugin example with two native functions, where one function is called from another.
+    /// Plugin example with two method functions, where one function is called from another.
     /// </summary>
     private sealed class FunctionsChainingPlugin
     {
@@ -80,7 +80,7 @@ public static class Example60_AdvancedNativeFunctions
     /// </summary>
     /// <remarks>
     /// <see cref="TypeConverter"/> is used to represent complex object as meaningful string, so
-    /// it can be passed to AI for further processing using semantic functions.
+    /// it can be passed to AI for further processing using prompt functions.
     /// It's possible to choose any format (e.g. XML, JSON, YAML) to represent your object.
     /// </remarks>
     [TypeConverter(typeof(MyCustomTypeConverter))]
@@ -104,7 +104,7 @@ public static class Example60_AdvancedNativeFunctions
 
         /// <summary>
         /// This method is used to convert object from string to actual type. This will allow to pass object to
-        /// native function which requires it.
+        /// method function which requires it.
         /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {

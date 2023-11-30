@@ -22,7 +22,7 @@ public static class Example35_GrpcPlugins
         var plugin = kernel.ImportPluginFromGrpcFile("<path-to-.proto-file>", "<plugin-name>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["address"] = "<gRPC-server-address>";
         arguments["payload"] = "<gRPC-request-message-as-json>";
 

@@ -74,7 +74,7 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Input parameter for semantic functions.
+    /// Input parameter for prompt functions.
     /// </summary>
     public class InputParameter
     {

@@ -1,7 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 /// <summary>
@@ -10,9 +7,9 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 internal interface ITextRendering
 {
     /// <summary>
-    /// Render the block using only the given variables.
+    /// Render the block using only the given arguments.
     /// </summary>
-    /// <param name="arguments">Optional arguments used to render the block</param>
+    /// <param name="arguments">Optional arguments the block rendering</param>
     /// <returns>Rendered content</returns>
-    public string Render(IDictionary<string, string>? arguments);
+    public string Render(KernelArguments? arguments);
 }

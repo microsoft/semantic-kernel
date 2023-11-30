@@ -44,7 +44,7 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
-    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>

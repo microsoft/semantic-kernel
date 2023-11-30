@@ -101,15 +101,6 @@ public sealed class FunctionResult
     }
 
     /// <summary>
-    /// Sets function result.
-    /// </summary>
-    /// <param name="value">The result value.</param>
-    public void SetValue(object? value)
-    {
-        this.Value = value;
-    }
-
-    /// <summary>
     /// Get typed value from metadata.
     /// </summary>
     public bool TryGetMetadataValue<T>(string key, out T value)

@@ -13,7 +13,7 @@ public static class Example09_FunctionTypes
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Native function types ========");
+        Console.WriteLine("======== Method Function types ========");
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -85,7 +85,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new KernelFunctionArguments() { { "input", "blah blah blah" } });
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new KernelArguments() { { "input", "blah blah blah" } });
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

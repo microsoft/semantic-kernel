@@ -17,7 +17,7 @@ public abstract class KernelCancelEventArgs : KernelEventArgs
     /// </summary>
     /// <param name="function">Kernel function</param>
     /// <param name="arguments">Kernel function arguments</param>
-    internal KernelCancelEventArgs(KernelFunction function, KernelFunctionArguments arguments) : base(function, arguments)
+    internal KernelCancelEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
     {
     }
 
