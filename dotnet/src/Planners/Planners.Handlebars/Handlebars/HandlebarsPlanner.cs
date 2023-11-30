@@ -47,7 +47,7 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
+        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
 
         return PlannerInstrumentation.CreatePlanAsync(
             static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
