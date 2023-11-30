@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -154,7 +153,7 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, new Dictionary<string, string>());
+            var information = await promptTemplate.RenderAsync(kernel);
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
