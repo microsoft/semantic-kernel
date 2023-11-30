@@ -34,7 +34,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    KernelFunctionArguments? functionArguments = arguments is not null ? new KernelFunctionArguments(arguments) : null;
+                    KernelArguments? functionArguments = arguments is not null ? new KernelArguments(arguments) : null;
                     var result = function.InvokeAsync(kernel, functionArguments).GetAwaiter().GetResult();
                     writer.WriteSafeString(result.ToString());
                 });
