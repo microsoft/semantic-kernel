@@ -125,7 +125,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationAsync()
+    public async Task InvokeAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -148,7 +148,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
+    public async Task InvokeAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -171,7 +171,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
+    public async Task InvokeAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -194,7 +194,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
+    public async Task InvokeAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -220,7 +220,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
+    public async Task InvokeAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -255,7 +255,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPostInvocationAsync()
+    public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -278,7 +278,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
@@ -301,7 +301,7 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();

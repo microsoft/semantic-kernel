@@ -25,7 +25,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
@@ -40,7 +40,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
@@ -123,7 +123,7 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "foo"
 
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             skill_collection=None,
@@ -140,7 +140,7 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "bar"
 
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             skill_collection=None,
@@ -156,7 +156,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=None,
@@ -170,7 +170,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block2(self):
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=None,
@@ -193,7 +193,7 @@ class TestCodeBlock:
         variables["var2"] = "due"
 
         # Create a context with the variables, memory, skill collection, and logger
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             skill_collection=self.skills,
@@ -258,7 +258,7 @@ class TestCodeBlock:
         variables[VAR_NAME] = VAR_VALUE
 
         # Create a context with the variables, memory, skill collection, and logger
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             skill_collection=self.skills,
@@ -309,7 +309,7 @@ class TestCodeBlock:
         VALUE = "value"
 
         # Create a context with empty variables, memory, skill collection, and logger
-        context = SKContext.construct(
+        context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,

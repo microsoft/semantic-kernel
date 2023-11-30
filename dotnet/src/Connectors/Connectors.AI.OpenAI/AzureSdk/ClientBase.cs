@@ -108,7 +108,8 @@ public abstract class ClientBase
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+        OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
         var options = CreateCompletionsOptions(text, textRequestSettings, this.DeploymentOrModelName);
@@ -130,7 +131,8 @@ public abstract class ClientBase
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+        OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
         var options = CreateCompletionsOptions(prompt, textRequestSettings, this.DeploymentOrModelName);
@@ -231,7 +233,7 @@ public abstract class ClientBase
         Verify.NotNull(chat);
 
         // Convert the incoming execution settings to OpenAI settings.
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         bool autoInvoke = chatRequestSettings.FunctionCallBehavior?.AutoInvoke == true && kernel is not null;
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
         ValidateAutoInvoke(autoInvoke, chatRequestSettings.ResultsPerPrompt);
@@ -319,7 +321,8 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
 
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
         bool autoInvoke = chatRequestSettings.FunctionCallBehavior?.AutoInvoke == true && kernel is not null;
@@ -507,7 +510,7 @@ public abstract class ClientBase
 
     private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? executionSettings, out OpenAIPromptExecutionSettings settings)
     {
-        settings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings);
+        settings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
