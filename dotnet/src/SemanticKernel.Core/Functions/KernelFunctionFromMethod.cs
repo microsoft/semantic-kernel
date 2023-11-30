@@ -80,7 +80,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken)
     {
         return await this._function(null, kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -89,7 +89,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -126,7 +126,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
         Kernel kernel,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken);
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
@@ -180,7 +180,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameters = method.GetParameters();
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
-        var parameterFuncs = new Func<Kernel, KernelFunctionArguments, CancellationToken, object?>[parameters.Length];
+        var parameterFuncs = new Func<Kernel, KernelArguments, CancellationToken, object?>[parameters.Length];
         bool sawFirstParameter = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
@@ -200,7 +200,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<Kernel, string, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, Kernel kernel, KernelFunctionArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -256,7 +256,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
-    private static (Func<Kernel, KernelFunctionArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
+    private static (Func<Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
         ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasFunctionArgumentsParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasCultureParam)
     {
@@ -267,33 +267,33 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (type == typeof(Kernel))
         {
             TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
-            return (static (Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel, null);
+            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel, null);
         }
 
-        if (type == typeof(KernelFunctionArguments))
+        if (type == typeof(KernelArguments))
         {
-            TrackUniqueParameterType(ref hasFunctionArgumentsParam, method, $"At most one {nameof(KernelFunctionArguments)} parameter is permitted.");
-            return (static (Kernel _, KernelFunctionArguments arguments, CancellationToken _) => arguments, null);
+            TrackUniqueParameterType(ref hasFunctionArgumentsParam, method, $"At most one {nameof(KernelArguments)} parameter is permitted.");
+            return (static (Kernel _, KernelArguments arguments, CancellationToken _) => arguments, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
-                ((Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, KernelFunctionArguments _, CancellationToken _) => kernel.Culture, null);
+            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (Kernel _, KernelFunctionArguments _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
         // Handle function arguments
@@ -303,7 +303,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Use either the parameter's name or an override from an applied SKName attribute.
             KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
             string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
-            bool nameIsInput = name.Equals(KernelFunctionArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
+            bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
@@ -344,7 +344,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            object? parameterFunc(Kernel kernel, KernelFunctionArguments arguments, CancellationToken _)
+            object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
                 if (arguments.TryGetValue(name, out string? value))
@@ -361,7 +361,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(arguments.TryGetValue(KernelFunctionArguments.InputParameterName, out string? input) ? input : string.Empty);
+                    return Process(arguments.TryGetValue(KernelArguments.InputParameterName, out string? input) ? input : string.Empty);
                 }
 
                 // 4. Otherwise, fail.

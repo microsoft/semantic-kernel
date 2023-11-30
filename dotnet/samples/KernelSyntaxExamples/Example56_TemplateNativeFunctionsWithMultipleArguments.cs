@@ -38,7 +38,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
                 apiKey: apiKey)
             .Build();
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["word2"] = " Potter";
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates

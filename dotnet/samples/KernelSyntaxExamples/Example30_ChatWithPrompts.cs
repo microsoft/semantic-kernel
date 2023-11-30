@@ -70,7 +70,7 @@ public static class Example30_ChatWithPrompts
         kernel.ImportPluginFromObject<TimePlugin>("time");
 
         // Adding required arguments referenced by the prompt templates.
-        var arguments = new KernelFunctionArguments
+        var arguments = new KernelArguments
         {
             // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
             ["selectedText"] = selectedText,

@@ -100,7 +100,7 @@ public static class Example70_Assistant
 
         var assistants = kernel.ImportPluginFromObject(assistant, assistant.Id);
 
-        var arguments = new KernelFunctionArguments
+        var arguments = new KernelArguments
         {
             ["input"] = "Practice makes perfect."
         };

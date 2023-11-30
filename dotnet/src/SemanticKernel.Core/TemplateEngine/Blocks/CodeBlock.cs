@@ -102,7 +102,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            KernelFunctionArguments? kernelArguments = arguments is not null ? new KernelFunctionArguments(arguments) : null;
+            KernelArguments? kernelArguments = arguments is not null ? new KernelArguments(arguments) : null;
 
             var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, kernelArguments).ConfigureAwait(false);
 
@@ -158,7 +158,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             string input = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Keep previous trust information when updating the input
-            arguments[KernelFunctionArguments.InputParameterName] = input;
+            arguments[KernelArguments.InputParameterName] = input;
             namedArgsStartIndex++;
         }
 
