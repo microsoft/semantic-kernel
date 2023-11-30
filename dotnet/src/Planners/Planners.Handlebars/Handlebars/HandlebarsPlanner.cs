@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -45,8 +46,13 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        // TODO (@teresaqhoang): Add instrumentation without depending on planners.core
-        return this.CreatePlanCoreAsync(kernel, goal, cancellationToken);
+        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
+                => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
+            static (HandlebarsPlan plan) => plan.ToString(),
+            this, kernel, goal, logger, cancellationToken);
     }
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
