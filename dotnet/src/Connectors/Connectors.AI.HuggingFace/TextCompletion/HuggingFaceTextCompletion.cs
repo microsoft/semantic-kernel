@@ -74,12 +74,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

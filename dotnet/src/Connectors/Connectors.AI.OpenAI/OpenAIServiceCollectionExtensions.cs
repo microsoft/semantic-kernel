@@ -11,18 +11,16 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
-#pragma warning disable IDE0039 // Use local function
 #pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable IDE0130
+#pragma warning disable IDE0039 // Use local function
 
-// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -1191,8 +1189,8 @@ public static class OpenAIServiceCollectionExtensions
     #endregion
 
     private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientBase.GetOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 
     private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientBase.GetOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 }
