@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.

@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
