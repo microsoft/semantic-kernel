@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -169,6 +169,12 @@ class SKFunction(SKFunctionBase):
                     completion = await client.complete_chat_async(
                         messages, request_settings
                     )
+
+                    if isinstance(completion, Tuple):
+                        completion, tool_message = completion
+                        context.objects["tool_message"] = tool_message
+                        as_chat_prompt.add_message(role="tool", message=tool_message)
+
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
             except Exception as exc:
@@ -189,11 +195,25 @@ class SKFunction(SKFunctionBase):
                     # list of <role, content> messages)
                     completion = ""
                     messages = await chat_prompt.render_messages_async(context)
-                    async for partial_content in client.complete_chat_stream_async(
-                        messages, request_settings
-                    ):
-                        completion += partial_content
-                        yield partial_content
+
+                    # With data case - stream and get the tool message for citations
+                    if function_config.has_chat_with_data_prompt:
+                        response = await client.complete_chat_stream_async(
+                            messages, request_settings)
+                        async for partial_content in response:
+                            completion += partial_content
+                            yield partial_content
+                        tool_message = await response.get_tool_message()
+                        if tool_message:
+                            chat_prompt.add_message(role="tool", message=tool_message)
+                            context.objects["tool_message"] = tool_message
+
+                    else:
+                        async for partial_content in client.complete_chat_stream_async(
+                            messages, request_settings
+                        ):
+                            completion += partial_content
+                            yield partial_content
                     # Use the full completion to update the chat_prompt_template and context
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)

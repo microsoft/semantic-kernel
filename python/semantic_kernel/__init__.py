@@ -10,12 +10,15 @@ from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
+from semantic_kernel.semantic_functions.chat_with_data_prompt_template import ChatWithDataPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env,
+    azure_aisearch_datasource_settings_from_dot_env,
+    azure_aisearch_datasource_settings_from_dot_env_as_dict,
     azure_cosmos_db_settings_from_dot_env,
     azure_openai_settings_from_dot_env,
     bing_search_settings_from_dot_env,
@@ -34,6 +37,8 @@ __all__ = [
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
     "azure_aisearch_settings_from_dot_env",
+    "azure_aisearch_datasource_settings_from_dot_env",
+    "azure_aisearch_datasource_settings_from_dot_env_as_dict",
     "postgres_settings_from_dot_env",
     "pinecone_settings_from_dot_env",
     "bing_search_settings_from_dot_env",
@@ -43,6 +48,7 @@ __all__ = [
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",
+    "ChatWithDataPromptTemplate",
     "SemanticFunctionConfig",
     "ContextVariables",
     "SKFunctionBase",

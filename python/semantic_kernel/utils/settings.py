@@ -246,3 +246,35 @@ def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
     assert api_key is not None, "Azure AI Search API key not found in .env file"
 
     return api_key, url
+
+def azure_aisearch_datasource_settings_from_dot_env() -> Tuple[str, str, str]:
+    """
+    Reads the Azure AI Search environment variables including index name from the .env file.
+
+    Returns:
+        Tuple[str, str, str]: Azure AI Search API key, the Azure AI Search URL, the Azure AI Search Index name
+    """
+    config = dotenv_values(".env")
+    api_key = config.get("AZURE_AISEARCH_API_KEY", None)
+    url = config.get("AZURE_AISEARCH_URL", None)
+    index_name = config.get("AZURE_AISEARCH_INDEX_NAME", None)
+
+    assert url is not None, "Azure AI Search URL not found in .env file"
+    assert api_key is not None, "Azure AI Search API key not found in .env file"
+    assert index_name is not None, "Azure AI Search index name not found in .env file"
+
+    return api_key, url, index_name
+
+def azure_aisearch_datasource_settings_from_dot_env_as_dict() -> Dict[str, str]:
+    """
+    Reads the Azure AI Search environment variables including index name from the .env file.
+
+    Returns:
+        Dict[str, str]: the Azure AI search environment variables
+    """
+    api_key, url, index_name = azure_aisearch_datasource_settings_from_dot_env()
+    return {
+        "key": api_key,
+        "endpoint": url,
+        "indexName": index_name
+    }

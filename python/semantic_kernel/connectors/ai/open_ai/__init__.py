@@ -19,6 +19,10 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
     OpenAITextEmbedding,
 )
 
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion_with_data import (
+    AzureChatCompletionWithData,
+)
+
 __all__ = [
     "OpenAITextCompletion",
     "OpenAIChatCompletion",
@@ -26,4 +30,5 @@ __all__ = [
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
+    "AzureChatCompletionWithData"
 ]
