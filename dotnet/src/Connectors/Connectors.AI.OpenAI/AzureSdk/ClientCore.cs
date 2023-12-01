@@ -200,21 +200,14 @@ internal abstract class ClientCore
         Kernel? kernel,
         CancellationToken cancellationToken)
     {
-        var result = new List<ReadOnlyMemory<float>>(data.Count);
-        foreach (string text in data)
+        var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+
+        if (data.Count != response.Value.Data.Count)
         {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
-
-            Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-            if (response.Value.Data.Count == 0)
-            {
-                throw new KernelException("Text embedding not found");
-            }
-
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            throw new KernelException($"Text embedding count mismatch: expected {data.Count}, actual {response.Value.Data.Count}");
         }
 
-        return result;
+        return response.Value.Data.OrderBy((x) => x.Index).Select((x) => x.Embedding).ToList();
     }
 
     /// <summary>
@@ -339,7 +332,7 @@ internal abstract class ClientCore
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
-            // Stream any response 
+            // Stream any response
             Dictionary<string, object>? responseMetadata = null;
             StringBuilder? contentBuilder = null;
             string? functionName = null;
