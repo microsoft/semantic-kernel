@@ -122,7 +122,7 @@ public static class Example70_Assistant
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
-                OpenAIFunctionEnabledModel, // Must be an function enabled model.
+                OpenAIFunctionEnabledModel, // Must be a function-enabled model.
                 EmbeddedResource.Read("Assistants.ParrotAssistant.yaml")); // Defined under ./Resources/Assistants
 
         // Import assistant as a KernelFunction
