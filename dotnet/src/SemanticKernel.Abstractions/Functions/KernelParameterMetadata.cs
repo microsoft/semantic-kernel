@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides read-only metadata for an <see cref="KernelFunction"/> parameter.
+/// Provides read-only metadata for a <see cref="KernelFunction"/> parameter.
 /// </summary>
 public sealed class KernelParameterMetadata
 {
