@@ -38,7 +38,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     {
         this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -78,21 +78,21 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     {
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this._core.LogActionDetails();
-        return this._core.GetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>

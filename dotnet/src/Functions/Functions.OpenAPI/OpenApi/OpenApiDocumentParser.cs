@@ -193,7 +193,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 new HttpMethod(method),
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                CreateRestApiOperationHeaders(operationItem.Parameters),
+                CreateRestApiOperationHeaders(operationItem.Parameters)!,
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );

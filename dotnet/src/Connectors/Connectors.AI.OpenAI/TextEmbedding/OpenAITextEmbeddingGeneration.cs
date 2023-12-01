@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -34,9 +33,13 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
         this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
 
         this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+=======
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+>>>>>>> main
     }
 
     /// <summary>
@@ -50,12 +53,20 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
         this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this._core.Attributes;
+=======
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
+>>>>>>> main
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(

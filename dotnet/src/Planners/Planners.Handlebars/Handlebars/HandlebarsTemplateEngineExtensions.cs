@@ -418,15 +418,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         foreach (var v in variables)
         {
             var value = v.Value ?? "";
-            var varString = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
-            if (state.ContainsKey(v.Key))
-            {
-                state[v.Key] = varString;
-            }
-            else
-            {
-                state.Add(v.Key, varString);
-            }
+            state[v.Key] = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
         }
     }
 

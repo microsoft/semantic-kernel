@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Prompt;
+using Microsoft.SemanticKernel.Prompts;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 

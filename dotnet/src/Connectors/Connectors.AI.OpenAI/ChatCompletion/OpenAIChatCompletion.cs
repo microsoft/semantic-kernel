@@ -37,7 +37,7 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
     {
         this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
@@ -54,11 +54,15 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
     {
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.Attributes;
+
+    /// <inheritdoc/>
+    public ChatHistory CreateNewChat(string? instructions = null) =>
+        OpenAIClientCore.CreateNewChat(instructions);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -68,24 +72,39 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
         CancellationToken cancellationToken = default)
     {
         this._core.LogActionDetails();
+
         return this._core.GetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return OpenAIClientCore.CreateNewChat(instructions);
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNullOrWhiteSpace(prompt);
+
         this._core.LogActionDetails();
-        return this._core.GetChatResultsAsTextAsync(text, executionSettings, kernel, cancellationToken);
+
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var chatHistory = ClientCore.CreateNewChat(prompt, openAIExecutionSettings);
+
+        return this._core.GetChatResultsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        this._core.LogActionDetails();
+
+        return this._core.GetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -95,17 +114,21 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatHistory = this.CreateNewChat(prompt);
-        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        this._core.LogActionDetails();
+
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var chatHistory = ClientCore.CreateNewChat(prompt, openAIExecutionSettings);
+
+        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, openAIExecutionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
+        this._core.LogActionDetails();
+
         return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the OpenAI connector.
 /// </summary>
-public static class KernelFunctionMetadataExtensions
+public static class OpenAIKernelFunctionMetadataExtensions
 {
     /// <summary>
     /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="OpenAIFunction"/>.

@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-internal static class KernelFunctionExtensions
+internal static class AssistantsKernelFunctionExtensions
 {
     /// <summary>
     /// Produce a fully qualified toolname.

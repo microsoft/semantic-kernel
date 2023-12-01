@@ -36,7 +36,7 @@ internal sealed class OpenAIImageGenerationClientCore
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, string> InternalAttributes = new();
+    internal Dictionary<string, object?> Attributes { get; } = new();
 
     /// <summary>
     /// Asynchronously sends a text embedding request for the text.
@@ -86,7 +86,7 @@ internal sealed class OpenAIImageGenerationClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.InternalAttributes.Add(key, value!);
+            this.Attributes.Add(key, value!);
         }
     }
 

@@ -61,29 +61,32 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAIImageGeneration(
-        string? endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview")
+        string? endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        Verify.NotNullOrWhiteSpace(apiVersion);
         if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
+        // Defaults if not supplied
+        maxRetryCount ??= 5;
+        apiVersion ??= "2023-06-01-preview";
+
         this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIImageGeneration)));
 
         this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;
-        this._maxRetryCount = maxRetryCount;
+        this._maxRetryCount = maxRetryCount.Value;
         this._apiVersion = apiVersion;
-        this._core.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
-        this._core.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
+        this._core.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
+        this._core.AddAttribute(AIServiceExtensions.ApiVersionKey, apiVersion);
 
         this._core.RequestCreated += (_, request) => request.Headers.Add("api-key", this._apiKey);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._core.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)

@@ -9,7 +9,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -37,9 +36,13 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
         this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
 
         this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+=======
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+>>>>>>> main
     }
 
     /// <summary>
@@ -59,9 +62,13 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
         this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
 
         this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+=======
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+>>>>>>> main
     }
 
     /// <summary>
@@ -77,6 +84,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
 
         this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
@@ -84,6 +92,13 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this.Attributes;
+=======
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
+>>>>>>> main
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(

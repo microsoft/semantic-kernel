@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods to define functions using prompt YAML format.
 /// </summary>
-public static class KernelFunctionsPromptYamlExtensions
+public static class PromptYamlKernelExtensions
 {
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified YAML resource.
