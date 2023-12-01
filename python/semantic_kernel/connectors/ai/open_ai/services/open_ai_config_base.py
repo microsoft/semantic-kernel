@@ -31,19 +31,19 @@ class OpenAIConfigBase(OpenAIHandler):
     ) -> None:
         """Initialize a client for OpenAI services.
 
-        This constructor sets up a client to interact with OpenAI's API, allowing for 
+        This constructor sets up a client to interact with OpenAI's API, allowing for
         different types of AI model interactions, like chat or text completion.
 
         Arguments:
-            ai_model_id {str} -- OpenAI model identifier. Must be non-empty. 
+            ai_model_id {str} -- OpenAI model identifier. Must be non-empty.
                 Default to a preset value.
-            api_key {Optional[str]} -- OpenAI API key for authentication. 
+            api_key {Optional[str]} -- OpenAI API key for authentication.
                 Must be non-empty. (Optional)
-            ai_model_type {Optional[OpenAIModelTypes]} -- The type of OpenAI 
+            ai_model_type {Optional[OpenAIModelTypes]} -- The type of OpenAI
                 model to interact with. Defaults to CHAT.
-            org_id {Optional[str]} -- OpenAI organization ID. This is optional 
+            org_id {Optional[str]} -- OpenAI organization ID. This is optional
                 unless the account belongs to multiple organizations.
-            default_headers {Optional[Mapping[str, str]]} -- Default headers 
+            default_headers {Optional[Mapping[str, str]]} -- Default headers
                 for HTTP requests. (Optional)
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
 
