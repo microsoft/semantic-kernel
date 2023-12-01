@@ -232,7 +232,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert
-        Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, template, variables));
+        Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
 
     private Kernel InitializeKernel() => new();
