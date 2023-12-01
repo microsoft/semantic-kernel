@@ -108,21 +108,15 @@ internal sealed class Assistant : IAssistant
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
-    /// <param name="threadId">Optional thread-id to continue converation.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
     [KernelFunction, Description("Provide user message to assistant and retrieve the assistant response.")]
     public async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant .")]
         string input,
-        [Description("An optional thread identifier when continuing a conversation with an assistant.")]
-        string? threadId = null,
         CancellationToken cancellationToken = default)
     {
-        var thread =
-            string.IsNullOrWhiteSpace(threadId) ?
-                await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :
-                await this.GetThreadAsync(threadId!, cancellationToken).ConfigureAwait(false);
+        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
 
         await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
         var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
