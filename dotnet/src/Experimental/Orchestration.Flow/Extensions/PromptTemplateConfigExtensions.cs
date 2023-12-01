@@ -2,9 +2,7 @@
 
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig

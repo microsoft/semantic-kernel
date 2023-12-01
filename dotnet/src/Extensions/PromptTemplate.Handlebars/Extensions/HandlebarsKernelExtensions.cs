@@ -4,10 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the namespace of IKernel
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for Handlebars functionality.

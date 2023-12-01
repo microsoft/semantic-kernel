@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>

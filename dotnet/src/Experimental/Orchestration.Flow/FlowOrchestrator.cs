@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A flow orchestrator that using semantic kernel for execution.

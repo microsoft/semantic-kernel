@@ -4,8 +4,6 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
