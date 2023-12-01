@@ -74,7 +74,6 @@ public static class Example71_AssistantDelegation
             DisplayMessages(assistantMessages);
         }
 
-
         IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
         {
             var plugins = new KernelPluginCollection();
