@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class StreamingChatWithDataContent : StreamingContent
 {
     /// <inheritdoc/>
