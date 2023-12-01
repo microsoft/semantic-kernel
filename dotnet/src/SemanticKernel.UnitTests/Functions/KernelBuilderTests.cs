@@ -41,6 +41,13 @@ public class KernelBuilderTests
     }
 
     [Fact]
+    public void ItDefaultsDataToAnEmptyDictionary()
+    {
+        Kernel kernel = new KernelBuilder().Build();
+        Assert.Empty(kernel.Data);
+    }
+
+    [Fact]
     public void ItSupportsResettingCulture()
     {
         CultureInfo last = new("fr-FR");
@@ -71,6 +78,13 @@ public class KernelBuilderTests
     }
 
     [Fact]
+    public void ItDefaultsCultureToInvariantCulture()
+    {
+        Kernel kernel = new KernelBuilder().Build();
+        Assert.Same(CultureInfo.InvariantCulture, kernel.Culture);
+    }
+
+    [Fact]
     public void ItSupportsOverwritingLoggerFactory()
     {
         using ILoggerFactory loggerFactory1 = new LoggerFactory();
@@ -83,6 +97,15 @@ public class KernelBuilderTests
             .Build();
 
         Assert.Same(loggerFactory2, kernel.GetService<ILoggerFactory>());
+        Assert.Same(loggerFactory2, kernel.LoggerFactory);
+    }
+
+    [Fact]
+    public void ItDefaultsLoggerFactoryToNullLoggerFactory()
+    {
+        Kernel kernel = new KernelBuilder().Build();
+        Assert.Same(NullLoggerFactory.Instance, kernel.GetService<ILoggerFactory>());
+        Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
     }
 
     [Fact]

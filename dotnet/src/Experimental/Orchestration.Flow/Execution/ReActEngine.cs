@@ -234,7 +234,7 @@ internal sealed class ReActEngine
 
     private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new KernelPromptTemplateFactory(kernel.GetService<ILoggerFactory>());
+        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
         var plugin = new KernelPlugin(RestrictedPluginName);

@@ -9,14 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
 /// A class for generating images using OpenAI's API.
 /// </summary>
-public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
+public sealed class OpenAIImageGeneration : IImageGeneration
 {
+    private readonly OpenAIImageGenerationClientCore _core;
+
     /// <summary>
     /// OpenAI REST API endpoint
     /// </summary>
@@ -43,30 +44,27 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
-    ) : base(httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this.AddAttribute(OrganizationKey, organization);
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(OpenAIImageGeneration)));
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
+
+        this._core.RequestCreated += (_, request) =>
+        {
+            request.Headers.Add("Authorization", this._authorizationHeaderValue);
+            if (!string.IsNullOrEmpty(this._organizationHeaderValue))
+            {
+                request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
+            }
+        };
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
-
-    /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
-    private protected override void AddRequestHeaders(HttpRequestMessage request)
-    {
-        base.AddRequestHeaders(request);
-
-        request.Headers.Add("Authorization", this._authorizationHeaderValue);
-        if (!string.IsNullOrEmpty(this._organizationHeaderValue))
-        {
-            request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
-        }
-    }
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
@@ -99,7 +97,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = format,
         });
 
-        var list = await this.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
+        var list = await this._core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
         return list[0];
     }
 }

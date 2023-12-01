@@ -12,10 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -124,7 +121,7 @@ public abstract class KernelFunction
         cancellationToken.ThrowIfCancellationRequested();
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
@@ -239,7 +236,7 @@ public abstract class KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         logger.LogInformation("Function streaming invoking.");
 

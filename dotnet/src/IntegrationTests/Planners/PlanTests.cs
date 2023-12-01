@@ -13,9 +13,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planning;
-#pragma warning restore IDE0130
 
 public sealed class PlanTests : IDisposable
 {

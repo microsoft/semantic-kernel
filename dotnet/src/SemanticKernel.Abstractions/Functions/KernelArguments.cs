@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
-#pragma warning disable IDE0130
 
 namespace Microsoft.SemanticKernel;
 

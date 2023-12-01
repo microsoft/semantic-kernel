@@ -9,19 +9,16 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// Azure OpenAI text completion client.
-/// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextCompletion
+public sealed class AzureOpenAITextCompletion : ITextCompletion
 {
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
+    private readonly AzureOpenAIClientCore _core;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
@@ -38,9 +35,10 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -58,9 +56,11 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -74,10 +74,15 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -86,8 +91,8 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -97,6 +102,6 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
+        return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 }

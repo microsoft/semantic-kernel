@@ -3,8 +3,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>

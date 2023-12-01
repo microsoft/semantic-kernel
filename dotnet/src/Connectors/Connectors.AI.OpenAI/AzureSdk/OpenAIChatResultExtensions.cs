@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Provides extension methods for the IChatResult interface.
