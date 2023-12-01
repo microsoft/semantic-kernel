@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 
 
 class OpenAIConfigBase(OpenAIHandler):
@@ -25,7 +26,11 @@ class OpenAIConfigBase(OpenAIHandler):
         log: Optional[Logger] = None,
     ) -> None:
         # TODO: add SK user-agent here
-        client = AsyncOpenAI(api_key=api_key, organization=org_id)
+        client = AsyncOpenAI(
+            api_key=api_key,
+            organization=org_id,
+            default_headers={"User-Agent": APP_INFO},
+        )
         super().__init__(
             ai_model_id=ai_model_id,
             client=client,
