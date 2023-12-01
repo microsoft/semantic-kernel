@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;

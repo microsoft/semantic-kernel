@@ -3,7 +3,6 @@
 using System.Linq;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
