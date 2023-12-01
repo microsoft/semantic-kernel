@@ -60,7 +60,7 @@ public abstract class ClientBase
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    private protected Dictionary<string, string> InternalAttributes = new();
+    private protected Dictionary<string, object?> InternalAttributes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
