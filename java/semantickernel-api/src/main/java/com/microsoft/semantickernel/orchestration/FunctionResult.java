@@ -50,4 +50,12 @@ public interface FunctionResult {
      */
     <T> T getValue();
 
+
+    /**
+     * Get typed data from metadata.
+     * @param key The key of the metadata.
+     * @return The metadata, or {@code null} if the key is not present.
+     * @param <T> The type of the function result.
+     */
+    <T> T tryGetMetadataValue(String key);
 }
