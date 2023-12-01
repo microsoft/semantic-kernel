@@ -3,13 +3,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ActionPlannerTests
 {

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
-[JsonConverter(typeof(OpenAIPromptExecutionSettingsConverter))]
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
@@ -138,7 +138,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromRequestSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static OpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
@@ -172,7 +172,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
     public static OpenAIPromptExecutionSettings FromRequestSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
-        var requestSettings = FromRequestSettings(executionSettings, defaultMaxTokens);
+        var requestSettings = FromExecutionSettings(executionSettings, defaultMaxTokens);
 
         if (requestSettings.StopSequences?.Count == 0)
         {

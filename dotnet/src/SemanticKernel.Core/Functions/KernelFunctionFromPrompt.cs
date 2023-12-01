@@ -14,10 +14,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -47,6 +44,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
         var promptConfig = new PromptTemplateConfig
         {
             Name = functionName ?? RandomFunctionName(),
@@ -212,7 +211,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         foreach (var parameter in this._promptConfig.InputParameters)
         {
-            if (!arguments.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.DefaultValue != null)
             {
                 arguments[parameter.Name] = parameter.DefaultValue;
             }

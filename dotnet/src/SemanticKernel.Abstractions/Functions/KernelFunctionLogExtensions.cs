@@ -30,7 +30,7 @@ internal static partial class KernelFunctionLogExtensions
     [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Trace,
-        Message = "Function canceled or skipped prior to invocation.")]
+        Message = "Function canceled prior to invocation.")]
     public static partial void LogFunctionCanceledPriorToInvoking(this ILogger logger);
 
     /// <summary>

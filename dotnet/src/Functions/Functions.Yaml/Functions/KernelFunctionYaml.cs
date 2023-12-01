@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
 public static class KernelFunctionYaml
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
     /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -38,7 +38,7 @@ public static class KernelFunctionYaml
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>

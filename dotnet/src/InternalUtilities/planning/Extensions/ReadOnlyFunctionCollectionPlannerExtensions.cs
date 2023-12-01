@@ -12,9 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="IReadOnlyKernelPluginCollection"/> implementations for planners.
