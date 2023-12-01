@@ -2,8 +2,8 @@
 
 import os
 
-from openai import AsyncAzureOpenAI
 import pytest
+from openai import AsyncAzureOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai

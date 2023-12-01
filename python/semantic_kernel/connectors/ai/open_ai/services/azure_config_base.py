@@ -5,7 +5,7 @@ from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
-from pydantic import BaseModel, Field, validate_call
+from pydantic import validate_call
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
@@ -45,12 +45,14 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             api_version {str} -- Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
             api_key {Optional[str]} -- API key for Azure services. (Optional)
             ad_token {Optional[str]} -- Azure AD token for authentication. (Optional)
-            ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable or coroutine function providing Azure AD tokens. (Optional)
+            ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable 
+                or coroutine function providing Azure AD tokens. (Optional)
             default_headers {Mapping[str, str] | None} -- Default headers for HTTP requests. (Optional)
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
-        The `validate_call` decorator is used with a configuration that allows arbitrary types. This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
+        The `validate_call` decorator is used with a configuration that allows arbitrary types. 
+        This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
         """
         # TODO: add SK user-agent here
 

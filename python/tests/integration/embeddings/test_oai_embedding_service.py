@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from openai import AsyncOpenAI
 import pytest
+from openai import AsyncOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai

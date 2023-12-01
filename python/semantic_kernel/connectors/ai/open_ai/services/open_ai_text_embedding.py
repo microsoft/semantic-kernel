@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from openai import AsyncOpenAI
 from logging import Logger
 from typing import Dict, Mapping, Optional, overload
+
+from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
