@@ -87,6 +87,29 @@ public abstract class KernelFunction
     }
 
     /// <summary>
+    /// Execute a function allowing to pass the main input separately from the rest of the context.
+    /// </summary>
+    /// <param name="kernel">Kernel</param>
+    /// <param name="input">Input string for the function</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function execution</returns>
+    public Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
+        string input,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        if (!string.IsNullOrEmpty(input))
+        {
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
+        }
+
+        return this.InvokeAsync(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -171,6 +194,44 @@ public abstract class KernelFunction
     /// Invoke the <see cref="KernelFunction"/> in streaming mode.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The function arguments</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
+        Kernel kernel,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The kernel</param>
+    /// <param name="input">Input string for the function</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        Kernel kernel,
+        string input,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        if (!string.IsNullOrEmpty(input))
+        {
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
+        }
+
+        return this.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The kernel</param>
     /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming content chunks</returns>

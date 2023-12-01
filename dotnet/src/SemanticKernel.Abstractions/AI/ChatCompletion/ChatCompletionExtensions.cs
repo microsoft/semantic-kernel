@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
 /// <summary>
 /// Provides extension methods for the IChatCompletion interface.
 /// </summary>

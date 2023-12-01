@@ -69,7 +69,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -98,8 +98,8 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
-        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(AIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
     /// <inheritdoc/>
