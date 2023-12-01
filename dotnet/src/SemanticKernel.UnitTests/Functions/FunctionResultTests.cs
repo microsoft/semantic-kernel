@@ -133,7 +133,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables(), value) { IsCancellationRequested = true };
+        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture) { IsCancellationRequested = true };
 
         // Act and Assert
         Assert.Throws<InvalidOperationException>(() => target.GetValue<string>());
@@ -144,7 +144,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", new ContextVariables(), value) { IsSkipRequested = true };
+        FunctionResult target = new("functionName", value, CultureInfo.InvariantCulture) { IsSkipRequested = true };
 
         // Act and Assert
         Assert.Throws<InvalidOperationException>(() => target.GetValue<string>());
