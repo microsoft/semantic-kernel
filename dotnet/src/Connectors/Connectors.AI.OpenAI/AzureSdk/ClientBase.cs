@@ -21,7 +21,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Prompt;
+using Microsoft.SemanticKernel.Prompts;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -60,7 +60,7 @@ public abstract class ClientBase
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    private protected Dictionary<string, string> InternalAttributes = new();
+    private protected Dictionary<string, object?> InternalAttributes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.

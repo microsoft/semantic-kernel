@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Provides extension methods for the IChatResult interface.
 /// </summary>
-public static class ChatResultExtensions
+public static class OpenAIChatResultExtensions
 {
     /// <summary>
     /// Retrieve the resulting function from the chat result.

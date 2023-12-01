@@ -46,11 +46,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
@@ -130,7 +130,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = new();
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);

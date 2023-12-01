@@ -27,7 +27,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -42,8 +42,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         this._model = model;
         this._endpoint = endpoint.AbsoluteUri;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
 
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
@@ -65,12 +65,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._apiKey = apiKey;
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._endpoint = endpoint;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(

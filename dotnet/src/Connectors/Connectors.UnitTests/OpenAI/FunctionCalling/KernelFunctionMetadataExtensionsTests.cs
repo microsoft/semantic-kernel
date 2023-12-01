@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -179,11 +180,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
     private sealed class MyPlugin
     {
-        [KernelFunction, KernelName("MyFunction"), System.ComponentModel.Description("My sample function.")]
+        [KernelFunction, Description("My sample function.")]
         public string MyFunction(
-            [System.ComponentModel.Description("String parameter")] string parameter1,
-            [System.ComponentModel.Description("Enum parameter")] MyEnum parameter2,
-            [System.ComponentModel.Description("DateTime parameter")] DateTime parameter3
+            [Description("String parameter")] string parameter1,
+            [Description("Enum parameter")] MyEnum parameter2,
+            [Description("DateTime parameter")] DateTime parameter3
             )
         {
             return "return";

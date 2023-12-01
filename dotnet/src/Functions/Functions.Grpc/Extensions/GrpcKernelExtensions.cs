@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.
 /// </summary>
-public static class KernelGrpcExtensions
+public static class GrpcKernelExtensions
 {
     // TODO: Revise XML comments and validate shape of methods is as desired
 
@@ -97,7 +97,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -121,7 +121,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelGrpcExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.GetService<ILoggerFactory>().CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -156,7 +156,7 @@ public static class KernelGrpcExtensions
 
         var runner = new GrpcOperationRunner(client);
 
-        ILogger logger = loggerFactory.CreateLogger(typeof(KernelGrpcExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions));
         foreach (var operation in operations)
         {
             try
@@ -199,7 +199,7 @@ public static class KernelGrpcExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                loggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+                loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
         }

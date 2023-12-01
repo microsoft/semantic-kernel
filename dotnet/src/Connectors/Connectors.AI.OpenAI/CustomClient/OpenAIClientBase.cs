@@ -40,7 +40,7 @@ public abstract class OpenAIClientBase
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    private protected Dictionary<string, string> InternalAttributes = new();
+    private protected Dictionary<string, object?> InternalAttributes = new();
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)

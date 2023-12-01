@@ -525,7 +525,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void CurrentCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
+    public void InvariantCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
     {
         //Arrange
         var kernel = new Kernel();
@@ -534,8 +534,7 @@ public class KernelTests
         var culture = kernel.Culture;
 
         //Assert
-        Assert.NotNull(culture);
-        Assert.Equal(CultureInfo.CurrentCulture, culture);
+        Assert.Same(CultureInfo.InvariantCulture, culture);
     }
 
     [Fact]
@@ -592,7 +591,7 @@ public class KernelTests
             Console.WriteLine("Hello folks!");
         }
 
-        [KernelFunction, Description("Export info."), KernelName("ReadFunctionCollectionAsync")]
+        [KernelFunction("ReadFunctionCollectionAsync"), Description("Export info.")]
         public async Task ReadFunctionCollectionAsync(Kernel kernel)
         {
             await Task.Delay(0);
