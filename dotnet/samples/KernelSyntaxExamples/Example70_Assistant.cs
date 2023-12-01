@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -105,9 +104,7 @@ public static class Example70_Assistant
             ["input"] = "Practice makes perfect."
         };
         var result = await kernel.InvokeAsync(assistants.Single(), arguments);
-        var resultValue = result.GetValue<string>();
-
-        var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
+        var response = result.GetValue<AssistantResponse>();
         Console.WriteLine(
             response?.Response ??
             $"No response from assistant: {assistant.Id}");

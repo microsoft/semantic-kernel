@@ -45,6 +45,11 @@ public sealed class FunctionResult
     }
 
     /// <summary>
+    /// Function result type (support inspection).
+    /// </summary>
+    public Type? ValueType => this.Value?.GetType();
+
+    /// <summary>
     /// Function result object.
     /// </summary>
     internal object? Value { get; private set; } = null;
