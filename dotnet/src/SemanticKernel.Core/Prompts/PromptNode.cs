@@ -2,12 +2,12 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Prompt;
+namespace Microsoft.SemanticKernel.Prompts;
 
 /// <summary>
 /// Class that contains information about node in prompt.
 /// </summary>
-public class PromptNode
+internal class PromptNode
 {
     private Dictionary<string, string>? _attributes;
     private List<PromptNode>? _childNodes;

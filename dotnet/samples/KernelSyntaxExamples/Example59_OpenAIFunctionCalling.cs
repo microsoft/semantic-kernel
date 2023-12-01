@@ -73,11 +73,12 @@ public static class Example59_OpenAIFunctionCalling
     {
         Console.WriteLine($"\n\n======== Streaming - {executionSettings.FunctionCallBehavior} ========\n");
         Console.WriteLine($"User message: {ask}");
+        chatHistory.AddUserMessage(ask);
 
         // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings, kernel))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
             if (chatResult.ContentUpdate is { Length: > 0 })

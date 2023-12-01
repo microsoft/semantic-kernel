@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Services;
 /// <summary>
 /// Extension methods for <see cref="IAIService"/>.
 /// </summary>
-public static class IAIServiceExtensions
+public static class AIServiceExtensions
 {
     /// <summary>
     /// Key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.

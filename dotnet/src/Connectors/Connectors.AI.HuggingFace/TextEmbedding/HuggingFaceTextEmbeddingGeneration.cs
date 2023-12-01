@@ -23,7 +23,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -38,8 +38,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         this._model = model;
         this._endpoint = endpoint.AbsoluteUri;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
@@ -55,8 +55,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         this._model = model;
         this._endpoint = endpoint;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
@@ -78,12 +78,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._model = model;
         this._endpoint = endpoint;
         this._httpClient = httpClient;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, model);
-        this._attributes.Add(IAIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
