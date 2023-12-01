@@ -103,10 +103,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
-    public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);

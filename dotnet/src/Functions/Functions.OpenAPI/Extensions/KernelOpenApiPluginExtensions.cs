@@ -9,11 +9,11 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -27,7 +27,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -48,7 +48,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -69,7 +69,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -90,7 +90,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -107,12 +107,12 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -127,7 +127,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -144,12 +144,12 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -168,7 +168,7 @@ public static class KernelOpenApiPluginExtensions
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -185,7 +185,7 @@ public static class KernelOpenApiPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
@@ -212,7 +212,9 @@ public static class KernelOpenApiPluginExtensions
     {
         using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
 
-        var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+
+        var parser = new OpenApiDocumentParser(loggerFactory);
 
         var operations = await parser.ParseAsync(
             documentStream,
@@ -229,13 +231,13 @@ public static class KernelOpenApiPluginExtensions
 
         KernelPlugin plugin = new(pluginName);
 
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
         foreach (var operation in operations)
         {
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                plugin.AddFunction(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, kernel.LoggerFactory, cancellationToken));
+                plugin.AddFunction(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory, cancellationToken));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -275,12 +277,12 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
         {
             try
             {
                 // Extract function arguments from context
-                var arguments = new Dictionary<string, string>();
+                var arguments = new KernelArguments();
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name

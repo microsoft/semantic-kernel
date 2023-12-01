@@ -33,13 +33,11 @@ public class SequentialPlanParserTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         Kernel kernel = new KernelBuilder()
-            .WithRetryBasic()
-            .WithAzureTextCompletionService(
+            .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
-                serviceId: azureOpenAIConfiguration.ServiceId,
-                setAsDefault: true)
+                serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
         kernel.ImportPluginFromObject<EmailPluginFake>("email");
         TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");

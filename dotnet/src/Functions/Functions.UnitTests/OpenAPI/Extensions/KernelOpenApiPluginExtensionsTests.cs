@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -40,7 +39,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     /// </summary>
     public KernelOpenApiPluginExtensionsTests()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
@@ -95,7 +94,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
-        var variables = this.GetFakeContextVariables();
+        var arguments = this.GetFakeFunctionArguments();
 
         // Act
         var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
@@ -103,7 +102,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, arguments);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -125,7 +124,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
-        var variables = this.GetFakeContextVariables();
+        var arguments = this.GetFakeFunctionArguments();
 
         // Act
         var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
@@ -133,7 +132,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, arguments);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -162,7 +161,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
-        var variables = this.GetFakeContextVariables();
+        var arguments = this.GetFakeFunctionArguments();
 
         // Act
         var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", new Uri(documentUri), executionParameters);
@@ -170,7 +169,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this._kernel.InvokeAsync(setSecretFunction, variables);
+        var result = await this._kernel.InvokeAsync(setSecretFunction, arguments);
 
         // Assert
         Assert.NotNull(messageHandlerStub.RequestUri);
@@ -198,9 +197,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
 
-        var kernel = KernelBuilder.Create();
+        var kernel = new Kernel();
 
-        var arguments = new ContextVariables
+        var arguments = new KernelArguments
         {
             { "secret-name", "fake-secret-name" },
             { "api-version", "fake-api-version" }
@@ -227,17 +226,15 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
     #region private ================================================================================
 
-    private ContextVariables GetFakeContextVariables()
+    private KernelArguments GetFakeFunctionArguments()
     {
-        var variables = new ContextVariables
+        return new KernelArguments
         {
             ["secret-name"] = "fake-secret-name",
             ["api-version"] = "fake-api-version",
             ["X-API-Version"] = "fake-api-version",
             ["payload"] = "fake-payload"
         };
-
-        return variables;
     }
 
     private sealed class FakePlugin

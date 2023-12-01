@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -52,13 +53,14 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+        Kernel kernel = new KernelBuilder().ConfigureServices(c =>
+        {
+            c.AddSingleton(ConsoleLogger.LoggerFactory)
             // Add your text completion service as a singleton instance
-            .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
+            .AddKeyedSingleton<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .WithAIService<ITextCompletion>("myService2", (log) => new MyTextCompletionService())
-            .Build();
+            .AddKeyedSingleton<ITextCompletion>("myService2", (_, _) => new MyTextCompletionService());
+        }).Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
@@ -119,9 +121,9 @@ public static class Example16_CustomLLM
     {
         public string? ModelId { get; private set; }
 
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
         {
             this.ModelId = executionSettings?.ModelId;
 
@@ -131,7 +133,7 @@ public static class Example16_CustomLLM
             });
         }
 
-        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (typeof(T) == typeof(MyStreamingContent) ||
                 typeof(T) == typeof(StreamingContent))

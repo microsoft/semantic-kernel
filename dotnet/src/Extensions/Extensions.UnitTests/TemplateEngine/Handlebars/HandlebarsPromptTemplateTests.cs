@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
@@ -16,26 +15,27 @@ public sealed class HandlebarsPromptTemplateTests
 {
     private readonly HandlebarsPromptTemplateFactory _factory;
     private readonly Kernel _kernel;
-    private readonly ContextVariables _variables;
+    private readonly KernelArguments _arguments;
 
     public HandlebarsPromptTemplateTests()
     {
         this._factory = new HandlebarsPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._kernel = new KernelBuilder().Build();
-        this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
+        this._kernel = new Kernel();
+        this._arguments = new KernelArguments();
+        this._arguments["input"] = Guid.NewGuid().ToString("X");
     }
 
     [Fact]
     public async Task ItRendersVariablesAsync()
     {
         // Arrange
-        this._variables.Set("bar", "Bar");
+        this._arguments["bar"] = "Bar";
         var template = "Foo {{bar}}";
         var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, this._variables);
+        var prompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -51,7 +51,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, this._variables);
+        var prompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
@@ -67,7 +67,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, this._variables);
+        var prompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
@@ -97,7 +97,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, this._variables);
+        var prompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);

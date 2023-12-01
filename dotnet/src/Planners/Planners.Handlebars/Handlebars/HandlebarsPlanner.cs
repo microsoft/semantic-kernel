@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -24,43 +23,43 @@ public sealed class HandlebarsPlanner
     /// </summary>
     public Stopwatch Stopwatch { get; } = new();
 
-    private readonly Kernel _kernel;
-    private readonly ILogger _logger;
-
     private readonly HandlebarsPlannerConfig _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
     /// <param name="config">The configuration.</param>
-    public HandlebarsPlanner(Kernel kernel, HandlebarsPlannerConfig? config = default)
+    public HandlebarsPlanner(HandlebarsPlannerConfig? config = default)
     {
-        this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
-        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
     /// <exception cref="KernelException">A plan could not be created.</exception>
-    public Task<HandlebarsPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    public Task<HandlebarsPlan> CreatePlanAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        // TODO (@teresaqhoang): Add instrumentation without depending on planners.core
-        return this.CreatePlanCoreAsync(goal, cancellationToken);
+        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
+                => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
+            static (HandlebarsPlan plan) => plan.ToString(),
+            this, kernel, goal, logger, cancellationToken);
     }
 
-    private async Task<HandlebarsPlan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken = default)
+    private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
-        var availableFunctions = this.GetAvailableFunctionsManual(out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
-        var createPlanPrompt = this.GetHandlebarsTemplate(this._kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
-        var chatCompletion = this._kernel.GetService<IChatCompletion>();
+        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
+        var createPlanPrompt = this.GetHandlebarsTemplate(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
+        var chatCompletion = kernel.GetService<IChatCompletion>();
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
@@ -72,16 +71,13 @@ public sealed class HandlebarsPlanner
         // Get the chat completion results
         var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var contextVariables = new ContextVariables();
-        contextVariables.Update(completionResults);
-
-        if (contextVariables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
-            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{contextVariables.Input}");
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
-        Match match = Regex.Match(contextVariables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(completionResults, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new KernelException("Could not find the plan in the results");
@@ -97,17 +93,19 @@ public sealed class HandlebarsPlanner
         planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
 
         planTemplate = MinifyHandlebarsTemplate(planTemplate);
-        return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
+        return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
+        Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken = default)
     {
         complexParameterTypes = new();
         complexParameterSchemas = new();
-        var availableFunctions = this._kernel.Plugins.GetFunctionsMetadata()
+
+        var availableFunctions = kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
@@ -211,7 +209,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var variables = new Dictionary<string, object?>()
+        var arguments = new Dictionary<string, object?>()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
@@ -223,7 +221,7 @@ public sealed class HandlebarsPlanner
                 { "lastError", this._config.LastError }
             };
 
-        return HandlebarsTemplateEngineExtensions.Render(kernel, new ContextVariables(), plannerTemplate, variables);
+        return HandlebarsTemplateEngineExtensions.Render(kernel, plannerTemplate, arguments);
     }
 
     private static string MinifyHandlebarsTemplate(string template)

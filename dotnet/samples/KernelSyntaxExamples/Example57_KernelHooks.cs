@@ -47,7 +47,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -94,7 +94,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
             .Build();
@@ -109,7 +109,7 @@ public static class Example57_KernelHooks
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
             Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendering Handler - Triggered");
-            e.Variables.Set("style", "Seinfeld");
+            e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
@@ -134,7 +134,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -146,14 +146,14 @@ public static class Example57_KernelHooks
             functionName: "Writer",
             executionSettings: new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
+        static void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.Variables.Input;
+            var originalOutput = e.Result.ToString();
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.Variables.Update(newOutput);
+            e.SetResultValue(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;
@@ -169,7 +169,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -205,7 +205,7 @@ public static class Example57_KernelHooks
 
         Kernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
+           .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
