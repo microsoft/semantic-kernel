@@ -31,7 +31,7 @@ public static class Example72_KernelStreaming
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
@@ -40,14 +40,14 @@ public static class Example72_KernelStreaming
                 apiKey: apiKey)
             .Build();
 
-        var funyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var funnyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var roleDisplayed = false;
 
         Console.WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
-        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatContent>(funyParagraphFunction))
+        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatContent>(funnyParagraphFunction))
         {
             // You will be always able to know the type of the update by checking the Type property.
             if (!roleDisplayed && update.Role.HasValue)
