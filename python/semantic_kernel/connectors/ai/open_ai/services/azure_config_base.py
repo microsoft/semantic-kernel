@@ -31,7 +31,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
-        default_headers: Mapping[str, str] | None = None,
+        default_headers: Union[Mapping[str, str], None] = None,
         log: Optional[Logger] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
@@ -47,7 +47,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token {Optional[str]} -- Azure AD token for authentication. (Optional)
             ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable 
                 or coroutine function providing Azure AD tokens. (Optional)
-            default_headers {Mapping[str, str] | None} -- Default headers for HTTP requests. (Optional)
+            default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
