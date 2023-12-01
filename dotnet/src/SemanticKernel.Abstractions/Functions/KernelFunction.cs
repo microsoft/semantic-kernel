@@ -140,14 +140,13 @@ public abstract class KernelFunction
         {
             // Invoke pre hook, and stop if skipping requested.
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-            if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+            if (invokingEventArgs is not null && invokingEventArgs.CancelToken.IsCancellationRequested)
             {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
+                logger.LogTrace("Function canceled prior to invocation.");
 
                 return new FunctionResult(this.Name)
                 {
                     IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
                 };
             }
 
@@ -166,7 +165,6 @@ public abstract class KernelFunction
             }
 
             result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
-            result.IsRepeatRequested = invokedEventArgs?.IsRepeatRequested ?? false;
 
             return result;
         }
@@ -249,7 +247,7 @@ public abstract class KernelFunction
 
         // Invoke pre hook, and stop if skipping requested.
         var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-        if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+        if (invokingEventArgs is not null && invokingEventArgs.CancelToken.IsCancellationRequested)
         {
             logger.LogTrace("Function canceled or skipped prior to invocation.");
 

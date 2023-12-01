@@ -8,6 +8,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -33,15 +34,10 @@ public sealed class OpenAITextCompletion : ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-<<<<<<< HEAD
         this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
-=======
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization);
->>>>>>> main
     }
 
     /// <summary>
@@ -55,21 +51,13 @@ public sealed class OpenAITextCompletion : ITextCompletion
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-<<<<<<< HEAD
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
 
-        this._core.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._core.Attributes;
-=======
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
->>>>>>> main
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -78,13 +66,8 @@ public sealed class OpenAITextCompletion : ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         this._core.LogActionDetails();
-        return this._core.GetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
-=======
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
->>>>>>> main
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
