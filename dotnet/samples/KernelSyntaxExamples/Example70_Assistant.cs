@@ -94,7 +94,7 @@ public static class Example70_Assistant
         Console.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
-        var plugin = new KernelPlugin("speling");
+        var plugin = new KernelPlugin("spelling");
         plugin.AddFunctionFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
