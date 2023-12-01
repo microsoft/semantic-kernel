@@ -220,41 +220,6 @@ public class FunctionFromPromptTests
     }
 
     [Fact]
-    public async Task InvokeAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
-        var function = KernelFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (sender, e) =>
-        {
-            invoking++;
-            if (e.Function.Name == "SkipMe")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (sender, e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        var result = await sut.InvokeAsync(function);
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal("", invokedFunction);
-    }
-
-    [Fact]
     public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
         // Arrange

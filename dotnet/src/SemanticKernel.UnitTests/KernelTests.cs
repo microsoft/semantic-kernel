@@ -196,44 +196,6 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunStreamingAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var sut = new Kernel();
-        int funcInvocations = 0;
-        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
-
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            invoking++;
-            if (e.Function.Name == "func1")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync(function))
-        {
-        }
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal(0, funcInvocations);
-    }
-
-    [Fact]
     public async Task InvokeStreamingAsyncDoesNotHandlePostInvocationAsync()
     {
         // Arrange
@@ -327,42 +289,6 @@ public class KernelTests
 
         // Assert
         Assert.Equal(0, invoked);
-    }
-
-    [Fact]
-    public async Task InvokeAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var sut = new Kernel();
-        int funcInvocations = 0;
-        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
-
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            invoking++;
-            if (e.Function.Name == "func1")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        var result = await sut.InvokeAsync(function);
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal(0, funcInvocations);
     }
 
     [Fact]
@@ -525,7 +451,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void CurrentCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
+    public void InvariantCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
     {
         //Arrange
         var kernel = new Kernel();
@@ -534,8 +460,7 @@ public class KernelTests
         var culture = kernel.Culture;
 
         //Assert
-        Assert.NotNull(culture);
-        Assert.Equal(CultureInfo.CurrentCulture, culture);
+        Assert.Same(CultureInfo.InvariantCulture, culture);
     }
 
     [Fact]

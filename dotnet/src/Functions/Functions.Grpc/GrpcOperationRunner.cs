@@ -155,19 +155,15 @@ internal sealed class GrpcOperationRunner
     private object GenerateOperationRequest(GrpcOperation operation, Type type, KernelArguments arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
-        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out var payload))
+        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||
+            string.IsNullOrEmpty(payload))
         {
             throw new KernelException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, s_propertyCaseInsensitiveOptions);
-        if (instance == null)
-        {
-            throw new KernelException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
-        }
-
-        return instance;
+        return JsonSerializer.Deserialize(payload!, type, s_propertyCaseInsensitiveOptions) ??
+            throw new KernelException($"Unable to create gRPC request message for the '{operation.Name}' gRPC operation.");
     }
 
     /// <summary>
@@ -225,13 +221,8 @@ internal sealed class GrpcOperationRunner
         var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
-        var type = typeBuilder.CreateTypeInfo();
-        if (type == null)
-        {
+        return typeBuilder.CreateTypeInfo() ??
             throw new KernelException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
-        }
-
-        return type;
     }
 
     /// <summary>
