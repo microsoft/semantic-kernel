@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// </summary>
 public static class OpenAIChatHistoryExtensions
 {
+    private static readonly AuthorRole s_functionAuthorRole = new("function");
+
     /// <summary>
     /// Add a function message to the chat history
     /// </summary>
@@ -22,7 +24,7 @@ public static class OpenAIChatHistoryExtensions
     {
         Verify.NotNull(chatHistory);
 
-        chatHistory.AddMessage(AuthorRole.Function, message, new Dictionary<string, string>(1) { { "Name", functionName } });
+        chatHistory.AddMessage(s_functionAuthorRole, message, new Dictionary<string, string>(1) { { "Name", functionName } });
     }
 
     /// <summary>
