@@ -49,6 +49,7 @@ class SKFunction(SKFunctionBase):
     Semantic Kernel function.
     """
 
+    # TODO: rebuild with proper pydantic fields
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
@@ -266,6 +267,7 @@ class SKFunction(SKFunctionBase):
         delegate_stream_function: Optional[Callable[..., Any]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
+        super().__init__()
         self._delegate_type = delegate_type
         self._function = delegate_function
         self._parameters = parameters

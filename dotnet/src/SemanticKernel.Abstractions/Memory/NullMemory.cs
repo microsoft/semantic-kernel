@@ -28,6 +28,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return s_emptyStringTask;
@@ -41,6 +42,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string externalSourceName,
         string? description = null,
         string? additionalMetadata = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return s_emptyStringTask;
@@ -51,6 +53,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string collection,
         string key,
         bool withEmbedding = false,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult<MemoryQueryResult?>(null);
@@ -60,6 +63,7 @@ public sealed class NullMemory : ISemanticTextMemory
     public Task RemoveAsync(
         string collection,
         string key,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
@@ -72,6 +76,7 @@ public sealed class NullMemory : ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
@@ -79,6 +84,7 @@ public sealed class NullMemory : ISemanticTextMemory
 
     /// <inheritdoc/>
     public Task<IList<string>> GetCollectionsAsync(
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IList<string>>(new List<string>());

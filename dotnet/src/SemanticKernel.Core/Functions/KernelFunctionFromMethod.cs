@@ -19,7 +19,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
@@ -33,7 +32,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class KernelFunctionFromMethod : KernelFunction
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -81,21 +80,19 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings,
+        KernelArguments arguments,
         CancellationToken cancellationToken)
     {
-        return await this._function(null, executionSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
+        return await this._function(null, kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings = null,
+        KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var functionResult = await this.InvokeCoreAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
+        var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         if (functionResult.Value is T)
         {
             yield return (T)functionResult.Value;
@@ -128,9 +125,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
-        PromptExecutionSettings? executionSettings,
         Kernel kernel,
-        ContextVariables variables,
+        KernelArguments arguments,
         CancellationToken cancellationToken);
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
@@ -160,11 +156,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (functionName is null)
         {
-            // Get the name to use for the function.  If the function has an SKName attribute, we use that.
+            // Get the name to use for the function.  If the function has a KernelFunction attribute and it contains a name, we use that.
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by SKName so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelNameAttribute>(inherit: true)?.Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.Name?.Trim();
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
@@ -184,13 +180,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameters = method.GetParameters();
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
-        var parameterFuncs = new Func<Kernel, ContextVariables, CancellationToken, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasKernelParam = false, hasContextVariablesParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
+        var parameterFuncs = new Func<Kernel, KernelArguments, CancellationToken, object?>[parameters.Length];
+        bool sawFirstParameter = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasKernelParam, ref hasContextVariablesParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+                ref sawFirstParameter, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -201,23 +197,23 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Verify.ParametersUniqueness(stringParameterViews);
 
         // Get marshaling func for the return value.
-        Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        Func<Kernel, string, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? executionSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = parameterFuncs[i](kernel, variables, cancellationToken);
+                args[i] = parameterFuncs[i](kernel, arguments, cancellationToken);
             }
 
             // Invoke the method.
             object? result = Invoke(method, target, args);
 
             // Extract and return the result.
-            return returnFunc(functionName!, result, variables, kernel);
+            return returnFunc(kernel, functionName!, result);
         }
 
         // And return the details.
@@ -260,57 +256,53 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
-    private static (Func<Kernel, ContextVariables, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
+    private static (Func<Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasContextVariablesParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
+        ref bool sawFirstParameter, ref bool hasKernelParam, ref bool hasFunctionArgumentsParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
-        // Handle special types based on ContextVariables data. These can each show up at most once in the method signature,
-        // with the Kernel or/and the ContextVariables itself or the primary data from it mapped directly into the method's parameter.
-        // They do not get parameter metadata as they're not supplied from context variables.
+        // Handle special types. These can each show up at most once in the method signature.
 
         if (type == typeof(Kernel))
         {
             TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
-            return (static (Kernel kernel, ContextVariables variables, CancellationToken _) => kernel, null);
+            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel, null);
         }
 
-        if (type == typeof(ContextVariables))
+        if (type == typeof(KernelArguments))
         {
-            TrackUniqueParameterType(ref hasContextVariablesParam, method, $"At most one {nameof(ContextVariables)} parameter is permitted.");
-            return (static (Kernel kernel, ContextVariables variables, CancellationToken _) => variables, null);
+            TrackUniqueParameterType(ref hasFunctionArgumentsParam, method, $"At most one {nameof(KernelArguments)} parameter is permitted.");
+            return (static (Kernel _, KernelArguments arguments, CancellationToken _) => arguments, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
-                ((Kernel kernel, ContextVariables context, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, ContextVariables context, CancellationToken _) => kernel.Culture, null);
+            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (Kernel kernel, ContextVariables _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
-        // Handle context variables. These are supplied from the SKContext's Variables dictionary.
+        // Handle function arguments
 
         if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
-            // Use either the parameter's name or an override from an applied SKName attribute.
-            KernelNameAttribute? nameAttr = parameter.GetCustomAttribute<KernelNameAttribute>(inherit: true);
-            string name = nameAttr?.Name?.Trim() ?? SanitizeMetadataName(parameter.Name ?? "");
-            bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
-            ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
+            string name = SanitizeMetadataName(parameter.Name ?? "");
+            bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
+            ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
@@ -350,10 +342,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            object? parameterFunc(Kernel kernel, ContextVariables variables, CancellationToken _)
+            object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
-                if (variables.TryGetValue(name, out string? value))
+                if (arguments.TryGetValue(name, out string? value))
                 {
                     return Process(value);
                 }
@@ -367,7 +359,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(variables.Input);
+                    return Process(arguments.TryGetValue(KernelArguments.InputParameterName, out string? input) ? input : string.Empty);
                 }
 
                 // 4. Otherwise, fail.
@@ -412,7 +404,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
     /// </summary>
-    private static Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static Func<Kernel, string, object?, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -421,25 +413,25 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (returnType == typeof(void))
         {
-            return static (functionName, result, variables, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(functionName, variables));
+            return static (_, functionName, _) =>
+                new ValueTask<FunctionResult>(new FunctionResult(functionName));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (functionName, result, variables, _) =>
+            return async static (_, functionName, result) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, variables);
+                return new FunctionResult(functionName);
             };
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (functionName, result, variables, _) =>
+            return async static (_, functionName, result) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, variables);
+                return new FunctionResult(functionName);
             };
         }
 
@@ -447,31 +439,55 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (returnType == typeof(string))
         {
-            return static (functionName, result, variables, _) =>
+            return static (kernel, functionName, result) =>
             {
                 var resultString = (string?)result;
-                variables.Update(resultString);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, resultString));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, resultString, kernel.Culture));
             };
         }
 
         if (returnType == typeof(Task<string>))
         {
-            return async static (functionName, result, variables, _) =>
+            return async static (kernel, functionName, result) =>
             {
                 var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                variables.Update(resultString);
-                return new FunctionResult(functionName, variables, resultString);
+                return new FunctionResult(functionName, resultString, kernel.Culture);
             };
         }
 
         if (returnType == typeof(ValueTask<string>))
         {
-            return async static (functionName, result, variables, _) =>
+            return async static (kernel, functionName, result) =>
             {
                 var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                variables.Update(resultString);
-                return new FunctionResult(functionName, variables, resultString);
+                return new FunctionResult(functionName, resultString, kernel.Culture);
+            };
+        }
+
+        if (returnType == typeof(FunctionResult))
+        {
+            return static (_, functionName, result) =>
+            {
+                var functionResult = (FunctionResult?)result;
+                return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(functionName));
+            };
+        }
+
+        if (returnType == typeof(Task<FunctionResult>))
+        {
+            return async static (_, _, result) =>
+            {
+                var functionResult = await ((Task<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return functionResult;
+            };
+        }
+
+        if (returnType == typeof(ValueTask<FunctionResult>))
+        {
+            return async static (_, _, result) =>
+            {
+                var functionResult = await ((ValueTask<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return functionResult;
             };
         }
 
@@ -479,15 +495,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            if (GetFormatter(returnType) is not Func<object?, CultureInfo, string> formatter)
+            return (kernel, functionName, result) =>
             {
-                throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
-            }
-
-            return (functionName, result, variables, kernel) =>
-            {
-                variables.Update(formatter(result, kernel.Culture));
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, result, kernel.Culture));
             };
         }
 
@@ -496,17 +506,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Task<T>
         if (returnType.GetGenericTypeDefinition() is Type genericTask &&
             genericTask == typeof(Task<>) &&
-            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter &&
-            GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo, string> taskResultFormatter)
+            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
         {
-            return async (functionName, result, variables, kernel) =>
+            return async (kernel, functionName, result) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
                 var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
-
-                variables.Update(taskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, variables, taskResult);
+                return new FunctionResult(functionName, taskResult, kernel.Culture);
             };
         }
 
@@ -514,18 +521,15 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
             genericValueTask == typeof(ValueTask<>) &&
             returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
-            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter &&
-            GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo, string> asTaskResultFormatter)
+            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
         {
-            return async (functionName, result, variables, kernel) =>
+            return async (kernel, functionName, result) =>
             {
                 Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
                 await task.ConfigureAwait(false);
 
                 var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
-
-                variables.Update(asTaskResultFormatter(taskResult, kernel.Culture));
-                return new FunctionResult(functionName, variables, taskResult);
+                return new FunctionResult(functionName, taskResult, kernel.Culture);
             };
         }
 
@@ -540,16 +544,16 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             if (getAsyncEnumeratorMethod is not null)
             {
-                return (functionName, result, variables, _) =>
+                return (kernel, functionName, result) =>
                 {
                     var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
                     if (asyncEnumerator is not null)
                     {
-                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables, asyncEnumerator));
+                        return new ValueTask<FunctionResult>(new FunctionResult(functionName, asyncEnumerator, kernel.Culture));
                     }
 
-                    return new ValueTask<FunctionResult>(new FunctionResult(functionName, variables));
+                    return new ValueTask<FunctionResult>(new FunctionResult(functionName));
                 };
             }
         }
@@ -647,7 +651,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             }
 
             // Finally, look up and use a type converter.  Again, special-case null if it was actually Nullable<T>.
-            if (GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
+            if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
             {
                 return (input, cultureInfo) =>
                 {
@@ -673,88 +677,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return null;
         });
 
-    /// <summary>
-    /// Gets a TypeConverter-based formatter for formatting an object as a string.
-    /// </summary>
-    /// <remarks>
-    /// Formatting is performed in the invariant culture whenever possible.
-    /// </remarks>
-    private static Func<object?, CultureInfo, string?>? GetFormatter(Type targetType) =>
-        s_formatters.GetOrAdd(targetType, static targetType =>
-        {
-            // For nullables, render as the underlying type.
-            bool wasNullable = false;
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType)!;
-            }
-
-            // For enums, just ToString() and allow the object override to do the right thing.
-            if (targetType.IsEnum)
-            {
-                return (input, cultureInfo) => input?.ToString()!;
-            }
-
-            // Strings just render as themselves.
-            if (targetType == typeof(string))
-            {
-                return (input, cultureInfo) => (string)input!;
-            }
-
-            // Finally, look up and use a type converter.
-            if (GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
-            {
-                return (input, cultureInfo) =>
-                {
-                    if (wasNullable && input is null)
-                    {
-                        return null!;
-                    }
-
-                    return converter.ConvertToString(context: null, cultureInfo, input);
-                };
-            }
-
-            return null;
-        });
-
-    private static TypeConverter? GetTypeConverter(Type targetType)
-    {
-        // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
-        // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
-        // Instead, we just use a hard-coded set of converters for the types we know about and then also support
-        // types that are explicitly attributed with TypeConverterAttribute.
-
-        if (targetType == typeof(byte)) { return new ByteConverter(); }
-        if (targetType == typeof(sbyte)) { return new SByteConverter(); }
-        if (targetType == typeof(bool)) { return new BooleanConverter(); }
-        if (targetType == typeof(ushort)) { return new UInt16Converter(); }
-        if (targetType == typeof(short)) { return new Int16Converter(); }
-        if (targetType == typeof(char)) { return new CharConverter(); }
-        if (targetType == typeof(uint)) { return new UInt32Converter(); }
-        if (targetType == typeof(int)) { return new Int32Converter(); }
-        if (targetType == typeof(ulong)) { return new UInt64Converter(); }
-        if (targetType == typeof(long)) { return new Int64Converter(); }
-        if (targetType == typeof(float)) { return new SingleConverter(); }
-        if (targetType == typeof(double)) { return new DoubleConverter(); }
-        if (targetType == typeof(decimal)) { return new DecimalConverter(); }
-        if (targetType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
-        if (targetType == typeof(DateTime)) { return new DateTimeConverter(); }
-        if (targetType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
-        if (targetType == typeof(Uri)) { return new UriTypeConverter(); }
-        if (targetType == typeof(Guid)) { return new GuidConverter(); }
-
-        if (targetType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
-            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
-            Activator.CreateInstance(converterType) is TypeConverter converter)
-        {
-            return converter;
-        }
-
-        return null;
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
@@ -769,9 +691,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
-
-    /// <summary>Formatter functions for converting parameter types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
 
     #endregion
 }

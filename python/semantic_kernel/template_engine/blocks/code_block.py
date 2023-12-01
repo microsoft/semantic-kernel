@@ -27,7 +27,7 @@ class CodeBlock(Block):
     ):
         super().__init__(content=content and content.strip(), log=log)
 
-        self._tokens = tokens or CodeTokenizer(log).tokenize(content)
+        self._tokens = tokens or CodeTokenizer(log=self.log).tokenize(content)
         self._validated = False
 
     @property

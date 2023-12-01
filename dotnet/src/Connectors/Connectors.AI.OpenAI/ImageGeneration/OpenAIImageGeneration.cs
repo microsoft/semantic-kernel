@@ -56,7 +56,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)
@@ -71,7 +71,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     }
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))

@@ -71,7 +71,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -100,15 +100,15 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
-        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(AIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
-    public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);

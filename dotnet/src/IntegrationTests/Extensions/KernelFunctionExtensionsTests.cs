@@ -35,7 +35,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -53,7 +53,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
@@ -70,14 +70,14 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         public string? ModelId => null;
 
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
+            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

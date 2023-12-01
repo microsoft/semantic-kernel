@@ -35,7 +35,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this.AddAttribute(OrganizationKey, organization);
     }
 
@@ -51,25 +51,30 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, openAIClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
-        PromptExecutionSettings? executionSettings,
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, executionSettings, cancellationToken);
+        return this.InternalGetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, cancellationToken);
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 }

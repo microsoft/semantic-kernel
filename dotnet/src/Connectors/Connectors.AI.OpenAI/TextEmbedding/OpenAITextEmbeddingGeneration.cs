@@ -36,7 +36,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -51,23 +51,19 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, openAIClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
-    /// <summary>
-    /// Generates an embedding from the given <paramref name="data"/>.
-    /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>List of embeddings</returns>
+    /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
+        return this.InternalGetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 }

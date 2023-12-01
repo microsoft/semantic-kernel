@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import google.generativeai as palm
-from google.generativeai.types import ExampleOptions, MessagePromptOptions
-from pydantic import Field, constr
+from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
+from pydantic import PrivateAttr, constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -20,28 +20,37 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
-if TYPE_CHECKING:
-    from google.generativeai.types import ChatResponse
-
 
 class GooglePalmChatCompletion(
     ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
 ):
     api_key: constr(strip_whitespace=True, min_length=1)
-    message_history: Optional["ChatResponse"] = Field(None, init=False)
+    _message_history: Optional[ChatResponse] = PrivateAttr()
 
-    def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: str,
+        message_history: Optional[ChatResponse] = None,
+        log: Optional[Logger] = None,
+    ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
 
         Arguments:
-            model_id {str} -- GooglePalm model name, see
+            ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
+            message_history {Optional[ChatResponse]} -- The message history to use for context. (Optional)
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        super().__init__(model_id=model_id, api_key=api_key, log=log)
+        super().__init__(
+            ai_model_id=ai_model_id,
+            api_key=api_key,
+            log=log,
+        )
+        self._message_history = message_history
 
     async def complete_chat_async(
         self,
@@ -182,7 +191,7 @@ class GooglePalmChatCompletion(
                 ex,
             )
         if (
-            self.message_history is None and context is None
+            self._message_history is None and context is None
         ):  # If the conversation hasn't started yet and no context is provided
             context = ""
             if len(messages) > 1:  # Check if we need context from messages
@@ -193,9 +202,9 @@ class GooglePalmChatCompletion(
                         else:
                             context += role + ": " + message + "\n"
         try:
-            if self.message_history is None:
+            if self._message_history is None:
                 response = palm.chat(  # Start a new conversation
-                    model=self.model_id,
+                    model=self.ai_model_id,
                     context=context,
                     examples=examples,
                     temperature=request_settings.temperature,
@@ -205,10 +214,10 @@ class GooglePalmChatCompletion(
                     messages=messages[-1][1],
                 )
             else:
-                response = self.message_history.reply(  # Continue the conversation
+                response = self._message_history.reply(  # Continue the conversation
                     messages[-1][1],
                 )
-            self.message_history = response  # Store response object for future use
+            self._message_history = response  # Store response object for future use
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
