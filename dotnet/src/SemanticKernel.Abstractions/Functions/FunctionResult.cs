@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class FunctionResult
 {
-    internal Dictionary<string, object>? _metadata;
+    internal IDictionary<string, object?>? _metadata;
 
     /// <summary>
     /// Name of executed function.
@@ -38,9 +38,9 @@ public sealed class FunctionResult
     /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
-    public Dictionary<string, object> Metadata
+    public IDictionary<string, object?> Metadata
     {
-        get => this._metadata ??= new();
+        get => this._metadata ??= new Dictionary<string, object?>();
         internal set => this._metadata = value;
     }
 
