@@ -64,14 +64,15 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        if (arguments == null)
+        if (arguments is not null)
         {
-            return result;
-        }
-
-        foreach (var kvp in arguments)
-        {
-            result[kvp.Key] = kvp.Value;
+            foreach (var kvp in arguments)
+            {
+                if (kvp.Value is not null)
+                {
+                    result[kvp.Key] = kvp.Value;
+                }
+            }
         }
 
         return result;
