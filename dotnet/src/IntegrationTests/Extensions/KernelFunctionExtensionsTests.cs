@@ -70,7 +70,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         public string? ModelId => null;
 
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
         Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
