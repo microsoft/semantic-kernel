@@ -30,6 +30,7 @@ class AzureChatCompletion(
     @overload
     def __init__(
         self,
+        deployment_name: str,
         base_url: Union[HttpsUrl, str],
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
@@ -104,7 +105,7 @@ class AzureChatCompletion(
 
     def __init__(
         self,
-        deployment_name: Optional[str] = None,
+        deployment_name: str,
         endpoint: Optional[Union[HttpsUrl, str]] = None,
         base_url: Optional[Union[HttpsUrl, str]] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,

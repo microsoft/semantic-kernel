@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
-from pydantic import validate_call
+from pydantic import BaseModel, Field, validate_call
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
@@ -12,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.sk_pydantic import HttpsUrl
 
 
@@ -59,6 +61,12 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 AIException.ErrorCodes.InvalidConfiguration,
                 "Please provide either api_key, ad_token or ad_token_provider",
             )
+
+        # Merge APP_INFO into the headers if it exists
+        merged_headers = default_headers.copy() if default_headers else {}
+        if APP_INFO:
+            merged_headers["User-Agent"] = json.dumps(APP_INFO)
+
         if not async_client:
             if base_url:
                 async_client = AsyncAzureOpenAI(
@@ -67,7 +75,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     api_key=api_key,
                     azure_ad_token=ad_token,
                     azure_ad_token_provider=ad_token_provider,
-                    default_headers=default_headers,
+                    default_headers=merged_headers,
                 )
             else:
                 if not endpoint:
@@ -82,7 +90,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     api_key=api_key,
                     azure_ad_token=ad_token,
                     azure_ad_token_provider=ad_token_provider,
-                    default_headers=default_headers,
+                    default_headers=merged_headers,
                 )
 
         super().__init__(
@@ -94,13 +102,12 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
     def to_dict(self) -> Dict[str, str]:
         client_settings = {
-            "deployment_name": self.ai_model_id,
-            "base_url": self.client.base_url,
+            "base_url": str(self.client.base_url),
             "api_version": self.client._custom_query["api-version"],
             "api_key": self.client.api_key,
             "ad_token": self.client._azure_ad_token,
             "ad_token_provider": self.client._azure_ad_token_provider,
-            "default_headers": self.client.default_headers,
+            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != "User-agent"},
         }
         base = self.model_dump(
             exclude={

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from logging import Logger
 from typing import Any, Dict, Mapping, Optional
 
@@ -12,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 
 
 class OpenAIConfigBase(OpenAIHandler):
@@ -23,6 +25,7 @@ class OpenAIConfigBase(OpenAIHandler):
         ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        async_client: Optional[AsyncOpenAI] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """Initialize a client for OpenAI services.
@@ -42,15 +45,22 @@ class OpenAIConfigBase(OpenAIHandler):
         Note: The 'Field' function from Pydantic is used to enforce minimum length constraints on 'ai_model_id' and 'api_key'.
         """
 
-        # TODO: add SK user-agent here
-        client = AsyncOpenAI(
-            api_key=api_key, 
-            organization=org_id,
-            default_headers=default_headers,
-        )
+        # Merge APP_INFO into the headers if it exists
+        merged_headers = default_headers.copy() if default_headers else {}
+        if APP_INFO:
+            merged_headers["User-Agent"] = json.dumps(APP_INFO)
+
+        if not async_client:
+            # TODO: add SK user-agent here
+            async_client = AsyncOpenAI(
+                api_key=api_key,
+                organization=org_id,
+                default_headers=merged_headers,
+            )
+
         super().__init__(
             ai_model_id=ai_model_id,
-            client=client,
+            client=async_client,
             log=log,
             ai_model_type=ai_model_type,
         )
@@ -61,7 +71,7 @@ class OpenAIConfigBase(OpenAIHandler):
         """
         client_settings = {
             "api_key": self.client.api_key,
-            "default_headers": self.client.default_headers,
+            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != "User-agent"},
         }
         if self.client.organization:
             client_settings["org_id"] = self.client.organization

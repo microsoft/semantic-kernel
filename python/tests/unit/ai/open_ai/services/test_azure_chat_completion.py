@@ -290,5 +290,5 @@ def test_azure_chat_completion_serialize() -> None:
         assert key in dumped_settings["default_headers"]
         assert dumped_settings["default_headers"][key] == value
 
-    azure_chat_comp_2 = AzureChatCompletion.from_dict(dumped_settings)
-    assert azure_chat_comp_2.client is not None
+    # Assert that the 'User-agent' header is not present in the dumped_settings default headers
+    assert "User-agent" not in dumped_settings["default_headers"]

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -51,7 +50,6 @@ public partial class AssistantBuilder
         return
             await Assistant.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
-                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
                 this._model,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);
