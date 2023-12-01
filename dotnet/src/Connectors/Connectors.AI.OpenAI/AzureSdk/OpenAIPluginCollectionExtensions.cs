@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
 /// </summary>
-public static class PluginCollectionExtensions
+public static class OpenAIPluginCollectionExtensions
 {
     /// <summary>
     /// Given an <see cref="OpenAIFunctionResponse"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.

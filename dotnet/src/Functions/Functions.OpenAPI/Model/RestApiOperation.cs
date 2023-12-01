@@ -51,7 +51,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation headers.
     /// </summary>
-    public IDictionary<string, string> Headers { get; }
+    public IDictionary<string, string?> Headers { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -87,7 +87,7 @@ public sealed class RestApiOperation
         HttpMethod method,
         string description,
         IList<RestApiOperationParameter> parameters,
-        IDictionary<string, string> headers,
+        IDictionary<string, string?> headers,
         RestApiOperationPayload? payload = null,
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
@@ -109,7 +109,7 @@ public sealed class RestApiOperation
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    public Uri BuildOperationUrl(IDictionary<string, string?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
 
@@ -123,7 +123,7 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The rendered request headers.</returns>
-    public IDictionary<string, string> RenderHeaders(IDictionary<string, string> arguments)
+    public IDictionary<string, string> RenderHeaders(IDictionary<string, string?> arguments)
     {
         var headers = new Dictionary<string, string>();
 
@@ -133,16 +133,16 @@ public sealed class RestApiOperation
             var headerValue = header.Value;
 
             //A try to resolve header value in arguments.
-            if (arguments.TryGetValue(headerName, out var value))
+            if (arguments.TryGetValue(headerName, out string? value) && !string.IsNullOrEmpty(value))
             {
-                headers.Add(headerName, value);
+                headers.Add(headerName, value!);
                 continue;
             }
 
             //Header value is already supplied.
             if (!string.IsNullOrEmpty(headerValue))
             {
-                headers.Add(headerName, headerValue);
+                headers.Add(headerName, headerValue!);
                 continue;
             }
 
@@ -177,14 +177,14 @@ public sealed class RestApiOperation
     /// <param name="path">Operation path to replace parameters in.</param>
     /// <param name="arguments">Arguments to replace parameters by.</param>
     /// <returns>Path with replaced parameters</returns>
-    private string ReplacePathParameters(string path, IDictionary<string, string> arguments)
+    private string ReplacePathParameters(string path, IDictionary<string, string?> arguments)
     {
         string ReplaceParameter(Match match)
         {
             var parameterName = match.Groups[1].Value;
 
             //A try to find parameter value in arguments
-            if (arguments.TryGetValue(parameterName, out var value))
+            if (arguments.TryGetValue(parameterName, out string? value) && value is not null)
             {
                 return value;
             }

@@ -25,6 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj" />
+    <ProjectReference Include="..\PromptTemplate.Handlebars\PromptTemplate.Handlebars.csproj" />
   </ItemGroup>
 </Project>
