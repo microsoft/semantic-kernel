@@ -126,9 +126,8 @@ public sealed class HandlebarsPlanner
             returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
 
             // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
-            var functionMetadata = new KernelFunctionMetadata(skFunction.Name)
+            var functionMetadata = new KernelFunctionMetadata(skFunction.Name, skFunction.PluginName)
             {
-                PluginName = skFunction.PluginName,
                 Description = skFunction.Description,
                 Parameters = parametersMetadata,
                 ReturnParameter = returnParameter.ToSKReturnParameterMetadata()

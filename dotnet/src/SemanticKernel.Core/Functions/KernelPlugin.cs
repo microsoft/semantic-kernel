@@ -82,6 +82,7 @@ public sealed class KernelPlugin : IKernelPlugin
     public void AddFunction(KernelFunction function)
     {
         Verify.NotNull(function);
+        function.Metadata.PluginName = this.Name;
         this._functions.Add(function.Name, function);
     }
 

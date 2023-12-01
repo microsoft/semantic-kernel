@@ -115,7 +115,7 @@ public static class IKernelPluginExtensions
         {
             foreach (KernelFunction function in plugin)
             {
-                metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = plugin.Name });
+                metadata.Add(function.Metadata);
             }
         }
 

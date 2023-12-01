@@ -14,9 +14,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoParameters()
     {
         // Arrange
-        var sut = new KernelFunctionMetadata("foo")
+        var sut = new KernelFunctionMetadata("foo", "bar")
         {
-            PluginName = "bar",
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
@@ -37,9 +36,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoPluginName()
     {
         // Arrange
-        var sut = new KernelFunctionMetadata("foo")
+        var sut = new KernelFunctionMetadata("foo", string.Empty)
         {
-            PluginName = string.Empty,
             Description = "baz",
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
         };
@@ -71,9 +69,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
             Schema = withSchema ? KernelJsonSchema.Parse("{\"type\":\"integer\"}") : null,
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var sut = new KernelFunctionMetadata("foo", "bar")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
@@ -101,9 +98,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
             Description = "This is param1"
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var sut = new KernelFunctionMetadata("foo", "bar")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
             ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
@@ -130,9 +126,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ParameterType = typeof(int),
         };
 
-        var sut = new KernelFunctionMetadata("foo")
+        var sut = new KernelFunctionMetadata("foo", "bar")
         {
-            PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
         };

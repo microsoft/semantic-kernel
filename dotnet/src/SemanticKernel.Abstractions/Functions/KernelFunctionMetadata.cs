@@ -25,11 +25,13 @@ public sealed class KernelFunctionMetadata
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
-    public KernelFunctionMetadata(string name)
+    public KernelFunctionMetadata(string name, string? pluginName = null)
     {
         this.Name = name;
+        this.PluginName = pluginName;
     }
 
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
@@ -61,7 +63,7 @@ public sealed class KernelFunctionMetadata
     }
 
     /// <summary>Gets the name of the plugin containing the function.</summary>
-    public string? PluginName { get; init; }
+    public string? PluginName { get; internal set; }
 
     /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
