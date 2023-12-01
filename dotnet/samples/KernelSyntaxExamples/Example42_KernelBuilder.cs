@@ -10,9 +10,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
@@ -43,19 +43,13 @@ public static class Example42_KernelBuilder
             })
             .Build();
 
-        // Plugins may also be configured via the corresponding ConfigurePlugins method. There are multiple
-        // overloads of ConfigurePlugins, one of which provides access to the services registered with the
-        // builder, such that a plugin can resolve and use those services.
-        Kernel kernel3 = new KernelBuilder()
-            .ConfigurePlugins((serviceProvider, plugins) =>
-            {
-                ILogger logger = serviceProvider.GetService<ILogger<KernelBuilder>>() ?? (ILogger)NullLogger.Instance;
-                plugins.Add(new KernelPlugin("Example", new[]
-                {
-                    KernelFunctionFactory.CreateFromMethod(() => logger.LogInformation("Function invoked"), functionName: "LogInvocation")
-                }));
-            })
-            .Build();
+        // Plugins may also be configured on the Kernel after it's been built. The Kernel's Plugins collection is mutable.
+        Kernel kernel3 = new KernelBuilder().Build();
+        ILogger logger = kernel3.GetService<ILoggerFactory>().CreateLogger<KernelBuilder>();
+        kernel3.Plugins.Add(new KernelPlugin("Example", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(() => logger.LogInformation("Function invoked"), functionName: "LogInvocation")
+        }));
 
         // Every call to KernelBuilder.Build creates a new Kernel instance, with a new service provider
         // and a new plugin collection.

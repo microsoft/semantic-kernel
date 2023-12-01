@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,26 +9,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
+/// <summary>
+/// Provides a builder for constructing instances of <see cref="Kernel"/> with a specified set of services.
+/// </summary>
 /// <remarks>
 /// A <see cref="Kernel"/> is primarily a collection of services and plugins. Services are represented
 /// via the standard <see cref="IServiceProvider"/> interface, and plugins via a <see cref="KernelPluginCollection"/>.
-/// <see cref="KernelBuilder"/> makes it easy to compose those services and plugins via a fluent
+/// <see cref="KernelBuilder"/> makes it easy to compose those services via a fluent
 /// interface. In particular, <see cref="ConfigureServices"/> allows for extension methods off of
-/// <see cref="IServiceCollection"/> to be used to register services, and <see cref="M:ConfigurePlugins"/>
-/// allows for plugins to be constructed and added to the collection, having been handed a reference
-/// to the <see cref="IServiceProvider"/>, in case it's needed for resolving services, e.g. a <see cref="HttpClient"/>
-/// or <see cref="ILoggerFactory"/> that might be used by the plugin. Once composed, the builder's
-/// <see cref="Build"/> method produces a new <see cref="Kernel"/> instance.
+/// <see cref="IServiceCollection"/> to be used to register services. Once composed, the builder's
+/// <see cref="Build"/> method produces a new <see cref="Kernel"/> instance. The <see cref="Kernel"/>
+/// exposes a <see cref="Kernel.Plugins"/> property that returns a mutable <see cref="KernelPluginCollection"/>
+/// such that plugins can be added after the kernel has been built.
 /// </remarks>
 public sealed class KernelBuilder
 {
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private ServiceCollection? _services;
-    /// <summary>Multicast delegate of configuration callbacks for creating plugins.</summary>
-    private Action<IServiceProvider, ICollection<IKernelPlugin>>? _pluginCallbacks;
-    /// <summary>The initial culture to be stored in the <see cref="Kernel"/>.</summary>
-    private CultureInfo? _culture;
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     public KernelBuilder() { }
@@ -39,7 +34,8 @@ public sealed class KernelBuilder
     /// <returns>The new <see cref="Kernel"/> instance.</returns>
     /// <remarks>
     /// Every call to <see cref="Build"/> produces a new <see cref="Kernel"/> instance. The resulting <see cref="Kernel"/>
-    /// instances will not share the same plugins collection or services provider (unless there are no services).
+    /// instances will not share the same plugins collection or services provider (unless there are no services, in which
+    /// case they may share an empty services singleton).
     /// </remarks>
     public Kernel Build()
     {
@@ -74,21 +70,7 @@ public sealed class KernelBuilder
             serviceProvider = EmptyServiceProvider.Instance;
         }
 
-        KernelPluginCollection? plugins = null;
-        if (this._pluginCallbacks is { } pluginCallbacks)
-        {
-            plugins = new KernelPluginCollection();
-            pluginCallbacks(serviceProvider, plugins);
-        }
-
-        var instance = new Kernel(serviceProvider, plugins);
-
-        if (this._culture != null)
-        {
-            instance.Culture = this._culture;
-        }
-
-        return instance;
+        return new Kernel(serviceProvider);
     }
 
     /// <summary>
@@ -103,48 +85,6 @@ public sealed class KernelBuilder
 
         this._services ??= new();
         configureServices(this._services);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Configures the plugins to be available through the <see cref="Kernel"/>.
-    /// </summary>
-    /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
-    /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>The callback will be invoked as part of each call to <see cref="Build"/>.</remarks>
-    public KernelBuilder ConfigurePlugins(Action<ICollection<IKernelPlugin>> configurePlugins)
-    {
-        Verify.NotNull(configurePlugins);
-
-        this._pluginCallbacks += (_, plugins) => configurePlugins(plugins);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Configures the plugins to be available through the <see cref="Kernel"/>.
-    /// </summary>
-    /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
-    /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>
-    /// The callback will be invoked as part of each call to <see cref="Build"/>. It is passed the same <see cref="IServiceProvider"/>
-    /// that will be provided to the <see cref="Kernel"/> so that the callback can resolve services necessary to create plugins.
-    /// </remarks>
-    public KernelBuilder ConfigurePlugins(Action<IServiceProvider, ICollection<IKernelPlugin>> configurePlugins)
-    {
-        Verify.NotNull(configurePlugins);
-
-        this._pluginCallbacks += configurePlugins;
-
-        return this;
-    }
-
-    /// <summary>Sets a culture to be used by the <see cref="Kernel"/>.</summary>
-    /// <param name="culture">The culture.</param>
-    public KernelBuilder WithCulture(CultureInfo? culture)
-    {
-        this._culture = culture;
 
         return this;
     }

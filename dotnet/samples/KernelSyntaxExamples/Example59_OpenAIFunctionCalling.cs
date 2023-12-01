@@ -29,12 +29,9 @@ public static class Example59_OpenAIFunctionCalling
             {
                 services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
             })
-            .ConfigurePlugins(plugins =>
-            {
-                plugins.AddPluginFromObject<TimePlugin>();
-                plugins.AddPluginFromObject<WidgetPlugin>();
-            })
             .Build();
+        var time = kernel.ImportPluginFromObject<TimePlugin>();
+        var widget = kernel.ImportPluginFromObject<WidgetPlugin>();
 
         // Load additional functions into the kernel
         await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
@@ -44,7 +41,7 @@ public static class Example59_OpenAIFunctionCalling
         var executionSettings = new OpenAIPromptExecutionSettings();
 
         // Set FunctionCall to the result of FunctionCallBehavior.RequireFunction with a specific function to force the model to use that function.
-        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(kernel.Plugins["TimePlugin"]["Date"].Metadata.ToOpenAIFunction(), autoInvoke: true);
+        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(time["Date"].Metadata.ToOpenAIFunction(), autoInvoke: true);
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, executionSettings);
 
         // Set FunctionCall to FunctionCallBehavior.ProvideKernelFunctions to let the model choose the best function to use from all available in the kernel.
@@ -54,7 +51,7 @@ public static class Example59_OpenAIFunctionCalling
         await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, executionSettings);
 
         // This sample relies on the AI picking the correct color from an enum
-        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(kernel.Plugins["WidgetPlugin"]["CreateWidget"].Metadata.ToOpenAIFunction(), autoInvoke: true);
+        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(widget["CreateWidget"].Metadata.ToOpenAIFunction(), autoInvoke: true);
         await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletion, kernel, executionSettings);
         await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletion, kernel, executionSettings);
     }
