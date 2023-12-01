@@ -14,6 +14,10 @@ using Resources;
 /// </summary>
 public static class Example71_AssistantDelegation
 {
+    /// <summary>
+    /// Specific model is required that supports assistants and function calling.
+    /// Currently this is limited to Open AI hosted services.
+    /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     /// <summary>
