@@ -72,9 +72,9 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
+            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
         }
 
         public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

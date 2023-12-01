@@ -42,6 +42,13 @@ public static class Example63_ChatCompletionPrompts
         Console.WriteLine("Chat Prompt Result:");
         Console.WriteLine(chatPromptResult);
 
+        Console.WriteLine("Chat Prompt Streaming Result:");
+        await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
+
         /*
         Text Prompt:
         What is Seattle?

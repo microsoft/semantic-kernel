@@ -81,13 +81,13 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
+        return this.InternalGetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
