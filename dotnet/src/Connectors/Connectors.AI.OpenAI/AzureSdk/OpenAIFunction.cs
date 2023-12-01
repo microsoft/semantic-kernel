@@ -8,9 +8,7 @@ using Azure.AI.OpenAI;
 using Json.Schema;
 using Json.Schema.Generation;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Represents a function parameter that can be passed to the OpenAI API

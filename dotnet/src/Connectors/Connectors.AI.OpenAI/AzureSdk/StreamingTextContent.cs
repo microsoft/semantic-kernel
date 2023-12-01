@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Streaming text result update.

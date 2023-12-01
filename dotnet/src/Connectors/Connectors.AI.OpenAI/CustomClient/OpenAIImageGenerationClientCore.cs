@@ -15,9 +15,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>Base type for OpenAI clients.</summary>
 internal sealed class OpenAIImageGenerationClientCore

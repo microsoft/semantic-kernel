@@ -6,9 +6,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Streaming chat result update.

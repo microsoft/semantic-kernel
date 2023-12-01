@@ -3,13 +3,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal sealed class ChatResult : IChatResult, ITextResult
 {

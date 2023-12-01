@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
@@ -451,6 +452,36 @@ public class KernelTests
     }
 
     [Fact]
+    public void ItDefaultsLoggerFactoryToNullLoggerFactory()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
+    }
+
+    [Fact]
+    public void ItDefaultsDataToEmptyDictionary()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Empty(kernel.Data);
+    }
+
+    [Fact]
+    public void ItDefaultsPluginsToEmptyCollection()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Empty(kernel.Plugins);
+    }
+
+    [Fact]
     public void InvariantCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
     {
         //Arrange
@@ -521,11 +552,7 @@ public class KernelTests
         public async Task ReadFunctionCollectionAsync(Kernel kernel)
         {
             await Task.Delay(0);
-
-            if (kernel.Plugins == null)
-            {
-                Assert.Fail("Functions collection is missing");
-            }
+            Assert.NotNull(kernel.Plugins);
         }
     }
 }

@@ -4,9 +4,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.

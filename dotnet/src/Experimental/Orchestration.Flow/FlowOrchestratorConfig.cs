@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Configuration for flow planner instances.

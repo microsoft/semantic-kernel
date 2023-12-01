@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

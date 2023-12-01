@@ -6,9 +6,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class SequentialPlannerTests
 {

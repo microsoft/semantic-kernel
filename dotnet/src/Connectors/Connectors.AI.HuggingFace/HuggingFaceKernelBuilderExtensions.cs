@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Hugging Face connectors.

@@ -23,7 +23,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Prompts;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
