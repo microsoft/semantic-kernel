@@ -27,7 +27,7 @@ public class KernelTests
     {
         // Arrange
         var factory = new Mock<Func<IServiceProvider, ITextCompletion>>();
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton<ITextCompletion>(factory.Object);
         }).Build();

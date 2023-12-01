@@ -31,7 +31,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleAIService()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<IAIService>("service1", new AIService());
         }).Build();
@@ -50,7 +50,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
         }).Build();
@@ -69,7 +69,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextCompletionByServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -91,7 +91,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -110,7 +110,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceForEmptyModelSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -131,7 +131,7 @@ public class OrderedAIServiceConfigurationProviderTests
     {
         // Arrange
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -152,7 +152,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -177,7 +177,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
             c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
@@ -203,7 +203,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextCompletionByModelId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model1"));
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model2"));

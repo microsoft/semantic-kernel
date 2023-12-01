@@ -48,7 +48,7 @@ public static class Example52_ApimAuth
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
             c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient);
