@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 

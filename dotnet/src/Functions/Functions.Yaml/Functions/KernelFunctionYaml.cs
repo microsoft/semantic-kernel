@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
+namespace Microsoft.SemanticKernel.Functions.Yaml;
+
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
 /// </summary>

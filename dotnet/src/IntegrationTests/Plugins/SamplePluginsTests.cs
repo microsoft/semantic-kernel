@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class SamplePluginsTests
 {
     [Fact]

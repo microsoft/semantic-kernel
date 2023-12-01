@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+using Microsoft.SemanticKernel.Functions.Grpc;
 using RepoUtils;
 
 /**

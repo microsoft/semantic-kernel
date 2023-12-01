@@ -3,6 +3,7 @@
 using System.Threading;
 
 namespace Microsoft.SemanticKernel.Events;
+
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
 
 /// <summary>
