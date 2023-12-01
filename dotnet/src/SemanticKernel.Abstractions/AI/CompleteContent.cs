@@ -29,11 +29,4 @@ public abstract class CompleteContent
         this.InnerContent = rawContent;
         this.Metadata = metadata ?? new();
     }
-
-    /// <summary>
-    /// Get the raw content from the result.
-    /// </summary>
-    /// <typeparam name="T">Expected type</typeparam>
-    /// <returns></returns>
-    public virtual T GetContentAs<T>() => (T)this.InnerContent;
 }
