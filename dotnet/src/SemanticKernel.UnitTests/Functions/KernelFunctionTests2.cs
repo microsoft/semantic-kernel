@@ -863,7 +863,7 @@ public sealed class KernelFunctionTests2
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => function.InvokeAsync(this._kernel, arguments));
 
         //Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", arguments["g"]);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", arguments["g"]!);
     }
 
     [Fact]

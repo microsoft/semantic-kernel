@@ -8,11 +8,6 @@ namespace Microsoft.SemanticKernel.Events;
 public class FunctionInvokedEventArgs : KernelCancelEventArgs
 {
     /// <summary>
-    /// Indicates if the function execution should repeat.
-    /// </summary>
-    public bool IsRepeatRequested => this._repeatRequested;
-
-    /// <summary>
     /// Function result
     /// </summary>
     public FunctionResult Result { get; }
@@ -36,14 +31,6 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     }
 
     /// <summary>
-    /// Repeat the current function invocation.
-    /// </summary>
-    public void Repeat()
-    {
-        this._repeatRequested = true;
-    }
-
-    /// <summary>
     /// Set the function result value.
     /// </summary>
     /// <param name="value"></param>
@@ -51,6 +38,4 @@ public class FunctionInvokedEventArgs : KernelCancelEventArgs
     {
         this.ResultValue = value;
     }
-
-    private bool _repeatRequested;
 }

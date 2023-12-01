@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.
 /// </summary>
-public static class ChatHistoryExtensions
+public static class OpenAIChatHistoryExtensions
 {
     /// <summary>
     /// Add a function message to the chat history

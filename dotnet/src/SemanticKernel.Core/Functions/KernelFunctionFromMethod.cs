@@ -357,14 +357,15 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(arguments.TryGetValue(KernelArguments.InputParameterName, out string? input) ? input : string.Empty);
+                    arguments.TryGetValue(KernelArguments.InputParameterName, out string? input);
+                    return Process(input);
                 }
 
                 // 4. Otherwise, fail.
                 throw new KernelException($"Missing value for parameter '{name}'",
                     new ArgumentException("Missing value function parameter", name));
 
-                object? Process(string value)
+                object? Process(string? value)
                 {
                     if (type == typeof(string))
                     {
@@ -616,7 +617,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// Parsing is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<string, CultureInfo, object?>? GetParser(Type targetType) =>
+    private static Func<string?, CultureInfo, object?>? GetParser(Type targetType) =>
         s_parsers.GetOrAdd(targetType, static targetType =>
         {
             // Strings just parse to themselves.
@@ -649,7 +650,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             }
 
             // Finally, look up and use a type converter.  Again, special-case null if it was actually Nullable<T>.
-            if (GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
+            if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
             {
                 return (input, cultureInfo) =>
                 {
@@ -675,42 +676,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return null;
         });
 
-    private static TypeConverter? GetTypeConverter(Type targetType)
-    {
-        // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
-        // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
-        // Instead, we just use a hard-coded set of converters for the types we know about and then also support
-        // types that are explicitly attributed with TypeConverterAttribute.
-
-        if (targetType == typeof(byte)) { return new ByteConverter(); }
-        if (targetType == typeof(sbyte)) { return new SByteConverter(); }
-        if (targetType == typeof(bool)) { return new BooleanConverter(); }
-        if (targetType == typeof(ushort)) { return new UInt16Converter(); }
-        if (targetType == typeof(short)) { return new Int16Converter(); }
-        if (targetType == typeof(char)) { return new CharConverter(); }
-        if (targetType == typeof(uint)) { return new UInt32Converter(); }
-        if (targetType == typeof(int)) { return new Int32Converter(); }
-        if (targetType == typeof(ulong)) { return new UInt64Converter(); }
-        if (targetType == typeof(long)) { return new Int64Converter(); }
-        if (targetType == typeof(float)) { return new SingleConverter(); }
-        if (targetType == typeof(double)) { return new DoubleConverter(); }
-        if (targetType == typeof(decimal)) { return new DecimalConverter(); }
-        if (targetType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
-        if (targetType == typeof(DateTime)) { return new DateTimeConverter(); }
-        if (targetType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
-        if (targetType == typeof(Uri)) { return new UriTypeConverter(); }
-        if (targetType == typeof(Guid)) { return new GuidConverter(); }
-
-        if (targetType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
-            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
-            Activator.CreateInstance(converterType) is TypeConverter converter)
-        {
-            return converter;
-        }
-
-        return null;
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
@@ -724,7 +689,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<string?, CultureInfo, object?>?> s_parsers = new();
 
     #endregion
 }
