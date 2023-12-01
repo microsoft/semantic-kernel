@@ -75,7 +75,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
         if (arguments.TryGetValue(this.Name, out string? value))
         {
-            return value;
+            return value ?? string.Empty;
         }
 
         this.Logger.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
