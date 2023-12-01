@@ -86,6 +86,11 @@ public sealed class FunctionResult
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public T? GetValue<T>()
     {
+        if (this.IsCancellationRequested)
+        {
+            throw new OperationCanceledException("Cannot get result value from a cancelled function.");
+        }
+
         if (this.Value is null)
         {
             return default;
