@@ -54,20 +54,17 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         """
         # TODO: add SK user-agent here
 
-        # Perform some error checking upfront as we now allow users to pass in
-        # a custom AsyncAzureOpenAI client
-        if not api_key and not ad_token and not ad_token_provider:
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "Please provide either api_key, ad_token or ad_token_provider",
-            )
-
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
             merged_headers["User-Agent"] = json.dumps(APP_INFO)
 
         if not async_client:
+            if not api_key and not ad_token and not ad_token_provider:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    "Please provide either api_key, ad_token or ad_token_provider",
+                )
             if base_url:
                 async_client = AsyncAzureOpenAI(
                     base_url=base_url,

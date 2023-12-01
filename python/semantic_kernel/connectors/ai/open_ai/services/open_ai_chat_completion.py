@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Dict, Mapping, Optional
+from typing import Dict, Mapping, Optional, overload
+
+from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
     OpenAIChatCompletionBase,
@@ -22,12 +24,11 @@ class OpenAIChatCompletion(
 ):
     """OpenAI Chat completion class."""
 
+    @overload
     def __init__(
         self,
         ai_model_id: str,
-        api_key: str,
-        org_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        async_client: AsyncOpenAI,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -36,7 +37,26 @@ class OpenAIChatCompletion(
         Arguments:
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
+            async_client {AsyncOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional)
+        """
+
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Logger] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+    ) -> None:
+        """
+        Initialize an OpenAIChatCompletion service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
@@ -52,6 +72,7 @@ class OpenAIChatCompletion(
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,
             log=log,
+            async_client=async_client,
         )
 
     @classmethod

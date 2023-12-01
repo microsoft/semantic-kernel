@@ -4,6 +4,7 @@
 from logging import Logger
 from typing import Dict, Mapping, Optional, Union, overload
 
+from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
@@ -103,6 +104,26 @@ class AzureChatCompletion(
             logger: deprecated, use 'log' instead.
         """
 
+    @overload
+    def __init__(
+        self,
+        deployment_name: str,
+        async_client: AsyncAzureOpenAI,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an AzureChatCompletion service.
+
+        Arguments:
+            deployment_name: The name of the Azure deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+            async_client {AsyncAzureOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional)
+        """
+
     def __init__(
         self,
         deployment_name: str,
@@ -115,6 +136,7 @@ class AzureChatCompletion(
         default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
+        async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -145,6 +167,7 @@ class AzureChatCompletion(
                 string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
+            async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
         """
         if logger:
             logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
@@ -163,6 +186,7 @@ class AzureChatCompletion(
             default_headers=default_headers,
             log=log or logger,
             ai_model_type=OpenAIModelTypes.CHAT,
+            async_client=async_client,
         )
 
     @classmethod

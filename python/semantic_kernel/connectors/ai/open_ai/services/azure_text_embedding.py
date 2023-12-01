@@ -2,8 +2,9 @@
 
 
 from logging import Logger
-from typing import Dict, Mapping, Optional
+from typing import Dict, Mapping, Optional, overload
 
+from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
@@ -21,10 +22,31 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
 class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     """Azure Text Embedding class."""
 
+    @overload
     def __init__(
         self,
         deployment_name: str,
-        endpoint: str,
+        async_client: AsyncAzureOpenAI,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an AzureChatCompletion service.
+
+        Arguments:
+            deployment_name: The name of the Azure deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+            async_client {AsyncAzureOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional)
+        """
+
+
+    def __init__(
+        self,
+        deployment_name: str,
+        endpoint: Optional[str] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
@@ -32,6 +54,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
+        async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
         """
         Initialize an AzureTextEmbedding service.
@@ -59,6 +82,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             string values for HTTP requests. (Optional)
         :param log: The logger instance to use. (Optional)
         :param logger: Deprecated, please use log instead. (Optional)
+        :param async_client: An existing client to use. (Optional)
 
         """
         if logger:
@@ -73,6 +97,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             default_headers=default_headers,
             log=log or logger,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
+            async_client=async_client,
         )
 
     @classmethod

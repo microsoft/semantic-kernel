@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Optional
 from openai import AsyncOpenAI
 from pydantic import Field, validate_call
 
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
@@ -21,7 +22,7 @@ class OpenAIConfigBase(OpenAIHandler):
     def __init__(
         self,
         ai_model_id: str = Field(min_length=1),
-        api_key: str = Field(min_length=1),
+        api_key: Optional[str] = Field(min_length=1),
         ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
@@ -34,7 +35,7 @@ class OpenAIConfigBase(OpenAIHandler):
 
         Arguments:
             ai_model_id {str} -- OpenAI model identifier. Must be non-empty. Default to a preset value.
-            api_key {str} -- OpenAI API key for authentication. Must be non-empty.
+            api_key {Optional[str]} -- OpenAI API key for authentication. Must be non-empty. (Optional)
             ai_model_type {Optional[OpenAIModelTypes]} -- The type of OpenAI model to interact with. Defaults to CHAT.
             org_id {Optional[str]} -- OpenAI organization ID. This is optional unless the account belongs to multiple organizations.
             default_headers {Optional[Mapping[str, str]]} -- Default headers for HTTP requests. (Optional)
@@ -51,6 +52,11 @@ class OpenAIConfigBase(OpenAIHandler):
             merged_headers["User-Agent"] = json.dumps(APP_INFO)
 
         if not async_client:
+            if not api_key:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    "Please provide an api_key",
+                )
             # TODO: add SK user-agent here
             async_client = AsyncOpenAI(
                 api_key=api_key,
