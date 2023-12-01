@@ -347,7 +347,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

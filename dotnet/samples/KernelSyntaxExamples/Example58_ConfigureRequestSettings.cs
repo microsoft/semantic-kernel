@@ -43,11 +43,11 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the prompt function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokePromptAsync(
             prompt,
-            new OpenAIPromptExecutionSettings()
+            new(new OpenAIPromptExecutionSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
-            });
+            }));
         Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
