@@ -52,8 +52,7 @@ public sealed class KernelPlugin : IKernelPlugin
         {
             foreach (KernelFunction f in functions)
             {
-                Verify.NotNull(f, nameof(functions));
-                this._functions.Add(f.Name, f);
+                this.AddFunction(f);
             }
         }
     }
