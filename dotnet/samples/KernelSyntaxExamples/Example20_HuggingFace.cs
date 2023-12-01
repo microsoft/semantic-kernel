@@ -27,14 +27,14 @@ public static class Example20_HuggingFace
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletionService(
+            .WithHuggingFaceTextCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
+        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
 
         Console.WriteLine(result.GetValue<string>());
     }
@@ -62,7 +62,7 @@ public static class Example20_HuggingFace
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletionService(
+            .WithHuggingFaceTextCompletion(
                 model: Model,
                 endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
@@ -70,7 +70,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.RunAsync("What is New York?", questionAnswerFunction);
+        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
 
         Console.WriteLine(result.GetValue<string>());
     }

@@ -18,11 +18,8 @@ public class TextPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPluginFromObject<TextPlugin>("text");
+        Assert.NotNull(KernelPluginFactory.CreateFromObject<TextPlugin>("text"));
     }
 
     [Fact]

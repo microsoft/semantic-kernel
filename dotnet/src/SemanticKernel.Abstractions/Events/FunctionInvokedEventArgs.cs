@@ -1,36 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
 
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoked event.
 /// </summary>
-public class FunctionInvokedEventArgs : SKCancelEventArgs
+public class FunctionInvokedEventArgs : KernelCancelEventArgs
 {
     /// <summary>
-    /// Indicates if the function execution should repeat.
+    /// Function result
     /// </summary>
-    public bool IsRepeatRequested => this._repeatRequested;
+    public FunctionResult Result { get; }
+
+    /// <summary>
+    /// Function result value
+    /// </summary>
+    internal object? ResultValue { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
+    /// <param name="function">Kernel function</param>
+    /// <param name="arguments">Kernel function arguments</param>
     /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(SKFunctionMetadata functionView, FunctionResult result) : base(functionView, result.Context)
+    public FunctionInvokedEventArgs(KernelFunction function, KernelArguments arguments, FunctionResult result) : base(function, arguments)
     {
         this.Metadata = result.Metadata;
+        this.Result = result;
+        this.ResultValue = result.Value;
     }
 
     /// <summary>
-    /// Repeat the current function invocation.
+    /// Set the function result value.
     /// </summary>
-    public void Repeat()
+    /// <param name="value"></param>
+    public void SetResultValue(object? value)
     {
-        this._repeatRequested = true;
+        this.ResultValue = value;
     }
-
-    private bool _repeatRequested;
 }

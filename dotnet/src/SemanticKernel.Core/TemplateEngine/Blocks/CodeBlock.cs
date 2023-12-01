@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -22,7 +21,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// </summary>
     /// <param name="content">Block content</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public CodeBlock(string? content, ILoggerFactory? loggerFactory)
+    public CodeBlock(string? content, ILoggerFactory? loggerFactory = null)
         : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
@@ -33,7 +32,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// <param name="tokens">A list of blocks</param>
     /// <param name="content">Block content</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public CodeBlock(List<Block> tokens, string? content, ILoggerFactory? loggerFactory)
+    public CodeBlock(List<Block> tokens, string? content, ILoggerFactory? loggerFactory = null)
         : base(content?.Trim(), loggerFactory)
     {
         this._tokens = tokens;
@@ -71,26 +70,21 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderCodeAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken = default)
+    public async Task<string> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
-            throw new SKException(error);
+            throw new KernelException(error);
         }
 
         this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
 
-        switch (this._tokens[0].Type)
+        return this._tokens[0].Type switch
         {
-            case BlockTypes.Value:
-            case BlockTypes.Variable:
-                return ((ITextRendering)this._tokens[0]).Render(context.Variables);
-
-            case BlockTypes.FunctionId:
-                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, context).ConfigureAwait(false);
-        }
-
-        throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
+            BlockTypes.Value or BlockTypes.Variable => ((ITextRendering)this._tokens[0]).Render(arguments),
+            BlockTypes.FunctionId => await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments).ConfigureAwait(false),
+            _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
+        };
     }
 
     #region private ================================================================================
@@ -98,28 +92,25 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, SKContext context)
+    private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
     {
-        // Clone the context to avoid unexpected variable mutations from the inner function execution
-        ContextVariables inputVariables = context.Variables.Clone();
-
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            inputVariables = this.PopulateContextWithFunctionArguments(inputVariables);
+            arguments = this.EnrichFunctionArguments(arguments ?? new KernelArguments());
         }
         try
         {
-            await kernel.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments).ConfigureAwait(false);
+
+            return result.ToString();
         }
         catch (Exception ex)
         {
             this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName, ex.Message);
             throw;
         }
-
-        return inputVariables.ToString();
     }
 
     private bool IsValidFunctionCall(out string errorMsg)
@@ -152,10 +143,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
-    private ContextVariables PopulateContextWithFunctionArguments(ContextVariables variables)
+    private KernelArguments EnrichFunctionArguments(KernelArguments arguments)
     {
         // Clone the context to avoid unexpected and hard to test input mutation
-        var variablesClone = variables.Clone();
         var firstArg = this._tokens[1];
 
         // Sensitive data, logging as trace, disabled by default
@@ -164,9 +154,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var namedArgsStartIndex = 1;
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
-            string input = ((ITextRendering)this._tokens[1]).Render(variablesClone);
+            string input = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Keep previous trust information when updating the input
-            variablesClone.Update(input);
+            arguments[KernelArguments.InputParameterName] = input;
             namedArgsStartIndex++;
         }
 
@@ -179,16 +169,16 @@ internal sealed class CodeBlock : Block, ICodeRendering
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
-                throw new SKException($"Unexpected first token type: {this._tokens[i].Type:G}");
+                throw new KernelException($"Unexpected first token type: {this._tokens[i].Type:G}");
             }
 
             // Sensitive data, logging as trace, disabled by default
             this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
 
-            variablesClone.Set(arg.Name, arg.GetValue(variables));
+            arguments[arg.Name] = arg.GetValue(arguments);
         }
 
-        return variablesClone;
+        return arguments;
     }
     #endregion
 }

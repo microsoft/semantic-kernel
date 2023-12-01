@@ -21,19 +21,16 @@ internal static class SpaceDelimitedStyleParameterSerializer
     {
         const string ArrayType = "array";
 
-        if (parameter is null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        Verify.NotNull(parameter);
 
         if (parameter.Style != RestApiOperationParameterStyle.SpaceDelimited)
         {
-            throw new SKException($"Unexpected Rest Api operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.");
+            throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         if (parameter.Type != ArrayType)
         {
-            throw new SKException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.SpaceDelimited}` style parameters. Parameter name `{parameter.Name}`.");
+            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.SpaceDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         return SerializeArrayParameter(parameter, argument);
@@ -49,7 +46,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
     {
         if (JsonNode.Parse(argument) is not JsonArray array)
         {
-            throw new SKException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array.");
+            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array.");
         }
 
         if (parameter.Expand)

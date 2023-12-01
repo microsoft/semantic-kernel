@@ -29,8 +29,8 @@ kernel.add_chat_service(
     sk_oai.AzureChatCompletion(
         deployment_name,
         endpoint,
-        api_key,
         api_version=api_version,
+        api_key=api_key,
     ),
 )
 
@@ -97,7 +97,7 @@ async def main() -> None:
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
 
     context = await chat_function.invoke_async(context=context, functions=functions)
-    if function_call := context.pop_function_call():
+    if function_call := context.objects.pop("function_call"):
         print(f"Function to be called: {function_call.name}")
         print(f"Function parameters: \n{function_call.arguments}")
         return

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataResult : IChatResult, ITextResult
 {
     public ModelResult ModelResult { get; }
@@ -35,7 +36,7 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
 
         return message is not null ?
             Task.FromResult<ChatMessage>(new AzureOpenAIChatMessage(message.Role, message.Content)) :
-            Task.FromException<ChatMessage>(new SKException("No message found"));
+            Task.FromException<ChatMessage>(new KernelException("No message found"));
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)

@@ -86,21 +86,12 @@ internal sealed class CodeTokenizer
         // 1 char only edge case
         if (text.Length == 1)
         {
-            switch (nextChar)
+            blocks.Add(nextChar switch
             {
-                case Symbols.VarPrefix:
-                    blocks.Add(new VarBlock(text, this._loggerFactory));
-                    break;
-
-                case Symbols.DblQuote:
-                case Symbols.SglQuote:
-                    blocks.Add(new ValBlock(text, this._loggerFactory));
-                    break;
-
-                default:
-                    blocks.Add(new FunctionIdBlock(text, this._loggerFactory));
-                    break;
-            }
+                Symbols.VarPrefix => new VarBlock(text, this._loggerFactory),
+                Symbols.DblQuote or Symbols.SglQuote => new ValBlock(text, this._loggerFactory),
+                _ => new FunctionIdBlock(text, this._loggerFactory),
+            });
 
             return blocks;
         }
@@ -230,7 +221,7 @@ internal sealed class CodeTokenizer
                     namedArgValuePrefix = currentChar;
                     if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
                     {
-                        throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
+                        throw new KernelException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
                     }
                 }
                 currentTokenContent.Append(currentChar);
@@ -244,7 +235,7 @@ internal sealed class CodeTokenizer
             {
                 if (!spaceSeparatorFound)
                 {
-                    throw new SKException("Tokens must be separated by one space least");
+                    throw new KernelException("Tokens must be separated by one space least");
                 }
 
                 if (IsQuote(currentChar))
@@ -302,7 +293,7 @@ internal sealed class CodeTokenizer
                 break;
 
             case TokenTypes.None:
-                throw new SKException("Tokens must be separated by one space least");
+                throw new KernelException("Tokens must be separated by one space least");
         }
 
         return blocks;

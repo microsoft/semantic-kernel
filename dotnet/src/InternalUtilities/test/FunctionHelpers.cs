@@ -2,11 +2,10 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.UnitTests;
 
-/// <summary>Test helpers for working with native functions.</summary>
+/// <summary>Test helpers for working with method functions.</summary>
 internal static class FunctionHelpers
 {
     /// <summary>
@@ -17,16 +16,17 @@ internal static class FunctionHelpers
         string methodName,
         params (string Name, object Value)[] variables)
     {
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
-        ISKPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
+        IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        SKContext context = kernel.CreateNewContext();
+        KernelArguments arguments = new();
+
         foreach ((string Name, object Value) pair in variables)
         {
-            context.Variables.Set(pair.Name, pair.Value.ToString());
+            arguments[pair.Name] = pair.Value?.ToString() ?? string.Empty;
         }
 
-        return kernel.RunAsync(context.Variables, plugin[methodName]);
+        return kernel.InvokeAsync(plugin[methodName], arguments);
     }
 }

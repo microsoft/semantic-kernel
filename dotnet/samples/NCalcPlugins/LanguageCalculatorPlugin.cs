@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using NCalc;
 
 namespace NCalcPlugins;
@@ -20,13 +19,13 @@ namespace NCalcPlugins;
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
 /// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
-/// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
+/// var summary = await kernel.InvokeAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
 /// </example>
 public class LanguageCalculatorPlugin
 {
-    private readonly ISKFunction _mathTranslator;
+    private readonly KernelFunction _mathTranslator;
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
@@ -66,11 +65,11 @@ Question: {{ $input }}
     /// </summary>
     public LanguageCalculatorPlugin()
     {
-        this._mathTranslator = SKFunction.FromPrompt(
+        this._mathTranslator = KernelFunctionFactory.CreateFromPrompt(
             MathTranslatorPrompt,
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            requestSettings: new AIRequestSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -85,9 +84,9 @@ Question: {{ $input }}
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="kernel">The contextkernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
+    [KernelFunction("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
         string input,
@@ -97,7 +96,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, input).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

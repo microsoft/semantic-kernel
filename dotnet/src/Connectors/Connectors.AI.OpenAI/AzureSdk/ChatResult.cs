@@ -3,11 +3,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 internal sealed class ChatResult : IChatResult, ITextResult
 {

@@ -3,29 +3,29 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class SendEmailPlugin
 {
-    [SKFunction]
+    private static readonly JsonSerializerOptions s_writeIndented = new() { WriteIndented = true };
+
+    [KernelFunction]
     [Description("Send email")]
-    [SKName("SendEmail")]
     public string SendEmail(
-        [SKName("email_address")] string emailAddress,
-        [SKName("answer")] string answer,
-        SKContext context)
+        string email_address,
+        string answer,
+        ContextVariables variables)
     {
         var contract = new Email()
         {
-            Address = emailAddress,
+            Address = email_address,
             Content = answer,
         };
 
         // for demo purpose only
-        string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
-        context.Variables["email"] = emailPayload;
+        string emailPayload = JsonSerializer.Serialize(contract, s_writeIndented);
+        variables["email"] = emailPayload;
 
         return "Here's the API contract I will post to mail server: " + emailPayload;
     }

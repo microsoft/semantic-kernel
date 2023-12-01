@@ -139,9 +139,9 @@ public static class Example51_StepwisePlanner
         try
         {
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
-            var plan = await planner.CreatePlanAsync(question);
+            var plan = planner.CreatePlan(question);
 
-            var functionResult = await kernel.RunAsync(plan);
+            var functionResult = await plan.InvokeAsync(kernel);
 
             var result = functionResult.GetValue<string>()!;
 
@@ -191,19 +191,17 @@ public static class Example51_StepwisePlanner
         var maxTokens = 0;
         if (useChat)
         {
-            builder.WithAzureOpenAIChatCompletionService(
+            builder.WithAzureOpenAIChatCompletion(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
-                setAsDefault: true);
+                TestConfiguration.AzureOpenAI.ApiKey);
 
             maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
         {
-            builder.WithAzureTextCompletionService(
+            builder.WithAzureOpenAITextCompletion(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
@@ -216,12 +214,6 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
             .Build();
 
         return kernel;

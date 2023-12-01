@@ -4,12 +4,12 @@ import logging
 from typing import Awaitable, Callable, TypeVar
 
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 T = TypeVar("T")
 
 
-class PassThroughWithoutRetry(RetryMechanismBase, PydanticField):
+class PassThroughWithoutRetry(RetryMechanismBase, SKBaseModel):
     """A retry mechanism that does not retry."""
 
     async def execute_with_retry_async(

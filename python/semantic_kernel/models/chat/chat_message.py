@@ -14,9 +14,11 @@ class ChatMessage(SKBaseModel):
     """Class to hold chat messages."""
 
     role: Optional[str] = "assistant"
-    fixed_content: Optional[str] = Field(default=None, init=False, alias="content")
+    fixed_content: Optional[str] = Field(
+        default=None, init_var=False, serialization_alias="content"
+    )
     content_template: Optional[PromptTemplate] = Field(
-        default=None, init=True, repr=False
+        default=None, init_var=True, repr=False
     )
 
     @property
@@ -37,4 +39,6 @@ class ChatMessage(SKBaseModel):
         """Return the message as a dict.
         Make sure to call render_message_async first to embed the context in the content.
         """
-        return self.dict(exclude_none=True, by_alias=True, exclude={"content_template"})
+        return self.model_dump(
+            exclude_none=True, by_alias=True, exclude={"content_template"}
+        )

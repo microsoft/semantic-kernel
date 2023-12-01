@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
-
-#pragma warning disable IDE0130
 
 namespace Microsoft.SemanticKernel;
 

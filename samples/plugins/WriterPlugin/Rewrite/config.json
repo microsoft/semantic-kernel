@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Automatically generate compact notes for any text or text document",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,

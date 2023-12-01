@@ -67,16 +67,9 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingContentAsync<string>(chatHistory))
         {
-            await foreach (var message in result.GetStreamingChatMessageAsync())
-            {
-                // Output
-                // Ask: What are Emily and David studying?
-                // Response: They are passionate scientists who study glaciology,
-                // a branch of geology that deals with the study of ice and its effects.
-                Console.Write(message.Content);
-            }
+            Console.Write(word);
         }
 
         Console.WriteLine(Environment.NewLine);
@@ -91,13 +84,13 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
+            .WithAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
-        var semanticFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
+        var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.RunAsync(ask, semanticFunction);
+        var response = await kernel.InvokeAsync(function, ask);
 
         // Output
         // Ask: How did Emily and David meet?
@@ -108,7 +101,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.RunAsync(ask, semanticFunction);
+        response = await kernel.InvokeAsync(function, ask);
 
         // Output
         // Ask: What are Emily and David studying?

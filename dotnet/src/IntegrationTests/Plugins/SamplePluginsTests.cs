@@ -11,20 +11,19 @@ public class SamplePluginsTests
     public void CanLoadSamplePluginsRequestSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var functionViews = kernel.Plugins.GetFunctionsMetadata();
-        Assert.NotNull(functionViews);
-        Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
-        functionViews.ToList().ForEach(view =>
+        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        Assert.NotNull(metadata);
+        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
+        metadata.ToList().ForEach(function =>
         {
-            var function = kernel.Plugins.GetFunction(view.PluginName, view.Name);
-            Assert.NotNull(function);
+            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
         });
     }
 
@@ -33,20 +32,19 @@ public class SamplePluginsTests
     public void CanLoadSampleSkillsCompletions()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSampleSkills(kernel);
 
         // Assert
         Assert.NotNull(kernel.Plugins);
-        var functionViews = kernel.Plugins.GetFunctionsMetadata();
-        Assert.NotNull(functionViews);
-        Assert.Equal(48, functionViews.Count); // currently we have 48 sample plugin functions
-        functionViews.ToList().ForEach(view =>
+        var metadata = kernel.Plugins.GetFunctionsMetadata();
+        Assert.NotNull(metadata);
+        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
+        metadata.ToList().ForEach(function =>
         {
-            var function = kernel.Plugins.GetFunction(view.PluginName, view.Name);
-            Assert.NotNull(function);
+            Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));
         });
     }
 }
