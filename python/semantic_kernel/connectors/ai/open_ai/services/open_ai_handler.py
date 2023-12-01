@@ -12,9 +12,8 @@ from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
@@ -34,7 +33,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
     async def _send_request(
         self,
-        request_settings: Union[CompleteRequestSettings, ChatRequestSettings],
+        request_settings: OpenAIRequestSettings,
         prompt: Optional[str] = None,
         messages: Optional[List[Dict[str, str]]] = None,
         stream: bool = False,

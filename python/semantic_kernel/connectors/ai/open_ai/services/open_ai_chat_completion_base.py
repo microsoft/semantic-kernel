@@ -2,7 +2,6 @@
 
 import logging
 from typing import (
-    TYPE_CHECKING,
     Any,
     AsyncGenerator,
     Dict,
@@ -14,13 +13,13 @@ from typing import (
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_async(
         self,
         messages: List[Dict[str, str]],
-        settings: "ChatRequestSettings",
+        settings: OpenAIRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a chat completion request and returns the result.
@@ -58,7 +57,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         functions: List[Dict[str, Any]],
-        request_settings: "ChatRequestSettings",
+        request_settings: OpenAIRequestSettings,
         **kwargs,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
@@ -93,7 +92,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
-        settings: "ChatRequestSettings",
+        settings: OpenAIRequestSettings,
         **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """Executes a chat completion request and returns the result.
