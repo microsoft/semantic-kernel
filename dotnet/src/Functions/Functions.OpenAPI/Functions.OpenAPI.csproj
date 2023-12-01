@@ -13,10 +13,6 @@
     <Description>Semantic Kernel OpenAPI Functions</Description>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Plugins\AzureKeyVaultPlugin\openapi.json" />
-    <EmbeddedResource Include="Plugins\AzureKeyVaultPlugin\openapi.json" />
-  </ItemGroup>
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
