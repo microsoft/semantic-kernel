@@ -27,7 +27,6 @@ internal static partial class PlannerInstrumentation
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
         Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
-        Func<TPlan, string> planToString,
         TPlanner planner, Kernel kernel, string goal, ILogger logger, CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
@@ -44,7 +43,7 @@ internal static partial class PlannerInstrumentation
         try
         {
             var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
-            logger.LogPlanCreatedWithPlan(planToString(plan));
+            logger.LogPlanCreatedWithPlan(plan);
 
             return plan;
         }
@@ -79,7 +78,7 @@ internal static partial class PlannerInstrumentation
         EventId = 2,
         Level = LogLevel.Information,
         Message = "Plan created. Plan:\n{Plan}")]
-    static partial void LogPlanCreatedWithPlan(this ILogger logger, string plan);
+    static partial void LogPlanCreatedWithPlan(this ILogger logger, object plan);
 
     [LoggerMessage(
         EventId = 3,
