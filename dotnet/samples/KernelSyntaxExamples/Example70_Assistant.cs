@@ -126,14 +126,15 @@ public static class Example70_Assistant
                 EmbeddedResource.Read("Assistants.ParrotAssistant.yaml")); // Defined under ./Resources/Assistants
 
         // Import assistant as a KernelFunction
-        Kernel kernel = new KernelBuilder().Build();
-        var plugin = kernel.ImportPluginFromObject(assistant, assistant.Id);
+        var plugin = KernelPluginFactory.CreateFromObject(assistant, assistant.Id);
 
         // Invoke assistant plugin function.
         var arguments = new KernelArguments
         {
             ["input"] = "Practice makes perfect."
         };
+
+        var kernel = new Kernel();
         var result = await kernel.InvokeAsync(plugin.Single(), arguments);
 
         // Display result
