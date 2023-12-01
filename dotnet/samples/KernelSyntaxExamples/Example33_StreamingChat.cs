@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -76,14 +75,14 @@ public static class Example33_StreamingChat
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.ContentUpdate}\n");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}\n");
                 roleWritten = true;
             }
 
-            if (chatUpdate.ContentUpdate is { Length: > 0 })
+            if (chatUpdate.Content is { Length: > 0 })
             {
-                fullMessage += chatUpdate.ContentUpdate;
-                Console.Write(chatUpdate.ContentUpdate);
+                fullMessage += chatUpdate.Content;
+                Console.Write(chatUpdate.Content);
             }
         }
 

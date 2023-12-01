@@ -158,7 +158,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingTextContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
+                    yield return (T)(object)new OpenAIStreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
                     continue;
                 }
 
@@ -378,9 +378,9 @@ public abstract class ClientBase
                 {
                     yield return (T)(object)update.ContentUpdate;
                 }
-                else if (typeof(T) == typeof(StreamingChatContent) || typeof(T) == typeof(StreamingContent))
+                else if (typeof(T) == typeof(OpenAIStreamingChatContent) || typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
+                    yield return (T)(object)new OpenAIStreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
                 }
                 else
                 {

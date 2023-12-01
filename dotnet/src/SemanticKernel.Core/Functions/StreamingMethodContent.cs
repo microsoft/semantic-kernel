@@ -13,9 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class StreamingMethodContent : StreamingContent
 {
-    /// <inheritdoc/>
-    public override int ChoiceIndex => 0;
-
     /// <summary>
     /// Content of a streaming chunk result of a KernelFunctionFromMethod.
     /// </summary>

@@ -230,7 +230,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index, responseMetadata);
+                    yield return (T)(object)new OpenAIStreamingChatWithDataContent(choice, choice.Index, responseMetadata);
                     continue;
                 }
 

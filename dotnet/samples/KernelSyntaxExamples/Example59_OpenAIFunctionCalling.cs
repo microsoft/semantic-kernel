@@ -81,9 +81,9 @@ public static class Example59_OpenAIFunctionCalling
         await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
-            if (chatResult.ContentUpdate is { Length: > 0 })
+            if (chatResult.Content is { Length: > 0 })
             {
-                Console.Write(chatResult.ContentUpdate);
+                Console.Write(chatResult.Content);
             }
         }
         Console.WriteLine();

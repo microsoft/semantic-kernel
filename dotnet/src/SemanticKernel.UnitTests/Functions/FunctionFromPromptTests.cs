@@ -374,8 +374,6 @@ public class FunctionFromPromptTests
             this._content = content;
         }
 
-        public override int ChoiceIndex => 0;
-
         public override byte[] ToByteArray()
         {
             return Array.Empty<byte>();

@@ -12,7 +12,7 @@ public abstract class StreamingContent
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
     /// </summary>
-    public abstract int ChoiceIndex { get; }
+    public int ChoiceIndex { get; }
 
     /// <summary>
     /// Internal chunk object reference. (Breaking glass).
@@ -50,10 +50,12 @@ public abstract class StreamingContent
     /// Initializes a new instance of the <see cref="StreamingContent"/> class.
     /// </summary>
     /// <param name="innerContent">Inner content object reference</param>
+    /// <param name="choiceIndex"></param>
     /// <param name="metadata"></param>
-    protected StreamingContent(object? innerContent, Dictionary<string, object>? metadata = null)
+    protected StreamingContent(object? innerContent, int choiceIndex = 0, Dictionary<string, object>? metadata = null)
     {
         this.InnerContent = innerContent;
+        this.ChoiceIndex = choiceIndex;
         this.Metadata = metadata ?? new();
     }
 }

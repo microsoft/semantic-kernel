@@ -2,34 +2,25 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class StreamingTextContent : StreamingContent
+public class OpenAIStreamingTextContent : StreamingTextContent
 {
-    /// <inheritdoc/>
-    public override int ChoiceIndex { get; }
-
     /// <summary>
-    /// Text associated to the update
-    /// </summary>
-    public string Content { get; }
-
-    /// <summary>
-    /// Create a new instance of the <see cref="StreamingTextContent"/> class.
+    /// Create a new instance of the <see cref="OpenAIStreamingTextContent"/> class.
     /// </summary>
     /// <param name="text">Text update</param>
-    /// <param name="resultIndex">Index of the choice</param>
+    /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="innerContentObject">Inner chunk object</param>
     /// <param name="metadata">Metadata information</param>
-    public StreamingTextContent(string text, int resultIndex, object? innerContentObject = null, Dictionary<string, object>? metadata = null) : base(innerContentObject, metadata)
+    public OpenAIStreamingTextContent(string text, int choiceIndex, object? innerContentObject = null, Dictionary<string, object>? metadata = null)
+        : base(text, choiceIndex, innerContentObject, metadata)
     {
-        this.ChoiceIndex = resultIndex;
-        this.Content = text;
     }
 
     /// <inheritdoc/>

@@ -106,7 +106,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             if (typeof(T) == typeof(StreamingTextContent) ||
                 typeof(T) == typeof(StreamingContent))
             {
-                yield return (T)(object)new StreamingTextContent(content, 1, result);
+                yield return (T)(object)new HuggingFaceStreamingTextContent(content, 1, result);
             }
 
             throw new NotSupportedException($"Type {typeof(T)} is not supported");

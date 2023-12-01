@@ -150,8 +150,6 @@ public static class Example16_CustomLLM
 
     private sealed class MyStreamingContent : StreamingContent
     {
-        public override int ChoiceIndex => 0;
-
         public string Content { get; }
 
         public MyStreamingContent(string content) : base(content)
