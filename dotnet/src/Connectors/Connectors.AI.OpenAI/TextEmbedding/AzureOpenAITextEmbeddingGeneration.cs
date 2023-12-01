@@ -10,7 +10,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -19,8 +18,10 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// Azure OpenAI text embedding service.
 /// </summary>
 [Experimental("SKEXP0011")]
-public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGeneration
+public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
 {
+    private readonly AzureOpenAIClientCore _core;
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance using API Key auth.
     /// </summary>
@@ -36,9 +37,11 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -56,9 +59,11 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -72,13 +77,15 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
@@ -86,7 +93,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetEmbeddingsAsync(data, kernel, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 }

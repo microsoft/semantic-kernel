@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once CheckNamespace - Using the namespace of Kernel
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig

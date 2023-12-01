@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

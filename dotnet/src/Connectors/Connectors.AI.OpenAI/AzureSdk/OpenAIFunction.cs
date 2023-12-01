@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using Json.Schema;
 using Json.Schema.Generation;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Represents a function parameter that can be passed to the OpenAI API

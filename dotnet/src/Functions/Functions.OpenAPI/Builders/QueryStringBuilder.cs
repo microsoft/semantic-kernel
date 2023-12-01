@@ -24,7 +24,7 @@ internal static class QueryStringBuilder
     };
 
     ///<inheritdoc/>
-    public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string> arguments)
+    public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string?> arguments)
     {
         var segments = new List<string>();
 
@@ -32,7 +32,7 @@ internal static class QueryStringBuilder
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out var argument))
+            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
             {
                 //Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)

@@ -9,7 +9,6 @@ using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -418,15 +417,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         foreach (var v in variables)
         {
             var value = v.Value ?? "";
-            var varString = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
-            if (state.ContainsKey(v.Key))
-            {
-                state[v.Key] = varString;
-            }
-            else
-            {
-                state.Add(v.Key, varString);
-            }
+            state[v.Key] = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
         }
     }
 

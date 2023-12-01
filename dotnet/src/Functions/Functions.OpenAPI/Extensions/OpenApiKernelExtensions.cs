@@ -149,7 +149,7 @@ public static class OpenApiKernelExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(OpenApiKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -212,7 +212,7 @@ public static class OpenApiKernelExtensions
     {
         using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         var parser = new OpenApiDocumentParser(loggerFactory);
 
@@ -286,14 +286,17 @@ public static class OpenApiKernelExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && variables.TryGetValue(parameter.AlternativeName!, out string? value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) &&
+                        variables.TryGetValue(parameter.AlternativeName!, out string? value) &&
+                        value is not null)
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
                     }
 
                     // A try to resolve argument by original parameter name
-                    if (variables.TryGetValue(parameter.Name, out value))
+                    if (variables.TryGetValue(parameter.Name, out value) &&
+                        value is not null)
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
