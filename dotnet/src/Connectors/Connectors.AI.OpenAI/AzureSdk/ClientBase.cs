@@ -286,7 +286,10 @@ public abstract class ClientBase
             }
 
             // Otherwise, invoke the function.
-            string functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<string>() ?? string.Empty;
+            var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false))
+                .GetValue<object>() ?? string.Empty;
+
+            var serializedFunctionResult = JsonSerializer.Serialize(functionResult);
 
             // Then add the relevant messages both to the chat options and to the chat history.
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
@@ -296,10 +299,10 @@ public abstract class ClientBase
             string fqn = functionCallResponse.FullyQualifiedName;
 
             chatOptions.Messages.Add(resultChoice.Message);
-            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, functionResult) { Name = fqn });
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
             chat.AddAssistantMessage(result);
-            chat.AddFunctionMessage(functionResult, fqn);
+            chat.AddFunctionMessage(serializedFunctionResult, fqn);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
             // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
@@ -340,12 +343,12 @@ public abstract class ClientBase
             StringBuilder? contentBuilder = null;
             string? functionName = null;
             StringBuilder? functionArgumentsBuilder = null;
-            ChatRole streamedRole = default;
+            ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
                 responseMetadata ??= GetResponseMetadata(update);
-                streamedRole = update.Role ?? default;
+                streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
                 // If we're intending to invoke function calls, we need to consume that function call information.
@@ -420,7 +423,10 @@ public abstract class ClientBase
             }
 
             // Otherwise, invoke the function.
-            string functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<string>() ?? string.Empty;
+            var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false))
+                .GetValue<object>() ?? string.Empty;
+
+            var serializedFunctionResult = JsonSerializer.Serialize(functionResult);
 
             // Then add the relevant messages both to the chat options and to the chat history.
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
@@ -430,11 +436,11 @@ public abstract class ClientBase
             string contents = contentBuilder?.ToString() ?? string.Empty;
             string fqn = functionCallResponse.FullyQualifiedName;
 
-            chatOptions.Messages.Add(new(streamedRole, contents) { FunctionCall = functionCall });
-            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, functionResult) { Name = fqn });
+            chatOptions.Messages.Add(new(streamedRole ?? default, contents) { FunctionCall = functionCall });
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
             chat.AddAssistantMessage(contents, functionCall);
-            chat.AddFunctionMessage(functionResult, fqn);
+            chat.AddFunctionMessage(serializedFunctionResult, fqn);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
             // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
