@@ -23,7 +23,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -83,7 +83,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
