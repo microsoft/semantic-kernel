@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -30,8 +30,8 @@ internal static class Example31_CustomPlanner
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        ISKPlugin qaPlugin = LoadQAPlugin(kernel);
-        SKContext context = CreateContextQueryContext(kernel);
+        IKernelPlugin qaPlugin = LoadQAPlugin(kernel);
+        var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
         kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
@@ -48,8 +48,8 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(qaPlugin["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(kernel, context);
+        variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
+        var result = await plan.InvokeAsync(kernel, variables);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -75,24 +75,24 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-    private static SKContext CreateContextQueryContext(Kernel kernel)
+    private static ContextVariables CreateContextQueryContextVariables()
     {
-        var context = kernel.CreateNewContext();
-        context.Variables.Set("firstname", "Jamal");
-        context.Variables.Set("lastname", "Williams");
-        context.Variables.Set("city", "Tacoma");
-        context.Variables.Set("state", "WA");
-        context.Variables.Set("country", "USA");
-        context.Variables.Set("collection", "contextQueryMemories");
-        context.Variables.Set("limit", "5");
-        context.Variables.Set("relevance", "0.3");
-        return context;
+        var variables = new ContextVariables
+        {
+            ["firstname"] = "Jamal",
+            ["lastname"] = "Williams",
+            ["city"] = "Tacoma",
+            ["state"] = "WA",
+            ["country"] = "USA",
+            ["collection"] = "contextQueryMemories",
+            ["limit"] = "5",
+            ["relevance"] = "0.3",
+        };
+        return variables;
     }
 
     private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
-        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
-
         List<string> memoriesToSave = new()
         {
             "I like pizza and chicken wings.",
@@ -116,7 +116,7 @@ internal static class Example31_CustomPlanner
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static ISKPlugin LoadQAPlugin(Kernel kernel)
+    private static IKernelPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromObject<TimePlugin>("time");
@@ -132,11 +132,11 @@ internal static class Example31_CustomPlanner
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureOpenAITextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -147,7 +147,7 @@ internal static class Example31_CustomPlanner
     {
         return new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAITextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -159,16 +159,16 @@ internal static class Example31_CustomPlanner
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
-    [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context)
+    [KernelFunction, Description("Run Markup")]
+    public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
-        var plan = docString.FromMarkup("Run a piece of xml markup", context);
+        var plan = docString.FromMarkup("Run a piece of xml markup", kernel);
 
         Console.WriteLine("Markup plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await context.Runner.RunAsync(plan);
+        var result = await plan.InvokeAsync(kernel);
         return result?.GetValue<string>()! ?? string.Empty;
     }
 }
@@ -180,7 +180,7 @@ public static class XmlMarkupPlanParser
         { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
 
-    public static Plan FromMarkup(this string markup, string goal, SKContext context)
+    public static Plan FromMarkup(this string markup, string goal, Kernel kernel)
     {
         Console.WriteLine("Markup:");
         Console.WriteLine(markup);
@@ -188,10 +188,10 @@ public static class XmlMarkupPlanParser
 
         var doc = new XmlMarkup(markup);
         var nodes = doc.SelectElements();
-        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, context, goal);
+        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, kernel, goal);
     }
 
-    private static Plan NodeListToPlan(XmlNodeList nodes, SKContext context, string description)
+    private static Plan NodeListToPlan(XmlNodeList nodes, Kernel kernel, string description)
     {
         Plan plan = new(description);
         for (var i = 0; i < nodes.Count; ++i)
@@ -210,11 +210,11 @@ public static class XmlMarkupPlanParser
 
             if (hasChildElements)
             {
-                plan.AddSteps(NodeListToPlan(node.ChildNodes, context, functionName));
+                plan.AddSteps(NodeListToPlan(node.ChildNodes, kernel, functionName));
             }
             else
             {
-                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ?
+                Plan planStep = kernel.Plugins.TryGetFunction(pluginName, functionName, out KernelFunction? command) ?
                     new Plan(command) :
                     new Plan(node.InnerText);
                 planStep.PluginName = pluginName;

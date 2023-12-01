@@ -11,13 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Action Planner allows to select one function out of many, to achieve a given goal.
@@ -28,7 +24,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner : IPlanner
+public sealed class ActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string PluginName = "this";
@@ -48,10 +44,9 @@ public sealed class ActionPlanner : IPlanner
     };
 
     // Planner semantic function
-    private readonly ISKFunction _plannerFunction;
+    private readonly KernelFunction _plannerFunction;
 
-    // Context used to access the list of functions in the kernel
-    private readonly SKContext _context;
+    private readonly ContextVariables _contextVariables;
     private readonly Kernel _kernel;
     private readonly ILogger _logger;
 
@@ -76,7 +71,7 @@ public sealed class ActionPlanner : IPlanner
 
         this._plannerFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            new AIRequestSettings()
+            new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -88,23 +83,37 @@ public sealed class ActionPlanner : IPlanner
         kernel.ImportPluginFromObject(this, pluginName: PluginName);
 
         // Create context and logger
-        this._context = kernel.CreateNewContext();
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._contextVariables = new ContextVariables();
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-    /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        this._context.Variables.Update(goal);
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (ActionPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            static (Plan plan) => plan.ToSafePlanString(),
+            this, goal, this._logger, cancellationToken);
+    }
 
-        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+    private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
+    {
+        this._contextVariables.Update(goal);
+
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._contextVariables, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
         {
-            throw new SKException("The plan deserialized to a null object");
+            throw new KernelException("The plan deserialized to a null object");
         }
 
         // Build and return plan
@@ -145,18 +154,16 @@ public sealed class ActionPlanner : IPlanner
     /// excluding functions in the planner itself.
     /// </summary>
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
-    /// <param name="context">Function execution context</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
-    [SKFunction, Description("List all functions available in the kernel")]
+    [KernelFunction, Description("List all functions available in the kernel")]
     public async Task<string> ListOfFunctionsAsync(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context,
         CancellationToken cancellationToken = default)
     {
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        var availableFunctions = await context.Plugins.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
+        var availableFunctions = await this._kernel.Plugins.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
         this.PopulateList(list, availableFunctions);
 
         return list.ToString();
@@ -168,12 +175,12 @@ public sealed class ActionPlanner : IPlanner
     /// Native function that provides a list of good examples of plans to generate.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few good examples of plans to generate")]
+    [KernelFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context)
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]
@@ -209,12 +216,12 @@ Goal: create a file called ""something.txt"".
     /// Native function that provides a list of edge case examples of plans to handle.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few edge case examples of plans to handle")]
+    [KernelFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context)
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]
@@ -271,17 +278,17 @@ Goal: tell me a joke.
                 }
                 catch (Exception e)
                 {
-                    throw new SKException("Plan parsing error, invalid JSON", e);
+                    throw new KernelException("Plan parsing error, invalid JSON", e);
                 }
             }
         }
 
-        throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
+        throw new KernelException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
-    private void PopulateList(StringBuilder list, IEnumerable<SKFunctionMetadata> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<KernelFunctionMetadata> functions)
     {
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             // Function description
             if (func.Description != null)

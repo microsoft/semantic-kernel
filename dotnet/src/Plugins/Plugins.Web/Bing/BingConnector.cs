@@ -30,7 +30,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public BingConnector(string apiKey, ILoggerFactory? loggerFactory = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
+        this(apiKey, HttpClientProvider.GetHttpClient(), loggerFactory)
     {
     }
 

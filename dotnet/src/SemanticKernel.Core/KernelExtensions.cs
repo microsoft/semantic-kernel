@@ -4,14 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -21,52 +20,52 @@ public static class KernelExtensions
 {
     #region CreateFunctionFromMethod
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction CreateFunctionFromMethod(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         Delegate method,
         string? functionName = null,
         string? description = null,
-        IEnumerable<SKParameterMetadata>? parameters = null,
-        SKReturnParameterMetadata? returnParameter = null)
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
-    /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="method">The method to be represented via the created <see cref="ISKFunction"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <returns>The created <see cref="ISKFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static ISKFunction CreateFunctionFromMethod(
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         MethodInfo method,
         object? target = null,
         string? functionName = null,
         string? description = null,
-        IEnumerable<SKParameterMetadata>? parameters = null,
-        SKReturnParameterMetadata? returnParameter = null)
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
@@ -74,135 +73,168 @@ public static class KernelExtensions
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
 
     /// <summary>
-    /// Creates a string-to-string semantic function, with no direct support for input context.
+    /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction CreateFunctionFromPrompt(
+    public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
-        string? description = null)
-    {
-        Verify.NotNull(kernel);
-
-        return SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
-    }
-
-    /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A function ready to use</returns>
-    public static ISKFunction CreateFunctionFromPrompt(
-        this Kernel kernel,
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        string? description = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <returns>A function ready to use</returns>
+    public static KernelFunction CreateFunctionFromPrompt(
+        this Kernel kernel,
+        PromptTemplateConfig promptConfig,
+        IPromptTemplateFactory? promptTemplateFactory = null)
+    {
+        Verify.NotNull(kernel);
+
+        return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
+    }
+
+    /// <summary>
+    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <returns>A function ready to use</returns>
-    public static ISKFunction CreateFunctionFromPrompt(
+    public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
+        PromptTemplateConfig promptConfig,
         string? functionName = null)
     {
         Verify.NotNull(kernel);
 
-        return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.LoggerFactory);
     }
     #endregion
 
     #region CreatePluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static IKernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject(target, pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
     }
     #endregion
 
     #region ImportPluginFromObject
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
-        ISKPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
+        IKernelPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
 
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
+    /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelPlugin AddPluginFromObject<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
+        where T : new()
+    {
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        plugins.Add(plugin);
+        return plugin;
+    }
+
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <remarks>
-    /// Public methods that have the <see cref="SKFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static ISKPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static IKernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
-        ISKPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
+        IKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="target">The instance of the class to be wrapped.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// </param>
+    /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelPlugin AddPluginFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        plugins.Add(plugin);
         return plugin;
     }
     #endregion
@@ -233,12 +265,12 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
-    public static ISKPlugin CreatePluginFromPromptDirectory(
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    public static IKernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
@@ -253,7 +285,7 @@ public static class KernelExtensions
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
 
-        SKPlugin plugin = new(pluginName);
+        KernelPlugin plugin = new(pluginName);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
@@ -269,25 +301,26 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptTemplateConfig = File.Exists(configPath) ?
+            var promptConfig = File.Exists(configPath) ?
                 PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
                 new PromptTemplateConfig();
+            promptConfig.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(promptTemplateConfig));
+                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptConfig, JsonOptionsCache.WriteIndented));
             }
 
             // Load prompt template
-            var promptTemplate = File.ReadAllText(promptPath);
-            IPromptTemplate? promptTemplateInstance = factory.Create(promptTemplate, promptTemplateConfig);
+            promptConfig.Template = File.ReadAllText(promptPath);
+            IPromptTemplate? promptTemplateInstance = factory.Create(promptConfig);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptTemplateConfig, functionName));
+            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptConfig));
         }
 
         return plugin;
@@ -323,18 +356,18 @@ public static class KernelExtensions
     /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
-    public static ISKPlugin ImportPluginFromPromptDirectory(
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    public static IKernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        ISKPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        IKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -342,274 +375,169 @@ public static class KernelExtensions
 
     #region InvokePromptAsync
     /// <summary>
-    /// Invoke a semantic function using the provided prompt template.
+    /// Invoke a prompt function using the provided prompt template.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="arguments">The operation arguments</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <returns>Function execution result</returns>
+    public static Task<FunctionResult> InvokePromptAsync(
+        this Kernel kernel,
+        string promptTemplate,
+        KernelArguments? arguments = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            arguments?.ExecutionSettings,
+            promptTemplateFactory: promptTemplateFactory);
+
+        return kernel.InvokeAsync(function, arguments);
+    }
+    #endregion
+
+    #region InvokePromptStreamingAsync
+    /// <summary>
+    /// Invoke a prompt function using the provided prompt template and stream the results.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
-    /// <returns>Kernel execution result</returns>
-    public static Task<KernelResult> InvokePromptAsync(
+    /// <param name="arguments">The operation arguments</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Function execution result</returns>
+    public static IAsyncEnumerable<StreamingContent> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
-        AIRequestSettings? requestSettings = null,
-        string? functionName = null,
-        string? description = null) =>
-        kernel.RunAsync((ISKFunction)SKFunction.FromPrompt(
-            promptTemplate,
-            requestSettings,
-            functionName,
-            description));
-    #endregion
-
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="skFunction">A Semantic Kernel function to run</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    public static Task<KernelResult> RunAsync(
-        this Kernel kernel,
-        ISKFunction skFunction,
-        ContextVariables? variables = null,
+        KernelArguments? arguments = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        return kernel.RunAsync(variables ?? new(), cancellationToken, skFunction);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            arguments?.ExecutionSettings,
+            promptTemplateFactory: promptTemplateFactory);
+
+        return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
     }
+    #endregion
+
+    #region InvokeAsync
 
     /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
-        this Kernel kernel,
-        params ISKFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        params ISKFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
-        this Kernel kernel,
-        ContextVariables variables,
-        params ISKFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
-        this Kernel kernel,
-        CancellationToken cancellationToken,
-        params ISKFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-    }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<KernelResult> RunAsync(
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
+        KernelFunction function,
         string input,
-        CancellationToken cancellationToken,
-        params ISKFunction[] pipeline)
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(function);
 
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+        return function.InvokeAsync(kernel, input, executionSettings: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="arguments">The function arguments</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> InvokeAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNull(function);
+
+        return function.InvokeAsync(kernel, arguments, cancellationToken);
     }
 
     /// <summary>
     /// Run a plugin function.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">The name of the plugin containing the function to run.</param>
     /// <param name="functionName">The name of the function to run.</param>
-    /// <param name="variables">Input to process</param>
+    /// <param name="arguments">The function arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function run.</returns>
-    public static Task<KernelResult> RunAsync(
+    public static Task<FunctionResult> InvokeAsync(
         this Kernel kernel,
         string pluginName,
         string functionName,
-        ContextVariables? variables = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.RunAsync(function, variables, cancellationToken);
+        return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
+    #endregion
+
+    #region InvokeStreamingAsync
+    /// <summary>
+    /// Invoke a function in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="arguments">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
 
     /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    /// <inheritdoc/>
-    public static async Task<KernelResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-    {
-        var context = kernel.CreateNewContext(variables);
-
-        FunctionResult? functionResult = null;
-
-        int pipelineStepCount = 0;
-        var allFunctionResults = new List<FunctionResult>();
-
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
-
-        foreach (ISKFunction skFunction in pipeline)
-        {
-repeat:
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var functionDetails = skFunction.GetMetadata();
-
-                functionResult = await skFunction.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount, logger))
-                {
-                    break;
-                }
-
-                if (IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount, logger))
-                {
-                    continue;
-                }
-
-                // Only non-stop results are considered as Kernel results
-                allFunctionResults.Add(functionResult!);
-
-                if (IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount, logger))
-                {
-                    goto repeat;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.Name, pipelineStepCount, ex.Message);
-                throw;
-            }
-
-            pipelineStepCount++;
-        }
-
-        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
-    }
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="arguments">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+        => kernel.InvokeStreamingAsync<StreamingContent>(function, arguments, CancellationToken.None);
 
     /// <summary>
-    /// Checks if the handler requested to cancel the function execution.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="skFunction">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (SKFunctionFromPrompt.IsInvokingCancelRequested(context))
-        {
-            logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
-            return true;
-        }
-
-        if (SKFunctionFromPrompt.IsInvokedCancelRequested(context))
-        {
-            logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
-            return true;
-        }
-
-        return false;
-    }
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => function.InvokeStreamingAsync<T>(kernel, input, executionSettings: null, cancellationToken);
 
     /// <summary>
-    /// Checks if the handler requested to skip the function execution.
+    /// Invoke a function in streaming mode.
     /// </summary>
-    /// <param name="skFunction">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (SKFunctionFromPrompt.IsInvokingSkipRequested(context))
-        {
-            logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the handler requested to repeat the function execution.
-    /// </summary>
-    /// <param name="skFunction">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsRepeatRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
-        {
-            logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, skFunction.Name);
-            return true;
-        }
-        return false;
-    }
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">Target function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Streaming result of the function</returns>
+    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
+        => kernel.InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
+    #endregion
 }

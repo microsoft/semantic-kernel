@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -60,7 +62,7 @@ after this event Caroline became his wife.""";
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -83,27 +85,27 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        var context = kernel.CreateNewContext();
-        context.Variables.Update(summaryText);
-        context.Variables.Set("topic", "people and places");
-        context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
+        var variables = new KernelArguments();
+        variables["input"] = summaryText;
+        variables["topic"] = "people and places";
+        variables["example_entities"] = "John, Jane, mother, brother, Paris, Rome";
 
-        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
+        var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).ToString();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        context.Variables.Update(extractionResult);
-        context.Variables.Set("reference_context", GroundingText);
+        variables["input"] = extractionResult;
+        variables["reference_context"] = GroundingText;
 
-        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
+        var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        context.Variables.Update(summaryText);
-        context.Variables.Set("ungrounded_entities", groundingResult);
-        var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
+        variables["input"] = summaryText;
+        variables["ungrounded_entities"] = groundingResult;
+        var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
         Console.WriteLine("======== Excise Entities ========");
         Console.WriteLine(excisionResult.GetValue<string>());
@@ -124,7 +126,7 @@ which are not grounded in the original.
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -136,12 +138,13 @@ which are not grounded in the original.
 
         kernel.ImportPluginFromObject<TextPlugin>();
 
-        var planner = new SequentialPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(ask);
-        Console.WriteLine(plan.ToPlanWithGoalString());
+        var planner = new HandlebarsPlanner();
+        var plan = await planner.CreatePlanAsync(kernel, ask);
 
-        var results = await kernel.RunAsync(GroundingText, plan);
-        Console.WriteLine(results.GetValue<string>());
+        Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
+
+        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
+        Console.WriteLine(result.GetValue<string>());
     }
 }
 

@@ -33,7 +33,7 @@ public class ChromaClient : IChromaClient
     {
         Verify.NotNull(endpoint);
 
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
         this._endpoint = endpoint;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
     }
@@ -44,12 +44,12 @@ public class ChromaClient : IChromaClient
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <exception cref="SKException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
+    /// <exception cref="KernelException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
     public ChromaClient(HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;

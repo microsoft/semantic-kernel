@@ -34,12 +34,8 @@ public class HttpPluginTests : IDisposable
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = KernelBuilder.Create();
-        var plugin = new HttpPlugin();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPluginFromObject(plugin, "http");
+        Assert.NotNull(KernelPluginFactory.CreateFromObject<HttpPlugin>("http"));
     }
 
     [Fact]

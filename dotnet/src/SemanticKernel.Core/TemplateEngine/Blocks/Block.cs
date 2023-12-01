@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 /// <summary>
 /// Base class for blocks parsed from a prompt template
 /// </summary>
-public abstract class Block
+internal abstract class Block
 {
     internal virtual BlockTypes Type => BlockTypes.Undefined;
 

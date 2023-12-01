@@ -27,13 +27,13 @@ internal static partial class OpenAIRestExtensions
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing: {typeof(TResult).Name}");
+            throw new KernelException($"Null result processing: {typeof(TResult).Name}");
     }
 
     private static Task<TResult> ExecutePostAsync<TResult>(
@@ -58,13 +58,13 @@ internal static partial class OpenAIRestExtensions
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing: {typeof(TResult).Name}");
+            throw new KernelException($"Null result processing: {typeof(TResult).Name}");
     }
 
     private static async Task ExecuteDeleteAsync(
@@ -80,7 +80,7 @@ internal static partial class OpenAIRestExtensions
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
     }
 }

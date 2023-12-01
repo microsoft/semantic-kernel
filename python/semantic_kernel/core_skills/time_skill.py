@@ -2,11 +2,11 @@
 
 import datetime
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function
 
 
-class TimeSkill(PydanticField):
+class TimeSkill(SKBaseModel):
     """
     Description: TimeSkill provides a set of functions
                  to get the current time and date.

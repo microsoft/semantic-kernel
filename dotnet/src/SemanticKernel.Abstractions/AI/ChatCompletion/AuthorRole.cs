@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -31,11 +30,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// The role that provides additional information and references for chat completions.
     /// </summary>
     public static AuthorRole Tool { get; } = new("tool");
-
-    /// <summary>
-    /// The role that provides information about a function call result.
-    /// </summary>
-    public static AuthorRole Function { get; } = new("function");
 
     /// <summary>
     /// Gets the label associated with this AuthorRole.
@@ -79,12 +73,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         => !(left == right);
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode()
         => this.Label.GetHashCode();
 

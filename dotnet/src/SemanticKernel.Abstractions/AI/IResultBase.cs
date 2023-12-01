@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>

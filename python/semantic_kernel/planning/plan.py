@@ -4,7 +4,9 @@ import asyncio
 import re
 import threading
 from logging import Logger
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
+
+from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import CompleteRequestSettings
@@ -28,19 +30,19 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class Plan(SKFunctionBase):
-    _state: ContextVariables
-    _steps: List["Plan"]
-    _function: SKFunctionBase
-    _parameters: ContextVariables
-    _outputs: List[str]
-    _has_next_step: bool
-    _next_step_index: int
-    _name: str
-    _skill_name: str
-    _description: str
-    _is_semantic: bool
-    _request_settings: CompleteRequestSettings
-    DEFAULT_RESULT_KEY = "PLAN.RESULT"
+    _state: ContextVariables = PrivateAttr()
+    _steps: List["Plan"] = PrivateAttr()
+    _function: SKFunctionBase = PrivateAttr()
+    _parameters: ContextVariables = PrivateAttr()
+    _outputs: List[str] = PrivateAttr()
+    _has_next_step: bool = PrivateAttr()
+    _next_step_index: int = PrivateAttr()
+    _name: str = PrivateAttr()
+    _skill_name: str = PrivateAttr()
+    _description: str = PrivateAttr()
+    _is_semantic: bool = PrivateAttr()
+    _request_settings: CompleteRequestSettings = PrivateAttr()
+    DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
     def name(self) -> str:
@@ -101,6 +103,7 @@ class Plan(SKFunctionBase):
         steps: Optional[List["Plan"]] = None,
         function: Optional[SKFunctionBase] = None,
     ) -> None:
+        super().__init__()
         self._name = "" if name is None else name
         self._skill_name = "" if skill_name is None else skill_name
         self._description = "" if description is None else description

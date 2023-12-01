@@ -3,8 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planning;
@@ -16,9 +14,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
-#pragma warning restore IDE0130
 
 public sealed class StepwisePlannerTests : IDisposable
 {
@@ -26,7 +22,6 @@ public sealed class StepwisePlannerTests : IDisposable
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
-        this._loggerFactory = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -45,7 +40,7 @@ public sealed class StepwisePlannerTests : IDisposable
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
     [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    public async Task CanCreateStepwisePlanAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    public void CanCreateStepwisePlanAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -58,7 +53,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = planner.CreatePlan(prompt);
 
         // Assert
         Assert.Empty(plan.Steps);
@@ -84,7 +79,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = planner.CreatePlan(prompt);
         var planResult = await plan.InvokeAsync(kernel);
         var result = planResult.GetValue<string>();
 
@@ -113,10 +108,10 @@ public sealed class StepwisePlannerTests : IDisposable
         var planner = new StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
         // Act
-        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
+        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
+        var ex = await Assert.ThrowsAsync<KernelException>(async () => await plan.InvokeAsync(kernel));
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
@@ -131,9 +126,9 @@ public sealed class StepwisePlannerTests : IDisposable
         var planner = new StepwisePlanner(kernel);
 
         // Act
-        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
-        var kernelResult = await kernel.RunAsync(plan);
-        var result = kernelResult.GetValue<string>();
+        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var functionResult = await plan.InvokeAsync(kernel);
+        var result = functionResult.GetValue<string>();
 
         // Assert - should contain results, for now just verify it didn't fail
         Assert.NotNull(result);
@@ -148,63 +143,38 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
-
-        if (useChatModel)
+        return new KernelBuilder().ConfigureServices(c =>
         {
-            builder.WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
+            if (useChatModel)
+            {
+                c.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
+            else
+            {
+                c.AddAzureOpenAITextCompletion(
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
 
-        if (useEmbeddings)
-        {
-            builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
-
-        var kernel = builder.Build();
-
-        return kernel;
+            if (useEmbeddings)
+            {
+                c.AddAzureOpenAITextEmbeddingGeneration(
+                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+            }
+        }).Build();
     }
 
-    private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~StepwisePlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._loggerFactory is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 }

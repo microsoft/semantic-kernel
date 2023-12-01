@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Translate text to English and improve it",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 3000,
       "temperature": 0.0,

@@ -5,12 +5,12 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Represents an empty interface for AI services.
+/// Represents an AI service.
 /// </summary>
 public interface IAIService
 {
     /// <summary>
     /// Gets the AI service attributes.
     /// </summary>
-    IReadOnlyDictionary<string, string> Attributes { get; }
+    IReadOnlyDictionary<string, object?> Attributes { get; }
 }

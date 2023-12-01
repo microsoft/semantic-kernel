@@ -3,11 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Orchestration;
 using Plugins;
 using Resources;
 
@@ -34,9 +32,9 @@ public static class Example70_Assistant
 
         await RunSimpleChatAsync();
 
-        await RunWithNativeFunctionsAsync();
+        await RunWithMethodFunctionsAsync();
 
-        await RunWithSemanticFunctionsAsync();
+        await RunWithPromptFunctionsAsync();
 
         await RunAsFunctionAsync();
     }
@@ -52,11 +50,11 @@ public static class Example70_Assistant
             "Practice makes perfect.");
     }
 
-    private static async Task RunWithNativeFunctionsAsync()
+    private static async Task RunWithMethodFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithNativeFunctions ========");
+        Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        ISKPlugin plugin = SKPlugin.FromObject(new MenuPlugin(), nameof(MenuPlugin));
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
@@ -67,11 +65,11 @@ public static class Example70_Assistant
             "Thank you!");
     }
 
-    private static async Task RunWithSemanticFunctionsAsync()
+    private static async Task RunWithPromptFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithSemanticFunctions ========");
+        Console.WriteLine("======== Run:WithPromptFunctions ========");
 
-        var plugin = new SKPlugin("test");
+        var plugin = new KernelPlugin("test");
         plugin.AddFunctionFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
@@ -101,14 +99,12 @@ public static class Example70_Assistant
 
         var assistants = kernel.ImportPluginFromObject(assistant, assistant.Id);
 
-        var variables = new ContextVariables
+        var arguments = new KernelArguments
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await kernel.RunAsync(assistants.Single(), variables);
-        var resultValue = result.GetValue<string>();
-
-        var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
+        var result = await kernel.InvokeAsync(assistants.Single(), arguments);
+        var response = result.GetValue<AssistantResponse>();
         Console.WriteLine(
             response?.Response ??
             $"No response from assistant: {assistant.Id}");
@@ -123,12 +119,12 @@ public static class Example70_Assistant
 
     private static async Task ChatAsync(
         string resourcePath,
-        ISKPlugin? plugin,
+        IKernelPlugin? plugin,
         params string[] messages)
     {
         var definition = EmbeddedResource.Read(resourcePath);
 
-        var plugins = plugin == null ? new SKPluginCollection() : new SKPluginCollection() { plugin };
+        var plugins = plugin == null ? new KernelPluginCollection() : new KernelPluginCollection() { plugin };
 
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(

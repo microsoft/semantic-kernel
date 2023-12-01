@@ -3,9 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using RepoUtils;
 
 /**
@@ -33,7 +31,7 @@ public static class Example64_MultiplePromptTemplates
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -55,22 +53,22 @@ public static class Example64_MultiplePromptTemplates
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
-        var skfunction = kernel.CreateFunctionFromPrompt(
-            promptTemplate: prompt,
-            functionName: "MyFunction",
-            promptTemplateConfig: new PromptTemplateConfig()
+        var function = kernel.CreateFunctionFromPrompt(
+            promptConfig: new PromptTemplateConfig()
             {
-                TemplateFormat = templateFormat
+                Template = prompt,
+                TemplateFormat = templateFormat,
+                Name = "MyFunction",
             },
             promptTemplateFactory: promptTemplateFactory
         );
 
-        var variables = new ContextVariables()
+        var arguments = new KernelArguments()
         {
             { "name", "Bob" }
         };
 
-        var result = await kernel.RunAsync(skfunction, variables);
+        var result = await kernel.InvokeAsync(function, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
@@ -14,7 +12,7 @@ public class NamedArgBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new NamedArgBlock("a=$b", NullLoggerFactory.Instance);
+        var target = new NamedArgBlock("a=$b");
 
         // Assert
         Assert.Equal(BlockTypes.NamedArg, target.Type);
@@ -30,7 +28,7 @@ public class NamedArgBlockTests
     public void ItTrimsSpaces(string input, string expected)
     {
         // Act + Assert
-        Assert.Equal(expected, new NamedArgBlock(input, NullLoggerFactory.Instance).Content);
+        Assert.Equal(expected, new NamedArgBlock(input).Content);
     }
 
     [Theory]
@@ -127,7 +125,7 @@ public class NamedArgBlockTests
     [Fact]
     public void ArgValueShouldBeNonEmpty()
     {
-        Assert.Throws<SKException>(() => new NamedArgBlock("a="));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("a="));
     }
 
     [Theory]
@@ -207,7 +205,6 @@ public class NamedArgBlockTests
     {
         // Arrange
         var target = new NamedArgBlock($"a=${name}");
-        var variables = new ContextVariables { [name] = "value" };
 
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));
@@ -220,8 +217,8 @@ public class NamedArgBlockTests
         var target1 = new NamedArgBlock("a='b'");
         var target2 = new NamedArgBlock("a=$b");
         var target3 = new NamedArgBlock("a=\"b\"");
-        Assert.Throws<SKException>(() => new NamedArgBlock("foo"));
-        Assert.Throws<SKException>(() => new NamedArgBlock("foo=$bar=$baz"));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("foo"));
+        Assert.Throws<KernelException>(() => new NamedArgBlock("foo=$bar=$baz"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

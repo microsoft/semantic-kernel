@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -71,7 +70,7 @@ internal sealed class ChatRun
         // Did fail?
         if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
+            throw new KernelException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
@@ -141,19 +140,24 @@ internal sealed class ChatRun
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var variables = new ContextVariables();
+            var functionArguments = new KernelArguments();
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
                 foreach (var argument in arguments)
                 {
-                    variables[argument.Key] = argument.Value.ToString();
+                    functionArguments[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
+            if (result.ValueType == typeof(AssistantResponse))
+            {
+                var response = result.GetValue<AssistantResponse>()!;
+                return response.Response ?? string.Empty;
+            }
 
-            return results.GetValue<string>() ?? string.Empty;
+            return result.GetValue<string>() ?? string.Empty;
         }
     }
 }

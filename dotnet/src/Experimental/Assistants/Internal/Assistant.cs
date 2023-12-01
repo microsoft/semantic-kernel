@@ -1,17 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -27,7 +22,7 @@ internal sealed class Assistant : IAssistant
     public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public ISKPluginCollection Plugins { get; }
+    public KernelPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
@@ -58,23 +53,21 @@ internal sealed class Assistant : IAssistant
     /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="chatService">An OpenAI chat service.</param>
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="plugins">Plugins to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
-        OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating assistant: no result.");
+            throw new KernelException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, chatService, restContext, plugins);
+        return new Assistant(resultModel, restContext, plugins);
     }
 
     /// <summary>
@@ -82,23 +75,22 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     internal Assistant(
         AssistantModel model,
-        OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
-        ISKPluginCollection? plugins = null)
+        IEnumerable<IKernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
-        this.Plugins = plugins ?? new SKPluginCollection();
 
-        var services = new AIServiceCollection();
-        services.SetService<IChatCompletion>(chatService);
-        services.SetService<ITextCompletion>(chatService);
-        this.Kernel =
-            new Kernel(
-                services.Build(),
-                plugins,
-                httpHandlerFactory: NullHttpHandlerFactory.Instance,
-                loggerFactory: null);
+        var builder =
+            new KernelBuilder()
+                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
+
+        this.Kernel = builder.Build();
+
+        if (plugins is not null)
+        {
+            this.Kernel.Plugins.AddRange(plugins);
+        }
     }
 
     /// <inheritdoc/>
@@ -114,13 +106,13 @@ internal sealed class Assistant : IAssistant
     }
 
     /// <summary>
-    /// Marshal thread run through <see cref="ISKFunction"/> interface.
+    /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [SKFunction, Description("Provide input to assistant a response")]
-    public async Task<string> AskAsync(
+    [KernelFunction, Description("Provide input to assistant a response")]
+    public async Task<AssistantResponse> AskAsync(
         [Description("The input for the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
@@ -135,6 +127,6 @@ internal sealed class Assistant : IAssistant
                 Response = string.Concat(message.Select(m => m.Content)),
             };
 
-        return JsonSerializer.Serialize(response);
+        return response;
     }
 }

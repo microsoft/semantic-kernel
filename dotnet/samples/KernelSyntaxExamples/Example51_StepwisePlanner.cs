@@ -139,11 +139,11 @@ public static class Example51_StepwisePlanner
         try
         {
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
-            var plan = await planner.CreatePlanAsync(question);
+            var plan = planner.CreatePlan(question);
 
-            var kernelResult = await kernel.RunAsync(plan);
-            var planResult = kernelResult.FunctionResults.First();
-            var result = kernelResult.GetValue<string>()!;
+            var functionResult = await plan.InvokeAsync(kernel);
+
+            var result = functionResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
@@ -156,18 +156,18 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.answer = result;
             }
 
-            if (planResult.TryGetMetadataValue("stepCount", out string stepCount))
+            if (functionResult.TryGetMetadataValue("stepCount", out string stepCount))
             {
                 Console.WriteLine("Steps Taken: " + stepCount);
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (planResult.TryGetMetadataValue("functionCount", out string functionCount))
+            if (functionResult.TryGetMetadataValue("functionCount", out string functionCount))
             {
                 Console.WriteLine("Functions Used: " + functionCount);
             }
 
-            if (planResult.TryGetMetadataValue("iterations", out string iterations))
+            if (functionResult.TryGetMetadataValue("iterations", out string iterations))
             {
                 Console.WriteLine("Iterations: " + iterations);
                 currentExecutionResult.iterations = iterations;
@@ -191,19 +191,17 @@ public static class Example51_StepwisePlanner
         var maxTokens = 0;
         if (useChat)
         {
-            builder.WithAzureOpenAIChatCompletionService(
+            builder.WithAzureOpenAIChatCompletion(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
-                setAsDefault: true);
+                TestConfiguration.AzureOpenAI.ApiKey);
 
             maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
         {
-            builder.WithAzureTextCompletionService(
+            builder.WithAzureOpenAITextCompletion(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
@@ -216,12 +214,6 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
             .Build();
 
         return kernel;

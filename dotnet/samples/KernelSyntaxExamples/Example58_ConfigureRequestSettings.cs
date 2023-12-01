@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -31,7 +30,7 @@ public static class Example58_ConfigureRequestSettings
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
@@ -41,22 +40,23 @@ public static class Example58_ConfigureRequestSettings
         var prompt = "Hello AI, what can you do for me?";
 
         // Option 1:
-        // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
+        // Invoke the prompt function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokePromptAsync(
             prompt,
-            new OpenAIRequestSettings()
+            new(new OpenAIPromptExecutionSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
-            });
+            }));
         Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the request settings from a JSON payload
-        // Create the semantic functions using the prompt template and the configuration (loaded in the previous step)
-        // Invoke the semantic function using the implicitly set request settings
+        // Create the prompt functions using the prompt template and the configuration (loaded in the previous step)
+        // Invoke the prompt function using the implicitly set request settings
         string configPayload = @"{
           ""schema"": 1,
+          ""name"": ""HelloAI"",
           ""description"": ""Say hello to an AI"",
           ""type"": ""completion"",
           ""completion"": {
@@ -67,10 +67,11 @@ public static class Example58_ConfigureRequestSettings
             ""frequency_penalty"": 0.0
           }
         }";
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateFunctionFromPrompt(prompt, templateConfig!, "HelloAI");
+        var promptConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
+        promptConfig.Template = prompt;
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
-        result = await kernel.RunAsync(func);
+        result = await kernel.InvokeAsync(func);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):

@@ -63,7 +63,7 @@ public class PineconeMemoryStoreTests
             .ReturnsAsync(false);
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient

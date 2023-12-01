@@ -49,7 +49,7 @@ public class WeaviateMemoryStore : IMemoryStore
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new ReadOnlyMemoryConverter() }
+        Converters = { JsonOptionsCache.ReadOnlyMemoryConverter }
     };
 
     private readonly HttpClient _httpClient;
@@ -77,7 +77,7 @@ public class WeaviateMemoryStore : IMemoryStore
         this._apiKey = apiKey;
         this._apiVersion = apiVersion;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         this._apiKey = apiKey;
@@ -129,7 +129,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
             if (result == null || result.Description != description)
             {
-                throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
+                throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
 
             this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
@@ -165,7 +165,7 @@ public class WeaviateMemoryStore : IMemoryStore
                 // For example a collectionName of '__this_collection' and 'this_collection' are
                 // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                 // system could consider them as unique collection names.
-                throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
+                throw new KernelException($"Unable to verify existing collection: {collectionName} with class name: {className}");
             }
 
             return true;
@@ -204,7 +204,7 @@ public class WeaviateMemoryStore : IMemoryStore
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
         if (getSchemaResponse == null)
         {
-            throw new SKException("Unable to deserialize list collections response");
+            throw new KernelException("Unable to deserialize list collections response");
         }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
@@ -279,7 +279,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         if (result == null)
         {
-            throw new SKException("Unable to deserialize batch response");
+            throw new KernelException("Unable to deserialize batch response");
         }
 
         foreach (BatchResponse batchResponse in result)
@@ -554,12 +554,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
     private static MemoryRecordMetadata ToMetadata(WeaviateObject weaviateObject)
     {
-        if (weaviateObject.Properties == null)
-        {
-#pragma warning disable CA2208
-            throw new ArgumentNullException(nameof(weaviateObject.Properties));
-#pragma warning restore CA2208
-        }
+        Verify.NotNull(weaviateObject.Properties, "weaviateObject.Properties");
 
         return new(
             false,
