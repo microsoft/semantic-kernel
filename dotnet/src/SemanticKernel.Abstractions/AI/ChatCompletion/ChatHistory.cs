@@ -23,6 +23,16 @@ public class ChatHistory : List<ChatMessage>
     }
 
     /// <summary>
+    /// Add a message to the chat history
+    /// </summary>
+    /// <param name="chatContent">Chat content</param>
+    /// <param name="additionalProperties">Additional properties</param>
+    public void AddMessage(ChatContent chatContent, IDictionary<string, string>? additionalProperties = null)
+    {
+        this.Add(new ChatMessage(chatContent.Role, chatContent.Content, additionalProperties));
+    }
+
+    /// <summary>
     /// Insert a message into the chat history
     /// </summary>
     /// <param name="index">Index of the message to insert</param>

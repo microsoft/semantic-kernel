@@ -65,4 +65,10 @@ public abstract class StreamingChatContent : StreamingContent
     /// Role of the author of the message
     /// </summary>
     public abstract AuthorRole? Role { get; protected set; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return this.Content ?? string.Empty;
+    }
 }
