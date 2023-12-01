@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Yaml.Functions;
 
 namespace Microsoft.SemanticKernel;
@@ -22,7 +21,7 @@ public static class PromptYamlKernelExtensions
         string resourceName,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
+        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -39,6 +38,6 @@ public static class PromptYamlKernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
+        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

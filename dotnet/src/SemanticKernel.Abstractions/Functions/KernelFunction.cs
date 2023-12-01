@@ -121,7 +121,7 @@ public abstract class KernelFunction
         cancellationToken.ThrowIfCancellationRequested();
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
@@ -236,7 +236,7 @@ public abstract class KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         logger.LogInformation("Function streaming invoking.");
 

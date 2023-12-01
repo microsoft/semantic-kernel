@@ -84,7 +84,7 @@ public sealed class ActionPlanner
 
         // Create context and logger
         this._contextVariables = new ContextVariables();
-        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>

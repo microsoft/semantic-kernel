@@ -32,7 +32,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._kernel = kernel;
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);

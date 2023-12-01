@@ -53,7 +53,7 @@ public class StepwisePlanner
         // Set MaxTokens for the prompt config
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
-        ILoggerFactory loggerFactory = this._kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = this._kernel.LoggerFactory;
 
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
