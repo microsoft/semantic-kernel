@@ -274,7 +274,7 @@ def test_azure_chat_completion_serialize() -> None:
         "api_key": api_key,
         "api_version": api_version,
         "log": logger,
-        "default_headers": default_headers
+        "default_headers": default_headers,
     }
 
     azure_chat_completion = AzureChatCompletion.from_dict(settings)

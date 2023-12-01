@@ -130,7 +130,7 @@ def test_azure_text_embedding_init_with_from_dict() -> None:
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
     assert azure_text_embedding.ai_model_id == deployment_name
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
-    assert endpoint in str(azure_text_embedding.client.base_url) 
+    assert endpoint in str(azure_text_embedding.client.base_url)
     assert azure_text_embedding.client.api_key == api_key
 
     # Assert that the default header we added is present in the client's default headers

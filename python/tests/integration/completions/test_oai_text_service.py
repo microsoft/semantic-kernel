@@ -41,6 +41,7 @@ async def test_oai_text_completion_with_skills(
     )
     assert len(output) < 100
 
+
 @pytest.mark.asyncio
 async def test_oai_text_completion_with_skills_with_provided_client(
     setup_tldr_function_for_oai_models, get_oai_config

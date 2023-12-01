@@ -100,6 +100,7 @@ def test_open_ai_chat_completion_serialize() -> None:
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
     assert "User-agent" not in dumped_settings["default_headers"]
 
+
 def test_open_ai_chat_completion_serialize_with_org_id() -> None:
     ai_model_id = "test_model_id"
     api_key = "test_api_key"

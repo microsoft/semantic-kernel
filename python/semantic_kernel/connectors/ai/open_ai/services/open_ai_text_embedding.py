@@ -34,7 +34,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             async_client {AsyncOpenAI} -- An existing client to use.
             log: The logger instance to use. (Optional)
         """
-        
 
     def __init__(
         self,

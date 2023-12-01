@@ -42,7 +42,6 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             log: The logger instance to use. (Optional)
         """
 
-
     def __init__(
         self,
         deployment_name: str,

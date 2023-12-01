@@ -31,7 +31,9 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
 
 
 @pytest.mark.asyncio
-async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai_config):
+async def test_oai_embedding_service_with_provided_client(
+    create_kernel, get_oai_config
+):
     kernel = create_kernel
 
     api_key, org_id = get_oai_config
@@ -46,7 +48,7 @@ async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai
         sk_oai.OpenAITextEmbedding(
             ai_model_id="text-embedding-ada-002",
             async_client=client,
-        )
+        ),
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 

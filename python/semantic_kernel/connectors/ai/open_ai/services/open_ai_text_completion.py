@@ -55,7 +55,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
-            default_headers: The default headers mapping of string keys to 
+            default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log {Optional[Logger]} -- The logger instance to use. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)

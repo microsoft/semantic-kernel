@@ -77,7 +77,11 @@ class OpenAIConfigBase(OpenAIHandler):
         """
         client_settings = {
             "api_key": self.client.api_key,
-            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != "User-agent"},
+            "default_headers": {
+                k: v
+                for k, v in self.client.default_headers.items()
+                if k != "User-agent"
+            },
         }
         if self.client.organization:
             client_settings["org_id"] = self.client.organization

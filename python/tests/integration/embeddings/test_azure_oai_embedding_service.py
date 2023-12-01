@@ -42,7 +42,9 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 
 
 @pytest.mark.asyncio
-async def test_azure_text_embedding_service_with_provided_client(create_kernel, get_aoai_config):
+async def test_azure_text_embedding_service_with_provided_client(
+    create_kernel, get_aoai_config
+):
     kernel = create_kernel
 
     _, api_key, endpoint = get_aoai_config
@@ -56,7 +58,7 @@ async def test_azure_text_embedding_service_with_provided_client(create_kernel, 
         azure_deployment=deployment_name,
         api_key=api_key,
         api_version="2023-05-15",
-        default_headers={"Test-User-X-ID": "test"}
+        default_headers={"Test-User-X-ID": "test"},
     )
 
     kernel.add_text_embedding_generation_service(

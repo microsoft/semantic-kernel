@@ -61,7 +61,7 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
-            default_headers: The default headers mapping of string keys to 
+            default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
@@ -98,7 +98,7 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
-            default_headers: The default headers mapping of string keys to 
+            default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
@@ -163,7 +163,7 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
-            default_headers: The default headers mapping of string keys to 
+            default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.

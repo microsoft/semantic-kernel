@@ -26,6 +26,7 @@ def test_open_ai_text_completion_init() -> None:
     assert open_ai_text_completion.ai_model_id == ai_model_id
     assert isinstance(open_ai_text_completion, TextCompletionClientBase)
 
+
 def test_open_ai_text_completion_init_with_default_header() -> None:
     ai_model_id = "test_model_id"
     api_key = "test_api_key"

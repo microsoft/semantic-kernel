@@ -34,7 +34,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         log: Optional[Logger] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
-     ) -> None:
+    ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
         Arguments:
@@ -104,7 +104,11 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "api_key": self.client.api_key,
             "ad_token": self.client._azure_ad_token,
             "ad_token_provider": self.client._azure_ad_token_provider,
-            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != "User-agent"},
+            "default_headers": {
+                k: v
+                for k, v in self.client.default_headers.items()
+                if k != "User-agent"
+            },
         }
         base = self.model_dump(
             exclude={

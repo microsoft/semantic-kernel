@@ -229,7 +229,7 @@ def test_azure_text_completion_serialize() -> None:
         "api_key": api_key,
         "api_version": api_version,
         "log": logger,
-        "default_headers": default_headers
+        "default_headers": default_headers,
     }
 
     azure_text_completion = AzureTextCompletion.from_dict(settings)

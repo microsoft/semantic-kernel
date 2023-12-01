@@ -71,7 +71,7 @@ async def test_azure_e2e_chat_completion_with_skill_and_provided_client(
         azure_deployment=deployment_name,
         api_key=api_key,
         api_version="2023-05-15",
-        default_headers={"Test-User-X-ID": "test"}
+        default_headers={"Test-User-X-ID": "test"},
     )
 
     # Configure LLM service
