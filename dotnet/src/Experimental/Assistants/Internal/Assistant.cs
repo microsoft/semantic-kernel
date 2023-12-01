@@ -112,7 +112,7 @@ internal sealed class Assistant : IAssistant
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
     [KernelFunction, Description("Provide user message to assistant and retrieve the assistant response.")]
     public async Task<AssistantResponse> AskAsync(
-        [Description("The user message provided to the assistant .")]
+        [Description("The user message provided to the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
     {
