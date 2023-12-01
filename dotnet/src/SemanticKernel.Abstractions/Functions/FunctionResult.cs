@@ -88,12 +88,12 @@ public sealed class FunctionResult
     {
         if (this.IsCancellationRequested)
         {
-            throw new InvalidOperationException("Cannot get result value from cancelled function.");
+            throw new OperationCanceledException("Cannot get result value from a cancelled function.");
         }
 
         if (this.IsSkipRequested)
         {
-            throw new InvalidOperationException("Cannot get result value from skipped function.");
+            throw new InvalidOperationException("Cannot get result value from a skipped function.");
         }
 
         if (this.Value is null)
