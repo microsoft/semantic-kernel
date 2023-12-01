@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 

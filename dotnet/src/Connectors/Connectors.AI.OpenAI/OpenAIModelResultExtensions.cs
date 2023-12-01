@@ -2,9 +2,8 @@
 
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Provides extension methods for working with OpenAI model results.
