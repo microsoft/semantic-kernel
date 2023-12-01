@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary> Represents a singular result of a chat completion.</summary>
 public class ChatModelResult

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +14,7 @@ public static class KernelPluginExtensions
 {
     #region AddFunctionFromMethod
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="KernelPlugin"/>.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -43,7 +41,7 @@ public static class KernelPluginExtensions
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>

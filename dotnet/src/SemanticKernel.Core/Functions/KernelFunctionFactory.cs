@@ -7,8 +7,6 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -19,7 +17,7 @@ public static class KernelFunctionFactory
 {
     #region FromMethod
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
@@ -38,7 +36,7 @@ public static class KernelFunctionFactory
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>

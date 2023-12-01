@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
@@ -73,11 +72,12 @@ public static class Example59_OpenAIFunctionCalling
     {
         Console.WriteLine($"\n\n======== Streaming - {executionSettings.FunctionCallBehavior} ========\n");
         Console.WriteLine($"User message: {ask}");
+        chatHistory.AddUserMessage(ask);
 
         // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(ask, executionSettings, kernel))
+        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
             if (chatResult.ContentUpdate is { Length: > 0 })

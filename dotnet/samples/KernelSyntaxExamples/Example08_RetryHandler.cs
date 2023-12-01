@@ -30,7 +30,7 @@ public static class Example08_RetryHandler
             c.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
         }).Build();
 
-        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(Example08_RetryHandler));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(Example08_RetryHandler));
 
         const string Question = "How popular is Polly library?";
         logger.LogInformation("Question: {Question}", Question);

@@ -9,10 +9,9 @@ from typing import (
     Union,
 )
 
-import pydantic as pdt
+from pydantic import Field, PrivateAttr
 
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.sk_pydantic import SKGenericModel
 from semantic_kernel.skill_definition import constants
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection import (
@@ -28,12 +27,12 @@ if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 
-class SkillCollection(SKGenericModel, SkillCollectionBase):
+class SkillCollection(SkillCollectionBase):
     GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
-    read_only_skill_collection_: ReadOnlySkillCollection = pdt.Field(
+    read_only_skill_collection_: ReadOnlySkillCollection = Field(
         alias="read_only_skill_collection"
     )
-    _log: Logger = pdt.PrivateAttr()
+    _log: Logger = PrivateAttr()
 
     def __init__(
         self,
@@ -53,7 +52,7 @@ class SkillCollection(SKGenericModel, SkillCollectionBase):
         else:
             read_only_skill_collection = read_only_skill_collection_
         super().__init__(read_only_skill_collection=read_only_skill_collection)
-        self._log = log if log is not None else NullLogger()
+        self._log = log or NullLogger()
 
     @property
     def read_only_skill_collection(self) -> ReadOnlySkillCollectionBase:

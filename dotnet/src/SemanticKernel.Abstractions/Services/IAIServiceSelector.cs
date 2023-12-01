@@ -2,10 +2,7 @@
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Services;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.

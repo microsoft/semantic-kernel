@@ -3,9 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Flow data model

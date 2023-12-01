@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using RepoUtils;
 
 /**

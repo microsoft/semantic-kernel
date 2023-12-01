@@ -84,7 +84,6 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments
         {
-            ["server-url"] = TestConfiguration.KeyVault.Endpoint,
             ["secret-name"] = SecretName,
             ["value"] = SecretValue,
             ["api-version"] = "7.0",

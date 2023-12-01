@@ -64,10 +64,10 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           new PromptExecutionSettings()
+           new(new PromptExecutionSettings()
            {
                ServiceId = serviceId
-           });
+           }));
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -79,10 +79,10 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           new PromptExecutionSettings()
+           new(new PromptExecutionSettings()
            {
                ModelId = modelId
-           });
+           }));
         Console.WriteLine(result.GetValue<string>());
     }
 

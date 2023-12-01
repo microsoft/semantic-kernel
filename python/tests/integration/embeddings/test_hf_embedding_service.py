@@ -14,7 +14,7 @@ async def test_hf_embeddings_with_memories():
     kernel.add_text_embedding_generation_service(
         "sentence-transformers/all-MiniLM-L6-v2",
         sk_hf.HuggingFaceTextEmbedding(
-            model_id="sentence-transformers/all-MiniLM-L6-v2"
+            ai_model_id="sentence-transformers/all-MiniLM-L6-v2"
         ),
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
