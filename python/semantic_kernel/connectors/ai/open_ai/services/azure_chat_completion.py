@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Dict, Optional, Union, overload
+from typing import Dict, Mapping, Optional, Union, overload
 
 from openai.lib.azure import AsyncAzureADTokenProvider
 
@@ -35,6 +35,7 @@ class AzureChatCompletion(
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -58,6 +59,8 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to 
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -71,6 +74,7 @@ class AzureChatCompletion(
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -92,6 +96,8 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to 
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -105,6 +111,7 @@ class AzureChatCompletion(
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -133,6 +140,8 @@ class AzureChatCompletion(
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to 
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -150,6 +159,7 @@ class AzureChatCompletion(
             api_key=api_key,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            default_headers=default_headers,
             log=log or logger,
             ai_model_type=OpenAIModelTypes.CHAT,
         )
@@ -162,7 +172,7 @@ class AzureChatCompletion(
         Arguments:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, log
+                and optionally: api_version, ad_auth, default_headers, log
         """
         return AzureChatCompletion(
             deployment_name=settings.get("deployment_name"),
@@ -172,5 +182,6 @@ class AzureChatCompletion(
             api_key=settings.get("api_key"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
+            default_headers=settings.get("default_headers"),
             log=settings.get("log"),
         )

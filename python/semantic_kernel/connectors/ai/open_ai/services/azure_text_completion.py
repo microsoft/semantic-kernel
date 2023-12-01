@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Dict, Optional, overload
+from typing import Dict, Mapping, Optional, overload
 
 from openai.lib.azure import AsyncAzureADTokenProvider
 
@@ -29,6 +29,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -50,6 +51,8 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to 
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -63,6 +66,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -84,6 +88,8 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is "2023-05-15".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -97,6 +103,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -119,6 +126,8 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is "2023-03-15-preview".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
@@ -132,6 +141,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=api_key,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            default_headers=default_headers,
             log=log or logger,
             ai_model_type=OpenAIModelTypes.TEXT,
         )
@@ -155,5 +165,6 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=settings["api_key"],
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
+            default_headers=settings.get("default_headers"),
             log=settings.get("log"),
         )

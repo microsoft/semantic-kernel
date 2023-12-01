@@ -27,6 +27,29 @@ def test_open_ai_chat_completion_init() -> None:
     assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
 
 
+def test_open_ai_chat_completion_init_with_default_header() -> None:
+    ai_model_id = "test_model_id"
+    api_key = "test_api_key"
+    logger = Logger("test_logger")
+    default_headers = {"X-Unit-Test": "test-guid"}
+
+    # Test successful initialization
+    open_ai_chat_completion = OpenAIChatCompletion(
+        ai_model_id=ai_model_id,
+        api_key=api_key,
+        log=logger,
+        default_headers=default_headers,
+    )
+
+    assert open_ai_chat_completion.ai_model_id == ai_model_id
+    assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
+
+    # Assert that the default header we added is present in the client's default headers
+    for key, value in default_headers.items():
+        assert key in open_ai_chat_completion.client.default_headers
+        assert open_ai_chat_completion.client.default_headers[key] == value
+
+
 def test_open_ai_chat_completion_init_with_empty_model_id() -> None:
     # ai_model_id = "test_model_id"
     api_key = "test_api_key"
@@ -57,17 +80,23 @@ def test_open_ai_chat_completion_serialize() -> None:
     ai_model_id = "test_model_id"
     api_key = "test_api_key"
     logger = Logger("test_logger")
+    default_headers = {"X-Unit-Test": "test-guid"}
 
     settings = {
         "ai_model_id": ai_model_id,
         "api_key": api_key,
         "log": logger,
+        "default_headers": default_headers,
     }
 
     open_ai_chat_completion = OpenAIChatCompletion.from_dict(settings)
     dumped_settings = open_ai_chat_completion.to_dict()
-    assert dumped_settings == settings
-
+    assert dumped_settings["ai_model_id"] == ai_model_id
+    assert dumped_settings["api_key"] == api_key
+    # Assert that the default header we added is present in the dumped_settings default headers
+    for key, value in default_headers.items():
+        assert key in dumped_settings["default_headers"]
+        assert dumped_settings["default_headers"][key] == value
 
 def test_open_ai_chat_completion_serialize_with_org_id() -> None:
     ai_model_id = "test_model_id"
@@ -84,4 +113,6 @@ def test_open_ai_chat_completion_serialize_with_org_id() -> None:
 
     open_ai_chat_completion = OpenAIChatCompletion.from_dict(settings)
     dumped_settings = open_ai_chat_completion.to_dict()
-    assert dumped_settings == settings
+    assert dumped_settings["ai_model_id"] == ai_model_id
+    assert dumped_settings["api_key"] == api_key
+    assert dumped_settings["org_id"] == org_id
