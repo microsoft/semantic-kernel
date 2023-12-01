@@ -57,11 +57,23 @@ public static class Example71_AssistantDelegation
                 template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
                 helperAssistantPlugins);
 
-        await ChatAsync(
-            toolAssistant,
+        var messages = new string[]
+        {
             "What's on the menu?",
             "Can you talk like pirate?",
-            "Thank you");
+            "Thank you",
+        };
+
+        var thread = await toolAssistant.NewThreadAsync();
+        foreach (var message in messages)
+        {
+            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
+            DisplayMessage(messageUser);
+
+            var assistantMessages = await thread.InvokeAsync(toolAssistant).ConfigureAwait(true);
+            DisplayMessages(assistantMessages);
+        }
+
 
         IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
         {
@@ -73,18 +85,6 @@ public static class Example71_AssistantDelegation
             }
 
             return plugins;
-        }
-    }
-    private static async Task ChatAsync(IAssistant assistant, params string[] messages)
-    {
-        var thread = await assistant.NewThreadAsync();
-        foreach (var message in messages)
-        {
-            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
-            DisplayMessage(messageUser);
-
-            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
-            DisplayMessages(assistantMessages);
         }
     }
 
