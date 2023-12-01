@@ -4,12 +4,12 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using static Microsoft.SemanticKernel.PromptTemplateConfig;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
+namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 public sealed class HandlebarsPromptTemplateTests
 {

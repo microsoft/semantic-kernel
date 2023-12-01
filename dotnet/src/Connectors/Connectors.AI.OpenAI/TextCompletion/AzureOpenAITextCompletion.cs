@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this.InternalAttributes;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
@@ -40,7 +40,7 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -76,18 +76,18 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
+        return this.InternalGetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>

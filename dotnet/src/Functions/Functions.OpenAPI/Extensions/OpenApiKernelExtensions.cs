@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
 /// </summary>
-public static class KernelOpenApiPluginExtensions
+public static class OpenApiKernelExtensions
 {
     // TODO: Revise XML comments
 
@@ -112,7 +112,7 @@ public static class KernelOpenApiPluginExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(OpenApiKernelExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -149,7 +149,7 @@ public static class KernelOpenApiPluginExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenApiPluginExtensions)),
+            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(OpenApiKernelExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -231,7 +231,7 @@ public static class KernelOpenApiPluginExtensions
 
         KernelPlugin plugin = new(pluginName);
 
-        ILogger logger = loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions));
         foreach (var operation in operations)
         {
             try
@@ -275,7 +275,7 @@ public static class KernelOpenApiPluginExtensions
             executionParameters?.EnablePayloadNamespacing ?? false
         );
 
-        var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
+        var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) : NullLogger.Instance;
 
         async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
         {

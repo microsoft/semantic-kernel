@@ -11,8 +11,8 @@ using Microsoft.SemanticKernel.AI;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides a collection of arguments for operations such as <see cref="KernelFunction.InvokeAsync"/>,
-/// and <see cref="IPromptTemplate.RenderAsync"/>.
+/// Provides a collection of arguments for operations such as <see cref="KernelFunction"/>'s InvokeAsync
+/// and <see cref="IPromptTemplate"/>'s RenderAsync.
 /// </summary>
 /// <remarks>
 /// A <see cref="KernelArguments"/> is a dictionary of argument names and values. It also carries a
