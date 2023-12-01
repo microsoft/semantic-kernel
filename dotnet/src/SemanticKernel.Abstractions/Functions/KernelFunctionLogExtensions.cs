@@ -18,7 +18,7 @@ internal static partial class KernelFunctionLogExtensions
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Function {FunctionName} invoking with arguments {Arguments}.")]
+        Message = "Function {FunctionName} invoking with arguments: {Arguments}.")]
     public static partial void LogFunctionInvokingWithArguments(
         this ILogger logger,
         string functionName,

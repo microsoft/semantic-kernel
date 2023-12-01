@@ -134,9 +134,6 @@ public sealed class KernelArguments : IDictionary<string, string?>, IReadOnlyDic
     /// <summary>Gets an <see cref="ICollection{String}"/> of all of the arguments' values.</summary>
     public ICollection<string?> Values => this._arguments.Values;
 
-    /// <summary>Returns a comma-separated string that represents the kernel argument.</summary>
-    public override string ToString() => string.Join(", ", this.Select(v => $"{v.Key}:{v.Value}"));
-
     #region Interface implementations
     /// <inheritdoc/>
     ICollection<string> IDictionary<string, string?>.Keys => this._arguments.Keys;
