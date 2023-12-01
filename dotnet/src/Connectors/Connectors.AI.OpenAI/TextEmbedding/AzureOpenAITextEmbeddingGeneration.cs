@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
+[Experimental("SKEXP0011")]
 public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
 {
     private readonly AzureOpenAIClientCore _core;
