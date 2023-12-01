@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
@@ -146,7 +145,7 @@ public sealed class FunctionResult
             }
 
             // Look up and use a type converter.
-            if (GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
+            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
             {
                 return (input, cultureInfo) =>
                 {
@@ -156,37 +155,6 @@ public sealed class FunctionResult
 
             return null;
         });
-
-    private static TypeConverter? GetTypeConverter(Type sourceType)
-    {
-        if (sourceType == typeof(byte)) { return new ByteConverter(); }
-        if (sourceType == typeof(sbyte)) { return new SByteConverter(); }
-        if (sourceType == typeof(bool)) { return new BooleanConverter(); }
-        if (sourceType == typeof(ushort)) { return new UInt16Converter(); }
-        if (sourceType == typeof(short)) { return new Int16Converter(); }
-        if (sourceType == typeof(char)) { return new CharConverter(); }
-        if (sourceType == typeof(uint)) { return new UInt32Converter(); }
-        if (sourceType == typeof(int)) { return new Int32Converter(); }
-        if (sourceType == typeof(ulong)) { return new UInt64Converter(); }
-        if (sourceType == typeof(long)) { return new Int64Converter(); }
-        if (sourceType == typeof(float)) { return new SingleConverter(); }
-        if (sourceType == typeof(double)) { return new DoubleConverter(); }
-        if (sourceType == typeof(decimal)) { return new DecimalConverter(); }
-        if (sourceType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
-        if (sourceType == typeof(DateTime)) { return new DateTimeConverter(); }
-        if (sourceType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
-        if (sourceType == typeof(Uri)) { return new UriTypeConverter(); }
-        if (sourceType == typeof(Guid)) { return new GuidConverter(); }
-
-        if (sourceType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
-            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
-            Activator.CreateInstance(converterType) is TypeConverter converter)
-        {
-            return converter;
-        }
-
-        return null;
-    }
 
     /// <summary>Converter functions for converting types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
