@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.TemplateEngine.Handlebars</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.TemplateEngine.Handlebars</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.PromptTemplate.Handlebars</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.PromptTemplate.Handlebars</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
