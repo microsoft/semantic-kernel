@@ -126,7 +126,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         try
         {
             (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-            if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
+            if (renderedEventArgs?.Cancel ?? false)
             {
                 return new FunctionResult(this.Name)
                 {
@@ -161,7 +161,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-        if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
+        if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
         }

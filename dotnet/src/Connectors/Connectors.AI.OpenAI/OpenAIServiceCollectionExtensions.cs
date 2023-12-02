@@ -56,7 +56,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
             {
@@ -122,7 +122,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
             {
@@ -184,7 +184,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextCompletion(
@@ -246,7 +246,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
                 new OpenAITextCompletion(
@@ -305,7 +305,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
                 new OpenAITextCompletion(
@@ -369,7 +369,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
@@ -444,7 +444,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
@@ -514,7 +514,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
@@ -578,7 +578,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new OpenAITextEmbeddingGeneration(
@@ -639,7 +639,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new OpenAITextEmbeddingGeneration(
@@ -704,7 +704,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
             {
@@ -788,7 +788,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
             {
@@ -868,7 +868,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
                 new(deploymentName, openAIClient, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -927,7 +927,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(builder);
         Verify.NotNull(config);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, AzureOpenAIChatCompletionWithData> factory = (serviceProvider, _) =>
                 new(config,
@@ -991,7 +991,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
                 new(modelId,
@@ -1056,7 +1056,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
                 new(modelId, openAIClient, serviceProvider.GetService<ILoggerFactory>());
@@ -1121,7 +1121,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAIImageGeneration(
@@ -1187,7 +1187,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
                 new OpenAIImageGeneration(

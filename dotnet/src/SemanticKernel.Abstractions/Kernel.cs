@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel
 {
     /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
-    internal const string KernelServiceTypeToKeyMappingsKey = nameof(KernelServiceTypeToKeyMappingsKey);
+    internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
     private Dictionary<string, object?>? _data;
@@ -242,11 +242,11 @@ public sealed class Kernel
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappingsKey) is { } typeToKeyMappings)
+            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?> keys))
                 {
-                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key)).Where(s => s is not null)!;
+                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
                 }
 
                 return Enumerable.Empty<T>();

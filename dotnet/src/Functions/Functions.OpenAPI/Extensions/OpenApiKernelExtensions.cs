@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
