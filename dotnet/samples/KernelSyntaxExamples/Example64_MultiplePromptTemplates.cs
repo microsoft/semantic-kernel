@@ -3,9 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using RepoUtils;
 
 /**
@@ -31,9 +29,9 @@ public static class Example64_MultiplePromptTemplates
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
@@ -47,30 +45,30 @@ public static class Example64_MultiplePromptTemplates
         var skPrompt = "Hello AI, my name is {{$name}}. What is the origin of my name?";
         var handlebarsPrompt = "Hello AI, my name is {{name}}. What is the origin of my name?";
 
-        await RunSemanticFunctionAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
-        await RunSemanticFunctionAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
+        await RunPromptAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
+        await RunPromptAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    public static async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
-        var skfunction = kernel.CreateSemanticFunction(
-            promptTemplate: prompt,
-            functionName: "MyFunction",
-            promptTemplateConfig: new PromptTemplateConfig()
+        var function = kernel.CreateFunctionFromPrompt(
+            promptConfig: new PromptTemplateConfig()
             {
-                TemplateFormat = templateFormat
+                Template = prompt,
+                TemplateFormat = templateFormat,
+                Name = "MyFunction",
             },
             promptTemplateFactory: promptTemplateFactory
         );
 
-        var variables = new ContextVariables()
+        var arguments = new KernelArguments()
         {
             { "name", "Bob" }
         };
 
-        var result = await kernel.RunAsync(skfunction, variables);
+        var result = await kernel.InvokeAsync(function, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -7,8 +7,8 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
@@ -23,11 +23,11 @@ internal static class DocumentLoader
         CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
-        request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? Telemetry.HttpUserAgent));
+        request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? HttpHeaderValues.UserAgent));
 
         if (authCallback is not null)
         {
-            await authCallback(request).ConfigureAwait(false);
+            await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
         logger.LogTrace("Importing document from {0}", uri);

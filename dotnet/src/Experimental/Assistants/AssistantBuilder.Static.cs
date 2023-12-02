@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
@@ -25,14 +23,14 @@ public partial class AssistantBuilder
     /// <param name="apiKey">The OpenAI API key</param>
     /// <param name="model">The LLM name</param>
     /// <param name="template">YAML assistant definition.</param>
-    /// <param name="functions">Functions to associate with the tool.</param>
+    /// <param name="plugins">Plugins to associate with the tool.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
     public static async Task<IAssistant> FromDefinitionAsync(
         string apiKey,
         string model,
         string template,
-        IEnumerable<ISKFunction>? functions = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -41,11 +39,11 @@ public partial class AssistantBuilder
 
         return
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(model, apiKey)
+                .AddOpenAIChatCompletion(model, apiKey)
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
                 .WithDescription(assistantKernelModel.Description.Trim())
-                .WithFunctions(functions ?? Array.Empty<ISKFunction>())
+                .WithPlugins(plugins ?? Array.Empty<IKernelPlugin>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -56,19 +54,19 @@ public partial class AssistantBuilder
     /// <param name="apiKey">The OpenAI API key</param>
     /// <param name="model">The LLM name</param>
     /// <param name="definitionPath">Path to a configuration file.</param>
-    /// <param name="functions">Functions to associate with the tool.</param>
+    /// <param name="plugins">Plugins to associate with the tool.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The requested <see cref="IAssistant">.</see></returns>
     public static Task<IAssistant> FromTemplateAsync(
         string apiKey,
         string model,
         string definitionPath,
-        IEnumerable<ISKFunction>? functions = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(definitionPath);
 
-        return FromDefinitionAsync(apiKey, model, yamlContent, functions, cancellationToken);
+        return FromDefinitionAsync(apiKey, model, yamlContent, plugins, cancellationToken);
     }
 
     /// <summary>
@@ -89,7 +87,7 @@ public partial class AssistantBuilder
     {
         return
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(model, apiKey)
+                .AddOpenAIChatCompletion(model, apiKey)
                 .WithInstructions(instructions)
                 .WithName(name)
                 .WithDescription(description)
@@ -101,21 +99,20 @@ public partial class AssistantBuilder
     /// </summary>
     /// <param name="apiKey">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantId">The assistant identifier</param>
-    /// <param name="functions">Functions to initialize as assistant tools</param>
+    /// <param name="plugins">Plugins to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        IEnumerable<ISKFunction>? functions = null,
+        IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
         var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
-        var chatService = new OpenAIChatCompletion(resultModel.Model, apiKey);
+            throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
 
-        return new Assistant(resultModel, chatService, restContext, functions);
+        return new Assistant(resultModel, restContext, plugins);
     }
 }

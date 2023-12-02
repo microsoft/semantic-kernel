@@ -2,11 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-[Serializable]
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataRequest
 {
     [JsonPropertyName("temperature")]
@@ -19,7 +20,7 @@ internal sealed class ChatWithDataRequest
     public bool IsStreamEnabled { get; set; }
 
     [JsonPropertyName("stop")]
-    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string>? StopSequences { get; set; } = Array.Empty<string>();
 
     [JsonPropertyName("max_tokens")]
     public int? MaxTokens { get; set; }

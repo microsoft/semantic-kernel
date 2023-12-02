@@ -19,16 +19,16 @@ public static class Example63_ChatCompletionPrompts
         ";
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var textSemanticFunction = kernel.CreateSemanticFunction(TextPrompt);
-        var chatSemanticFunction = kernel.CreateSemanticFunction(ChatPrompt);
+        var textSemanticFunction = kernel.CreateFunctionFromPrompt(TextPrompt);
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
 
-        var textPromptResult = await kernel.RunAsync(textSemanticFunction);
-        var chatPromptResult = await kernel.RunAsync(chatSemanticFunction);
+        var textPromptResult = await kernel.InvokeAsync(textSemanticFunction);
+        var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine("Text Prompt:");
         Console.WriteLine(TextPrompt);
@@ -41,6 +41,13 @@ public static class Example63_ChatCompletionPrompts
         Console.WriteLine(ChatPrompt);
         Console.WriteLine("Chat Prompt Result:");
         Console.WriteLine(chatPromptResult);
+
+        Console.WriteLine("Chat Prompt Streaming Result:");
+        await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
 
         /*
         Text Prompt:

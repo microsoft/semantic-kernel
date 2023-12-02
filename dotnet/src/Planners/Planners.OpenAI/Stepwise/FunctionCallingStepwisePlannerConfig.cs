@@ -3,10 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Configuration for Stepwise planner instances.
@@ -39,5 +36,5 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
-    public OpenAIRequestSettings? ModelSettings { get; set; }
+    public OpenAIPromptExecutionSettings? ModelSettings { get; set; }
 }

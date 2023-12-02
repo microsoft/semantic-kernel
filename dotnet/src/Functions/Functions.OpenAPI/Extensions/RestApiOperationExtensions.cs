@@ -4,12 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
@@ -53,17 +49,17 @@ internal static class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Returns the default return parameter view for a given REST API operation.
+    /// Returns the default return parameter metadata for a given REST API operation.
     /// </summary>
     /// <param name="operation">The REST API operation object with Responses to parse.</param>
     /// <param name="preferredResponses">A list of preferred response codes to use when selecting the default response.</param>
-    /// <returns>The default return parameter view, if any.</returns>
-    public static ReturnParameterView? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
+    /// <returns>The default return parameter metadata, if any.</returns>
+    public static KernelReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
     {
         RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null ? new ReturnParameterView(restOperationResponse.Description, null, restOperationResponse.Schema) : null;
+            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
 
         return returnParameter;
     }
@@ -102,7 +98,7 @@ internal static class RestApiOperationExtensions
         {
             if (operation.Payload is null)
             {
-                throw new SKException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
+                throw new KernelException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
             }
 
             // The 'text/plain' content type payload metadata does not contain parameter names.

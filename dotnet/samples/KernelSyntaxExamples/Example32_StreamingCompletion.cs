@@ -26,7 +26,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new AzureTextCompletion(
+        var textCompletion = new AzureOpenAITextCompletion(
             TestConfiguration.AzureOpenAI.DeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
@@ -45,7 +45,7 @@ public static class Example32_StreamingCompletion
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
@@ -57,7 +57,7 @@ public static class Example32_StreamingCompletion
         var prompt = "Write one paragraph why AI is awesome";
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (string message in textCompletion.CompleteStreamAsync(prompt, requestSettings))
+        await foreach (string message in textCompletion.GetStreamingContentAsync<string>(prompt, executionSettings))
         {
             Console.Write(message);
         }

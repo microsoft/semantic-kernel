@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 import typing as t
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class MathSkill(PydanticField):
+class MathSkill(SKBaseModel):
     """
     Description: MathSkill provides a set of functions to make Math calculations.
 

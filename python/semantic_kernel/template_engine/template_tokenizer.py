@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List
+from typing import List, Optional
 
-from semantic_kernel.sk_pydantic import PydanticField
+from pydantic import PrivateAttr
+
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -21,10 +23,18 @@ from semantic_kernel.utils.null_logger import NullLogger
 #                      | "{{" [function-call] "}}"
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
-class TemplateTokenizer(PydanticField):
+class TemplateTokenizer(SKBaseModel):
+    _log: Optional[Logger] = PrivateAttr(default_factory=NullLogger)
+    _code_tokenizer: CodeTokenizer = PrivateAttr()
+
     def __init__(self, log: Logger = None):
-        self.log = log or NullLogger()
-        self.code_tokenizer = CodeTokenizer(self.log)
+        super().__init__()
+        self._log = log or NullLogger()
+        self._code_tokenizer = CodeTokenizer(log=self.log)
+
+    @property
+    def log(self) -> Logger:
+        return self._log
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -109,7 +119,9 @@ class TemplateTokenizer(PydanticField):
                             )
 
                         # Extract raw block
-                        content_with_delimiters = text[block_start_pos : cursor + 1]
+                        content_with_delimiters = text[
+                            block_start_pos : cursor + 1
+                        ]  # noqa: E203
                         # Remove "{{" and "}}" delimiters and trim whitespace
                         content_without_delimiters = content_with_delimiters[
                             2:-2
@@ -124,7 +136,7 @@ class TemplateTokenizer(PydanticField):
                                 )
                             )
                         else:
-                            code_blocks = self.code_tokenizer.tokenize(
+                            code_blocks = self._code_tokenizer.tokenize(
                                 content_without_delimiters
                             )
 

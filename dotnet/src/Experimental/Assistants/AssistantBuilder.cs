@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -19,7 +16,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public partial class AssistantBuilder
 {
     private readonly AssistantModel _model;
-    private readonly Dictionary<string, ISKFunction> _functions;
+    private readonly KernelPluginCollection _plugins;
 
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
@@ -30,7 +27,7 @@ public partial class AssistantBuilder
     public AssistantBuilder()
     {
         this._model = new AssistantModel();
-        this._functions = new(12);
+        this._plugins = new KernelPluginCollection();
     }
 
     /// <summary>
@@ -42,20 +39,19 @@ public partial class AssistantBuilder
     {
         if (string.IsNullOrWhiteSpace(this._model.Model))
         {
-            throw new SKException("Model must be defined for assistant.");
+            throw new KernelException("Model must be defined for assistant.");
         }
 
         if (string.IsNullOrWhiteSpace(this._apiKey))
         {
-            throw new SKException("ApiKey must be provided for assistant.");
+            throw new KernelException("ApiKey must be provided for assistant.");
         }
 
         return
             await Assistant.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
-                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
                 this._model,
-                this._functions.Values,
+                this._plugins,
                 cancellationToken).ConfigureAwait(false);
     }
 
@@ -63,7 +59,7 @@ public partial class AssistantBuilder
     /// Define the OpenAI chat completion service (required).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
+    public AssistantBuilder AddOpenAIChatCompletion(string model, string apiKey)
     {
         this._apiKey = apiKey;
         this._model.Model = model;
@@ -144,9 +140,9 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithFunction(ISKFunction tool)
+    public AssistantBuilder WithPlugin(IKernelPlugin plugin)
     {
-        this._functions[tool.GetQualifiedName()] = tool;
+        this._plugins.Add(plugin);
 
         return this;
     }
@@ -155,12 +151,9 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithFunctions(IEnumerable<ISKFunction> tools)
+    public AssistantBuilder WithPlugins(IEnumerable<IKernelPlugin> plugins)
     {
-        foreach (var tool in tools)
-        {
-            this.WithFunction(tool);
-        }
+        this._plugins.AddRange(plugins);
 
         return this;
     }

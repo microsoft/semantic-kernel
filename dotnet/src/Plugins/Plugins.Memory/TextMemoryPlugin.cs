@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Plugins.Memory;
@@ -68,10 +67,10 @@ public sealed class TextMemoryPlugin
     /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
     /// {{memory.retrieve }}
     /// </example>
-    [SKFunction, Description("Key-based lookup for a specific memory")]
+    [KernelFunction, Description("Key-based lookup for a specific memory")]
     public async Task<string> RetrieveAsync(
-        [SKName(CollectionParam), Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)] string? collection,
-        [SKName(KeyParam), Description("The key associated with the memory to retrieve")] string key,
+        [Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)] string? collection,
+        [Description("The key associated with the memory to retrieve")] string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
     {
@@ -98,12 +97,12 @@ public sealed class TextMemoryPlugin
     /// <param name="limit">The maximum number of relevant memories to recall.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [SKFunction, Description("Semantic search and return up to N memories related to the input text")]
+    [KernelFunction, Description("Semantic search and return up to N memories related to the input text")]
     public async Task<string> RecallAsync(
         [Description("The input text to find related memories for")] string input,
-        [SKName(CollectionParam), Description("Memories collection to search"), DefaultValue(DefaultCollection)] string collection,
-        [SKName(RelevanceParam), Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
-        [SKName(LimitParam), Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
+        [Description("Memories collection to search"), DefaultValue(DefaultCollection)] string collection,
+        [Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
+        [Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
     {
@@ -144,11 +143,11 @@ public sealed class TextMemoryPlugin
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [SKFunction, Description("Save information to semantic memory")]
+    [KernelFunction, Description("Save information to semantic memory")]
     public async Task SaveAsync(
         [Description("The information to save")] string input,
-        [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
-        [SKName(KeyParam), Description("The key associated with the information to save")] string key,
+        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
+        [Description("The key associated with the information to save")] string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
     {
@@ -171,10 +170,10 @@ public sealed class TextMemoryPlugin
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [SKFunction, Description("Remove specific memory")]
+    [KernelFunction, Description("Remove specific memory")]
     public async Task RemoveAsync(
-        [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
-        [SKName(KeyParam), Description("The key associated with the information to save")] string key,
+        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
+        [Description("The key associated with the information to save")] string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
     {

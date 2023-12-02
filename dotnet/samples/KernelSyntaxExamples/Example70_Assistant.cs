@@ -3,11 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Orchestration;
 using Plugins;
 using Resources;
 
@@ -34,9 +32,9 @@ public static class Example70_Assistant
 
         await RunSimpleChatAsync();
 
-        await RunWithNativeFunctionsAsync();
+        await RunWithMethodFunctionsAsync();
 
-        await RunWithSemanticFunctionsAsync();
+        await RunWithPromptFunctionsAsync();
 
         await RunAsFunctionAsync();
     }
@@ -52,42 +50,35 @@ public static class Example70_Assistant
             "Practice makes perfect.");
     }
 
-    private static async Task RunWithNativeFunctionsAsync()
+    private static async Task RunWithMethodFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithNativeFunctions ========");
+        Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        IKernel kernel = new KernelBuilder().Build();
-
-        var functions = kernel.ImportFunctions(new MenuPlugin(), nameof(MenuPlugin));
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
-            functions.Values,
+            plugin,
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
             "Thank you!");
     }
 
-    private static async Task RunWithSemanticFunctionsAsync()
+    private static async Task RunWithPromptFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithSemanticFunctions ========");
+        Console.WriteLine("======== Run:WithPromptFunctions ========");
 
-        IKernel kernel = new KernelBuilder().Build();
-
-        var functions =
-            new[]
-            {
-                kernel.CreateSemanticFunction(
-                    "Correct any misspelling or gramatical errors provided in input: {{$input}}",
-                    functionName: "spellChecker",
-                    pluginName: "test",
-                    description: "Correct the spelling for the user input."),
-            };
+        var plugin = new KernelPlugin("test");
+        plugin.AddFunctionFromPrompt(
+             "Correct any misspelling or gramatical errors provided in input: {{$input}}",
+              functionName: "spellChecker",
+              description: "Correct the spelling for the user input."
+        );
 
         await ChatAsync(
             "Assistants.ToolAssistant.yaml",
-            functions,
+            plugin,
             "Hello",
             "Is this spelled correctly: exercize",
             "What is the special soup?",
@@ -104,17 +95,16 @@ public static class Example70_Assistant
                 OpenAIFunctionEnabledModel,
                 EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
-        IKernel kernel = new KernelBuilder().Build();
-        var assistants = kernel.ImportFunctions(assistant, assistant.Id);
+        Kernel kernel = new KernelBuilder().Build();
 
-        var variables = new ContextVariables
+        var assistants = kernel.ImportPluginFromObject(assistant, assistant.Id);
+
+        var arguments = new KernelArguments
         {
             ["input"] = "Practice makes perfect."
         };
-        var result = await kernel.RunAsync(assistants.Single().Value, variables);
-        var resultValue = result.GetValue<string>();
-
-        var response = JsonSerializer.Deserialize<AssistantResponse>(resultValue ?? string.Empty);
+        var result = await kernel.InvokeAsync(assistants.Single(), arguments);
+        var response = result.GetValue<AssistantResponse>();
         Console.WriteLine(
             response?.Response ??
             $"No response from assistant: {assistant.Id}");
@@ -129,17 +119,19 @@ public static class Example70_Assistant
 
     private static async Task ChatAsync(
         string resourcePath,
-        IEnumerable<ISKFunction>? functions,
+        IKernelPlugin? plugin,
         params string[] messages)
     {
         var definition = EmbeddedResource.Read(resourcePath);
+
+        var plugins = plugin == null ? new KernelPluginCollection() : new KernelPluginCollection() { plugin };
 
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
                 OpenAIFunctionEnabledModel,
                 definition,
-                functions);
+                plugins);
 
         Console.WriteLine($"[{assistant.Id}]");
 

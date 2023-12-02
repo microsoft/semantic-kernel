@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
@@ -23,29 +25,45 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// IKernel instance.
+    /// Kernel instance.
     /// </summary>
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// Creates an instance of a <see cref="KernelOpenAIPluginExtensionsTests"/> class.
     /// </summary>
     public KernelOpenAIPluginExtensionsTests()
     {
-        this._kernel = KernelBuilder.Create();
+        this._kernel = new Kernel();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
     }
 
     [Fact]
-    public async Task ItUsesAuthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
+    public async Task ItUsesOauthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
+    {
+        await this.ItRunsTestAsync("ai-plugin.json");
+    }
+
+    [Fact]
+    public async Task ItUsesHttpAuthFromOpenAiPluginManifestWhenFetchingOpenApiSpecAsync()
+    {
+        await this.ItRunsTestAsync("ai-plugin2.json");
+    }
+
+    private async Task ItRunsTestAsync(string resourceName)
     {
         //Arrange
-        using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource("ai-plugin.json"), Encoding.UTF8);
+        using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource(resourceName), Encoding.UTF8);
         JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
-        var actualOpenAIAuthConfig = openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
+        var actualOpenAIAuthConfig =
+            openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>(
+                new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
+                })!;
 
-        using var openAiDocument = ResourcePluginsProvider.LoadFromResource("ai-plugin.json");
+        using var openAiDocument = ResourcePluginsProvider.LoadFromResource(resourceName);
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
@@ -55,7 +73,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         var pluginName = "fakePlugin";
 
         //Act
-        var plugin = await this._kernel.ImportOpenAIPluginFunctionsAsync(pluginName, openAiDocument, executionParameters);
+        var plugin = await this._kernel.ImportPluginFromOpenAIAsync(pluginName, openAiDocument, executionParameters);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -64,7 +82,8 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         authCallbackMock.Verify(target => target.Invoke(
             It.IsAny<HttpRequestMessage>(),
             It.Is<string>(expectedPluginName => expectedPluginName == pluginName),
-            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig.Scope)),
+            It.Is<OpenAIAuthenticationConfig>(expectedOpenAIAuthConfig => expectedOpenAIAuthConfig.Scope == actualOpenAIAuthConfig!.Scope),
+            It.IsAny<CancellationToken>()),
         Times.Exactly(1));
     }
 

@@ -6,9 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
@@ -23,14 +21,14 @@ public class FlowStep
 
     private Dictionary<string, Type?> _pluginTypes = new();
 
-    private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+    private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
     /// </summary>
     /// <param name="goal">The goal of step</param>
     /// <param name="pluginsFactory">The factory to get plugins</param>
-    public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+    public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
     {
         this.Goal = goal;
         this._pluginsFactory = pluginsFactory;
@@ -86,7 +84,7 @@ public class FlowStep
         }
     }
 
-    private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, IKernel kernel)
+    private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
     {
         return this._pluginTypes.Select(kvp =>
         {
@@ -204,7 +202,7 @@ public class FlowStep
     /// <param name="kernel">The semantic kernel</param>
     /// <param name="globalPlugins">The global plugins available</param>
     /// <returns></returns>
-    public IEnumerable<object> LoadPlugins(IKernel kernel, Dictionary<object, string?> globalPlugins)
+    public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
         if (this._pluginsFactory != null)
         {

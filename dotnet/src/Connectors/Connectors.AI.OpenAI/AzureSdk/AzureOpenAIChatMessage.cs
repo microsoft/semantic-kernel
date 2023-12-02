@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Chat message representation fir Azure OpenAI
