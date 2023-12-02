@@ -6,9 +6,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
@@ -88,7 +90,6 @@ public sealed class Kernel
             _culture = this._culture,
         };
 
-    #region Core State: Plugins and Services
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
@@ -101,9 +102,7 @@ public sealed class Kernel
     /// Gets the service provider used to query for services available through the kernel.
     /// </summary>
     public IServiceProvider Services { get; }
-    #endregion
 
-    #region Additional Transient State
     /// <summary>
     /// Gets the culture currently associated with this <see cref="Kernel"/>.
     /// </summary>
@@ -158,9 +157,8 @@ public sealed class Kernel
     /// Provides an event that's raised after a prompt is rendered.
     /// </summary>
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-    #endregion
 
-    #region Helpers on top of Plugins and Services
+    #region GetServices
     /// <summary>Gets a service from the <see cref="Services"/> collection.</summary>
     /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
     /// <param name="serviceId">An object that specifies the key of the service to get.</param>
@@ -266,7 +264,7 @@ public sealed class Kernel
 
     #endregion
 
-    #region Helpers
+    #region Internal Event Helpers
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
@@ -313,6 +311,135 @@ public sealed class Kernel
         }
 
         return eventArgs;
+    }
+    #endregion
+
+    #region InvokeAsync
+
+    /// <summary>
+    /// Invokes a function using the specified input argument.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="input">The single argument to use as the <see cref="KernelArguments.InputParameterName"/> to the function.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of invoking the function.</returns>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Task<FunctionResult> InvokeAsync(
+        KernelFunction function,
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+        Verify.NotNull(input);
+
+        return function.InvokeAsync(this, input, executionSettings: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a function using the specified arguments.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the invocation of <paramref name="function"/>. If null, no arguments will be supplied.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of invoking the function.</returns>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Task<FunctionResult> InvokeAsync(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeAsync(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the invocation of the function. If null, no arguments will be supplied.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of invoking the function.</returns>
+    /// <remarks>
+    /// This behaves identically to using <see cref="IKernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Task<FunctionResult> InvokeAsync(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
+
+        return function.InvokeAsync(this, arguments, cancellationToken);
+    }
+    #endregion
+
+    #region InvokeStreamingAsync
+    /// <summary>
+    /// Invokes a function using the specified arguments and streaming the output contents.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the invocation of <paramref name="function"/>. If null, no arguments will be supplied.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
+    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeStreamingAsync<StreamingContent>(this, arguments, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Invokes a function using the specified arguments and streaming the output contents.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the invocation of <paramref name="function"/>. If null, no arguments will be supplied.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a function using the specified input argument and streaming the output contents.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="input">The single argument to use as the <see cref="KernelArguments.InputParameterName"/> to the function.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
+    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, string input, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+        Verify.NotNull(input);
+
+        return this.InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Invokes a function using the specified input argument and streaming the output contents.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="input">The single argument to use as the <see cref="KernelArguments.InputParameterName"/> to the function.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(KernelFunction function, string input, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+        Verify.NotNull(input);
+
+        return function.InvokeStreamingAsync<T>(this, input, executionSettings: null, cancellationToken);
     }
     #endregion
 }
