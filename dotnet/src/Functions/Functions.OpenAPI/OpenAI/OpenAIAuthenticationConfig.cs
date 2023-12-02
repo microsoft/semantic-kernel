@@ -38,6 +38,7 @@ public record OpenAIAuthenticationConfig
     /// <summary>
     /// The authorization content type.
     /// </summary>
+    [JsonPropertyName("authorization_content_type")]
     public string? AuthorizationContentType { get; set; }
 
     /// <summary>
