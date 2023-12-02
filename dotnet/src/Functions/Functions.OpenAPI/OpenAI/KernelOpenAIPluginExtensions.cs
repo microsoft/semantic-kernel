@@ -10,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.

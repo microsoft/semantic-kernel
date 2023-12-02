@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 
 /// <summary>
 /// Converts a object of <see cref="RestApiOperationResponse"/> type to string type.

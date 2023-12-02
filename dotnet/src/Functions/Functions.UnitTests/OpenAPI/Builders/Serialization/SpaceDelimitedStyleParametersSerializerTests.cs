@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;

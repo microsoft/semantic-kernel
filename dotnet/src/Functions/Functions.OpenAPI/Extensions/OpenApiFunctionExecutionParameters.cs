@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
 
 /// <summary>
 /// OpenAPI function execution parameters.
