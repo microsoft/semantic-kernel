@@ -97,6 +97,7 @@ public sealed class Program
             .WithLoggerFactory(loggerFactory)
             .WithAzureOpenAIChatCompletion(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
+                Env.Var("AzureOpenAI__ChatModelId"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();

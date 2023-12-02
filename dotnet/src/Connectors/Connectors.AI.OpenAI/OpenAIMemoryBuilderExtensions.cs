@@ -30,7 +30,7 @@ public static class OpenAIMemoryBuilderExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null)
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
@@ -60,7 +60,7 @@ public static class OpenAIMemoryBuilderExtensions
         string deploymentName,
         string endpoint,
         TokenCredential credential,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null)
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
