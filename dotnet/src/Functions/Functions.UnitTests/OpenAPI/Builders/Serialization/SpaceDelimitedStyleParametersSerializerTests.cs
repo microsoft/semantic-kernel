@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
+
 public class SpaceDelimitedStyleParametersSerializerTests
 {
     [Fact]

@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Plugins.Grpc;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Grpc.Extensions;
+namespace SemanticKernel.Functions.UnitTests.Grpc;
 
 public class GrpcOperationExtensionsTests
 {

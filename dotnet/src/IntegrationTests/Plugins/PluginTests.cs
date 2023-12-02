@@ -4,12 +4,13 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
 using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class PluginTests
 {
     [Theory]

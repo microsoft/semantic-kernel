@@ -35,7 +35,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
                 new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
@@ -84,7 +84,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));

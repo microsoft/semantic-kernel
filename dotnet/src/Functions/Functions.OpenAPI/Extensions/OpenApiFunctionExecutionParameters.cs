@@ -6,7 +6,7 @@ using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
 
 /// <summary>
 /// OpenAPI function execution parameters.

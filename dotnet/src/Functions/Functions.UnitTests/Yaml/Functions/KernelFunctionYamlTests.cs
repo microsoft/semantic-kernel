@@ -6,7 +6,7 @@ using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
+namespace SemanticKernel.Functions.UnitTests.Yaml;
 
 public class KernelFunctionYamlTests
 {

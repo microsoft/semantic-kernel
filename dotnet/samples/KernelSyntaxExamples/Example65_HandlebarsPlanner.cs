@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 

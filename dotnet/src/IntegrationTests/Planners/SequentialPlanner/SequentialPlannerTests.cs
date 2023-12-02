@@ -114,7 +114,7 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
+        return new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
