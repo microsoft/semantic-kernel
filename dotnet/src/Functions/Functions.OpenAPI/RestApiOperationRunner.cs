@@ -97,7 +97,7 @@ internal sealed class RestApiOperationRunner
         // If no auth callback provided, use empty function
         if (authCallback is null)
         {
-            this._authCallback = _ => Task.CompletedTask;
+            this._authCallback = (_, __) => Task.CompletedTask;
         }
         else
         {
@@ -156,7 +156,7 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
-        await this._authCallback(requestMessage).ConfigureAwait(false);
+        await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
         if (payload != null)
         {
@@ -193,11 +193,7 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType?.MediaType;
-        if (mediaType is null)
-        {
-            throw new KernelException("No media type available.");
-        }
+        var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
@@ -308,7 +304,7 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (arguments.TryGetValue(argumentName, out var propertyValue))
+            if (arguments.TryGetValue(argumentName, out string? propertyValue) && propertyValue is not null)
             {
                 result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
                 continue;

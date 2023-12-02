@@ -23,43 +23,32 @@ public static class AIServiceExtensions
     public const string ApiVersionKey = "ApiVersion";
 
     /// <summary>
-    /// Gets the model identifier.
+    /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
-    /// <param name="service"></param>
-    /// <returns></returns>
-    public static string? GetModelId(this IAIService service)
-    {
-        return service.GetAttribute(ModelIdKey);
-    }
+    /// <param name="service">The service from which to get the model identifier.</param>
+    /// <returns>The model identifier if it was specified in the service's attributes; otherwise, null.</returns>
+    public static string? GetModelId(this IAIService service) => service.GetAttribute(ModelIdKey);
 
     /// <summary>
-    /// Gets the endpoint.
+    /// Gets the endpoint from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
-    /// <param name="service"></param>
-    /// <returns></returns>
-    public static string? GetEndpoint(this IAIService service)
-    {
-        return service.GetAttribute(EndpointKey);
-    }
+    /// <param name="service">The service from which to get the endpoint.</param>
+    /// <returns>The endpoint if it was specified in the service's attributes; otherwise, null.</returns>
+    public static string? GetEndpoint(this IAIService service) => service.GetAttribute(EndpointKey);
 
     /// <summary>
-    /// Gets the API version.
+    /// Gets the API version from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>
     /// </summary>
-    /// <param name="service"></param>
-    /// <returns></returns>
-    public static string? GetApiVersion(this IAIService service)
-    {
-        return service.GetAttribute(ApiVersionKey);
-    }
+    /// <param name="service">The service from which to get the API version.</param>
+    /// <returns>The API version if it was specified in the service's attributes; otherwise, null.</returns>
+    public static string? GetApiVersion(this IAIService service) => service.GetAttribute(ApiVersionKey);
 
     /// <summary>
     /// Gets the specified attribute.
     /// </summary>
-    /// <param name="service"></param>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public static string? GetAttribute(this IAIService service, string key)
+    private static string? GetAttribute(this IAIService service, string key)
     {
-        return service.Attributes?.TryGetValue(key, out var value) == true ? value as string : null;
+        Verify.NotNull(service);
+        return service.Attributes?.TryGetValue(key, out object? value) == true ? value as string : null;
     }
 }

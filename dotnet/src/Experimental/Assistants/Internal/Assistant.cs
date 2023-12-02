@@ -3,13 +3,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -58,14 +53,12 @@ internal sealed class Assistant : IAssistant
     /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="chatService">An OpenAI chat service.</param>
     /// <param name="assistantModel">The assistant definition</param>
     /// <param name="plugins">Plugins to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
-        OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
         IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
@@ -74,7 +67,7 @@ internal sealed class Assistant : IAssistant
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, chatService, restContext, plugins);
+        return new Assistant(resultModel, restContext, plugins);
     }
 
     /// <summary>
@@ -82,17 +75,22 @@ internal sealed class Assistant : IAssistant
     /// </summary>
     internal Assistant(
         AssistantModel model,
-        OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
         IEnumerable<IKernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IChatCompletion>(chatService);
-        services.AddSingleton<ITextCompletion>(chatService);
-        this.Kernel = new Kernel(services.BuildServiceProvider(), plugins is not null ? new KernelPluginCollection(plugins) : null);
+        var builder =
+            new KernelBuilder()
+                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
+
+        this.Kernel = builder.Build();
+
+        if (plugins is not null)
+        {
+            this.Kernel.Plugins.AddRange(plugins);
+        }
     }
 
     /// <inheritdoc/>
@@ -114,7 +112,7 @@ internal sealed class Assistant : IAssistant
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
     [KernelFunction, Description("Provide input to assistant a response")]
-    public async Task<string> AskAsync(
+    public async Task<AssistantResponse> AskAsync(
         [Description("The input for the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
@@ -129,6 +127,6 @@ internal sealed class Assistant : IAssistant
                 Response = string.Concat(message.Select(m => m.Content)),
             };
 
-        return JsonSerializer.Serialize(response);
+        return response;
     }
 }

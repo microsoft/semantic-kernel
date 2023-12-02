@@ -21,8 +21,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -280,8 +278,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
             return type == typeof(ILogger) ?
-                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>().CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
-                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.GetService<ILoggerFactory>(), null);
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -359,14 +357,15 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(arguments.TryGetValue(KernelArguments.InputParameterName, out string? input) ? input : string.Empty);
+                    arguments.TryGetValue(KernelArguments.InputParameterName, out string? input);
+                    return Process(input);
                 }
 
                 // 4. Otherwise, fail.
                 throw new KernelException($"Missing value for parameter '{name}'",
                     new ArgumentException("Missing value function parameter", name));
 
-                object? Process(string value)
+                object? Process(string? value)
                 {
                     if (type == typeof(string))
                     {
@@ -618,7 +617,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// Parsing is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<string, CultureInfo, object?>? GetParser(Type targetType) =>
+    private static Func<string?, CultureInfo, object?>? GetParser(Type targetType) =>
         s_parsers.GetOrAdd(targetType, static targetType =>
         {
             // Strings just parse to themselves.
@@ -690,7 +689,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object?>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<string?, CultureInfo, object?>?> s_parsers = new();
 
     #endregion
 }

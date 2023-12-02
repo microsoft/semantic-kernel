@@ -9,14 +9,14 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example21_ChatGptPlugins
+public static class Example21_OpenAIPlugins
 {
     public static async Task RunAsync()
     {
-        await RunChatGptPluginAsync();
+        await RunOpenAIPluginAsync();
     }
 
-    private static async Task RunChatGptPluginAsync()
+    private static async Task RunOpenAIPluginAsync()
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
@@ -24,7 +24,7 @@ public static class Example21_ChatGptPlugins
         using HttpClient httpClient = new();
 
         //Import an Open AI plugin via URI
-        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<OpenAI-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments { ["<parameter-name>"] = "<parameter-value>" };
@@ -37,7 +37,7 @@ public static class Example21_ChatGptPlugins
         Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
         Console.ReadLine();
 
-        //--------------- Example of using Klarna ChatGPT plugin ------------------------
+        //--------------- Example of using Klarna OpenAI plugin ------------------------
 
         //var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 

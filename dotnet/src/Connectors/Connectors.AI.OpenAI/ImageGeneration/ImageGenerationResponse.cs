@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
 /// Image generation response
 /// </summary>
+[Experimental("SKEXP0012")]
 public class ImageGenerationResponse
 {
     /// <summary>

@@ -79,30 +79,7 @@ public class FunctionFromMethodTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
-        };
-        var chunkCount = 0;
-
-        // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
-        {
-            chunkCount++;
-        }
-
-        // Assert
-        Assert.Equal(0, chunkCount);
-    }
-
-    [Fact]
-    public async Task InvokeStreamingAsyncInvokingSkippingShouldRenderNoChunksAsync()
-    {
-        // Arrange
-        var kernel = new Kernel();
-        var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
-
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            e.Skip();
+            e.Cancel = true;
         };
         var chunkCount = 0;
 
@@ -126,7 +103,7 @@ public class FunctionFromMethodTests
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             // This will have no effect on streaming
-            e.Cancel();
+            e.Cancel = true;
         };
 
         var chunkCount = 0;
