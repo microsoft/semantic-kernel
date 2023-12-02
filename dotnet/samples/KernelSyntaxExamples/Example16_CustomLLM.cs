@@ -159,12 +159,12 @@ public static class Example16_CustomLLM
 
         public override byte[] ToByteArray()
         {
-            return Encoding.UTF8.GetBytes(this.Content);
+            return Encoding.UTF8.GetBytes(this.Text);
         }
 
         public override string ToString()
         {
-            return this.Content;
+            return this.Text;
         }
     }
 }

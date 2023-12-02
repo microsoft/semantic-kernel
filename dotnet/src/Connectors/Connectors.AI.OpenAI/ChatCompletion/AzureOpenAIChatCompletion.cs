@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -62,7 +63,6 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
-
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -80,7 +80,6 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
-
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -98,9 +97,10 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
+        throw new NotImplementedException();
 
-        return this._core.GetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
+        //this._core.LogActionDetails();
+        //return this._core.GetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -110,11 +110,11 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(prompt);
+        throw new NotImplementedException();
 
-        this._core.LogActionDetails();
-
-        return this._core.GetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
+        //Verify.NotNullOrWhiteSpace(prompt);
+        //this._core.LogActionDetails();
+        //return this._core.GetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -124,8 +124,10 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatHistory = this.CreateChatHistory(prompt, executionSettings);
-        return this._core.GetChatResultsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        throw new NotImplementedException();
+
+        //var chatHistory = this.CreateChatHistory(prompt, executionSettings);
+        //return this._core.GetChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -135,20 +137,10 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatHistory = this.CreateChatHistory(prompt, executionSettings);
+        throw new NotImplementedException();
 
-        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <summary>Creates a new chat history from the specified prompt and execution settings.</summary>
-    private OpenAIChatHistory CreateChatHistory(string prompt, PromptExecutionSettings? executionSettings)
-    {
-        Verify.NotNullOrWhiteSpace(prompt);
-
-        this._core.LogActionDetails();
-
-        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        return ClientCore.CreateNewChat(prompt, openAIExecutionSettings);
+        //var chatHistory = this.CreateChatHistory(prompt, executionSettings);
+        //return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -158,8 +150,9 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
+        throw new NotImplementedException();
 
-        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+        //this._core.LogActionDetails();
+        //return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

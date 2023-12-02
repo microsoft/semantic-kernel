@@ -45,15 +45,15 @@ public static class Example49_LogitBias
         chatHistory.AddUserMessage("Hi, I'm looking some suggestions");
         await MessageOutputAsync(chatHistory);
 
-        string reply = await chatCompletion.GenerateMessageAsync(chatHistory, settings);
-        chatHistory.AddAssistantMessage(reply);
+        var replyMessage = await chatCompletion.GetChatContentAsync(chatHistory, settings);
+        chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        reply = await chatCompletion.GenerateMessageAsync(chatHistory, settings);
-        chatHistory.AddAssistantMessage(reply);
+        replyMessage = await chatCompletion.GetChatContentAsync(chatHistory, settings);
+        chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
         /* Output:

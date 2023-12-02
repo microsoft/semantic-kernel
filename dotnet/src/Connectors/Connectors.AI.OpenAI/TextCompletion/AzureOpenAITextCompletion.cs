@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -91,8 +92,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
-        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
@@ -102,6 +102,18 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        return this._core.GetStreamingTextUpdatesAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 }

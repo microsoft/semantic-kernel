@@ -31,6 +31,6 @@ public class HuggingFaceStreamingTextContent : StreamingTextContent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content;
+        return this.Text;
     }
 }

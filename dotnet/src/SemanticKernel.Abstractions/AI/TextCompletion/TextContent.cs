@@ -18,8 +18,9 @@ public class TextContent : ModelContent
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
     /// <param name="text">Text content</param>
+    /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string text, Dictionary<string, object>? metadata = null) : base(text, metadata)
+    public TextContent(string text, object? innerContent = null, Dictionary<string, object>? metadata = null) : base(innerContent, metadata)
     {
         this.Text = text;
     }

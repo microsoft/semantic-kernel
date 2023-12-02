@@ -30,7 +30,8 @@ public class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
     /// <param name="systemMessage"></param>
     public ChatHistory(string systemMessage)
     {
-        Verify.NotNullOrWhiteSpace(messages);
+        Verify.NotNullOrWhiteSpace(systemMessage);
+
         this._messages = new();
         this.AddSystemMessage(systemMessage);
     }
@@ -58,10 +59,10 @@ public class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
     }
 
     /// <summary>
-    /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     /// <param name="additionalProperties">Dictionary for any additional message properties</param>
+    /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, IDictionary<string, string>? additionalProperties = null) =>
         this.Add(new ChatMessage(authorRole, content, additionalProperties));
 
