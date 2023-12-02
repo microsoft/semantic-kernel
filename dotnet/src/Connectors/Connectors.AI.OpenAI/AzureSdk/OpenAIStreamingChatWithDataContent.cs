@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
@@ -15,22 +14,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// </summary>
 public sealed class OpenAIStreamingChatWithDataContent : StreamingChatContent
 {
-    /// <summary>
-    /// Chat message abstraction
-    /// </summary>
-    public ChatMessage ChatMessage { get; }
+    /// <inheritdoc/>
+    public string? FunctionName { get; set; }
 
     /// <inheritdoc/>
-    public override string? FunctionName { get; protected set; }
-
-    /// <inheritdoc/>
-    public override string? FunctionArgument { get; protected set; }
-
-    /// <inheritdoc/>
-    public override string? Content { get; protected set; }
-
-    /// <inheritdoc/>
-    public override AuthorRole? Role { get; protected set; }
+    public string? FunctionArgument { get; set; }
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatContent"/> class.
@@ -38,27 +26,19 @@ public sealed class OpenAIStreamingChatWithDataContent : StreamingChatContent
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIStreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int choiceIndex, Dictionary<string, object> metadata) : base(choice, choiceIndex, metadata)
+    internal OpenAIStreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int choiceIndex, Dictionary<string, object> metadata) : base(AuthorRole.Assistant, null, choice, choiceIndex, metadata)
     {
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
+        var messageContent = message?.Delta?.Content;
 
-        this.ChatMessage = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
-        this.Content = this.ChatMessage.Content;
-        this.Role = this.ChatMessage.Role;
-        this.FunctionName = choice.Messages[choiceIndex].Delta.Content ?? string.Empty;
+        this.Content = messageContent;
     }
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray()
-    {
-        return Encoding.UTF8.GetBytes(this.ToString());
-    }
+    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize(this);
-    }
+    public override string ToString() => this.Content ?? string.Empty;
 
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {

@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Represents a text content result.
 /// </summary>
-public class TextContent : CompleteContent
+public class TextContent : ModelContent
 {
     /// <summary>
     /// The text content.
@@ -23,27 +23,10 @@ public class TextContent : CompleteContent
     {
         this.Text = text;
     }
-}
 
-/// <summary>
-/// Streaming text result update.
-/// </summary>
-public abstract class StreamingTextContent : StreamingContent
-{
-    /// <summary>
-    /// Text associated to the update
-    /// </summary>
-    public string Content { get; }
-
-    /// <summary>
-    /// Create a new instance of the <see cref="StreamingTextContent"/> class.
-    /// </summary>
-    /// <param name="text">Text update</param>
-    /// <param name="choiceIndex">Index of the choice</param>
-    /// <param name="innerContentObject">Inner chunk object</param>
-    /// <param name="metadata">Metadata information</param>
-    protected StreamingTextContent(string text, int choiceIndex = 0, object? innerContentObject = null, Dictionary<string, object>? metadata = null) : base(innerContentObject, choiceIndex, metadata)
+    /// <inheritdoc/>
+    public override string ToString()
     {
-        this.Content = text;
+        return this.Text ?? string.Empty;
     }
 }

@@ -13,16 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 public sealed class OpenAIStreamingChatContent : StreamingChatContent
 {
     /// <summary>
-    /// Text associated to the message payload
-    /// </summary>
-    public override string? Content { get; protected set; }
-
-    /// <summary>
-    /// Role of the author of the message
-    /// </summary>
-    public override AuthorRole? Role { get; protected set; }
-
-    /// <summary>
     /// Name of the author of the message. Name is required if the role is 'function'.
     /// </summary>
     public string? Name { get; }
@@ -30,12 +20,12 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     /// <summary>
     /// Function name to be called
     /// </summary>
-    public override string FunctionName { get; protected set; }
+    public string? FunctionName { get; set; }
 
     /// <summary>
     /// Function arguments fragment associated with this chunk
     /// </summary>
-    public override string FunctionArgument { get; protected set; }
+    public string? FunctionArgument { get; set; }
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatContent"/> class.
@@ -43,15 +33,19 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    public OpenAIStreamingChatContent(StreamingChatCompletionsUpdate chatUpdate, int choiceIndex, Dictionary<string, object> metadata) : base(chatUpdate, choiceIndex, metadata)
+    public OpenAIStreamingChatContent(
+        StreamingChatCompletionsUpdate chatUpdate,
+        int choiceIndex,
+        Dictionary<string, object> metadata)
+        : base(
+            chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
+            chatUpdate.ContentUpdate,
+            chatUpdate,
+            choiceIndex,
+            metadata)
     {
         this.FunctionName = chatUpdate.FunctionName;
         this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
-        this.Content = chatUpdate.ContentUpdate;
-        if (chatUpdate.Role.HasValue)
-        {
-            this.Role = new AuthorRole(chatUpdate.Role.ToString());
-        }
     }
 
     /// <inheritdoc/>

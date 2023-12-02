@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Prompts;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
@@ -342,10 +341,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
 
         // Try to parse the text as a chat history
-        if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-        {
-            return new OpenAIChatHistory(chatHistory);
-        }
+        //if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        //{
+        //    return new OpenAIChatHistory(chatHistory);
+        //}
 
         // If settings is not provided, create a new chat with the text as the system prompt
         var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);

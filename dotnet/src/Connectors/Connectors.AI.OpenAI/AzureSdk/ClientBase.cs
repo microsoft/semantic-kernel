@@ -21,7 +21,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Prompts;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -503,18 +502,6 @@ public abstract class ClientBase
     /// <returns>Chat object</returns>
     protected static OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
-        // If text is not provided, create an empty chat with the system prompt if provided
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
-        }
-
-        // Try to parse the text as a chat history
-        if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-        {
-            return new OpenAIChatHistory(chatHistory);
-        }
-
         // If settings is not provided, create a new chat with the text as the system prompt
         var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
         if (executionSettings is not null)

@@ -251,6 +251,16 @@ public class OrderedAIServiceConfigurationProviderTests
         {
             throw new NotImplementedException();
         }
+
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
     #endregion
 }

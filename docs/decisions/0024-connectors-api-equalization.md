@@ -1,5 +1,7 @@
 ## Proposal
 
+MODELCONTENT
+
 ### IChatCompletion
 
 Before:
@@ -27,24 +29,24 @@ After:
 ```csharp
 public interface IChatCompletion : IAIService
 {
-    ChatHistory CreateNewChat(string? standardizedPrompt = null);
+    ChatHistory CreateNewChat(string? standardizedPrompt = null, );
 
     Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, ...);
 
     //                                  vv Standardized Prompt (Parse <message> tags)
-    Task<IReadOnlyList<ChatContent>> GetPromptToChatContentsAsync(string prompt, ...);
+    Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(string prompt, ...);
 
 
     IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, ...);
 
     //                                                 vv Standardized Prompt (Parse <message> tags)
-    IAsyncEnumerable<StreamingChatContent> GetStreamingPromptToChatContentsAsync(string prompt, ...);
+    IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(string prompt, ...);
 }
 
 public static class ChatCompletionExtensions
 {
     //                       v Single          vv Standardized Prompt (Parse <message> tags)
-    public static async Task<ChatContent> GetPromptToChatContentAsync(string prompt, ...);
+    public static async Task<ChatContent> GetChatContentAsync(string prompt, ...);
 
     //                       v Single
     public static async Task<ChatContent> GetChatContentAsync(ChatHistory chatHistory, ...);
@@ -69,7 +71,6 @@ public static class TextCompletionExtensions
 
     public static IAsyncEnumerable<StreamingContent> GetStreamingContentAsync(string input, ...);
 }
-
 ```
 
 After:
@@ -79,46 +80,42 @@ public interface ITextCompletion : IAIService
 {
     Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, ...);
 
-    //                                  vv Standardized Prompt (Parse <message> tags)
-    Task<IReadOnlyList<TextContent>> GetPromptToTextContentsAsync(string prompt, ...);
-
-    IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentAsync(string prompt, ...);
-
-    //                                                 vv Standardized Prompt (Parse <message> tags)
-    IAsyncEnumerable<StreamingTextContent> GetStreamingPromptToTextContentAsync(string prompt, ...);
+    IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, ...);
 }
 
 public static class TextCompletionExtensions
 {
-    //                       v Single        vv Standardized Prompt (Parse <message> tags)
-    public static async Task<TextContent> GetPromptToTextContentAsync(string prompt, ...);
-
-    //                       v Single
     public static async Task<TextContent> GetTextContentAsync(string prompt, ...);
 }
 ```
 
-### CompleteContent Abstractions
+## Content Abstractions
 
-#### Model Comparisons (Before/After)
+### Model Comparisons
 
-| Streaming (Current)                         | Specialized\* Streaming (Current)                               |
-| ------------------------------------------- | --------------------------------------------------------------- |
-| `StreamingChatContent` : `StreamingContent` | `OpenAIStreamingChatContent`                                    |
-| `StreamingTextContent` : `StreamingContent` | `OpenAIStreamingTextContent`, `HuggingFaceStreamingTextContent` |
+#### Current Streaming Abstractions
 
-| Non-Streaming (Before)        | Non-Streaming (After)             | Specialized\* Non-Streaming (After)           |
-| ----------------------------- | --------------------------------- | --------------------------------------------- |
-| `IChatResult` : `IResultBase` | `ChatContent` : `CompleteContent` | `OpenAIChatContent`                           |
-| `ITextResult` : `IResultBase` | `TextContent` : `CompleteContent` | `OpenAITextContent`, `HuggingFaceTextContent` |
+| Streaming (Current)                              | Specialized\* Streaming (Current)                               |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| `StreamingChatContent` : `StreamingModelContent` | `OpenAIStreamingChatContent`                                    |
+| `StreamingTextContent` : `StreamingModelContent` | `OpenAIStreamingTextContent`, `HuggingFaceStreamingTextContent` |
+
+#### Non-Streaming Abstractions (Before and After)
+
+| Non-Streaming (Before)        | Non-Streaming (After)          | Specialized\* Non-Streaming (After)           |
+| ----------------------------- | ------------------------------ | --------------------------------------------- |
+| `IChatResult` : `IResultBase` | `ChatContent` : `ModelContent` | `OpenAIChatContent`                           |
+| `ITextResult` : `IResultBase` | `TextContent` : `ModelContent` | `OpenAITextContent`, `HuggingFaceTextContent` |
 
 _\*Specialized: Connector implementations that are specific to a single AI Service._
 
-New Non-Streaming Abstractions:
+### New Non-Streaming Abstractions:
+
+`Complete` Prefix was chosen to represent a `non-streaming content` that contains all the information that the AI Service returned. (Metadata, Raw Content, etc.)
 
 ```csharp
 /// <summary>
-/// Base class for all AI results
+/// Base class for all AI non-streaming results
 /// </summary>
 public abstract class CompleteContent
 {
@@ -196,6 +193,50 @@ public class TextContent : CompleteContent
         this.Text = text;
     }
 }
+```
+
+### End-User Experience
+
+- No changes to the end-user experience when using `Function.InvokeAsync` or `Kernel.InvokeAsync`
+- Changes only when using Connector APIs directly
+
+#### Example 16 - Custom LLMS
+
+Before
+
+```csharp
+await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, executionSettings))
+{
+    Console.Write(message);
+}
+```
+
+After
+
+```csharp
+await foreach (var message in textCompletion.GetStreamingTextContentAsync(prompt, executionSettings))
+{
+    Console.Write(message);
+}
+```
+
+#### Example 17 - ChatGPT
+
+Before
+
+```csharp
+string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+chatHistory.AddAssistantMessage(reply);
+```
+
+After
+
+```csharp
+var reply = await chatGPT.GetChatContentAsync(chatHistory);
+chatHistory.AddMessage(reply); //Add a new method to ChatHistory that accepts a ChatContent
+
+// OR
+chatHistory.AddAssistantMessage(reply.Content);
 ```
 
 ### Clean-up

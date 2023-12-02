@@ -81,7 +81,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training session this morning");
+        var result = await completionService.GetTextContentAsync("I missed the training session this morning");
 
         Console.WriteLine(result);
     }
@@ -109,7 +109,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, executionSettings))
+        await foreach (var message in textCompletion.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             Console.Write(message);
         }
@@ -125,36 +125,37 @@ public static class Example16_CustomLLM
 
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
         {
-            this.ModelId = executionSettings?.ModelId;
-
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
-            {
-                new MyTextCompletionStreamingResult()
-            });
+            throw new NotImplementedException();
         }
 
         public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (typeof(T) == typeof(MyStreamingContent) ||
-                typeof(T) == typeof(StreamingContent))
+            throw new NotImplementedException();
+        }
+
+        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (string word in LLMResultText.Split(' '))
             {
-                foreach (string word in LLMResultText.Split(' '))
-                {
-                    await Task.Delay(50, cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
-                    yield return (T)(object)new MyStreamingContent(word);
-                }
+                await Task.Delay(50, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return new MyStreamingContent(word);
             }
+        }
+
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent>
+            {
+                new(LLMResultText)
+            });
         }
     }
 
-    private sealed class MyStreamingContent : StreamingContent
+    private sealed class MyStreamingContent : StreamingTextContent
     {
-        public string Content { get; }
-
         public MyStreamingContent(string content) : base(content)
         {
-            this.Content = $"{content} ";
         }
 
         public override byte[] ToByteArray()
@@ -165,26 +166,6 @@ public static class Example16_CustomLLM
         public override string ToString()
         {
             return this.Content;
-        }
-    }
-
-    private sealed class MyTextCompletionStreamingResult : ITextResult
-    {
-        private readonly ModelResult _modelResult = new(new
-        {
-            Content = LLMResultText,
-            Message = "This is my model raw response",
-            Tokens = LLMResultText.Split(' ').Length
-        });
-
-        public ModelResult ModelResult => this._modelResult;
-
-        public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-        {
-            // Forcing a 1 sec delay (Simulating custom LLM lag)
-            await Task.Delay(1000, cancellationToken);
-
-            return LLMResultText;
         }
     }
 }

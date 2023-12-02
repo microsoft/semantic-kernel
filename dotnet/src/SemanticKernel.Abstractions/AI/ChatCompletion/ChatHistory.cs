@@ -12,6 +12,22 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public class ChatHistory : List<ChatMessage>
 {
     /// <summary>
+    /// Creates a new instance of the <see cref="ChatHistory"/> class
+    /// </summary>
+    public ChatHistory()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message
+    /// </summary>
+    /// <param name="systemMessage"></param>
+    public ChatHistory(string systemMessage)
+    {
+        this.AddSystemMessage(systemMessage);
+    }
+
+    /// <summary>
     /// Add a message to the chat history
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
