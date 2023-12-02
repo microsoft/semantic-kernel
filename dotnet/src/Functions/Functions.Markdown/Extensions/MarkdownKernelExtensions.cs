@@ -4,7 +4,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
+namespace Microsoft.SemanticKernel.Functions.Markdown;
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt markdown format.

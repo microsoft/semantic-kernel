@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
 internal static class OpenApiSchemaExtensions
 {

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+namespace Microsoft.SemanticKernel.Functions.Grpc;
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.

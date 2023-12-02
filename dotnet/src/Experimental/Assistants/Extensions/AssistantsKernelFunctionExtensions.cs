@@ -6,7 +6,7 @@ using System.Linq;
 using Json.More;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 internal static class AssistantsKernelFunctionExtensions
 {

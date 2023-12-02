@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class KernelArgumentsTests
 {
     [Fact]
