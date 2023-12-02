@@ -27,7 +27,7 @@ internal static class DocumentLoader
 
         if (authCallback is not null)
         {
-            await authCallback(request).ConfigureAwait(false);
+            await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
         logger.LogTrace("Importing document from {0}", uri);
