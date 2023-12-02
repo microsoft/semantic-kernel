@@ -159,7 +159,7 @@ public class FunctionFromPromptTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoked = true;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -182,7 +182,7 @@ public class FunctionFromPromptTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoked++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -204,7 +204,7 @@ public class FunctionFromPromptTests
 
         sut.FunctionInvoking += (sender, e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
 
         sut.FunctionInvoked += (sender, e) =>

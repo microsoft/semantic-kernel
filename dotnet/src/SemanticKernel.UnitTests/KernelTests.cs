@@ -153,7 +153,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -179,7 +179,7 @@ public class KernelTests
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -232,7 +232,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -256,7 +256,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -277,7 +277,7 @@ public class KernelTests
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
