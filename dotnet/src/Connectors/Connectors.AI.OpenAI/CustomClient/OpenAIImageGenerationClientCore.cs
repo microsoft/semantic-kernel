@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -43,6 +44,7 @@ internal sealed class OpenAIImageGenerationClientCore
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
+    [Experimental("SKEXP0011")]
     internal async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
         string url,
         string requestBody,
@@ -65,6 +67,7 @@ internal sealed class OpenAIImageGenerationClientCore
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the image generation response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
+    [Experimental("SKEXP0012")]
     internal async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,

@@ -568,7 +568,7 @@ internal abstract class ClientCore
 
     private static ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
-        List<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory,
+        ChatHistory chatHistory,
         Kernel? kernel,
         string deploymentOrModelName)
     {
