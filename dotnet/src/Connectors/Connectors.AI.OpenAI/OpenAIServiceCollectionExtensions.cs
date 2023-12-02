@@ -52,8 +52,8 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -85,8 +85,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -117,9 +117,9 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return builder.ConfigureServices(c =>
@@ -151,9 +151,9 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -180,8 +180,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -212,8 +212,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -243,7 +243,7 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -275,7 +275,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -302,7 +302,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -329,7 +329,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -365,8 +365,8 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -402,9 +402,9 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -439,9 +439,9 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         return builder.ConfigureServices(c =>
@@ -477,9 +477,9 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -510,8 +510,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -543,8 +543,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -575,7 +575,7 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -608,7 +608,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -636,7 +636,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -664,7 +664,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -699,9 +699,9 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -741,8 +741,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -783,9 +783,9 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return builder.ConfigureServices(c =>
@@ -825,9 +825,9 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -864,8 +864,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -895,8 +895,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -988,7 +988,7 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -1022,7 +1022,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -1053,7 +1053,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.ConfigureServices(c =>
@@ -1080,7 +1080,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -1118,7 +1118,7 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.ConfigureServices(c =>
@@ -1154,7 +1154,7 @@ public static class OpenAIServiceCollectionExtensions
         int maxRetryCount = 5)
     {
         Verify.NotNull(services);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
