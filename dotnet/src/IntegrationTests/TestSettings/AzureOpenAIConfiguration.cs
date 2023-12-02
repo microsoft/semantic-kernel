@@ -24,13 +24,13 @@ internal sealed class AzureOpenAIConfiguration
 
     public string ApiKey { get; set; }
 
-    public AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string chatDeploymentName, string? modelId = null, string? chatModelId = null, string? embeddingModelId = null)
+    public AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string? chatDeploymentName = null, string? modelId = null, string? chatModelId = null, string? embeddingModelId = null)
     {
         this.ServiceId = serviceId;
         this.DeploymentName = deploymentName;
         this.ModelId = modelId ?? deploymentName;
-        this.ChatDeploymentName = chatDeploymentName;
-        this.ChatModelId = chatModelId ?? chatDeploymentName;
+        this.ChatDeploymentName = deploymentName;
+        this.ChatModelId = chatModelId ?? deploymentName;
         this.EmbeddingModelId = embeddingModelId ?? "text-embedding-ada-002";
         this.Endpoint = endpoint;
         this.ApiKey = apiKey;

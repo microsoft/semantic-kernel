@@ -66,9 +66,9 @@ public static class OpenAIMemoryBuilderExtensions
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 credential,
-                modelId,
                 HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
     }

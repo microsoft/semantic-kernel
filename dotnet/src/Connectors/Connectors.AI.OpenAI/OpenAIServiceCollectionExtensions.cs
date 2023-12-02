@@ -374,9 +374,9 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
+                    modelId,
                     endpoint,
                     apiKey,
-                    modelId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                     serviceProvider.GetService<ILoggerFactory>()));
         });
@@ -410,9 +410,9 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 apiKey,
-                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -449,9 +449,9 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
+                    modelId,
                     endpoint,
                     credential,
-                    modelId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                     serviceProvider.GetService<ILoggerFactory>()));
         });
@@ -485,9 +485,9 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 credential,
-                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -519,8 +519,8 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
-                    openAIClient,
                     modelId,
+                    openAIClient,
                     serviceProvider.GetService<ILoggerFactory>()));
         });
     }
@@ -550,8 +550,8 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
-                openAIClient,
                 modelId,
+                openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
