@@ -152,12 +152,17 @@ class SKFunction(SKFunctionBase):
                 log.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    (
-                        completion,
-                        function_call,
-                    ) = await client.complete_chat_with_functions_async(
+                    outputs = await client.complete_chat_with_functions_async(
                         messages, functions, request_settings
                     )
+                    if function_config.has_chat_with_data_prompt:
+                        completion, tool_message, function_call = outputs
+                        if tool_message:
+                            context.objects["tool_message"] = tool_message
+                            as_chat_prompt.add_message(role="tool", message=tool_message)
+                    else:
+                        completion, function_call = outputs
+
                     as_chat_prompt.add_message(
                         "assistant", message=completion, function_call=function_call
                     )

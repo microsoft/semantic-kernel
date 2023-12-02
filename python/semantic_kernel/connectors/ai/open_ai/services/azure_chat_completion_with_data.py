@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from dataclasses import asdict
 from logging import Logger
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union, Tuple
 
@@ -13,6 +14,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequ
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_WITH_DATA_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import AzureChatWithDataSettings
 from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import AzureChatWithDataStreamResponse
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 
 
@@ -107,7 +109,7 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         else:
             return [self._parse_message(choice.message) for choice in response.choices]
 
-    def _parse_message(self, message: ChatCompletionMessage) -> Tuple[str, str]:
+    def _parse_message(self, message: ChatCompletionMessage, functions: bool = False) -> Tuple[str, str]:
         """Parses the message from the response, returns a tuple of (assistant response, tool response)."""
         assistant_content = message.content
         tool_content = ""
@@ -116,6 +118,15 @@ class AzureChatCompletionWithData(AzureChatCompletion):
                 if m["role"] == "tool":
                     tool_content = m.get("content", "")
                     break
+        
+        if functions:
+            function_call = message.function_call if hasattr(message, "function_call") else None
+            if function_call:
+                function_call = FunctionCall(
+                    name=function_call.name,
+                    arguments=function_call.arguments,
+                )
+            return (assistant_content, tool_content, function_call)
 
         return (assistant_content, tool_content)
 
@@ -218,7 +229,7 @@ class AzureChatCompletionWithData(AzureChatCompletion):
                     "dataSources": [
                         {
                             "type": self._data_source_settings.data_source_type.value,
-                            "parameters": self._data_source_settings.data_source_parameters.asdict()
+                            "parameters": asdict(self._data_source_settings.data_source_parameters)
                         }
                     ]
                 }
@@ -251,6 +262,12 @@ class AzureChatCompletionWithData(AzureChatCompletion):
                 ]
             else:
                 model_args["functions"] = functions
+
+        if hasattr(request_settings, "inputLanguage"):
+            model_args["extra_body"]["inputLanguage"] = request_settings.inputLanguage
+        if hasattr(request_settings, "outputLanguage"):
+            model_args["extra_body"]["outputLanguage"] = request_settings.outputLanguage
+
         return model_args
         
     async def complete_chat_with_functions_async(self, 
@@ -259,8 +276,20 @@ class AzureChatCompletionWithData(AzureChatCompletion):
             request_settings: ChatRequestSettings, 
             logger: Logger = None
         ):
-        raise NotImplementedError("AzureChatCompletionWithData does not support functions yet")
-    
+        response = await self._send_request(
+            messages=messages,
+            request_settings=request_settings,
+            stream=False,
+            functions=functions,
+        )
+
+        if len(response.choices) == 1:
+            return self._parse_message(response.choices[0].message, True)
+        else:
+            return [
+                self._parse_message(choice.message, True) for choice in response.choices
+            ]    
+        
     async def complete_async(self, prompt: str, request_settings: CompleteRequestSettings, logger: Logger= None):
         raise AIException(
             AIException.ErrorCodes.InvalidRequest,

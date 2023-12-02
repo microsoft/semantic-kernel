@@ -10,6 +10,9 @@ from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
+from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
+    PromptTemplateWithDataConfig,
+)
 from semantic_kernel.semantic_functions.chat_with_data_prompt_template import ChatWithDataPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
@@ -47,6 +50,7 @@ __all__ = [
     "redis_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",
+    "PromptTemplateWithDataConfig",
     "ChatPromptTemplate",
     "ChatWithDataPromptTemplate",
     "SemanticFunctionConfig",
