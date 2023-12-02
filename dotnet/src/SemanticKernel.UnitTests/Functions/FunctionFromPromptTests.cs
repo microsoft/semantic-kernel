@@ -23,7 +23,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var factory = new Mock<Func<IServiceProvider, ITextCompletion>>();
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton(factory.Object);
         }).Build();
@@ -47,7 +47,7 @@ public class FunctionFromPromptTests
         mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("x", mockTextCompletion.Object);
         }).Build();
@@ -80,7 +80,7 @@ public class FunctionFromPromptTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
@@ -106,7 +106,7 @@ public class FunctionFromPromptTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
@@ -129,7 +129,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -152,7 +152,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -175,7 +175,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -198,7 +198,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
@@ -224,7 +224,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -246,7 +246,7 @@ public class FunctionFromPromptTests
     public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -269,7 +269,7 @@ public class FunctionFromPromptTests
     public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -295,7 +295,7 @@ public class FunctionFromPromptTests
         var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
             new TestStreamingContent("chunk1"),
             new TestStreamingContent("chunk2"));
-        var kernel = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
+        var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new KernelArguments { { "input", "importance" } };
