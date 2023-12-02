@@ -2,8 +2,8 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Extensions;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 
