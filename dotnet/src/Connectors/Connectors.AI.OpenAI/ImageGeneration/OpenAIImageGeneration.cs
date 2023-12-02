@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 /// <summary>
 /// A class for generating images using OpenAI's API.
 /// </summary>

@@ -10,6 +10,7 @@ using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class MultipleModelTests
 {
     [Fact]

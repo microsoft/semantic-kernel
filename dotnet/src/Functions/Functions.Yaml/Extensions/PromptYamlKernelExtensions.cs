@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Functions.Yaml.Functions;
+using Microsoft.SemanticKernel.Functions.Yaml;
 
 namespace Microsoft.SemanticKernel;
 

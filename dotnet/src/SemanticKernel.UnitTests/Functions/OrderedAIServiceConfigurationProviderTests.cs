@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Services;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class OrderedAIServiceConfigurationProviderTests
 {
     [Fact]

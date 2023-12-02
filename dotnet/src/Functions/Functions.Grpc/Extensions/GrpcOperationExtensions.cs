@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+namespace Microsoft.SemanticKernel.Functions.Grpc;
 
 #pragma warning disable RCS1175 // Unused 'this' parameter 'operation'.
 

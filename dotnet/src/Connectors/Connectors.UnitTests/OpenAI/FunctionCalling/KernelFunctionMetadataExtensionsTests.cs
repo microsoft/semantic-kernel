@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 public sealed class KernelFunctionMetadataExtensionsTests
 {
     [Fact]

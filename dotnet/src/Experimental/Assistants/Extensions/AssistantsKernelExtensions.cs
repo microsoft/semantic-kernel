@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 internal static class AssistantsKernelExtensions
 {
