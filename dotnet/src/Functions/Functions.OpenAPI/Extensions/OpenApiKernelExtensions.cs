@@ -287,7 +287,7 @@ public static class OpenApiKernelExtensions
                 {
                     // A try to resolve argument by alternative parameter name
                     if (!string.IsNullOrEmpty(parameter.AlternativeName) &&
-                        variables.TryGetValue(parameter.AlternativeName!, out string? value) &&
+                        variables.TryGetValue(parameter.AlternativeName!, out object? value) &&
                         value is not null)
                     {
                         arguments.Add(parameter.Name, value);

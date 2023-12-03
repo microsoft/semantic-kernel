@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -50,7 +49,7 @@ public sealed class HandlebarsPlan
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
         Kernel kernel,
-        Dictionary<string, object?> arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);

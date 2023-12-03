@@ -65,7 +65,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string?>(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -137,7 +137,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string?>(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -181,7 +181,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddHeadersToHttpRequestAsync()
     {
         // Arrange
-        var headers = new KernelArguments
+        var headers = new Dictionary<string, string>
         {
             { "fake-header", string.Empty }
         };
@@ -217,7 +217,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
     {
         // Arrange
-        var headers = new KernelArguments
+        var headers = new Dictionary<string, string>
         {
             { "fake-header", string.Empty }
         };
@@ -274,7 +274,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -337,7 +337,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -425,7 +425,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -494,7 +494,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -522,7 +522,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -554,7 +554,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -595,7 +595,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -642,7 +642,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -689,7 +689,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload
         );
 
@@ -746,7 +746,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -795,7 +795,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -844,7 +844,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -884,7 +884,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { parameter },
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -916,7 +916,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -959,7 +959,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -995,7 +995,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             payload: null
         );
 
@@ -1067,7 +1067,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new KernelArguments(),
+            new Dictionary<string, string>(),
             null,
             responses.ToDictionary(item => item.Item1, item => item.Item2)
         );

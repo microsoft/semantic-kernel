@@ -47,6 +47,9 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
+        //Make sure all arguments are of string type. This is temporary check until non-string arguments are supported.
+        AssertArgumentOfStringType(arguments);
+
         return await this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
@@ -138,5 +141,29 @@ public sealed class KernelPromptTemplate : IPromptTemplate
             ? block
             : new TextBlock(((ITextRendering)block).Render(arguments), this._loggerFactory)).ToList();
     }
+
+    /// <summary>
+    /// Validates that all the KernelArguments are of string type.
+    /// </summary>
+    /// <param name="arguments">The collection of KernelArguments to validate.</param>
+    /// <exception cref="KernelException">Thrown when an argument is not of type string.</exception>
+    private static void AssertArgumentOfStringType(KernelArguments? arguments)
+    {
+        if (arguments == null)
+        {
+            return;
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Value is string)
+            {
+                continue;
+            }
+
+            throw new KernelException($"Kernel prompt template arguments must be of type string. Argument '{argument.Key}' is of type '{argument.Value?.GetType()}'");
+        }
+    }
+
     #endregion
 }
