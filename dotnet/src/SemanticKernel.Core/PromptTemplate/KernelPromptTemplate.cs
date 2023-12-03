@@ -45,7 +45,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        //Make sure all arguments are of string type. This is temporary check until non-string arguments are supported.
+        // Make sure all arguments are of string type. This is temporary check until non-string arguments are supported.
         AssertArgumentOfStringType(arguments);
 
         return await this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken).ConfigureAwait(false);
