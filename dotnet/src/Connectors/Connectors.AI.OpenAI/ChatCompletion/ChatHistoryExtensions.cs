@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -25,22 +24,6 @@ public static class OpenAIChatHistoryExtensions
         Verify.NotNull(chatHistory);
 
         chatHistory.AddMessage(s_functionAuthorRole, message, new Dictionary<string, string>(1) { { "Name", functionName } });
-    }
-
-    /// <summary>
-    /// Add an assistant message to the chat history.
-    /// </summary>
-    /// <param name="chatHistory">Chat history</param>
-    /// <param name="chatResult">Chat result from the model</param>
-    public static void AddAssistantMessage(this ChatHistory chatHistory, IChatResult chatResult)
-    {
-        Verify.NotNull(chatHistory);
-
-        var chatMessage = chatResult.ModelResult.GetOpenAIChatResult().Choice.Message;
-        if (!string.IsNullOrEmpty(chatMessage.Content) || chatMessage.FunctionCall is not null)
-        {
-            chatHistory.AddAssistantMessage(chatMessage.Content, chatMessage.FunctionCall);
-        }
     }
 
     /// <summary>

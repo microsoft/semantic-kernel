@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -39,7 +38,7 @@ public static class Example43_GetModelResult
         });
 
         Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
+        Console.WriteLine(functionResult.Metadata.AsJson());
         Console.WriteLine();
 
         // Using the Kernel InvokeAsync
@@ -47,7 +46,7 @@ public static class Example43_GetModelResult
         var modelResults = result.GetModelResults() ?? Enumerable.Empty<ModelResult>();
 
         Console.WriteLine(result.GetValue<string>());
-        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        Console.WriteLine(functionResult.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
@@ -56,10 +55,10 @@ public static class Example43_GetModelResult
             apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 }, kernel);
+        var textContent = await chatCompletion.GetTextContentAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 }, kernel);
 
-        Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
+        Console.WriteLine(textContent);
+        Console.WriteLine(textContent.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
 
         // Getting the error details
