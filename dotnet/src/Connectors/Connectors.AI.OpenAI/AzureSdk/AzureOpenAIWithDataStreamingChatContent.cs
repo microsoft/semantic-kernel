@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// Streaming chat result update.
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class OpenAIStreamingChatWithDataContent : StreamingChatContent
+public sealed class AzureOpenAIWithDataStreamingChatContent : StreamingChatContent
 {
     /// <inheritdoc/>
     public string? FunctionName { get; set; }
@@ -28,7 +28,7 @@ public sealed class OpenAIStreamingChatWithDataContent : StreamingChatContent
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIStreamingChatWithDataContent(ChatWithDataStreamingChoice choice, int choiceIndex, Dictionary<string, object> metadata) : base(AuthorRole.Assistant, null, choice, choiceIndex, metadata)
+    internal AzureOpenAIWithDataStreamingChatContent(ChatWithDataStreamingChoice choice, int choiceIndex, IReadOnlyDictionary<string, object?>? metadata = null) : base(AuthorRole.Assistant, null, choice, choiceIndex, metadata)
     {
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
         var messageContent = message?.Delta?.Content;

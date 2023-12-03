@@ -26,7 +26,7 @@ public abstract class StreamingContent
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public Dictionary<string, object>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
@@ -52,10 +52,10 @@ public abstract class StreamingContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex"></param>
     /// <param name="metadata"></param>
-    protected StreamingContent(object? innerContent, int choiceIndex = 0, Dictionary<string, object>? metadata = null)
+    protected StreamingContent(object? innerContent, int choiceIndex = 0, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
-        this.Metadata = metadata ?? new();
+        this.Metadata = metadata ?? new Dictionary<string, object?>();
     }
 }

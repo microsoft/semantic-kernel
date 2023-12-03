@@ -28,7 +28,7 @@ public class StreamingTextContent : StreamingContent
     /// <param name="innerContent">Inner chunk object</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
-    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, Dictionary<string, object>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

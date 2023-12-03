@@ -28,7 +28,7 @@ public class ChatContent : ModelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatContent(AuthorRole role, string content, object? innerContent = null, Dictionary<string, object>? metadata = null) : base(innerContent, metadata)
+    public ChatContent(AuthorRole role, string content, object? innerContent = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
     {
         this.Role = role;
         this.Content = content;
@@ -39,7 +39,7 @@ public class ChatContent : ModelContent
     /// </summary>
     /// <param name="chatMessage">Chat message</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
-    public ChatContent(ChatMessage chatMessage, Dictionary<string, object>? metadata = null) : this(chatMessage.Role, chatMessage.Content, chatMessage, metadata)
+    public ChatContent(ChatMessage chatMessage, IReadOnlyDictionary<string, object?>? metadata = null) : this(chatMessage.Role, chatMessage.Content, chatMessage, metadata)
     {
     }
 

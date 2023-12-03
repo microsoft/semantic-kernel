@@ -17,6 +17,12 @@ internal sealed class ChatWithDataStreamingResponse
     [JsonPropertyName("created")]
     public int Created { get; set; } = default;
 
+    [JsonPropertyName("model")]
+    public string Model { get; set; } = string.Empty;
+
+    [JsonPropertyName("object")]
+    public string Object { get; set; } = string.Empty;
+
     [JsonPropertyName("choices")]
     public IList<ChatWithDataStreamingChoice> Choices { get; set; } = Array.Empty<ChatWithDataStreamingChoice>();
 }

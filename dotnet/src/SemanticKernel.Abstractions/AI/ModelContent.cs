@@ -19,16 +19,16 @@ public abstract class ModelContent
     /// The metadata associated with the content.
     /// </summary>
     [JsonExtensionData]
-    public IReadOnlyDictionary<string, object> Metadata { get; }
+    public IReadOnlyDictionary<string, object?> Metadata { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ModelContent"/> class.
     /// </summary>
     /// <param name="innerContent">Raw content object reference</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected ModelContent(object? innerContent, Dictionary<string, object>? metadata = null)
+    protected ModelContent(object? innerContent, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
-        this.Metadata = metadata ?? new();
+        this.Metadata = metadata ?? new Dictionary<string, object?>();
     }
 }

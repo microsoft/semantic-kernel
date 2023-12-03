@@ -24,10 +24,10 @@ public sealed class TextContent : ModelContent
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
     /// <param name="text">Text content</param>
-    /// <param name="encoding">Encoding of the text</param>
     /// <param name="innerContent">Inner content</param>
+    /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, Dictionary<string, object>? metadata = null) : base(innerContent, metadata)
+    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

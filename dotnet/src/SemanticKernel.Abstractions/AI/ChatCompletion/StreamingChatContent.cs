@@ -17,7 +17,7 @@ public abstract class StreamingChatContent : StreamingContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex"></param>
     /// <param name="metadata">Additional metadata</param>
-    protected StreamingChatContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Dictionary<string, object>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    protected StreamingChatContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Role = role;
         this.Content = content;
