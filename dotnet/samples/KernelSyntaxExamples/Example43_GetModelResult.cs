@@ -36,7 +36,7 @@ public static class Example43_GetModelResult
         });
 
         Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.Metadata.AsJson());
+        Console.WriteLine(functionResult.Metadata?.AsJson());
         Console.WriteLine();
 
         // Using the Kernel InvokeAsync
