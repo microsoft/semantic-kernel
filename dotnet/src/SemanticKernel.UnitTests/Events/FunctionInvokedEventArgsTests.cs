@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Events;
+
 public class FunctionInvokedEventArgsTests
 {
     [Fact]

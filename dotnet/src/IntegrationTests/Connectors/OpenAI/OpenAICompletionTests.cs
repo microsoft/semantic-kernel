@@ -182,7 +182,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
-            .ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+            .WithServices(c => c.ConfigureHttpClientDefaults(c =>
                 {
                     // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
                     c.AddStandardResilienceHandler().Configure(o =>
@@ -218,7 +218,7 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        builder.ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+        builder.WithServices(c => c.ConfigureHttpClientDefaults(c =>
             {
                 // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
                 c.AddStandardResilienceHandler().Configure(o =>

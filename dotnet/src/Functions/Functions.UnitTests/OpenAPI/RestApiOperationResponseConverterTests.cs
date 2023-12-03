@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 public class RestApiOperationResponseConverterTests
 {
     private readonly RestApiOperationResponseConverter _sut;

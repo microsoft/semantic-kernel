@@ -239,6 +239,7 @@ public static class KernelExtensions
     }
     #endregion
 
+    #region CreatePluginFromDirectory
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
     /// <para>
@@ -325,6 +326,7 @@ public static class KernelExtensions
 
         return plugin;
     }
+    #endregion
 
     #region ImportPluginFromPromptDirectory
     /// <summary>
@@ -427,117 +429,5 @@ public static class KernelExtensions
 
         return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
     }
-    #endregion
-
-    #region InvokeAsync
-
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">A Semantic Kernel function to run</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        KernelFunction function,
-        string input,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-        Verify.NotNull(function);
-
-        return function.InvokeAsync(kernel, input, executionSettings: null, cancellationToken);
-    }
-
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">A Semantic Kernel function to run</param>
-    /// <param name="arguments">The function arguments</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        KernelFunction function,
-        KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-        Verify.NotNull(function);
-
-        return function.InvokeAsync(kernel, arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Run a plugin function.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="pluginName">The name of the plugin containing the function to run.</param>
-    /// <param name="functionName">The name of the function to run.</param>
-    /// <param name="arguments">The function arguments.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function run.</returns>
-    public static Task<FunctionResult> InvokeAsync(
-        this Kernel kernel,
-        string pluginName,
-        string functionName,
-        KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        var function = kernel.Plugins.GetFunction(pluginName, functionName);
-
-        return kernel.InvokeAsync(function, arguments, cancellationToken);
-    }
-    #endregion
-
-    #region InvokeStreamingAsync
-    /// <summary>
-    /// Invoke a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="arguments">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
-
-    /// <summary>
-    /// Invoke a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="arguments">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
-        => kernel.InvokeStreamingAsync<StreamingContent>(function, arguments, CancellationToken.None);
-
-    /// <summary>
-    /// Invoke a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<T> InvokeStreamingAsync<T>(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
-        => function.InvokeStreamingAsync<T>(kernel, input, executionSettings: null, cancellationToken);
-
-    /// <summary>
-    /// Invoke a function in streaming mode.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">Target function to run</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Streaming result of the function</returns>
-    public static IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(this Kernel kernel, KernelFunction function, string input, CancellationToken cancellationToken = default)
-        => kernel.InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
     #endregion
 }

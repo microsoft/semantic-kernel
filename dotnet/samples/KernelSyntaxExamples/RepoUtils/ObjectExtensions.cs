@@ -3,6 +3,7 @@
 using System.Text.Json;
 
 namespace RepoUtils;
+
 public static class ObjectExtensions
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
