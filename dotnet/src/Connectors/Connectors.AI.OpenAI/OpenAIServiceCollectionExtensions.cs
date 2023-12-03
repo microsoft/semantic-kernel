@@ -36,25 +36,25 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAITextCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -71,23 +71,23 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAITextCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
         {
@@ -101,24 +101,25 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAITextCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return builder.WithServices(c =>
@@ -136,22 +137,23 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAITextCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credentials,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -166,19 +168,20 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAITextCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -197,19 +200,20 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAITextCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -239,8 +243,8 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -271,8 +275,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
             new OpenAITextCompletion(
@@ -298,7 +302,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -325,7 +329,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
@@ -344,35 +348,35 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
+                    modelId,
                     endpoint,
                     apiKey,
-                    modelId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                     serviceProvider.GetService<ILoggerFactory>()));
         });
@@ -383,31 +387,32 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 apiKey,
-                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -417,25 +422,26 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credential,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         return builder.WithServices(c =>
@@ -443,9 +449,9 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
+                    modelId,
                     endpoint,
                     credential,
-                    modelId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                     serviceProvider.GetService<ILoggerFactory>()));
         });
@@ -456,31 +462,32 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credential,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 credential,
-                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -490,20 +497,21 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
     public static KernelBuilder WithAzureOpenAITextEmbeddingGeneration(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -511,8 +519,8 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
-                    openAIClient,
                     modelId,
+                    openAIClient,
                     serviceProvider.GetService<ILoggerFactory>()));
         });
     }
@@ -522,27 +530,28 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0011")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
-                openAIClient,
                 modelId,
+                openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
@@ -566,8 +575,8 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -599,8 +608,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGeneration(
@@ -627,7 +636,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -644,7 +653,7 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="modelId">The OpenAI model id.</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
@@ -655,7 +664,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
@@ -674,25 +683,26 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAIChatCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -717,23 +727,23 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
         {
@@ -757,24 +767,25 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAIChatCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         return builder.WithServices(c =>
@@ -800,22 +811,23 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credentials,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
-        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -840,19 +852,20 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static KernelBuilder WithAzureOpenAIChatCompletion(
         this KernelBuilder builder,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -870,19 +883,20 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         string deploymentName,
+        string modelId,
         OpenAIClient openAIClient,
-        string? serviceId = null,
-        string? modelId = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(deploymentName);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -974,8 +988,8 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -1008,8 +1022,8 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
             new(modelId,
@@ -1039,7 +1053,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         return builder.WithServices(c =>
@@ -1066,7 +1080,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         Func<IServiceProvider, object?, OpenAIChatCompletion> factory = (serviceProvider, _) =>
@@ -1087,6 +1101,7 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
@@ -1096,20 +1111,22 @@ public static class OpenAIServiceCollectionExtensions
     public static KernelBuilder WithAzureOpenAIImageGeneration(
         this KernelBuilder builder,
         string endpoint,
+        string modelId,
         string apiKey,
         string? serviceId = null,
         int maxRetryCount = 5,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAIImageGeneration(
                     endpoint,
+                    modelId,
                     apiKey,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                     serviceProvider.GetService<ILoggerFactory>(),
@@ -1122,6 +1139,7 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
@@ -1130,17 +1148,19 @@ public static class OpenAIServiceCollectionExtensions
     public static IServiceCollection AddAzureOpenAIImageGeneration(
         this IServiceCollection services,
         string endpoint,
+        string modelId,
         string apiKey,
         string? serviceId = null,
         int maxRetryCount = 5)
     {
         Verify.NotNull(services);
-        Verify.NotNull(endpoint);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAIImageGeneration(
                 endpoint,
+                modelId,
                 apiKey,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
@@ -1165,7 +1185,7 @@ public static class OpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return builder.WithServices(c =>
         {
@@ -1193,7 +1213,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(apiKey);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
             new OpenAIImageGeneration(

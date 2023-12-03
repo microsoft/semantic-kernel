@@ -21,14 +21,15 @@ public static class Example42_KernelBuilder
     {
         string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
         string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string azureOpenAIChatCompletionDeployment = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string azureOpenAIChatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string azureOpenAIChatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
         // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
         // with logging and an Azure OpenAI chat completion service configured.
         Kernel kernel1 = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+            .WithAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey)
             .Build();
 
         // For greater flexibility and to incorporate arbitrary services, KernelBuilder.WithServices
@@ -39,7 +40,7 @@ public static class Example42_KernelBuilder
             .WithServices(c =>
             {
                 c.AddHttpClient();
-                c.AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey);
+                c.AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
             })
             .Build();
 
@@ -68,7 +69,7 @@ public static class Example42_KernelBuilder
         var services = new ServiceCollection();
         services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddHttpClient();
-        services.AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey);
+        services.AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
         Kernel kernel4 = new(services.BuildServiceProvider());
 
         // Kernels can also be constructed and resolved via such a dependency injection container.

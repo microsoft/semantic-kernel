@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 
 /// <summary>
 /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and

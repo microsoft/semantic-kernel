@@ -57,15 +57,18 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     /// Create a new instance of Azure OpenAI image generation service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAIImageGeneration(
-        string? endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
+        string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNull(modelId);
+
         if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
@@ -82,6 +85,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
         this._maxRetryCount = maxRetryCount.Value;
         this._apiVersion = apiVersion;
         this._core.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(AIServiceExtensions.ApiVersionKey, apiVersion);
 
         this._core.RequestCreated += (_, request) => request.Headers.Add("api-key", this._apiKey);

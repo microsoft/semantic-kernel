@@ -14,6 +14,7 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionTests3
 {
+    private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
     private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
@@ -254,21 +255,21 @@ public sealed class KernelFunctionTests3
         [KernelFunction]
         public FunctionResult ReturnsFunctionResult()
         {
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]
         public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]
         public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]

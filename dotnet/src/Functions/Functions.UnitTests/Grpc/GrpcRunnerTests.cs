@@ -11,8 +11,8 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Grpc;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Grpc;
