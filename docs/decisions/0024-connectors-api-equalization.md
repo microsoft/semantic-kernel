@@ -1,7 +1,5 @@
 ## Proposal
 
-MODELCONTENT
-
 ### IChatCompletion
 
 Before:
@@ -29,18 +27,9 @@ After:
 ```csharp
 public interface IChatCompletion : IAIService
 {
-    ChatHistory CreateNewChat(string? standardizedPrompt = null, );
-
-    Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, ...);
-
-    //                                  vv Standardized Prompt (Parse <message> tags)
-    Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(string prompt, ...);
-
+    Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, ..> tags)
 
     IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, ...);
-
-    //                                                 vv Standardized Prompt (Parse <message> tags)
-    IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(string prompt, ...);
 }
 
 public static class ChatCompletionExtensions
@@ -95,10 +84,10 @@ public static class TextCompletionExtensions
 
 #### Current Streaming Abstractions
 
-| Streaming (Current)                              | Specialized\* Streaming (Current)                               |
-| ------------------------------------------------ | --------------------------------------------------------------- |
-| `StreamingChatContent` : `StreamingModelContent` | `OpenAIStreamingChatContent`                                    |
-| `StreamingTextContent` : `StreamingModelContent` | `OpenAIStreamingTextContent`, `HuggingFaceStreamingTextContent` |
+| Streaming (Current)                         | Specialized\* Streaming (Current)                               |
+| ------------------------------------------- | --------------------------------------------------------------- |
+| `StreamingChatContent` : `StreamingContent` | `OpenAIStreamingChatContent`                                    |
+| `StreamingTextContent` : `StreamingContent` | `OpenAIStreamingTextContent`, `HuggingFaceStreamingTextContent` |
 
 #### Non-Streaming Abstractions (Before and After)
 
@@ -106,29 +95,30 @@ public static class TextCompletionExtensions
 | ----------------------------- | ------------------------------ | --------------------------------------------- |
 | `IChatResult` : `IResultBase` | `ChatContent` : `ModelContent` | `OpenAIChatContent`                           |
 | `ITextResult` : `IResultBase` | `TextContent` : `ModelContent` | `OpenAITextContent`, `HuggingFaceTextContent` |
+| `ChatMessage`                 | `ChatContent` : `ModelContent` | `OpenAIChatContent`                           |
 
 _\*Specialized: Connector implementations that are specific to a single AI Service._
 
 ### New Non-Streaming Abstractions:
 
-`Complete` Prefix was chosen to represent a `non-streaming content` that contains all the information that the AI Service returned. (Metadata, Raw Content, etc.)
+`ModelContent` was chosen to represent a `non-streaming content` top-most abstraction which can be specialized and contains all the information that the AI Service returned. (Metadata, Raw Content, etc.)
 
 ```csharp
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
-public abstract class CompleteContent
+public abstract class ModelContent
 {
     /// <summary>
     /// Raw content object reference. (Breaking glass).
     /// </summary>
-    public object InnerContent { get; }
+    public object? InnerContent { get; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// ⚠️ (Token Usage + More Backend API Metadata) info will be in this dictionary. Old IResult.ModelResult) ⚠️
     /// </summary>
-    public Dictionary<string, object> Metadata { get; }
+    public Dictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CompleteContent"/> class.
@@ -138,7 +128,7 @@ public abstract class CompleteContent
     protected CompleteContent(object rawContent, Dictionary<string, object>? metadata = null)
     {
         this.InnerContent = rawContent;
-        this.Metadata = metadata ?? new();
+        this.Metadata = metadata;
     }
 }
 ```
@@ -147,7 +137,7 @@ public abstract class CompleteContent
 /// <summary>
 /// Chat content abstraction
 /// </summary>
-public class ChatContent : CompleteContent
+public class ChatContent : ModelContent
 {
     /// <summary>
     /// Role of the author of the message
@@ -176,7 +166,7 @@ public class ChatContent : CompleteContent
 /// <summary>
 /// Represents a text content result.
 /// </summary>
-public class TextContent : CompleteContent
+public class TextContent : ModelContent
 {
     /// <summary>
     /// The text content.
@@ -233,7 +223,7 @@ After
 
 ```csharp
 var reply = await chatGPT.GetChatContentAsync(chatHistory);
-chatHistory.AddMessage(reply); //Add a new method to ChatHistory that accepts a ChatContent
+chatHistory.AddMessage(reply);
 
 // OR
 chatHistory.AddAssistantMessage(reply.Content);
@@ -241,5 +231,4 @@ chatHistory.AddAssistantMessage(reply.Content);
 
 ### Clean-up
 
-Removal/Change of current non-Streaming Abstractions and Implementations by the new abstractions.
-`ChatContent` and `TextContent`.
+All old interfaces and classes will be removed in favor of the new ones.
