@@ -3,7 +3,6 @@
 // ReSharper disable once InconsistentNaming
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
