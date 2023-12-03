@@ -51,7 +51,7 @@ public static class Example52_ApimAuth
         var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
-            c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient);
+            c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, openAIClient);
         }).Build();
 
         // Load semantic plugin defined with prompt templates

@@ -25,6 +25,7 @@ public static class Example37_MultiStreamingCompletion
 
         var chatCompletion = new AzureOpenAIChatCompletion(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 

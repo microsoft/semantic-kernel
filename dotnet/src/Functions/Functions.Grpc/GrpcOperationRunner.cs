@@ -12,10 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 /// <summary>
 /// Runs gRPC operation runner.

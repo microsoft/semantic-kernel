@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.

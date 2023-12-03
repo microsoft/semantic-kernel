@@ -9,9 +9,9 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 

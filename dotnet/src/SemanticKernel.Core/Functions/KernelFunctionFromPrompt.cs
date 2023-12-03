@@ -115,52 +115,39 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override async Task<FunctionResult> InvokeCoreAsync(
+    protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(arguments);
 
-        try
+        (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        if (renderedEventArgs?.Cancel is true)
         {
-            (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-            if (renderedEventArgs?.Cancel ?? false)
-            {
-                return new FunctionResult(this.Name)
-                {
-                    IsCancellationRequested = true
-                };
-            }
-
-            var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
-
-            var result = new FunctionResult(this.Name, textContent.Text, kernel.Culture);
-            result.Metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-            result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.Text)}", textContent);
-            result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.InnerContent)}", textContent.InnerContent);
-
-            // Merge content metadata with the function result metadata
-            foreach (var kv in textContent.Metadata)
-            {
-                if (!result.Metadata.ContainsKey(kv.Key))
-                {
-                    result.Metadata.Add(kv.Key, kv.Value);
-                }
-                else
-                {
-                    result.Metadata[kv.Key] = kv.Value;
-                }
-            }
-
-            return result;
+            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+
+        var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+
+        var result = new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>());
+        result.Metadata!.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
+        result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.InnerContent)}", textContent.InnerContent);
+
+        // Merge content metadata with the function result metadata
+        foreach (var kv in textContent.Metadata)
         {
-            this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
-            throw;
+            if (!result.Metadata.ContainsKey(kv.Key))
+            {
+                result.Metadata.Add(kv.Key, kv.Value);
+            }
+            else
+            {
+                result.Metadata[kv.Key] = kv.Value;
+            }
         }
+
+        return result;
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(

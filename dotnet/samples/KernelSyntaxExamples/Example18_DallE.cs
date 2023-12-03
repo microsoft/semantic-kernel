@@ -95,9 +95,9 @@ public static class Example18_DallE
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
-            .WithAzureOpenAIImageGeneration(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureOpenAIImageGeneration(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
-            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();

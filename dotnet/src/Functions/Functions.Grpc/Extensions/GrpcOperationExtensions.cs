@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 #pragma warning disable RCS1175 // Unused 'this' parameter 'operation'.
 

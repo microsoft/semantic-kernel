@@ -161,11 +161,12 @@ public class FunctionFromPromptTests
         };
 
         // Act
-        var result = await sut.InvokeAsync(function, input);
+        KernelFunctionCanceledException ex = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => sut.InvokeAsync(function, input));
 
         // Assert
         Assert.True(invoked);
-        Assert.NotNull(result);
+        Assert.Same(function, ex.Function);
+        Assert.Null(ex.FunctionResult);
     }
 
     [Fact]
@@ -183,12 +184,13 @@ public class FunctionFromPromptTests
             e.Cancel = true;
         };
 
-        // Act
-        var result = await sut.InvokeAsync(function);
+        // Act/Assert
+        KernelFunctionCanceledException ex = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => sut.InvokeAsync(function));
 
         // Assert
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.Same(function, ex.Function);
     }
 
     [Fact]
@@ -211,7 +213,7 @@ public class FunctionFromPromptTests
         };
 
         // Act
-        var result = await sut.InvokeAsync(function);
+        await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => sut.InvokeAsync(function));
 
         // Assert
         Assert.Equal(0, invoked);

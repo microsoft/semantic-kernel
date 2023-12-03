@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 
 /// <summary>
 /// Options for REST API operation run.

@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
