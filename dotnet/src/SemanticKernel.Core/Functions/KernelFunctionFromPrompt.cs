@@ -135,18 +135,20 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.InnerContent)}", textContent.InnerContent);
 
         // Merge content metadata with the function result metadata
-        foreach (var kv in textContent.Metadata)
+        if (textContent.Metadata is not null)
         {
-            if (!result.Metadata.ContainsKey(kv.Key))
+            foreach (var kv in textContent.Metadata)
             {
-                result.Metadata.Add(kv.Key, kv.Value);
-            }
-            else
-            {
-                result.Metadata[kv.Key] = kv.Value;
+                if (!result.Metadata.ContainsKey(kv.Key))
+                {
+                    result.Metadata.Add(kv.Key, kv.Value);
+                }
+                else
+                {
+                    result.Metadata[kv.Key] = kv.Value;
+                }
             }
         }
-
         return result;
     }
 

@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -23,7 +25,7 @@ public static class OpenAIChatHistoryExtensions
     {
         Verify.NotNull(chatHistory);
 
-        chatHistory.AddMessage(s_functionAuthorRole, message, new Dictionary<string, string>(1) { { "Name", functionName } });
+        chatHistory.AddMessage(s_functionAuthorRole, message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatContent.FunctionNameProperty, functionName } });
     }
 
     /// <summary>
@@ -37,12 +39,13 @@ public static class OpenAIChatHistoryExtensions
         chatHistory!.AddMessage(
             AuthorRole.Assistant,
             message ?? string.Empty,
+            Encoding.UTF8,
             functionCall is not null ?
-                new Dictionary<string, string>(2)
+                new Dictionary<string, object?>(2)
                 {
-                    { "Name", functionCall.Name },
-                    { "Arguments", functionCall.Arguments }
+                    { OpenAIChatContent.FunctionNameProperty, functionCall.Name },
+                    { OpenAIChatContent.FunctionArgumentsProperty, functionCall.Arguments }
                 } :
-                null);
+            null);
     }
 }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -18,6 +19,7 @@ public sealed class TextContent : ModelContent
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
+    [JsonIgnore]
     public Encoding Encoding { get; set; }
 
     /// <summary>
@@ -27,7 +29,7 @@ public sealed class TextContent : ModelContent
     /// <param name="innerContent">Inner content</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
+    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

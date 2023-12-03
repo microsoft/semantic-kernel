@@ -130,7 +130,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello", new Dictionary<string, string>() { { "Name", "John Doe" } });
+        chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatContent.FunctionNameProperty, "John Doe" } });
 
         // Act
         await chatCompletion.GetChatContentsAsync(chatHistory, this._executionSettings);
@@ -151,7 +151,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello", new Dictionary<string, string>() { { "Name", "SayHello" }, { "Arguments", "{ \"user\": \"John Doe\" }" } });
+        chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatContent.FunctionNameProperty, "SayHello" }, { OpenAIChatContent.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
 
         // Act
         await chatCompletion.GetChatContentsAsync(chatHistory, this._executionSettings);

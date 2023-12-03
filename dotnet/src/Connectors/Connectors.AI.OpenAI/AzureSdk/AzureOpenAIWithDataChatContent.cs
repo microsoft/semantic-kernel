@@ -27,7 +27,7 @@ public sealed class AzureOpenAIWithDataChatContent : ChatContent
     /// </summary>
     /// <param name="chatChoice">Azure Chat With Data Choice</param>
     /// <param name="metadata">Additional metadata</param>
-    internal AzureOpenAIWithDataChatContent(ChatWithDataChoice chatChoice, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal AzureOpenAIWithDataChatContent(ChatWithDataChoice chatChoice, IDictionary<string, object?>? metadata = null)
         : base(default, string.Empty, chatChoice, System.Text.Encoding.UTF8, metadata)
     {
         // An assistant message content must be present, otherwise the chat is not valid.
@@ -37,6 +37,6 @@ public sealed class AzureOpenAIWithDataChatContent : ChatContent
         this.Role = new AuthorRole(chatMessage.Role);
 
         this.ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.Content;
-        this.InternalMetadata.Add(nameof(this.ToolContent), this.ToolContent);
+        this.Metadata.Add(nameof(this.ToolContent), this.ToolContent);
     }
 }

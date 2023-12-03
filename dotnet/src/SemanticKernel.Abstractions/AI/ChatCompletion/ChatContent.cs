@@ -24,6 +24,7 @@ public class ChatContent : ModelContent
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
+    [JsonIgnore]
     public Encoding Encoding { get; set; }
 
     /// <summary>
@@ -35,7 +36,7 @@ public class ChatContent : ModelContent
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatContent(AuthorRole role, string content, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
+    public ChatContent(AuthorRole role, string content, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
     {
         this.Role = role;
         this.Content = content;
