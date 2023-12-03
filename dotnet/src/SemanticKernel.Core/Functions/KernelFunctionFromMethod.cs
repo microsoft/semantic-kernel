@@ -76,12 +76,12 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override async Task<FunctionResult> InvokeCoreAsync(
+    protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken)
     {
-        return await this._function(null, kernel, arguments, cancellationToken).ConfigureAwait(false);
+        return this._function(null, kernel, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>

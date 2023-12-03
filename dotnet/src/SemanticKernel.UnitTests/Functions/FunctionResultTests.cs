@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -13,47 +14,30 @@ namespace SemanticKernel.UnitTests.Functions;
 public class FunctionResultTests
 {
     [Fact]
-    public void TryGetMetadataValueReturnsTrueWhenKeyExists()
+    public void DefaultsAreExpected()
     {
-        // Arrange
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
-
-        // Act
-        target.Metadata.Add(key, value);
-
-        // Assert
-        Assert.True(target.TryGetMetadataValue(key, out string result));
-        Assert.Equal(value, result);
+        var result = new FunctionResult("test");
+        Assert.Null(result.GetValue<object>());
+        Assert.Same(CultureInfo.InvariantCulture, result.Culture);
+        Assert.Null(result.Metadata);
     }
 
     [Fact]
-    public void TryGetMetadataValueReturnsFalseWhenKeyDoesNotExist()
+    public void PropertiesRoundtrip()
     {
-        // Arrange
-        string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName");
+        object resultValue = new();
+        CultureInfo culture = new("fr-FR");
+        IDictionary<string, object?> metadata = new Dictionary<string, object?>();
 
-        // Act,Assert
-        Assert.False(target.TryGetMetadataValue(key, out string result));
-        Assert.Null(result);
-    }
+        FunctionResult result = new("test", resultValue, culture);
+        Assert.Same(resultValue, result.GetValue<object>());
+        Assert.Same(culture, result.Culture);
+        Assert.Null(result.Metadata);
 
-    [Fact]
-    public void TryGetMetadataValueReturnsFalseWhenKeyExistsButTypeDoesNotMatch()
-    {
-        // Arrange
-        string key = Guid.NewGuid().ToString();
-        int value = 42;
-        FunctionResult target = new("functionName");
-
-        // Act
-        target.Metadata.Add(key, value);
-
-        // Assert
-        Assert.False(target.TryGetMetadataValue(key, out string result));
-        Assert.Null(result);
+        result = new("test", resultValue, culture, metadata);
+        Assert.Same(resultValue, result.GetValue<object>());
+        Assert.Same(culture, result.Culture);
+        Assert.Same(metadata, result.Metadata);
     }
 
     [Fact]
