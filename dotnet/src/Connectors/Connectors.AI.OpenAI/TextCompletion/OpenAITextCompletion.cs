@@ -68,6 +68,6 @@ public sealed class OpenAITextCompletion : ITextCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return this._core.GetStreamingTextUpdatesAsync(prompt, executionSettings, kernel, cancellationToken);
+        return this._core.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 }

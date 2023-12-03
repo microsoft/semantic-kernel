@@ -121,10 +121,11 @@ internal abstract class ClientCore
         }
 
         this.CaptureUsageDetails(responseData.Usage);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, choice)).ToList();
+        var metadata = GetResponseMetadata(responseData);
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, choice, Encoding.UTF8, metadata)).ToList();
     }
 
-    internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextUpdatesAsync(
+    internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -138,13 +139,13 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        Dictionary<string, object?>? responseMetadata = null;
+        Dictionary<string, object?>? metadata = null;
         await foreach (Completions completions in response)
         {
-            responseMetadata ??= GetResponseMetadata(completions);
+            metadata ??= GetResponseMetadata(completions);
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, choice, metadata);
             }
         }
     }
@@ -334,7 +335,7 @@ internal abstract class ClientCore
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
             // Stream any response 
-            Dictionary<string, object?>? responseMetadata = null;
+            Dictionary<string, object?>? metadata = null;
             StringBuilder? contentBuilder = null;
             string? functionName = null;
             StringBuilder? functionArgumentsBuilder = null;
@@ -342,7 +343,7 @@ internal abstract class ClientCore
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                responseMetadata ??= GetResponseMetadata(update);
+                metadata ??= GetResponseMetadata(update);
                 streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
@@ -368,7 +369,7 @@ internal abstract class ClientCore
                     }
                 }
 
-                yield return new OpenAIStreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
+                yield return new OpenAIStreamingChatContent(update, update.ChoiceIndex ?? 0, metadata);
             }
 
             // If we don't have a function call to invoke, we're done.

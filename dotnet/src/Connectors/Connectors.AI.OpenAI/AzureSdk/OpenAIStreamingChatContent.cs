@@ -42,6 +42,7 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
             chatUpdate.ContentUpdate,
             chatUpdate,
             choiceIndex,
+            Encoding.UTF8,
             metadata)
     {
         this.FunctionName = chatUpdate.FunctionName;
@@ -49,7 +50,7 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     }
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
+    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;

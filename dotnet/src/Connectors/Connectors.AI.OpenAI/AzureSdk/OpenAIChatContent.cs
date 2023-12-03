@@ -19,7 +19,7 @@ public sealed class OpenAIChatContent : ChatContent
     /// <param name="chatMessage">Azure SDK chat message</param>
     /// <param name="metadata">Additional metadata</param>
     internal OpenAIChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, Dictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, chatMessage, metadata)
+        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, chatMessage, System.Text.Encoding.UTF8, metadata)
     {
         this.FunctionCall = chatMessage.FunctionCall;
         this.Name = chatMessage.Name;
