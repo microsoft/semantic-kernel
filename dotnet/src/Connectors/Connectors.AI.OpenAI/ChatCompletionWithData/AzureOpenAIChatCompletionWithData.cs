@@ -108,6 +108,33 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        return (await this.GetChatContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+        {
+            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, Encoding.UTF8, streamingChatContent.Metadata);
+        }
+    }
+
     #region private ================================================================================
 
     private const string DefaultApiVersion = "2023-06-01-preview";
@@ -351,26 +378,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             this._config.CompletionEndpoint.TrimEnd('/'),
             this._config.CompletionModelId,
             apiVersion);
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        return (await this.GetChatContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
     #endregion
 }

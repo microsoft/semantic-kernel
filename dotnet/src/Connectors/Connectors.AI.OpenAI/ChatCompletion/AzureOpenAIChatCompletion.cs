@@ -155,4 +155,20 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         //this._core.LogActionDetails();
         //return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetStreamingChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 }

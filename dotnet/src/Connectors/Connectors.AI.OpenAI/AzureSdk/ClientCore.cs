@@ -21,6 +21,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using static System.Net.Mime.MediaTypeNames;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -311,7 +312,7 @@ internal abstract class ClientCore
         }
     }
 
-    internal async IAsyncEnumerable<OpenAIStreamingChatContent> GetChatStreamingUpdatesAsync(
+    internal async IAsyncEnumerable<OpenAIStreamingChatContent> GetStreamingChatContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -438,12 +439,15 @@ internal abstract class ClientCore
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
-        ChatHistory chat,
+        string prompt,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chatUpdate in this.GetChatStreamingUpdatesAsync(chat, executionSettings, kernel, cancellationToken))
+        OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        ChatHistory chat = ClientCore.CreateNewChat(prompt, chatSettings);
+
+        await foreach (var chatUpdate in this.GetStreamingChatContentsAsync(chat, executionSettings, kernel, cancellationToken))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
