@@ -5,14 +5,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-<<<<<<< HEAD
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
 using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
-=======
-using Microsoft.SemanticKernel.Functions.OpenAPI;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
->>>>>>> main
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
