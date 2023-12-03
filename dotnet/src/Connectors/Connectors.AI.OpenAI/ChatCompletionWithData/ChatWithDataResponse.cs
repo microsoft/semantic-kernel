@@ -36,3 +36,24 @@ internal sealed class ChatWithDataResponse
         this.Usage = usage;
     }
 }
+
+[Experimental("SKEXP0010")]
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
+internal sealed class ChatWithDataChoice
+{
+    [JsonPropertyName("messages")]
+    public IList<ChatWithDataMessage> Messages { get; set; } = Array.Empty<ChatWithDataMessage>();
+}
+
+[Experimental("SKEXP0010")]
+internal sealed class ChatWithDataUsage
+{
+    [JsonPropertyName("prompt_tokens")]
+    public int PromptTokens { get; set; }
+
+    [JsonPropertyName("completion_tokens")]
+    public int CompletionTokens { get; set; }
+
+    [JsonPropertyName("total_tokens")]
+    public int TotalTokens { get; set; }
+}
