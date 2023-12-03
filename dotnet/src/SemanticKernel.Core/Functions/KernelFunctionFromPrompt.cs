@@ -132,7 +132,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var result = new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>());
         result.Metadata!.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-        result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.InnerContent)}", textContent.InnerContent);
 
         // Merge content metadata with the function result metadata
         if (textContent.Metadata is not null)
