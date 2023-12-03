@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -18,6 +19,7 @@ public class StreamingTextContent : StreamingContent
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
+    [JsonIgnore]
     public Encoding Encoding { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public class StreamingTextContent : StreamingContent
     /// <param name="innerContent">Inner chunk object</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
+    [JsonConstructor]
     public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Text = text;

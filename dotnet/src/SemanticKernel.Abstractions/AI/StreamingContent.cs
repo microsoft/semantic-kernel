@@ -56,7 +56,7 @@ public abstract class StreamingContent
     {
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
-        this.Metadata = metadata ?? new Dictionary<string, object?>();
+        this.Metadata = metadata;
     }
 
     /// <summary>

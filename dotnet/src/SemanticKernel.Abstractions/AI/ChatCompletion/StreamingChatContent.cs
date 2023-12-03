@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -23,6 +24,7 @@ public abstract class StreamingChatContent : StreamingContent
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
+    [JsonIgnore]
     public Encoding Encoding { get; set; }
 
     /// <summary>
@@ -34,6 +36,7 @@ public abstract class StreamingChatContent : StreamingContent
     /// <param name="choiceIndex"></param>
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
     protected StreamingChatContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Role = role;
