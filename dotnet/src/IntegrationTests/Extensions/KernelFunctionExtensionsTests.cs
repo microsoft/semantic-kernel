@@ -71,31 +71,24 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
+            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
         }
 
         public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
-    }
 
-    internal sealed class RedirectTextCompletionResult : ITextResult
-    {
-        private readonly string _completion;
-
-        public RedirectTextCompletionResult(string completion)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            this._completion = completion;
+            throw new NotImplementedException();
         }
 
-        public ModelResult ModelResult => new(this._completion);
-
-        public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(this._completion);
+            throw new NotImplementedException();
         }
     }
 }

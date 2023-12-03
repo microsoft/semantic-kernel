@@ -153,6 +153,7 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._core.GetChatAsTextStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
 }

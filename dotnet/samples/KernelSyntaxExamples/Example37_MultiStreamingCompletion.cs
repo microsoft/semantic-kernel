@@ -79,14 +79,14 @@ public static class Example37_MultiStreamingCompletion
     private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var messagePerChoice = new Dictionary<int, string>();
-        await foreach (var textUpdate in chatCompletion.GetStreamingContentAsync<OpenAIStreamingChatContent>(prompt, executionSettings))
+        await foreach (var textUpdate in chatCompletion.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, textUpdate.ChoiceIndex * consoleLinesPerResult);
 
-            if (textUpdate.Content is { Length: > 0 })
+            if (textUpdate.Text is { Length: > 0 })
             {
-                newContent += textUpdate.Content;
+                newContent += textUpdate.Text;
             }
 
             if (!messagePerChoice.ContainsKey(textUpdate.ChoiceIndex))

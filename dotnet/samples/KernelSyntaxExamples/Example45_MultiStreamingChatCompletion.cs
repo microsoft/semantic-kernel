@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -70,8 +71,8 @@ public static class Example45_MultiStreamingChatCompletion
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
-        var chatHistory = chatCompletion.CreateNewChat(prompt);
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings))
+        var chatHistory = new ChatHistory(prompt);
+        await foreach (var chatUpdate in chatCompletion.GetStreamingChatContentsAsync(chatHistory, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);

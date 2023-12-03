@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Represents a text content result.
 /// </summary>
-public class TextContent : ModelContent
+public sealed class TextContent : ModelContent
 {
     /// <summary>
     /// The text content.

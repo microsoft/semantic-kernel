@@ -32,6 +32,6 @@ public class OpenAIStreamingTextContent : StreamingTextContent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Text;
+        return this.Text ?? string.Empty;
     }
 }

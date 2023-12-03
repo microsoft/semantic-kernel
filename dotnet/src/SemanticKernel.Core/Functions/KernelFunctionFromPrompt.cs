@@ -166,10 +166,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var genericChunk in textCompletion.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return genericChunk;
+            yield return (T)(object)genericChunk;
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.

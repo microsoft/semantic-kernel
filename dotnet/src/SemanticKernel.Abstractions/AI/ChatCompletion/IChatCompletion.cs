@@ -14,8 +14,11 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public interface IChatCompletion : IAIService
 {
     /// <summary>
-    /// Get chat completion results for the prompt and settings.
+    /// Get chat multiple chat content choices for the prompt and settings.
     /// </summary>
+    /// <remarks>
+    /// This should be used when the settings request for more than one choice.
+    /// </remarks>
     /// <param name="chat">The chat history context.</param>
     /// <param name="executionSettings">Request settings for the completion API</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -28,12 +31,8 @@ public interface IChatCompletion : IAIService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get streaming results for the chat history provided using the specified request settings.
-    /// Each modality may support for different types of streaming result.
+    /// Get streaming chat contents for the chat history provided using the specified request settings.
     /// </summary>
-    /// <remarks>
-    /// Usage of this method may be more efficient if the connector has a dedicated API to return this result without extra allocations for StreamingResultChunk abstraction.
-    /// </remarks>
     /// <exception cref="NotSupportedException">Throws if the specified type is not the same or fail to cast</exception>
     /// <param name="chatHistory">The chat history to complete.</param>
     /// <param name="executionSettings">Request settings for the completion API</param>

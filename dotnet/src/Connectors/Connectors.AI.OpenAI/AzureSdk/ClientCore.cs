@@ -437,6 +437,17 @@ internal abstract class ClientCore
         }
     }
 
+    internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
+        ChatHistory chat,
+        PromptExecutionSettings? executionSettings,
+        Kernel? kernel,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var chatUpdate in this.GetChatStreamingUpdatesAsync(chat, executionSettings, kernel, cancellationToken))
+        {
+            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, chatUpdate.Metadata);
+        }
+    }
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
