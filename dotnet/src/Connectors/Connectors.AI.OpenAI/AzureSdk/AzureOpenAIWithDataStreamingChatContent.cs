@@ -11,8 +11,11 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Streaming chat result update.
+/// Azure Open AI WithData Specialized streaming chat content.
 /// </summary>
+/// <remarks>
+/// Represents a chat content chunk that was streamed from the remote model.
+/// </remarks>
 [Experimental("SKEXP0010")]
 public sealed class AzureOpenAIWithDataStreamingChatContent : StreamingChatContent
 {

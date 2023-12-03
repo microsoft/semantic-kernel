@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
-/// Streaming text result update.
+/// Abstraction of text content chunks when using streaming from <see cref="ITextCompletion"/> interface.
 /// </summary>
 public class StreamingTextContent : StreamingContent
 {

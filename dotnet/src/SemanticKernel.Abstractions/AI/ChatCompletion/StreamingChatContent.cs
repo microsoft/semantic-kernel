@@ -7,8 +7,11 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
-/// Streaming chat result update.
+/// Abstraction of chat content chunks when using streaming from <see cref="IChatCompletion"/> interface.
 /// </summary>
+/// <remarks>
+/// Represents a chat content chunk that was streamed from the remote model.
+/// </remarks>
 public abstract class StreamingChatContent : StreamingContent
 {
     /// <summary>

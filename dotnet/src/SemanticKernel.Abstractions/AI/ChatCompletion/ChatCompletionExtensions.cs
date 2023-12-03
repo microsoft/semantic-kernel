@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
-/// Class sponsor that holds extension methods for IChatCompletionV2 interface.
+/// Class sponsor that holds extension methods for <see cref="IChatCompletion"/> interface.
 /// </summary>
 public static class ChatCompletionExtensions
 {
@@ -38,7 +38,7 @@ public static class ChatCompletionExtensions
             return chatCompletion.GetChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
         }
 
-        // Otherwise, use the connector implementation to create a new chat history
+        //Otherwise, use the prompt as the chat system message
         return chatCompletion.GetChatContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
     }
 
@@ -61,7 +61,7 @@ public static class ChatCompletionExtensions
             .Single();
 
     /// <summary>
-    /// Get a single chat content for the prompt and settings.
+    /// Get a single chat content for the chat history and settings provided.
     /// </summary>
     /// <param name="chatCompletion"></param>
     /// <param name="chatHistory">The chat history to complete.</param>
@@ -101,7 +101,7 @@ public static class ChatCompletionExtensions
             return chatCompletion.GetStreamingChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
         }
 
-        // Otherwise, use the connector implementation to create a new chat history
+        //Otherwise, use the prompt as the chat system message
         return chatCompletion.GetStreamingChatContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
     }
 }

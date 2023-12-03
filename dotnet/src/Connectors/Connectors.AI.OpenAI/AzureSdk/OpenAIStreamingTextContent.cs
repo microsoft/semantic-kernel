@@ -7,8 +7,11 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Streaming text result update.
+/// Azure OpenAI and OpenAI Specialized streaming text content.
 /// </summary>
+/// <remarks>
+/// Represents a text content chunk that was streamed from the remote model.
+/// </remarks>
 public sealed class OpenAIStreamingTextContent : StreamingTextContent
 {
     /// <summary>

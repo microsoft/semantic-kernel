@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
-/// Class sponsor that holds extension methods for ITextCompletionV2 interface.
+/// Class sponsor that holds extension methods for <see cref="ITextCompletion"/> interface.
 /// </summary>
 public static class TextCompletionExtensions
 {
