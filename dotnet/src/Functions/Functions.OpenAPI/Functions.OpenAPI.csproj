@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Functions.OpenAPI</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenAPI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -9,8 +9,8 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - OpenAPI Functions</Title>
-    <Description>Semantic Kernel OpenAPI Functions</Description>
+    <Title>Semantic Kernel - OpenAPI Plugins</Title>
+    <Description>Semantic Kernel OpenAPI Plugins</Description>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />

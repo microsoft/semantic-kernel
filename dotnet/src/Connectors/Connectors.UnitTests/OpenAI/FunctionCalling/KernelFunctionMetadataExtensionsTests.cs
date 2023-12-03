@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 public sealed class KernelFunctionMetadataExtensionsTests
 {
     [Fact]
@@ -149,7 +150,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     {
         // Arrange
         var kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<MyPlugin>("MyPlugin"))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<MyPlugin>("MyPlugin"))
             .Build();
 
         var functionView = kernel.Plugins["MyPlugin"].First().Metadata;
