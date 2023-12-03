@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// OpenAI specialized chat content
 /// </summary>
-public class OpenAIChatContent : ChatContent
+public sealed class OpenAIChatContent : ChatContent
 {
     private readonly Azure.AI.OpenAI.ChatMessage _chatMessage;
 

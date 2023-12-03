@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -89,72 +88,6 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null) =>
         ClientCore.CreateNewChat(instructions);
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        ChatHistory chat,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //this._core.LogActionDetails();
-        //return this._core.GetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //Verify.NotNullOrWhiteSpace(prompt);
-        //this._core.LogActionDetails();
-        //return this._core.GetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //var chatHistory = this.CreateChatHistory(prompt, executionSettings);
-        //return this._core.GetChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //var chatHistory = this.CreateChatHistory(prompt, executionSettings);
-        //return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //this._core.LogActionDetails();
-        //return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
-    }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

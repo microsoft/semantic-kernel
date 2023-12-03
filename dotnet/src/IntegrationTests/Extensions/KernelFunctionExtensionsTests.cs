@@ -76,17 +76,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
             return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

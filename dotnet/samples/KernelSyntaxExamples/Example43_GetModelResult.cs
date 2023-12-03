@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -43,8 +41,6 @@ public static class Example43_GetModelResult
 
         // Using the Kernel InvokeAsync
         var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
-        var modelResults = result.GetModelResults() ?? Enumerable.Empty<ModelResult>();
-
         Console.WriteLine(result.GetValue<string>());
         Console.WriteLine(functionResult.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();

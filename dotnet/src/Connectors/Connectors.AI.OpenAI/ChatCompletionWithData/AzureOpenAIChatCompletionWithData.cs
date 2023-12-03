@@ -59,56 +59,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         => InternalCreateNewChat(instructions);
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        ChatHistory chat,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
     public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this.InternalGetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
 

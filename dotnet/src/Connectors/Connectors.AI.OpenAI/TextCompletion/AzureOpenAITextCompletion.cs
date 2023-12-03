@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -20,6 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 public sealed class AzureOpenAITextCompletion : ITextCompletion
 {
     private readonly AzureOpenAIClientCore _core;
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
@@ -80,29 +82,6 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>

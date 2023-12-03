@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -19,6 +18,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 public sealed class OpenAITextCompletion : ITextCompletion
 {
     private readonly OpenAIClientCore _core;
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
@@ -55,33 +57,6 @@ public sealed class OpenAITextCompletion : ITextCompletion
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-
-        //this._core.LogActionDetails();
-        //return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-        //return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>

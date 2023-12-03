@@ -70,7 +70,7 @@ public static class Example16_CustomLLM
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
-            result.GetModelResults(),
+            result.Metadata,
             new JsonSerializerOptions() { WriteIndented = true }
         ));
     }
@@ -121,16 +121,6 @@ public static class Example16_CustomLLM
         public string? ModelId { get; private set; }
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
-
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 
         public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {

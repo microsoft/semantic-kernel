@@ -207,12 +207,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private readonly PromptTemplateConfig _promptConfig;
     private readonly IPromptTemplate _promptTemplate;
 
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 

@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// OpenAI specialized with data chat content
 /// </summary>
 [Experimental("SKEXP0010")]
-public class AzureOpenAIWithDataChatContent : ChatContent
+public sealed class AzureOpenAIWithDataChatContent : ChatContent
 {
     /// <summary>
     /// Content from data source, including citations.

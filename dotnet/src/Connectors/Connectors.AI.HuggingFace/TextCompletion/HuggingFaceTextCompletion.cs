@@ -150,18 +150,5 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 }

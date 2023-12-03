@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// <summary>
 /// Streaming text result update.
 /// </summary>
-public class OpenAIStreamingTextContent : StreamingTextContent
+public sealed class OpenAIStreamingTextContent : StreamingTextContent
 {
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingTextContent"/> class.
