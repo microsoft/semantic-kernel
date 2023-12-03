@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
@@ -20,11 +21,6 @@ public interface IAgent
     public string? Description { get; }
 
     /// <summary>
-    /// Gets the agent's model.
-    /// </summary>
-    public string Model { get; }
-
-    /// <summary>
     /// Gets the agent's instructions.
     /// </summary>
     public string Instructions { get; }
@@ -35,17 +31,22 @@ public interface IAgent
     internal Kernel Kernel { get; }
 
     /// <summary>
+    /// The chat completion service.
+    /// </summary>
+    internal IChatCompletion ChatCompletion { get; }
+
+    /// <summary>
     /// Tools defined for run execution.
     /// </summary>
     public KernelPluginCollection Plugins { get; }
 
     /// <summary>
-    /// The chat completion service.
-    /// </summary>
-    IChatCompletion ChatCompletion { get; }
-
-    /// <summary>
     /// Create a new conversable thread.
     /// </summary>
-    public IThread CreateThread(string initialUserMessage);
+    public IThread CreateThread();
+
+    /// <summary>
+    /// Create a new conversable thread using actual kernel arguments.
+    /// </summary>
+    internal IThread CreateThread(IAgent initatedAgent, Dictionary<string, object?> arguments);
 }

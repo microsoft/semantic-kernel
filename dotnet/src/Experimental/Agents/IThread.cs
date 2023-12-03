@@ -10,15 +10,8 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 public interface IThread
 {
     /// <summary>
-    /// Add a message from the user to the thread.
-    /// </summary>
-    /// <param name="message">The user message.</param>
-    /// <returns></returns>
-    public void AddUserMessage(string message);
-
-    /// <summary>
     /// Invokes the thread.
     /// </summary>
     /// <returns></returns>
-    public Task<string> InvokeAsync();
+    public Task<string> InvokeAsync(string userMessage);
 }

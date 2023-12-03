@@ -17,6 +17,7 @@ internal static class TestConfig
     public static string AzureOpenAIAPIKey =>
         Configuration.GetValue<string>("AzureOpenAIAPIKey") ??
         throw new TestClassException("Missing Azure OpenAI API Key.");
+
     public static string AzureOpenAIDeploymentName =>
         Configuration.GetValue<string>("AzureOpenAIDeploymentName") ??
         throw new TestClassException("Missing Azure OpenAI deployment name.");

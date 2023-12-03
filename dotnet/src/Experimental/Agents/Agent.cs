@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
@@ -15,8 +16,6 @@ internal class Agent : IAgent
     public string? Name => this._model.Name;
 
     public string? Description => this._model.Description;
-
-    public string Model => this._model.Model;
 
     public string Instructions => this._model.Instructions;
 
@@ -38,8 +37,13 @@ internal class Agent : IAgent
         this._kernel = kernel;
     }
 
-    public IThread CreateThread(string initialUserMessage)
+    public IThread CreateThread()
     {
-        return new Thread(this, initialUserMessage);
+        return new Thread(this);
+    }
+
+    IThread IAgent.CreateThread(IAgent initatedAgent, Dictionary<string, object?> arguments)
+    {
+        return new Thread(this, initatedAgent.Name, arguments);
     }
 }

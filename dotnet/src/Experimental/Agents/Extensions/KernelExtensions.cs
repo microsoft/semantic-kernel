@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using System.Linq;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
@@ -11,7 +10,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 /// </summary>
 internal static class KernelExtensions
 {
-    public static void ImportPluginFromAgent(this Kernel kernel, AgentAssistantModel model)
+    public static void ImportPluginFromAgent(this Kernel kernel, IAgent agent, AgentAssistantModel model)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(model, nameof(model));
@@ -19,10 +18,10 @@ internal static class KernelExtensions
 
         var agentConversationPlugin = new KernelPlugin(model.Agent.Name, model.Agent.Description);
 
-        agentConversationPlugin.AddFunctionFromMethod(async (string input) =>
+        agentConversationPlugin.AddFunctionFromMethod(async (string input, KernelArguments args) =>
         {
-            var thread = model.Agent.CreateThread(input);
-            return await thread.InvokeAsync().ConfigureAwait(false);
+            var thread = model.Agent.CreateThread(agent, args.ToDictionary());
+            return await thread.InvokeAsync(input).ConfigureAwait(false);
         },
         functionName: "Ask",
         description: model.Description,
@@ -40,7 +39,7 @@ internal static class KernelExtensions
             ParameterType = typeof(string),
             Description = "The response from the assistant."
         },
-        loggerFactory: kernel.Services.GetService<LoggerFactory>());
+        loggerFactory: kernel.LoggerFactory);
 
         kernel.Plugins.Add(agentConversationPlugin);
     }
