@@ -22,9 +22,9 @@ public static class Example61_MultipleLLMs
         string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
