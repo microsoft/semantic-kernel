@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
-/// Represents a text content result.
+/// Represents text content return from a <see cref="ITextCompletion" /> service.
 /// </summary>
 public sealed class TextContent : ModelContent
 {
