@@ -34,8 +34,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 internal abstract class ClientCore
 {
     private const int MaxResultsPerPrompt = 128;
-    private const string NameProperty = "Name";
-    private const string ArgumentsProperty = "Arguments";
 
     internal ClientCore(ILogger? logger = null)
     {
@@ -617,13 +615,19 @@ internal abstract class ClientCore
         {
             var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
-            if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
+            if (message is OpenAIChatContent openAIChatContent)
             {
-                azureMessage.Name = name;
+                azureMessage.FunctionCall = openAIChatContent.FunctionCall;
+                azureMessage.Name = openAIChatContent.Name;
+            }
+            else
+            if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionNameProperty, out object? name) is true)
+            {
+                azureMessage.Name = name?.ToString() ?? string.Empty;
 
-                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out string? arguments) is true)
+                if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionArgumentsProperty, out object? arguments) is true)
                 {
-                    azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                    azureMessage.FunctionCall = new FunctionCall(azureMessage.Name, arguments?.ToString());
                 }
             }
 

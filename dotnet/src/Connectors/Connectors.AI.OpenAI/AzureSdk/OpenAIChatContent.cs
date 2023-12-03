@@ -11,7 +11,15 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// </summary>
 public sealed class OpenAIChatContent : ChatContent
 {
-    private readonly Azure.AI.OpenAI.ChatMessage _chatMessage;
+    /// <summary>
+    /// The metadata key for the <see cref="FunctionCall"/> name property.
+    /// </summary>
+    public const string FunctionNameProperty = $"{nameof(OpenAIChatContent.FunctionCall)}.{nameof(OpenAIChatContent.FunctionCall.Name)}";
+
+    /// <summary>
+    /// The metadata key for the <see cref="FunctionCall"/> arguments property.
+    /// </summary>
+    public const string FunctionArgumentsProperty = $"{nameof(OpenAIChatContent.FunctionCall)}.{nameof(OpenAIChatContent.FunctionCall.Arguments)}";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatContent"/> class.
@@ -23,7 +31,10 @@ public sealed class OpenAIChatContent : ChatContent
     {
         this.FunctionCall = chatMessage.FunctionCall;
         this.Name = chatMessage.Name;
-        this._chatMessage = chatMessage;
+        this.InternalMetadata.Add(nameof(this.Name), chatMessage.Name);
+        this.InternalMetadata.Add(nameof(this.FunctionCall), chatMessage.FunctionCall);
+        this.InternalMetadata.Add(FunctionNameProperty, chatMessage.FunctionCall?.Name);
+        this.InternalMetadata.Add(FunctionArgumentsProperty, chatMessage.FunctionCall?.Arguments);
     }
 
     /// <summary>
@@ -45,10 +56,9 @@ public sealed class OpenAIChatContent : ChatContent
     public OpenAIFunctionResponse? GetOpenAIFunctionResponse()
     {
         OpenAIFunctionResponse? functionResponse = null;
-        var functionCall = this._chatMessage.FunctionCall;
-        if (functionCall is not null)
+        if (this.FunctionCall is not null)
         {
-            functionResponse = OpenAIFunctionResponse.FromFunctionCall(functionCall);
+            functionResponse = OpenAIFunctionResponse.FromFunctionCall(this.FunctionCall);
         }
         return functionResponse;
     }

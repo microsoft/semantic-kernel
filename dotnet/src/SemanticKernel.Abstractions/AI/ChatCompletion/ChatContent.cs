@@ -42,16 +42,6 @@ public class ChatContent : ModelContent
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
-    /// <summary>
-    /// Creates a new instance of the <see cref="ChatContent"/> class
-    /// </summary>
-    /// <param name="chatMessage">Chat message</param>
-    /// <param name="encoding">Encoding of the text</param>
-    /// <param name="metadata">Dictionary for any additional metadata</param>
-    public ChatContent(ChatMessage chatMessage, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : this(chatMessage.Role, chatMessage.Content, chatMessage, encoding, metadata)
-    {
-    }
-
     /// <inheritdoc/>
     public override string ToString()
     {

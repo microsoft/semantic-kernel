@@ -37,5 +37,6 @@ public sealed class AzureOpenAIWithDataChatContent : ChatContent
         this.Role = new AuthorRole(chatMessage.Role);
 
         this.ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.Content;
+        this.InternalMetadata.Add(nameof(this.ToolContent), this.ToolContent);
     }
 }
