@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
@@ -10,20 +11,21 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 /// </summary>
 internal static class KernelExtensions
 {
-    public static void ImportPluginFromAgent(this Kernel kernel, IAgent agent)
+    public static void ImportPluginFromAgent(this Kernel kernel, AgentAssistantModel model)
     {
         Verify.NotNull(kernel, nameof(kernel));
-        Verify.NotNull(agent, nameof(agent));
+        Verify.NotNull(model, nameof(model));
+        Verify.NotNull(model.Agent, nameof(model.Agent));
 
-        var agentConversationPlugin = new KernelPlugin(agent.Name, agent.Description);
+        var agentConversationPlugin = new KernelPlugin(model.Agent.Name, model.Agent.Description);
 
         agentConversationPlugin.AddFunctionFromMethod(async (string input) =>
         {
-            var thread = agent.CreateThread(input);
+            var thread = model.Agent.CreateThread(input);
             return await thread.InvokeAsync().ConfigureAwait(false);
         },
         functionName: "Ask",
-        description: $"Resolves maths problems.",
+        description: model.Description,
         parameters: new KernelParameterMetadata[]
         {
             new("input")
@@ -31,7 +33,7 @@ internal static class KernelExtensions
                 IsRequired = true,
                 ParameterType = typeof(string),
                 DefaultValue = "",
-                Description = "The word problem to solve in 2-3 sentences. Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it."
+                Description = model.InputDescription
             }
         }, returnParameter: new()
         {

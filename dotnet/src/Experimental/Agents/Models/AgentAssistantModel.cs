@@ -4,5 +4,10 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 internal class AgentAssistantModel
 {
-    public string Instructions { get; set; } = string.Empty;
+    public IAgent Agent { get; set; }
+
+    public string Description { get; set; }
+
+    public string InputDescription { get; set; }
+
 }

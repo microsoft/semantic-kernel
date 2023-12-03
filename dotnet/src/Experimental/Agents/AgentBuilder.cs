@@ -15,7 +15,7 @@ public partial class AgentBuilder
 
     private Kernel? _kernel;
 
-    private readonly List<IAgent> _agents;
+    private readonly List<AgentAssistantModel> _agents;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentBuilder"/> class.
@@ -23,7 +23,7 @@ public partial class AgentBuilder
     public AgentBuilder()
     {
         this._model = new AgentModel();
-        this._agents = new List<IAgent>();
+        this._agents = new List<AgentAssistantModel>();
     }
 
     /// <summary>
@@ -106,24 +106,17 @@ public partial class AgentBuilder
     /// Defines the agent's collaborative assistant.
     /// </summary>
     /// <param name="agent">The assistant to add to this agent.</param>
+    /// <param name="agentDescription">The agent description for the assistant.</param>
+    /// <param name="inputDescription">The agent input description for the assistant.</param>
     /// <returns></returns>
-    public AgentBuilder WithAgent(IAgent agent)
+    public AgentBuilder WithAgent(IAgent agent, string agentDescription, string inputDescription)
     {
-        this._agents.Add(agent);
-        return this;
-    }
-
-    /// <summary>
-    /// Defines the agent's collaborative assistants.
-    /// </summary>
-    /// <param name="agents">The assistants to add to this agent.</param>
-    /// <returns></returns>
-    public AgentBuilder WithAgents(IEnumerable<IAgent> agents)
-    {
-        foreach (IAgent agent in agents)
+        this._agents.Add(new AgentAssistantModel
         {
-            this._agents.Add(agent);
-        }
+            Agent = agent,
+            Description = agentDescription,
+            InputDescription = inputDescription
+        });
 
         return this;
     }

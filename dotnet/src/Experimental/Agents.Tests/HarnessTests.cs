@@ -100,7 +100,9 @@ public class HarnessTests
                     .WithDescription("A butler that helps humans.")
                     .WithInstructions("Act as a butler.\nProvide feedback or advice to the user if needed.\nContact agents if necessary. Respond to user like jarvis from Iron man.")
                     .WithKernel(butlerKernel)
-                    .WithAgent(mathmatician)
+                    .WithAgent(mathmatician,
+                        agentDescription: "Resolves maths problems.",
+                        inputDescription: "The word problem to solve in 2-3 sentences. Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.")
                     .Build();
 
         var thread = butler.CreateThread("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?");
