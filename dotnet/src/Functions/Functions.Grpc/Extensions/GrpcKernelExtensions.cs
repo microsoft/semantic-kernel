@@ -9,10 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
-using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Web;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
 
 /// <summary>
 /// This class provides methods for serializing values of array parameters.

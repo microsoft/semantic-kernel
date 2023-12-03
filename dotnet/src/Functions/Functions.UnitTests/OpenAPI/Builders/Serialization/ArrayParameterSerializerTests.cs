@@ -2,7 +2,7 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;

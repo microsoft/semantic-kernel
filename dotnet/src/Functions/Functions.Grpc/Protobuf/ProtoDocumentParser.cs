@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Google.Protobuf.Reflection;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+namespace Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
 /// <summary>
 /// Parser for .proto definition documents.
