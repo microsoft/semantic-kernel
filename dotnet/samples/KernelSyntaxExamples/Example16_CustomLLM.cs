@@ -128,7 +128,7 @@ public static class Example16_CustomLLM
             {
                 await Task.Delay(50, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-                yield return new MyStreamingContent(word);
+                yield return new MyStreamingContent($"{word} ");
             }
         }
 
