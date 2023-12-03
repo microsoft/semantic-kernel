@@ -300,7 +300,7 @@ public abstract class KernelFunction
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture, eventArgs.Metadata ?? result.Metadata);
+            result = new FunctionResult(this, eventArgs.ResultValue, result.Culture, eventArgs.Metadata ?? result.Metadata);
         }
 
         return (eventArgs, result);

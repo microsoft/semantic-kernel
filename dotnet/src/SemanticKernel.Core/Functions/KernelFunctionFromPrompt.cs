@@ -136,7 +136,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
         return new FunctionResult(
-            this.Name,
+            this,
             completion,
             kernel.Culture,
             new Dictionary<string, object?>(2)

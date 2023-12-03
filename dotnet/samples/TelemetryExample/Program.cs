@@ -84,7 +84,7 @@ public sealed class Program
         var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)

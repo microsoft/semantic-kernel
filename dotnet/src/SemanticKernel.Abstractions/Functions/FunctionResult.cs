@@ -16,33 +16,24 @@ public sealed class FunctionResult
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
-    /// <param name="functionName">Name of executed function.</param>
-    public FunctionResult(string functionName) : this(functionName, null, CultureInfo.InvariantCulture)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionResult"/> class.
-    /// </summary>
-    /// <param name="functionName">Name of executed function.</param>
-    /// <param name="value">Function result object.</param>
-    /// <param name="culture">The culture configured on the Kernel that executed the function.</param>
+    /// <param name="function">The <see cref="KernelFunction"/> whose result is represented by this instance.</param>
+    /// <param name="value">The resulting object of the function's invocation.</param>
+    /// <param name="culture">The culture configured on the <see cref="Kernel"/> that executed the function.</param>
     /// <param name="metadata">Metadata associated with the function's execution</param>
-    public FunctionResult(string functionName, object? value, CultureInfo culture, IDictionary<string, object?>? metadata = null)
+    public FunctionResult(KernelFunction function, object? value = null, CultureInfo? culture = null, IDictionary<string, object?>? metadata = null)
     {
-        Verify.NotNullOrWhiteSpace(functionName);
-        Verify.NotNull(culture);
+        Verify.NotNull(function);
 
-        this.FunctionName = functionName;
+        this.Function = function;
         this.Value = value;
-        this.Culture = culture;
+        this.Culture = culture ?? CultureInfo.InvariantCulture;
         this.Metadata = metadata;
     }
 
     /// <summary>
-    /// Gets the name of the invoked function.
+    /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
     /// </summary>
-    public string FunctionName { get; }
+    public KernelFunction Function { get; }
 
     /// <summary>
     /// Gets any metadata associated with the function's execution.
@@ -50,8 +41,12 @@ public sealed class FunctionResult
     public IDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
-    /// Function result type (support inspection).
+    /// Gets the <see cref="Type"/> of the function's result.
     /// </summary>
+    /// <remarks>
+    /// This or a base type is the type expected to be passed as the generic
+    /// argument to <see cref="GetValue{T}"/>.
+    /// </remarks>
     public Type? ValueType => this.Value?.GetType();
 
     /// <summary>
