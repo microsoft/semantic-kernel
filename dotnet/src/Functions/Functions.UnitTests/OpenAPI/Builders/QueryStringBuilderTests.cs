@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
+
 public class QueryStringBuilderTests
 {
     [Fact]

@@ -7,10 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - using planners namespace
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
 internal static class PlannerInstrumentation

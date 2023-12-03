@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
@@ -149,7 +149,7 @@ public static class OpenApiKernelExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(OpenApiKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)),
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -212,7 +212,7 @@ public static class OpenApiKernelExtensions
     {
         using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         var parser = new OpenApiDocumentParser(loggerFactory);
 

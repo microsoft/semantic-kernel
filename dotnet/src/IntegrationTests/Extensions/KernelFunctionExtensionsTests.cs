@@ -9,12 +9,11 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Extensions;
+namespace SemanticKernel.IntegrationTests;
 
 public sealed class KernelFunctionExtensionsTests : IDisposable
 {
@@ -28,8 +27,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
@@ -46,8 +45,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";

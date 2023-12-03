@@ -12,10 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -124,7 +121,7 @@ public abstract class KernelFunction
         cancellationToken.ThrowIfCancellationRequested();
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
@@ -140,14 +137,13 @@ public abstract class KernelFunction
         {
             // Invoke pre hook, and stop if skipping requested.
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-            if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+            if (invokingEventArgs is not null && invokingEventArgs.Cancel)
             {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
+                logger.LogTrace("Function canceled prior to invocation.");
 
                 return new FunctionResult(this.Name)
                 {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
+                    IsCancellationRequested = invokingEventArgs.Cancel,
                 };
             }
 
@@ -161,12 +157,11 @@ public abstract class KernelFunction
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Function invocation {Completion}: {Result}",
-                    invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed",
+                    invokedEventArgs?.Cancel ?? false ? "canceled" : "completed",
                     result.Value);
             }
 
-            result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
-            result.IsRepeatRequested = invokedEventArgs?.IsRepeatRequested ?? false;
+            result.IsCancellationRequested = invokedEventArgs?.Cancel ?? false;
 
             return result;
         }
@@ -241,7 +236,7 @@ public abstract class KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         logger.LogInformation("Function streaming invoking.");
 
@@ -249,7 +244,7 @@ public abstract class KernelFunction
 
         // Invoke pre hook, and stop if skipping requested.
         var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-        if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+        if (invokingEventArgs is not null && invokingEventArgs.Cancel)
         {
             logger.LogTrace("Function canceled or skipped prior to invocation.");
 
@@ -295,11 +290,12 @@ public abstract class KernelFunction
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture)
+            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture);
+            if (eventArgs.Metadata is not null)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
-                Metadata = eventArgs.Metadata
+                result.Metadata = eventArgs.Metadata;
             };
         }
 

@@ -9,13 +9,13 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 {

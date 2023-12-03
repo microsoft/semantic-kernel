@@ -5,10 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.

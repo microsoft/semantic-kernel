@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
@@ -29,7 +30,8 @@ public class BasicAuthenticationProvider
     /// Applies the authentication content to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         // Base64 encode
         string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));

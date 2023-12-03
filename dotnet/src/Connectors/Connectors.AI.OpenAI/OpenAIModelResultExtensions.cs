@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
-
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Provides extension methods for working with OpenAI model results.

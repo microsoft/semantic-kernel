@@ -8,7 +8,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 public class RestApiOperationExtensionsTests
 {
     [Theory]

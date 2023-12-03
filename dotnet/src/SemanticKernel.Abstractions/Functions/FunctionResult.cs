@@ -6,16 +6,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Function result after execution.
 /// </summary>
 public sealed class FunctionResult
 {
-    internal Dictionary<string, object>? _metadata;
+    internal IDictionary<string, object?>? _metadata;
 
     /// <summary>
     /// Name of executed function.
@@ -40,11 +38,16 @@ public sealed class FunctionResult
     /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
-    public Dictionary<string, object> Metadata
+    public IDictionary<string, object?> Metadata
     {
-        get => this._metadata ??= new();
+        get => this._metadata ??= new Dictionary<string, object?>();
         internal set => this._metadata = value;
     }
+
+    /// <summary>
+    /// Function result type (support inspection).
+    /// </summary>
+    public Type? ValueType => this.Value?.GetType();
 
     /// <summary>
     /// Function result object.
@@ -86,6 +89,11 @@ public sealed class FunctionResult
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public T? GetValue<T>()
     {
+        if (this.IsCancellationRequested)
+        {
+            throw new OperationCanceledException("Cannot get result value from a cancelled function.");
+        }
+
         if (this.Value is null)
         {
             return default;

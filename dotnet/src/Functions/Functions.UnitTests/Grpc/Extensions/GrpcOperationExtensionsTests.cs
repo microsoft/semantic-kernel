@@ -2,11 +2,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+using Microsoft.SemanticKernel.Functions.Grpc;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Grpc.Extensions;
+namespace SemanticKernel.Functions.UnitTests.Grpc;
 
 public class GrpcOperationExtensionsTests
 {

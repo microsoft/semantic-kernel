@@ -4,7 +4,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
+namespace Microsoft.SemanticKernel.Functions.Markdown;
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt markdown format.
@@ -28,7 +28,7 @@ public static class MarkdownKernelExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
-        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
+        return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -49,6 +49,6 @@ public static class MarkdownKernelExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
+        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

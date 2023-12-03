@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /// <summary>
 /// Represents result of a chat completion with data.
 /// </summary>
+[Experimental("SKEXP0010")]
 public class ChatWithDataModelResult
 {
     /// <summary>

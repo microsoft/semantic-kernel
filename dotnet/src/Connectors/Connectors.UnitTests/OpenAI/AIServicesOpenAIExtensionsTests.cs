@@ -48,7 +48,7 @@ public class AIServicesOpenAIExtensionsTests
     {
         // Arrange
         // Act - Assert no exception occurs
-        new KernelBuilder().ConfigureServices(c =>
+        new KernelBuilder().WithServices(c =>
         {
             c.AddAzureOpenAITextCompletion("dep", "https://localhost", "key", serviceId: "one");
             c.AddAzureOpenAITextCompletion("dep", "https://localhost", "key", serviceId: "one");

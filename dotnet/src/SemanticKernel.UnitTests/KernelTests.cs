@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
@@ -26,7 +27,7 @@ public class KernelTests
     {
         // Arrange
         var factory = new Mock<Func<IServiceProvider, ITextCompletion>>();
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton<ITextCompletion>(factory.Object);
         }).Build();
@@ -152,7 +153,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -178,7 +179,7 @@ public class KernelTests
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -193,44 +194,6 @@ public class KernelTests
 
         // Assert
         Assert.Equal(0, invoked);
-    }
-
-    [Fact]
-    public async Task RunStreamingAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var sut = new Kernel();
-        int funcInvocations = 0;
-        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
-
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            invoking++;
-            if (e.Function.Name == "func1")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync(function))
-        {
-        }
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal(0, funcInvocations);
     }
 
     [Fact]
@@ -269,7 +232,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -293,7 +256,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Act
@@ -314,7 +277,7 @@ public class KernelTests
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -327,42 +290,6 @@ public class KernelTests
 
         // Assert
         Assert.Equal(0, invoked);
-    }
-
-    [Fact]
-    public async Task InvokeAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var sut = new Kernel();
-        int funcInvocations = 0;
-        var function = KernelFunctionFactory.CreateFromMethod(() => funcInvocations++, functionName: "func1");
-
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            invoking++;
-            if (e.Function.Name == "func1")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        var result = await sut.InvokeAsync(function);
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal(0, funcInvocations);
     }
 
     [Fact]
@@ -525,6 +452,36 @@ public class KernelTests
     }
 
     [Fact]
+    public void ItDefaultsLoggerFactoryToNullLoggerFactory()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
+    }
+
+    [Fact]
+    public void ItDefaultsDataToEmptyDictionary()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Empty(kernel.Data);
+    }
+
+    [Fact]
+    public void ItDefaultsPluginsToEmptyCollection()
+    {
+        //Arrange
+        var kernel = new Kernel();
+
+        //Assert
+        Assert.Empty(kernel.Plugins);
+    }
+
+    [Fact]
     public void InvariantCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
     {
         //Arrange
@@ -595,11 +552,7 @@ public class KernelTests
         public async Task ReadFunctionCollectionAsync(Kernel kernel)
         {
             await Task.Delay(0);
-
-            if (kernel.Plugins == null)
-            {
-                Assert.Fail("Functions collection is missing");
-            }
+            Assert.NotNull(kernel.Plugins);
         }
     }
 }

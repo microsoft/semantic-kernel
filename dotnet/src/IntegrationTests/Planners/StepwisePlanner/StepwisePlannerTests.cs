@@ -14,9 +14,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
-#pragma warning restore IDE0130
 
 public sealed class StepwisePlannerTests : IDisposable
 {
@@ -145,7 +143,7 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
+        return new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
