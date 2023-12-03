@@ -37,7 +37,7 @@ public sealed class AzureOpenAIWithDataStreamingChatContent : StreamingChatConte
     }
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
+    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;

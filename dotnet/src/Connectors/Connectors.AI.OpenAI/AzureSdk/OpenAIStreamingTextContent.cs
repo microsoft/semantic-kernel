@@ -26,7 +26,7 @@ public sealed class OpenAIStreamingTextContent : StreamingTextContent
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return this.Encoding.GetBytes(this.ToString());
     }
 
     /// <inheritdoc/>
