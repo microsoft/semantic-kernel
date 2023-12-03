@@ -58,4 +58,13 @@ public abstract class StreamingContent
         this.ChoiceIndex = choiceIndex;
         this.Metadata = metadata ?? new Dictionary<string, object?>();
     }
+
+    /// <summary>
+    /// Implicit conversion to string
+    /// </summary>
+    /// <param name="modelContent">model Content</param>
+    public static implicit operator string(StreamingContent modelContent)
+    {
+        return modelContent.ToString();
+    }
 }

@@ -178,7 +178,7 @@ public sealed class HandlebarsPlanner
         MatchCollection matches = Regex.Matches(prompt, pattern, RegexOptions.Singleline);
 
         // Add the chat history to the chat
-        ChatHistory chatMessages = chatCompletion.CreateNewChat();
+        var chatMessages = new ChatHistory();
         foreach (Match m in matches.Cast<Match>())
         {
             string role = m.Groups[1].Value;

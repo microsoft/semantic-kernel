@@ -51,7 +51,7 @@ public static class Example26_AADAuth
             .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatGPT.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         // User message
         chatHistory.AddUserMessage("Tell me a joke about hourglasses");

@@ -72,14 +72,14 @@ public static class Example17_ChatGPT
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        string reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         await MessageOutputAsync(chatHistory);
 
@@ -88,7 +88,7 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         await MessageOutputAsync(chatHistory);
     }

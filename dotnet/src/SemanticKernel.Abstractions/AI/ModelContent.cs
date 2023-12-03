@@ -31,4 +31,13 @@ public abstract class ModelContent
         this.InnerContent = innerContent;
         this.Metadata = metadata ?? new Dictionary<string, object?>();
     }
+
+    /// <summary>
+    /// Implicit conversion to string
+    /// </summary>
+    /// <param name="modelContent">model Content</param>
+    public static implicit operator string(ModelContent modelContent)
+    {
+        return modelContent.ToString();
+    }
 }

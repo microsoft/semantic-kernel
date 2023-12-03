@@ -64,7 +64,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        string initialPlan = (await this._chatCompletion.GetChatContentAsync(chatHistoryForPlan, null /* request settings */, this._kernel, cancellationToken).ConfigureAwait(false)).Content;
+        string initialPlan = await this._chatCompletion.GetChatContentAsync(chatHistoryForPlan, null /* request settings */, this._kernel, cancellationToken).ConfigureAwait(false);
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -168,7 +168,7 @@ public sealed class FunctionCallingStepwisePlanner
         string goal,
         CancellationToken cancellationToken)
     {
-        var chatHistory = this._chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         var arguments = new KernelArguments();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
@@ -186,7 +186,7 @@ public sealed class FunctionCallingStepwisePlanner
         string initialPlan,
         CancellationToken cancellationToken)
     {
-        var chatHistory = this._chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         // Add system message with context about the initial goal/plan
         var arguments = new KernelArguments();

@@ -103,7 +103,7 @@ public static class Example30_ChatWithPrompts
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
         // information needed.
-        var chatHistory = chatGPT.CreateNewChat(systemMessage);
+        var chatHistory = new ChatHistory(systemMessage);
 
         // Add the user query to the chat history
         chatHistory.AddUserMessage(userMessage);

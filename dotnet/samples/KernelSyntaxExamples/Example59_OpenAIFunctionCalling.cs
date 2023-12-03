@@ -39,7 +39,7 @@ public static class Example59_OpenAIFunctionCalling
         await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 
         var chatCompletion = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
         var executionSettings = new OpenAIPromptExecutionSettings();
 
         // Set FunctionCall to the result of FunctionCallBehavior.RequireFunction with a specific function to force the model to use that function.
@@ -64,7 +64,7 @@ public static class Example59_OpenAIFunctionCalling
 
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
-        chatHistory.AddAssistantMessage((await chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, kernel))[0]);
+        chatHistory.AddAssistantMessage(await chatCompletion.GetChatContentAsync(chatHistory, executionSettings, kernel));
         Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
     }
 
@@ -77,7 +77,7 @@ public static class Example59_OpenAIFunctionCalling
         // Send request
         var fullContent = new List<StreamingChatContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings, kernel))
+        await foreach (var chatResult in chatCompletion.GetStreamingChatContentsAsync(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
             if (chatResult.Content is { Length: > 0 })

@@ -59,7 +59,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = (await chatGPT.GetChatContentAsync(chatHistory)).Content;
+        string reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -69,7 +69,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        reply = (await chatGPT.GetChatContentAsync(chatHistory)).Content;
+        reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -127,7 +127,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = (await chatGPT.GetChatContentAsync(chatHistory)).Content;
+        string reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -137,7 +137,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        reply = (await chatGPT.GetChatContentAsync(chatHistory)).Content;
+        reply = await chatGPT.GetChatContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
