@@ -144,7 +144,7 @@ which are not grounded in the original.
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
         var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 }
 

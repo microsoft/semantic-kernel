@@ -116,41 +116,34 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override async Task<FunctionResult> InvokeCoreAsync(
+    protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(arguments);
 
-        try
+        (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        if (renderedEventArgs?.Cancel is true)
         {
-            (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-            if (renderedEventArgs?.Cancel ?? false)
+            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
+        }
+
+        IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+
+        string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+
+        var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
+
+        return new FunctionResult(
+            this,
+            completion,
+            kernel.Culture,
+            new Dictionary<string, object?>(2)
             {
-                return new FunctionResult(this.Name)
-                {
-                    IsCancellationRequested = true
-                };
-            }
-
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
-
-            string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
-
-            var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
-
-            var result = new FunctionResult(this.Name, completion, kernel.Culture);
-            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
-            result.Metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-            return result;
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
-            throw;
-        }
+                [AIFunctionResultExtensions.ModelResultsMetadataKey] = modelResults,
+                [KernelEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt,
+            });
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(

@@ -114,7 +114,7 @@ public static class Example65_HandlebarsPlanner
 
         // Execute the plan
         var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
+        Console.WriteLine($"\nResult:\n{result}\n");
     }
 
     private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
