@@ -33,10 +33,10 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    public OpenAIStreamingChatContent(
+    internal OpenAIStreamingChatContent(
         StreamingChatCompletionsUpdate chatUpdate,
         int choiceIndex,
-        Dictionary<string, object> metadata)
+        Dictionary<string, object?>? metadata = null)
         : base(
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             chatUpdate.ContentUpdate,

@@ -42,10 +42,9 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var fakeTextContent = new TextContent("llmResult");
 
-        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextCompletion.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
         var kernel = new KernelBuilder().WithServices(c =>
         {
@@ -65,7 +64,7 @@ public class FunctionFromPromptTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIPromptExecutionSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion.Verify(a => a.GetTextContentsAsync("template", It.Is<OpenAIPromptExecutionSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]

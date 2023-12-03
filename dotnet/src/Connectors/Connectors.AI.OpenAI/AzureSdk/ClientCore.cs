@@ -21,7 +21,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using static System.Net.Mime.MediaTypeNames;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -139,7 +138,7 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        Dictionary<string, object>? responseMetadata = null;
+        Dictionary<string, object?>? responseMetadata = null;
         await foreach (Completions completions in response)
         {
             responseMetadata ??= GetResponseMetadata(completions);
@@ -150,9 +149,9 @@ internal abstract class ClientCore
         }
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(Completions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(Completions completions)
     {
-        return new Dictionary<string, object>(3)
+        return new Dictionary<string, object?>(4)
         {
             { $"{nameof(Completions)}.{nameof(completions.Id)}", completions.Id },
             { $"{nameof(Completions)}.{nameof(completions.Created)}", completions.Created },
@@ -161,9 +160,9 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
     {
-        return new Dictionary<string, object>(3)
+        return new Dictionary<string, object?>(4)
         {
             { $"{nameof(ChatCompletions)}.{nameof(completions.Id)}", completions.Id },
             { $"{nameof(ChatCompletions)}.{nameof(completions.Created)}", completions.Created },
@@ -172,9 +171,9 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object>(2)
+        return new Dictionary<string, object?>(2)
         {
             { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Id)}", completions.Id },
             { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created },
@@ -335,7 +334,7 @@ internal abstract class ClientCore
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
             // Stream any response 
-            Dictionary<string, object>? responseMetadata = null;
+            Dictionary<string, object?>? responseMetadata = null;
             StringBuilder? contentBuilder = null;
             string? functionName = null;
             StringBuilder? functionArgumentsBuilder = null;

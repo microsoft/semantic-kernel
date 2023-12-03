@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -134,15 +133,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 };
             }
 
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-            string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
-
-            var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
-
-            var result = new FunctionResult(this.Name, completion, kernel.Culture);
-            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
+            var result = new FunctionResult(this.Name, textContent.Text, kernel.Culture);
             result.Metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
+
+            result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.Text)}", textContent);
+            result.Metadata.Add($"{nameof(TextContent)}.{nameof(textContent.InnerContent)}", textContent.InnerContent);
+
+            // Merge content metadata with the function result metadata
+            foreach (var kv in textContent.Metadata)
+            {
+                if (!result.Metadata.ContainsKey(kv.Key))
+                {
+                    result.Metadata.Add(kv.Key, kv.Value);
+                }
+                else
+                {
+                    result.Metadata[kv.Key] = kv.Value;
+                }
+            }
 
             return result;
         }

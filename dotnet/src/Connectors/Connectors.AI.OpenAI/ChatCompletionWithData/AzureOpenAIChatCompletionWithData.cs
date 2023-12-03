@@ -183,9 +183,9 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatContent(choice, metadata)).ToList();
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(ChatWithDataResponse chatResponse)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
     {
-        return new Dictionary<string, object>(3)
+        return new Dictionary<string, object?>(5)
         {
             { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Id)}", chatResponse.Id },
             { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Model)}", chatResponse.Model },
@@ -195,9 +195,9 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         };
     }
 
-    private static Dictionary<string, object> GetResponseMetadata(ChatWithDataStreamingResponse chatResponse)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataStreamingResponse chatResponse)
     {
-        return new Dictionary<string, object>(3)
+        return new Dictionary<string, object?>(4)
         {
             { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Id)}", chatResponse.Id },
             { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Model)}", chatResponse.Model },
