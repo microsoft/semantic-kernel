@@ -19,7 +19,7 @@ public class OpenAIStreamingTextContent : StreamingTextContent
     /// <param name="innerContentObject">Inner chunk object</param>
     /// <param name="metadata">Metadata information</param>
     public OpenAIStreamingTextContent(string text, int choiceIndex, object? innerContentObject = null, Dictionary<string, object>? metadata = null)
-        : base(text, choiceIndex, innerContentObject, metadata)
+        : base(text, choiceIndex, innerContentObject, Encoding.UTF8, metadata)
     {
     }
 

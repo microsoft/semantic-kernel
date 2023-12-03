@@ -293,8 +293,8 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
-            new TestStreamingContent("chunk1"),
-            new TestStreamingContent("chunk2"));
+            new StreamingTextContent("chunk1"),
+            new StreamingTextContent("chunk2"));
         var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
@@ -327,26 +327,6 @@ public class FunctionFromPromptTests
         mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(streamingContents));
 
         return mockTextCompletion;
-    }
-
-    private sealed class TestStreamingContent : StreamingContent
-    {
-        private readonly string _content;
-
-        public TestStreamingContent(string content) : base(null)
-        {
-            this._content = content;
-        }
-
-        public override byte[] ToByteArray()
-        {
-            return Array.Empty<byte>();
-        }
-
-        public override string ToString()
-        {
-            return this._content;
-        }
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

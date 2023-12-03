@@ -445,7 +445,7 @@ internal abstract class ClientCore
     {
         await foreach (var chatUpdate in this.GetChatStreamingUpdatesAsync(chat, executionSettings, kernel, cancellationToken))
         {
-            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, chatUpdate.Metadata);
+            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
     }
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(

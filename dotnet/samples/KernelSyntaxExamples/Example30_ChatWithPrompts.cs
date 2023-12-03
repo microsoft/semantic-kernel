@@ -109,7 +109,7 @@ public static class Example30_ChatWithPrompts
         chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
-        string answer = await chatGPT.GenerateMessageAsync(chatHistory);
+        var answer = await chatGPT.GetChatContentAsync(chatHistory);
         Console.WriteLine($"------------------------------------\n{answer}");
 
         /*

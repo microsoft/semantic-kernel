@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -12,17 +13,24 @@ public sealed class TextContent : ModelContent
     /// <summary>
     /// The text content.
     /// </summary>
-    public string Text { get; set; }
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// The encoding of the text content.
+    /// </summary>
+    public Encoding Encoding { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
     /// <param name="text">Text content</param>
+    /// <param name="encoding">Encoding of the text</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string text, object? innerContent = null, Dictionary<string, object>? metadata = null) : base(innerContent, metadata)
+    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, Dictionary<string, object>? metadata = null) : base(innerContent, metadata)
     {
         this.Text = text;
+        this.Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>

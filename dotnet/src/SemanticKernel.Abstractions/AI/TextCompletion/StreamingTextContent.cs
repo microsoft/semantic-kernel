@@ -16,15 +16,22 @@ public class StreamingTextContent : StreamingContent
     public string? Text { get; }
 
     /// <summary>
+    /// The encoding of the text content.
+    /// </summary>
+    public Encoding Encoding { get; set; }
+
+    /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
     /// <param name="text">Text update</param>
     /// <param name="choiceIndex">Index of the choice</param>
-    /// <param name="innerContentObject">Inner chunk object</param>
+    /// <param name="innerContent">Inner chunk object</param>
+    /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
-    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContentObject = null, Dictionary<string, object>? metadata = null) : base(innerContentObject, choiceIndex, metadata)
+    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, Dictionary<string, object>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Text = text;
+        this.Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>
@@ -36,6 +43,6 @@ public class StreamingTextContent : StreamingContent
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.Text);
+        return this.Encoding.GetBytes(this.ToString());
     }
 }

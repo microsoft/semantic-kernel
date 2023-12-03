@@ -78,11 +78,11 @@ public sealed class FunctionCallingStepwisePlanner
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
-            chatHistoryForSteps.AddAssistantMessage(chatResult);
+            var chatContent = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false) as OpenAIChatContent;
+            chatHistoryForSteps.AddAssistantMessage(chatContent!.Content);
 
             // Check for function response
-            if (!this.TryGetFunctionResponse(chatResult, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
+            if (!this.TryGetFunctionResponse(chatContent, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
             {
                 // No function response found. Either AI returned a chat message, or something went wrong when parsing the function.
                 // Log the error (if applicable), then let the planner continue.
@@ -144,12 +144,12 @@ public sealed class FunctionCallingStepwisePlanner
 
     #region private
 
-    private async Task<IChatResult> GetCompletionWithFunctionsAsync(
+    private async Task<ChatContent> GetCompletionWithFunctionsAsync(
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
         var executionSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false))[0];
+        return (await this._chatCompletion.GetChatContentAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false));
     }
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
@@ -199,13 +199,13 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-    private bool TryGetFunctionResponse(IChatResult chatResult, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
+    private bool TryGetFunctionResponse(OpenAIChatContent chatContent, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
     {
         functionResponse = null;
         errorMessage = null;
         try
         {
-            functionResponse = chatResult.GetOpenAIFunctionResponse();
+            functionResponse = chatContent.GetOpenAIFunctionResponse();
         }
         catch (JsonException)
         {

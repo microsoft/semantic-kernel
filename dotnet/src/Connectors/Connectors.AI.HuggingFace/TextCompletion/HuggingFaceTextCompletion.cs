@@ -73,49 +73,31 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false);
+        return await this.InternalGetTextContentsAsync(prompt, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
+    public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))
+        foreach (var textContent in await this.InternalGetTextContentsAsync(prompt, cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            // Gets the non streaming content and returns as one complete result
-            var content = await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-
-            // If the provided T is a string, return the completion as is
-            if (typeof(T) == typeof(string))
-            {
-                yield return (T)(object)content;
-                continue;
-            }
-
-            // If the provided T is an specialized class of StreamingContent interface
-            if (typeof(T) == typeof(StreamingTextContent) ||
-                typeof(T) == typeof(StreamingContent))
-            {
-                yield return (T)(object)new HuggingFaceStreamingTextContent(content, 1, result);
-            }
-
-            throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            yield return new StreamingTextContent(textContent.Text, 0, textContent);
         }
     }
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<TextContent>> InternalGetTextContentsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {
@@ -144,7 +126,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             };
         }
 
-        return completionResponse.ConvertAll(c => new TextCompletionResult(c));
+        return completionResponse.ConvertAll(c => new TextContent(c.Text, innerContent: c));
     }
 
     /// <summary>
@@ -167,6 +149,18 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion

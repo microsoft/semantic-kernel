@@ -57,7 +57,7 @@ public static class Example26_AADAuth
         chatHistory.AddUserMessage("Tell me a joke about hourglasses");
 
         // Bot reply
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        var reply = await chatGPT.GetChatContentAsync(chatHistory);
         Console.WriteLine(reply);
 
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
