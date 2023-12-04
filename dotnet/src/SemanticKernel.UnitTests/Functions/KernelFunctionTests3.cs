@@ -146,7 +146,7 @@ public sealed class KernelFunctionTests3
     private sealed class InvalidPlugin
     {
         [KernelFunction]
-        public void Invalid2(string y, CustomUnknownType n)
+        public void Invalid2(CustomUnknownType n, string input) // Only first parameter can have the 'input' name
         {
         }
 

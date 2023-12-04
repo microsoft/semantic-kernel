@@ -24,7 +24,7 @@ internal static class QueryStringBuilder
     };
 
     ///<inheritdoc/>
-    public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string?> arguments)
+    public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string> arguments)
     {
         var segments = new List<string>();
 
@@ -37,7 +37,7 @@ internal static class QueryStringBuilder
                 //Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
                 {
-                    throw new KernelException($"No argument found for the `{parameter.Name}` required parameter");
+                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{operation.Id}'.");
                 }
 
                 //Skipping not required parameter if no argument provided for it.
@@ -48,7 +48,7 @@ internal static class QueryStringBuilder
 
             if (!s_queryStringParameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new KernelException($"The query string parameter `{parameterStyle}` serialization style is not supported.");
+                throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
             }
 
             //Serializing the parameter and adding it to the query string if there's an argument for it.

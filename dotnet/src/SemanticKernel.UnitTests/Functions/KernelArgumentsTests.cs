@@ -72,7 +72,7 @@ public class KernelArgumentsTests
         Assert.True(sut.ContainsName("fake-key"));
 
         //Constructor 2
-        IDictionary<string, string?> source = new Dictionary<string, string?> { { "FAKE-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "FAKE-key", "fake-value" } };
         sut = new(source);
         Assert.True(sut.ContainsName("fake-key"));
 
@@ -86,7 +86,7 @@ public class KernelArgumentsTests
     public void ItCanBeInitializedFromIDictionary()
     {
         // Arrange
-        IDictionary<string, string?> source = new Dictionary<string, string?> { { "fake-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "fake-key", "fake-value" } };
 
         // Act
         KernelArguments sut = new(source);
