@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Image generation request
+/// Text to image request
 /// </summary>
 [Experimental("SKEXP0012")]
 public sealed class TextToImageRequest

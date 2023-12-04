@@ -20,7 +20,7 @@ public sealed class AzureOpenAITextToImageTests
     /// <summary>
     /// Returns a mocked instance of <see cref="HttpClient"/>.
     /// </summary>
-    /// <param name="generationResult">The <see cref="HttpResponseMessage"/> to return for image generation.</param>
+    /// <param name="generationResult">The <see cref="HttpResponseMessage"/> to return for text to image.</param>
     /// <param name="imageResult">The <see cref="HttpResponseMessage"/> to return for image result.</param>
     /// <returns>A mocked <see cref="HttpClient"/> instance.</returns>
     private static HttpClient GetHttpClientMock(HttpResponseMessage generationResult, HttpResponseMessage imageResult)

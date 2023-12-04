@@ -62,9 +62,9 @@ internal sealed class OpenAITextToImageClientCore
     /// <summary>
     /// Run the HTTP request to generate a list of images
     /// </summary>
-    /// <param name="url">URL for the image generation request API</param>
+    /// <param name="url">URL for the text to image request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the image generation response.</param>
+    /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the text to image response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
     [Experimental("SKEXP0012")]

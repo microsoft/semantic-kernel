@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.AI.TextToImage;
 
 /// <summary>
-/// Interface for image generation services
+/// Interface for text to image services
 /// </summary>
 [Experimental("SKEXP0002")]
 public interface ITextToImage : IAIService

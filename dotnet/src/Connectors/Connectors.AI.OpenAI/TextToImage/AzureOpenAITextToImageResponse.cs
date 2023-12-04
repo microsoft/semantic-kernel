@@ -6,13 +6,13 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Image generation response
+/// Text to image response
 /// </summary>
 [Experimental("SKEXP0012")]
 public class AzureOpenAITextToImageResponse
 {
     /// <summary>
-    /// Image generation result
+    /// Text to image result
     /// </summary>
     [JsonPropertyName("result")]
     public TextToImageResponse? Result { get; set; }

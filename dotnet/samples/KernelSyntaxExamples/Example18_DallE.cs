@@ -21,11 +21,11 @@ public static class Example18_DallE
 
     private static async Task OpenAIDallEAsync()
     {
-        Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
+        Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            // Add your image generation service
+            // Add your text to image service
             .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
@@ -90,11 +90,11 @@ public static class Example18_DallE
 
     public static async Task AzureOpenAIDallEAsync()
     {
-        Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
+        Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            // Add your image generation service
+            // Add your text to image service
             .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)

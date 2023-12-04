@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Image generation response
+/// Text to image response
 /// </summary>
 [Experimental("SKEXP0012")]
 public class TextToImageResponse
@@ -32,7 +32,7 @@ public class TextToImageResponse
     }
 
     /// <summary>
-    /// List of possible image generations
+    /// List of possible text to images
     /// </summary>
     [JsonPropertyName("data")]
     public IList<Image> Images { get; set; } = new List<Image>();

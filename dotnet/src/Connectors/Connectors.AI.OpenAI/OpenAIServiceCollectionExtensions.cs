@@ -1097,14 +1097,14 @@ public static class OpenAIServiceCollectionExtensions
     #region Images
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
@@ -1135,14 +1135,14 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
     public static IServiceCollection AddAzureOpenAITextToImage(
@@ -1168,7 +1168,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI Dall-E image generation service to the list
+    /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
@@ -1199,7 +1199,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI Dall-E image generation service to the list
+    /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>

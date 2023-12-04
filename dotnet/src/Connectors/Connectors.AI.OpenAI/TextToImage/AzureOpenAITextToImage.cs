@@ -44,7 +44,7 @@ public sealed class AzureOpenAITextToImage : ITextToImage
     private readonly string _apiKey;
 
     /// <summary>
-    /// Maximum number of attempts to retrieve the image generation operation result.
+    /// Maximum number of attempts to retrieve the text to image operation result.
     /// </summary>
     private readonly int _maxRetryCount;
 
@@ -54,14 +54,14 @@ public sealed class AzureOpenAITextToImage : ITextToImage
     private readonly string _apiVersion;
 
     /// <summary>
-    /// Create a new instance of Azure OpenAI image generation service
+    /// Create a new instance of Azure OpenAI text to image service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
-    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImage(
         string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
@@ -102,25 +102,25 @@ public sealed class AzureOpenAITextToImage : ITextToImage
 
         if (result.Result is null)
         {
-            throw new KernelException("Azure OpenAI Image Generation null response");
+            throw new KernelException("Azure OpenAI Text To Image null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new KernelException("Azure OpenAI Image Generation result not found");
+            throw new KernelException("Azure OpenAI Text To Image result not found");
         }
 
         return result.Result.Images.First().Url;
     }
 
     /// <summary>
-    /// Start an image generation task
+    /// Start an text to image task
     /// </summary>
     /// <param name="description">Image description</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns> The operationId that identifies the original image generation request. </returns>
+    /// <returns> The operationId that identifies the original text to image request. </returns>
     private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
@@ -148,9 +148,9 @@ public sealed class AzureOpenAITextToImage : ITextToImage
     }
 
     /// <summary>
-    /// Retrieve the results of an image generation operation.
+    /// Retrieve the results of an text to image operation.
     /// </summary>
-    /// <param name="operationId">The operationId that identifies the original image generation request.</param>
+    /// <param name="operationId">The operationId that identifies the original text to image request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     private async Task<AzureOpenAITextToImageResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
@@ -176,7 +176,7 @@ public sealed class AzureOpenAITextToImage : ITextToImage
             }
             else if (this.IsFailedOrCancelled(result.Status))
             {
-                throw new KernelException($"Azure OpenAI image generation {result.Status}");
+                throw new KernelException($"Azure OpenAI text to image {result.Status}");
             }
 
             if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))
