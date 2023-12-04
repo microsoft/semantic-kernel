@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /**
@@ -30,19 +31,18 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletionService = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
-        var chatHistory = chatCompletionService.CreateNewChat();
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
+        var chatHistory = new ChatHistory();
 
         // First question without previous context based on uploaded content.
         var ask = "How did Emily and David meet?";
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatResult = (await chatCompletionService.GetChatCompletionsAsync(chatHistory))[0];
-        var chatMessage = await chatResult.GetChatMessageAsync();
+        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
         var response = chatMessage.Content;
-        var toolResponse = chatResult.ModelResult.GetResult<ChatWithDataModelResult>().ToolContent;
+        var toolResponse = chatMessage.ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
@@ -67,7 +67,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletionService.GetStreamingContentAsync<string>(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }

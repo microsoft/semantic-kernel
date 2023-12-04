@@ -19,6 +19,9 @@ public sealed class OpenAITextCompletion : ITextCompletion
 {
     private readonly OpenAIClientCore _core;
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
     /// </summary>
@@ -57,26 +60,14 @@ public sealed class OpenAITextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
         return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
+        return this._core.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 }

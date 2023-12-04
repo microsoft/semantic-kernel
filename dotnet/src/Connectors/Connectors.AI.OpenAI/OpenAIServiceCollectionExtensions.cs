@@ -714,7 +714,7 @@ public static class OpenAIServiceCollectionExtensions
                     new AzureKeyCredential(apiKey),
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-                return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new(deploymentName, modelId, client, serviceProvider.GetService<ILoggerFactory>());
             };
 
             c.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -753,7 +753,7 @@ public static class OpenAIServiceCollectionExtensions
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new(deploymentName, modelId, client, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -798,7 +798,7 @@ public static class OpenAIServiceCollectionExtensions
                     credentials,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-                return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new(deploymentName, modelId, client, serviceProvider.GetService<ILoggerFactory>());
             };
 
             c.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -838,7 +838,7 @@ public static class OpenAIServiceCollectionExtensions
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new(deploymentName, modelId, client, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -871,7 +871,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder.WithServices(c =>
         {
             Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
-                new(deploymentName, openAIClient, modelId, serviceProvider.GetService<ILoggerFactory>());
+                new(deploymentName, modelId, openAIClient, serviceProvider.GetService<ILoggerFactory>());
 
             c.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
             c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
@@ -900,7 +900,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(openAIClient);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(deploymentName, openAIClient, modelId, serviceProvider.GetService<ILoggerFactory>());
+            new(deploymentName, modelId, openAIClient, serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
