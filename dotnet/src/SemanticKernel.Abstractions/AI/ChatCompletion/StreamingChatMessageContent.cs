@@ -1,0 +1,55 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
+/// <summary>
+/// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletion"/> interface.
+/// </summary>
+/// <remarks>
+/// Represents a chat message content chunk that was streamed from the remote model.
+/// </remarks>
+public class StreamingChatMessageContent : StreamingContentBase
+{
+    /// <summary>
+    /// Text associated to the message payload
+    /// </summary>
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// Role of the author of the message
+    /// </summary>
+    public AuthorRole? Role { get; set; }
+
+    /// <summary>
+    /// The encoding of the text content.
+    /// </summary>
+    [JsonIgnore]
+    public Encoding Encoding { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
+    /// </summary>
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="content">Content of the message</param>
+    /// <param name="innerContent">Inner content object reference</param>
+    /// <param name="choiceIndex"></param>
+    /// <param name="encoding">Encoding of the chat</param>
+    /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
+    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    {
+        this.Role = role;
+        this.Content = content;
+        this.Encoding = encoding ?? Encoding.UTF8;
+    }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Content ?? string.Empty;
+
+    /// <inheritdoc/>
+    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
+}

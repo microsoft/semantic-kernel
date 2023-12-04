@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -115,7 +114,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc/>j
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -129,21 +128,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
 
-        IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+        IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
+        metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
-        var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
-
-        return new FunctionResult(
-            this,
-            completion,
-            kernel.Culture,
-            new Dictionary<string, object?>(2)
-            {
-                [AIFunctionResultExtensions.ModelResultsMetadataKey] = modelResults,
-                [KernelEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt,
-            });
+        return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
@@ -159,10 +149,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var content in textCompletion.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return genericChunk;
+
+            yield return typeof(T) switch
+            {
+                _ when typeof(T) == typeof(string)
+                    => (T)(object)content.ToString(),
+
+                _ when content is T contentAsT
+                    => (T)contentAsT,
+
+                _ when content.InnerContent is T innerContentAsT
+                    => (T)innerContentAsT,
+
+                _ when typeof(T) == typeof(byte[])
+                    => (T)(object)content.ToByteArray(),
+
+                _ => throw new NotSupportedException($"The specific type {typeof(T)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+            };
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
@@ -189,12 +195,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptConfig;
     private readonly IPromptTemplate _promptTemplate;
-
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-    }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";

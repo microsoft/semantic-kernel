@@ -62,15 +62,15 @@ public sealed class HandlebarsPlanner
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt, chatCompletion);
 
         // Get the chat completion results
-        var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionResults = await chatCompletion.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (completionResults?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults.Content?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
             throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
-        Match match = Regex.Match(completionResults, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new KernelException("Could not find the plan in the results");
@@ -172,7 +172,7 @@ public sealed class HandlebarsPlanner
         MatchCollection matches = Regex.Matches(prompt, pattern, RegexOptions.Singleline);
 
         // Add the chat history to the chat
-        ChatHistory chatMessages = chatCompletion.CreateNewChat();
+        var chatMessages = new ChatHistory();
         foreach (Match m in matches.Cast<Match>())
         {
             string role = m.Groups[1].Value;

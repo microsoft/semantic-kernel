@@ -72,8 +72,8 @@ public static class Example45_MultiStreamingChatCompletion
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
-        var chatHistory = chatCompletion.CreateNewChat(prompt);
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory, executionSettings))
+        var chatHistory = new ChatHistory(prompt);
+        await foreach (var chatUpdate in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
@@ -83,9 +83,9 @@ public static class Example45_MultiStreamingChatCompletion
                 roleDisplayed.Add(chatUpdate.ChoiceIndex);
             }
 
-            if (chatUpdate.ContentUpdate is { Length: > 0 })
+            if (chatUpdate.Content is { Length: > 0 })
             {
-                newContent += chatUpdate.ContentUpdate;
+                newContent += chatUpdate.Content;
             }
 
             if (!messagePerChoice.ContainsKey(chatUpdate.ChoiceIndex))

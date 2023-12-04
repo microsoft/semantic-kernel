@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Prompts;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
@@ -55,85 +55,29 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-        => InternalCreateNewChat(instructions);
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        ChatHistory chat,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat);
-
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
-        ValidateMaxTokens(chatExecutionSettings.MaxTokens);
-
-        return await this.ExecuteCompletionRequestAsync(chat, kernel, chatExecutionSettings, cancellationToken).ConfigureAwait(false);
+        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+    public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
-        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
-
-        return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .ToList();
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
-        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
-
-        return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .OfType<ITextResult>()
-            .ToList();
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
-        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
-
-        return this.GetStreamingContentAsync<T>(chat, chatExecutionSettings, kernel, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
-        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
-        using var request = this.GetRequest(chatHistory, chatExecutionSettings, isStreamEnabled: true);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-
-        await foreach (var result in this.GetChatStreamingUpdatesAsync<T>(response))
+        await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
-            yield return result;
+            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, Encoding.UTF8, streamingChatContent.Metadata);
         }
     }
 
@@ -166,20 +110,46 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
-    private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
+    private async Task<IReadOnlyList<ChatMessageContent>> InternalGetChatMessageContentsAsync(
         ChatHistory chat,
+        PromptExecutionSettings? executionSettings,
         Kernel? kernel,
-        OpenAIPromptExecutionSettings executionSettings,
         CancellationToken cancellationToken = default)
     {
-        using var request = this.GetRequest(chat, executionSettings, isStreamEnabled: false);
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+
+        using var request = this.GetRequest(chat, openAIExecutionSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
+        var metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, metadata)).ToList();
+    }
+
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
+    {
+        return new Dictionary<string, object?>(5)
+        {
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
+            { nameof(chatResponse.Usage), chatResponse.Usage },
+        };
+    }
+
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataStreamingResponse chatResponse)
+    {
+        return new Dictionary<string, object?>(4)
+        {
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
+        };
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(
@@ -202,8 +172,17 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
-    private async IAsyncEnumerable<T> GetChatStreamingUpdatesAsync<T>(HttpResponseMessage response)
+    private async IAsyncEnumerable<AzureOpenAIWithDataStreamingChatMessageContent> InternalGetChatStreamingContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+
+        using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         const string ServerEventPayloadPrefix = "data:";
 
         using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
@@ -224,44 +203,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             }
 
             var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-            var responseMetadata = this.GetResponseMetadata(response);
+            var metadata = GetResponseMetadata(chatWithDataResponse);
+
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                // If the provided T is an specialized class of StreamingContent interface
-                if (typeof(T) == typeof(StreamingChatContent) ||
-                    typeof(T) == typeof(StreamingContent))
-                {
-                    yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index, responseMetadata);
-                    continue;
-                }
-
-                var result = new ChatWithDataStreamingResult(chatWithDataResponse, choice);
-                if (typeof(T) == typeof(string))
-                {
-                    await foreach (SemanticKernel.AI.ChatCompletion.ChatMessage message in result.GetStreamingChatMessageAsync().ConfigureAwait(false))
-                    {
-                        yield return (T)(object)message.Content;
-                    }
-                    continue;
-                }
-
-                if (typeof(T) == typeof(ChatWithDataStreamingResult))
-                {
-                    yield return (T)(object)result;
-                    continue;
-                }
-
-                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, metadata);
             }
         }
-    }
-
-    private Dictionary<string, object> GetResponseMetadata(HttpResponseMessage response)
-    {
-        return new Dictionary<string, object>()
-        {
-            { nameof(HttpResponseMessage), response },
-        };
     }
 
     private T DeserializeResponse<T>(string body)
@@ -319,6 +267,14 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)
     {
+        // The system role as the unique message is not allowed in the With Data APIs.
+        // This avoids the error: Invalid message request body. Learn how to use Completions extension API, please refer to https://learn.microsoft.com/azure/ai-services/openai/reference#completions-extensions
+        if (chat.Count == 1 && chat[0].Role == AuthorRole.System)
+        {
+            // Converts a system message to a user message if is the unique message in the chat.
+            chat[0].Role = AuthorRole.User;
+        }
+
         return chat
             .Select(message => new ChatWithDataMessage
             {
@@ -340,12 +296,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         if (string.IsNullOrWhiteSpace(text))
         {
             return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
-        }
-
-        // Try to parse the text as a chat history
-        if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-        {
-            return new OpenAIChatHistory(chatHistory);
         }
 
         // If settings is not provided, create a new chat with the text as the system prompt
@@ -377,6 +327,5 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             this._config.CompletionModelId,
             apiVersion);
     }
-
     #endregion
 }
