@@ -30,5 +30,5 @@ __all__ = [
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
-    "AzureChatCompletionWithData"
+    "AzureChatCompletionWithData",
 ]

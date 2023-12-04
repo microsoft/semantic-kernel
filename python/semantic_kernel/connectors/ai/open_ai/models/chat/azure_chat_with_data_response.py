@@ -12,8 +12,12 @@ class AzureChatWithDataStreamResponse:
     _tool_message: str
     _assistant_message: AsyncStream[ChatCompletionChunk]
     _settings: "ChatRequestSettings"
-    
-    def __init__(self, assistant_message: AsyncStream[ChatCompletionChunk], settings: "ChatRequestSettings"):
+
+    def __init__(
+        self,
+        assistant_message: AsyncStream[ChatCompletionChunk],
+        settings: "ChatRequestSettings",
+    ):
         self._assistant_message = assistant_message
         self._tool_message = ""
         self._settings = settings

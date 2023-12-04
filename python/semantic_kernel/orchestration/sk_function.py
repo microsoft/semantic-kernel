@@ -159,7 +159,9 @@ class SKFunction(SKFunctionBase):
                         completion, tool_message, function_call = outputs
                         if tool_message:
                             context.objects["tool_message"] = tool_message
-                            as_chat_prompt.add_message(role="tool", message=tool_message)
+                            as_chat_prompt.add_message(
+                                role="tool", message=tool_message
+                            )
                     else:
                         completion, function_call = outputs
 
@@ -204,7 +206,8 @@ class SKFunction(SKFunctionBase):
                     # With data case - stream and get the tool message for citations
                     if function_config.has_chat_with_data_prompt:
                         response = await client.complete_chat_stream_async(
-                            messages, request_settings)
+                            messages, request_settings
+                        )
                         async for partial_content in response:
                             completion += partial_content
                             yield partial_content

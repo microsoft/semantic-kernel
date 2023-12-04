@@ -3,7 +3,9 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
+)
 
 
 @dataclass
@@ -17,10 +19,7 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
     def from_dict(data: dict) -> "PromptTemplateWithDataConfig":
         config = super().from_dict(data)
 
-        completion_keys = [
-            "inputLanguage",
-            "outputLanguage"
-        ]
+        completion_keys = ["inputLanguage", "outputLanguage"]
         for comp_key in completion_keys:
             if comp_key in data["completion"]:
                 setattr(config.completion, comp_key, data["completion"][comp_key])
@@ -39,8 +38,8 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         token_selection_biases: Dict[int, int] = {},
         chat_system_prompt: str = None,
         function_call: Optional[str] = None,
-        inputLanguage = None,
-        outputLanguage = None
+        inputLanguage: str = None,
+        outputLanguage: str = None,
     ) -> "PromptTemplateWithDataConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature

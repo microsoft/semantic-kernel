@@ -4,14 +4,17 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional
 
+
 class DataSourceType(Enum):
     """Enum to hold data source type."""
 
     AZURE_AI_SEARCH = "AzureCognitiveSearch"
 
+
 @dataclass
 class DataSourceParametersBase:
     """Base class to hold data source parameters."""
+
 
 @dataclass
 class AzureAISearchDataSourceParameters(DataSourceParametersBase):
@@ -27,6 +30,7 @@ class AzureAISearchDataSourceParameters(DataSourceParametersBase):
     queryType: Optional[str] = "simple"
     semanticConfiguration: Optional[str] = None
     roleInformation: Optional[str] = None
+
 
 @dataclass
 class AzureChatWithDataSettings:

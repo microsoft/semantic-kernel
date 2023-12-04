@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.semantic_functions.chat_with_data_prompt_template import ChatWithDataPromptTemplate
+from semantic_kernel.semantic_functions.chat_with_data_prompt_template import (
+    ChatWithDataPromptTemplate,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.semantic_functions.prompt_template import PromptTemplate

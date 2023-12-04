@@ -4,7 +4,11 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import AzureAISearchDataSourceParameters, AzureChatWithDataSettings, DataSourceType
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
+    AzureAISearchDataSourceParameters,
+    AzureChatWithDataSettings,
+    DataSourceType,
+)
 
 
 kernel = sk.Kernel()
@@ -14,14 +18,16 @@ deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
 azure_chat_with_data_settings = AzureChatWithDataSettings(
-        data_source_type=DataSourceType.AZURE_AI_SEARCH,
-        data_source_parameters=AzureAISearchDataSourceParameters(**sk.azure_aisearch_datasource_settings_from_dot_env_as_dict())
-    )
+    data_source_type=DataSourceType.AZURE_AI_SEARCH,
+    data_source_parameters=AzureAISearchDataSourceParameters(
+        **sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
+    ),
+)
 
 # For example, AI Search index may contain the following document:
 
-# Emily and David, two passionate scientists, met during a research expedition to Antarctica. 
-# Bonded by their love for the natural world and shared curiosity, they uncovered a 
+# Emily and David, two passionate scientists, met during a research expedition to Antarctica.
+# Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
 
@@ -32,7 +38,7 @@ kernel.add_chat_service(
         endpoint=endpoint,
         api_key=api_key,
         api_version="2023-12-01-preview",
-        data_source_settings=azure_chat_with_data_settings
+        data_source_settings=azure_chat_with_data_settings,
     ),
 )
 
@@ -80,7 +86,6 @@ async def chat() -> bool:
         print(message, end="")
     print("\n")
     return True
-
 
 
 async def main() -> None:

@@ -10,17 +10,30 @@ from openai import AsyncStream
 from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_WITH_DATA_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import AzureChatWithDataSettings
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import AzureChatWithDataStreamResponse
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.const import (
+    DEFAULT_AZURE_WITH_DATA_API_VERSION,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
+    AzureChatWithDataSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
+    AzureChatWithDataStreamResponse,
+)
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
 
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
+    OpenAIModelTypes,
+)
 from semantic_kernel.sk_pydantic import HttpsUrl
+
 
 class AzureChatCompletionWithData(AzureChatCompletion):
     _data_source_settings: AzureChatWithDataSettings
@@ -62,7 +75,7 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         """
         if not deployment_name:
             raise ValueError("The deployment name cannot be `None` or empty")
-        
+
         base_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
 
         if isinstance(endpoint, str):
@@ -88,7 +101,7 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
-    ) -> Union[Tuple[str, str], List[Tuple[str,str]]]:
+    ) -> Union[Tuple[str, str], List[Tuple[str, str]]]:
         """Executes a chat completion request with data and returns the result.
 
         Arguments:
@@ -109,7 +122,9 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         else:
             return [self._parse_message(choice.message) for choice in response.choices]
 
-    def _parse_message(self, message: ChatCompletionMessage, functions: bool = False) -> Tuple[str, str]:
+    def _parse_message(
+        self, message: ChatCompletionMessage, functions: bool = False
+    ) -> Tuple[str, str]:
         """Parses the message from the response, returns a tuple of (assistant response, tool response)."""
         assistant_content = message.content
         tool_content = ""
@@ -118,9 +133,11 @@ class AzureChatCompletionWithData(AzureChatCompletion):
                 if m["role"] == "tool":
                     tool_content = m.get("content", "")
                     break
-        
+
         if functions:
-            function_call = message.function_call if hasattr(message, "function_call") else None
+            function_call = (
+                message.function_call if hasattr(message, "function_call") else None
+            )
             if function_call:
                 function_call = FunctionCall(
                     name=function_call.name,
@@ -167,10 +184,7 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         messages: Optional[List[Dict[str, str]]] = None,
         stream: bool = False,
         functions: Optional[List[Dict[str, Any]]] = None,
-    ) -> Union[
-        ChatCompletion,
-        AsyncStream[ChatCompletionChunk],
-    ]:
+    ) -> Union[ChatCompletion, AsyncStream[ChatCompletionChunk],]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -229,7 +243,9 @@ class AzureChatCompletionWithData(AzureChatCompletion):
                     "dataSources": [
                         {
                             "type": self._data_source_settings.data_source_type.value,
-                            "parameters": asdict(self._data_source_settings.data_source_parameters)
+                            "parameters": asdict(
+                                self._data_source_settings.data_source_parameters
+                            ),
                         }
                     ]
                 }
@@ -269,13 +285,14 @@ class AzureChatCompletionWithData(AzureChatCompletion):
             model_args["extra_body"]["outputLanguage"] = request_settings.outputLanguage
 
         return model_args
-        
-    async def complete_chat_with_functions_async(self, 
-            messages: List[Dict[str, str]], 
-            functions: List[Dict[str, Any]], 
-            request_settings: ChatRequestSettings, 
-            logger: Logger = None
-        ):
+
+    async def complete_chat_with_functions_async(
+        self,
+        messages: List[Dict[str, str]],
+        functions: List[Dict[str, Any]],
+        request_settings: ChatRequestSettings,
+        logger: Logger = None,
+    ):
         response = await self._send_request(
             messages=messages,
             request_settings=request_settings,
@@ -288,15 +305,25 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         else:
             return [
                 self._parse_message(choice.message, True) for choice in response.choices
-            ]    
-        
-    async def complete_async(self, prompt: str, request_settings: CompleteRequestSettings, logger: Logger= None):
+            ]
+
+    async def complete_async(
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Logger = None,
+    ):
         raise AIException(
             AIException.ErrorCodes.InvalidRequest,
             "AzureChatCompletionWithData does not support completions. Use complete_chat_async instead.",
         )
-    
-    async def complete_stream_async(self, prompt: str, request_settings: CompleteRequestSettings, logger: Logger= None):
+
+    async def complete_stream_async(
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Logger = None,
+    ):
         raise AIException(
             AIException.ErrorCodes.InvalidRequest,
             "AzureChatCompletionWithData does not support completions. Use complete_chat_stream_async instead.",

@@ -247,6 +247,7 @@ def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
 
     return api_key, url
 
+
 def azure_aisearch_datasource_settings_from_dot_env() -> Tuple[str, str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
@@ -265,6 +266,7 @@ def azure_aisearch_datasource_settings_from_dot_env() -> Tuple[str, str, str]:
 
     return api_key, url, index_name
 
+
 def azure_aisearch_datasource_settings_from_dot_env_as_dict() -> Dict[str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
@@ -273,8 +275,4 @@ def azure_aisearch_datasource_settings_from_dot_env_as_dict() -> Dict[str, str]:
         Dict[str, str]: the Azure AI search environment variables
     """
     api_key, url, index_name = azure_aisearch_datasource_settings_from_dot_env()
-    return {
-        "key": api_key,
-        "endpoint": url,
-        "indexName": index_name
-    }
+    return {"key": api_key, "endpoint": url, "indexName": index_name}
