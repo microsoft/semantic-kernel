@@ -61,22 +61,18 @@ public static class Example33_StreamingChat
 
         // Second bot assistant message
         await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
-
-        Console.WriteLine("\n------------------------");
     }
 
     private static async Task StreamMessageOutputAsync(IChatCompletion chatCompletion, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
-
-        Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
 
         await foreach (var chatUpdate in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}\n");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
                 roleWritten = true;
             }
 

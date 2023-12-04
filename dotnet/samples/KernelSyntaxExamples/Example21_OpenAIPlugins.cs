@@ -35,7 +35,6 @@ public static class Example21_OpenAIPlugins
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
-        Console.ReadLine();
 
         //--------------- Example of using Klarna OpenAI plugin ------------------------
 
@@ -54,6 +53,5 @@ public static class Example21_OpenAIPlugins
         //var result = functionResult.GetValue<RestApiOperationResponse>();
 
         //Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
-        //Console.ReadLine();
     }
 }
