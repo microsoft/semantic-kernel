@@ -39,7 +39,7 @@ public static class Example71_AssistantDelegation
             await new AssistantBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
-                .WithDescription("Answer questions about the menu use the tool.")
+                .WithDescription("Answer questions about how the menu uses the tool.")
                 .WithPlugin(plugin)
                 .BuildAsync();
 
