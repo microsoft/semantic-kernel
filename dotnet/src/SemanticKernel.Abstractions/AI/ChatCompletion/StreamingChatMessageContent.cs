@@ -40,7 +40,7 @@ public class StreamingChatMessageContent : StreamingContentBase
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
     [JsonConstructor]
-    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Role = role;
         this.Content = content;

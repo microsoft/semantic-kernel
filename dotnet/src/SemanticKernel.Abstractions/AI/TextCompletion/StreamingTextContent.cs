@@ -31,7 +31,7 @@ public class StreamingTextContent : StreamingContentBase
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
     [JsonConstructor]
-    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

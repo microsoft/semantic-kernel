@@ -26,7 +26,7 @@ public abstract class StreamingContentBase
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
@@ -52,11 +52,14 @@ public abstract class StreamingContentBase
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex"></param>
     /// <param name="metadata"></param>
-    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, IReadOnlyDictionary<string, object?>? metadata = null)
+    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, IDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
-        this.Metadata = metadata;
+        if (metadata is not null)
+        {
+            this.Metadata = new Dictionary<string, object?>(metadata);
+        }
     }
 
     /// <summary>

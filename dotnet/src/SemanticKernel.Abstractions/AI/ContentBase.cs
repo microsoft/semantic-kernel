@@ -29,7 +29,10 @@ public abstract class ContentBase
     protected ContentBase(object? innerContent, IDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
-        this.Metadata = metadata;
+        if (metadata is not null)
+        {
+            this.Metadata = new Dictionary<string, object?>(metadata);
+        }
     }
 
     /// <summary>
