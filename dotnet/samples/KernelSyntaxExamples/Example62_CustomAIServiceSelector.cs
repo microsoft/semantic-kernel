@@ -12,7 +12,7 @@ using RepoUtils;
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>
-    /// Show how to configure model request settings
+    /// Show how to use a custom AI service selector to select the GPT 3.x model
     /// </summary>
     public static async Task RunAsync()
     {

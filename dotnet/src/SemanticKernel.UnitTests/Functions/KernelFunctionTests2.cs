@@ -586,7 +586,7 @@ public sealed class KernelFunctionTests2
 
         var arguments = new KernelArguments();
         arguments["input"] = "42";
-        arguments["orother"] = "8";
+        arguments["orother"] = 8;
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
@@ -727,11 +727,11 @@ public sealed class KernelFunctionTests2
 
         var arguments = new KernelArguments();
         arguments["a"] = "1";
-        arguments["b"] = "-2";
+        arguments["b"] = -2;
         arguments["c"] = "1234";
-        arguments["d"] = "7e08cc00-1d71-4558-81ed-69929499dea1";
+        arguments["d"] = Guid.Parse("7e08cc00-1d71-4558-81ed-69929499dea1");
         arguments["e"] = "Thu, 25 May 2023 20:17:30 GMT";
-        arguments["f"] = "Monday";
+        arguments["f"] = DayOfWeek.Monday;
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
@@ -780,7 +780,7 @@ public sealed class KernelFunctionTests2
 #pragma warning restore CA1812
 
     [Fact]
-    public async Task ItSupportsConvertingFromToManyTypesAsync()
+    public async Task ItSupportsConvertingArgumentsFromStringToManyTypesAsync()
     {
         // Arrange
         var arguments = new KernelArguments();
@@ -815,6 +815,98 @@ public sealed class KernelFunctionTests2
 
         arguments["input"] = "http://example.com/semantic";
         await AssertResult((Uri input) => new Uri(input, "kernel"), new Uri("http://example.com/kernel"), "http://example.com/kernel");
+    }
+
+    [Fact]
+    public async Task ItSupportsArgumentsAsIsWithoutConvertingTheirTypeAsync()
+    {
+        //Arrange
+        async Task AssertParameterType<T>(T expected)
+        {
+            var d = (T actual) =>
+            {
+                //Check the argument is of the expected type
+                if (actual is not null)
+                {
+                    Assert.IsType<T>(actual);
+                }
+
+                //Check the argument value is the expected value
+                Assert.Equal(expected, actual);
+            };
+
+            var arguments = new KernelArguments() { { "actual", (T)expected } };
+
+            await KernelFunctionFactory.CreateFromMethod(d, functionName: "Test")!.InvokeAsync(this._kernel, arguments);
+        }
+
+        // Act & Assert
+        await AssertParameterType<string?>(null);
+        await AssertParameterType<string>("2");
+        await AssertParameterType<byte>(2);
+        await AssertParameterType<sbyte>(2);
+        await AssertParameterType<short>(2);
+        await AssertParameterType<ushort>(2);
+        await AssertParameterType<int>(2);
+        await AssertParameterType<uint>(2);
+        await AssertParameterType<long>(2);
+        await AssertParameterType<ulong>(2);
+        await AssertParameterType<float>(2);
+        await AssertParameterType<double>(2);
+        await AssertParameterType<decimal>(2);
+        await AssertParameterType<char>('w');
+        await AssertParameterType<bool>(true);
+        await AssertParameterType<DateTime>(DateTime.UtcNow);
+        await AssertParameterType<DateTimeOffset>(DateTimeOffset.UtcNow);
+        await AssertParameterType<TimeSpan>(TimeSpan.FromMinutes(1));
+        await AssertParameterType<Guid>(Guid.NewGuid());
+        await AssertParameterType<ConsoleColor>(ConsoleColor.Blue);
+        await AssertParameterType<Uri>(new Uri("https://fake-random-test-host/fake-path"));
+        await AssertParameterType<object>(new object());
+    }
+
+    [Fact]
+    public async Task ItSupportsArgumentsImplicitConversionAsync()
+    {
+        //Arrange
+        var arguments = new KernelArguments()
+        {
+            ["l"] = (int)1,     //Expected parameter type: long
+            ["i"] = (byte)1,    //Expected parameter type: int
+            ["d"] = (float)1.0, //Expected parameter type: double
+            ["f"] = (uint)1.0   //Expected parameter type: float
+        };
+
+        var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f) =>
+        {
+            Assert.Equal(1, l);
+            Assert.Equal(1, i);
+            Assert.Equal(1.0, d);
+            Assert.Equal(1.0, f);
+        },
+        functionName: "Test");
+
+        // Act & Assert
+        await function.InvokeAsync(this._kernel, arguments);
+    }
+
+    [Fact]
+    public async Task ItSupportsParametersWithDefaultValuesAsync()
+    {
+        //Arrange
+
+        static void Test(int a, long b = 20, string c = "dv", char d = 'w')
+        {
+            Assert.Equal(10, a);
+            Assert.Equal(20, b);
+            Assert.Equal("dv", c);
+            Assert.Equal('w', d);
+        }
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+
+        await function.InvokeAsync(this._kernel, arguments: new() { { "a", 10 } }); // Passing value for the 'a' parameter only.
     }
 
     [Fact]
@@ -865,7 +957,7 @@ public sealed class KernelFunctionTests2
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => function.InvokeAsync(this._kernel, arguments));
 
         //Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", arguments["g"]!);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", (string?)arguments["g"]!);
     }
 
     [Fact]

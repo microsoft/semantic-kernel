@@ -4,8 +4,8 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -35,7 +35,6 @@ public static class Example21_OpenAIPlugins
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
-        Console.ReadLine();
 
         //--------------- Example of using Klarna OpenAI plugin ------------------------
 
@@ -54,6 +53,5 @@ public static class Example21_OpenAIPlugins
         //var result = functionResult.GetValue<RestApiOperationResponse>();
 
         //Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
-        //Console.ReadLine();
     }
 }
