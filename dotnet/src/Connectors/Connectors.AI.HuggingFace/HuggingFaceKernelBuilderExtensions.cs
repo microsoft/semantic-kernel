@@ -4,8 +4,8 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
 
