@@ -295,7 +295,7 @@ internal abstract class ClientCore
             chatOptions.Messages.Add(resultChoice.Message);
             chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
-            chat.AddAssistantMessage(result.Content);
+            chat.AddMessage(result);
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
