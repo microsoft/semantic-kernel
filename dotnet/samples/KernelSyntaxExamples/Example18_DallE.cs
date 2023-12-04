@@ -48,18 +48,18 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatGPT.CreateNewChat(
-            "You're chatting with a user. Instead of replying directly to the user" +
-            " provide the description of an image that expresses what you want to say." +
-            " The user won't see your message, they will see only the image. The system " +
-            " generates an image using your description, so it's important you describe the image with details.");
+        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        var chatHistory = new ChatHistory(
+           "You're chatting with a user. Instead of replying directly to the user" +
+           " provide the description of an image that expresses what you want to say." +
+           " The user won't see your message, they will see only the image. The system " +
+           " generates an image using your description, so it's important you describe the image with details.");
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -69,7 +69,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -116,8 +116,8 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatGPT.CreateNewChat(
+        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
             " The user won't see your message, they will see only the image. The system " +
@@ -127,7 +127,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
@@ -137,7 +137,7 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);

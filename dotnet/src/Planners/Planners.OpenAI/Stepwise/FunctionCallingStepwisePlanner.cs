@@ -45,7 +45,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
-        IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
+        IChatCompletionService chatCompletion = kernel.GetService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType());
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
@@ -136,10 +136,10 @@ public sealed class FunctionCallingStepwisePlanner
 
     #region private
 
-    private async Task<IChatResult> GetCompletionWithFunctionsAsync(
+    private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
     ChatHistory chatHistory,
     Kernel kernel,
-    IChatCompletion chatCompletion,
+    IChatCompletionService chatCompletion,
     OpenAIPromptExecutionSettings openAIExecutionSettings,
     ILogger logger,
     CancellationToken cancellationToken)
@@ -147,7 +147,7 @@ public sealed class FunctionCallingStepwisePlanner
         openAIExecutionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
-        return (await chatCompletion.GetChatCompletionsAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))[0];
+        return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<string> GetFunctionsManualAsync(Kernel kernel, ILogger logger, CancellationToken cancellationToken)
@@ -173,11 +173,11 @@ public sealed class FunctionCallingStepwisePlanner
         string goal,
         string initialPlan,
         Kernel kernel,
-        IChatCompletion chatCompletion,
+        IChatCompletionService chatCompletion,
         KernelPromptTemplateFactory promptTemplateFactory,
         CancellationToken cancellationToken)
     {
-        var chatHistory = chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         // Add system message with context about the initial goal/plan
         var arguments = new KernelArguments
@@ -192,13 +192,16 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-    private bool TryGetFunctionResponse(IChatResult chatResult, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
+    private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
     {
+        OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
+        Verify.NotNull(openAiChatMessage, nameof(openAiChatMessage));
+
         functionResponse = null;
         errorMessage = null;
         try
         {
-            functionResponse = chatResult.GetOpenAIFunctionResponse();
+            functionResponse = openAiChatMessage.GetOpenAIFunctionResponse();
         }
         catch (JsonException)
         {
