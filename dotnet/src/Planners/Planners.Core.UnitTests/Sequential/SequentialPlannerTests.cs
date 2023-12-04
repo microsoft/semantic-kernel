@@ -94,14 +94,14 @@ public sealed class SequentialPlannerTests
 
         var textGenerationResult = new List<ITextResult> { textResult.Object };
 
-        var textGeneration = new Mock<ITextGeneration>();
+        var textGeneration = new Mock<ITextGenerationService>();
         textGeneration
             .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(textGenerationResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextGeneration>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextGenerationService>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
             .Returns((textGeneration.Object, new PromptExecutionSettings()));
 
         var serviceCollection = new ServiceCollection();
