@@ -24,7 +24,6 @@ public static class PineconeMemoryBuilderExtensions
         string apiKey,
         HttpClient? httpClient = null)
     {
-
         builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             var client = new PineconeClient(
