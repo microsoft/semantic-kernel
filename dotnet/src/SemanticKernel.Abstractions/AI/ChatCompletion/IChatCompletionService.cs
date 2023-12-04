@@ -9,9 +9,9 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
-/// Interface for chat completion services
+/// Interface for chat completion services.
 /// </summary>
-public interface IChatCompletion : IAIService
+public interface IChatCompletionService : IAIService
 {
     /// <summary>
     /// Create a new empty chat instance

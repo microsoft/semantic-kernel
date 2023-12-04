@@ -30,15 +30,15 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(GetCompletionWithDataConfig());
-        var chatHistory = chatCompletion.CreateNewChat();
+        var chatCompletionService = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
+        var chatHistory = chatCompletionService.CreateNewChat();
 
         // First question without previous context based on uploaded content.
         var ask = "How did Emily and David meet?";
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
+        var chatResult = (await chatCompletionService.GetChatCompletionsAsync(chatHistory))[0];
         var chatMessage = await chatResult.GetChatMessageAsync();
 
         var response = chatMessage.Content;
@@ -67,7 +67,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingContentAsync<string>(chatHistory))
+        await foreach (string word in chatCompletionService.GetStreamingContentAsync<string>(chatHistory))
         {
             Console.Write(word);
         }

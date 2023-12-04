@@ -25,19 +25,19 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /// <summary>
-/// Azure OpenAI Chat Completion with data client.
+/// Azure OpenAI Chat Completion with data service.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCompletion
+public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextCompletion
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithData"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataService"/> class.
     /// </summary>
     /// <param name="config">Instance of <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class with completion configuration.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">Instance of <see cref="ILoggerFactory"/> to use for logging.</param>
-    public AzureOpenAIChatCompletionWithData(
+    public AzureOpenAIChatCompletionWithDataService(
         AzureOpenAIChatCompletionWithDataConfig config,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
