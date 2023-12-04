@@ -173,7 +173,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItGetChatMessageContentsShouldHaveModelIdDefinedAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(AzureChatCompletionResponse, Encoding.UTF8, "application/json") };
 
@@ -192,7 +192,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItGetTextContentsShouldHaveModelIdDefinedAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(AzureChatCompletionResponse, Encoding.UTF8, "application/json") };
 
