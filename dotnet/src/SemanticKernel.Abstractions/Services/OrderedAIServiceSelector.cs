@@ -18,7 +18,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
     {
         var executionSettings = function.ExecutionSettings;
-        if (executionSettings is null || !executionSettings.Any())
+        if (executionSettings is null || executionSettings.Count == 0)
         {
             var service = kernel.Services is IKeyedServiceProvider ?
                 kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
@@ -30,7 +30,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         }
         else
         {
-            PromptExecutionSettings? defaultRequestSettings = null;
+            PromptExecutionSettings? defaultExecutionSettings = null;
             foreach (var model in executionSettings)
             {
                 if (!string.IsNullOrEmpty(model.ServiceId))
@@ -53,14 +53,14 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 }
                 else
                 {
-                    // First request settings with empty or null service id is the default
-                    defaultRequestSettings ??= model;
+                    // First execution settings with empty or null service id is the default
+                    defaultExecutionSettings ??= model;
                 }
             }
 
-            if (defaultRequestSettings is not null)
+            if (defaultExecutionSettings is not null)
             {
-                return (kernel.GetService<T>(), defaultRequestSettings);
+                return (kernel.GetService<T>(), defaultExecutionSettings);
             }
         }
 

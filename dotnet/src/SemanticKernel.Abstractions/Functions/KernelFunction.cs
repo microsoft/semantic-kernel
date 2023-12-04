@@ -59,7 +59,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IEnumerable<PromptExecutionSettings> ExecutionSettings { get; }
+    internal List<PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -69,7 +69,7 @@ public abstract class KernelFunction
     /// <param name="parameters">Function parameters metadata</param>
     /// <param name="returnParameter">Function return parameter metadata</param>
     /// <param name="executionSettings">Prompt execution settings.</param>
-    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, IEnumerable<PromptExecutionSettings>? executionSettings = null)
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, List<PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -80,7 +80,7 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? new()
         };
-        this.ExecutionSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
+        this.ExecutionSettings = executionSettings;
     }
 
     /// <summary>
@@ -188,12 +188,12 @@ public abstract class KernelFunction
     /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
+        return this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
     }
 
     /// <summary>

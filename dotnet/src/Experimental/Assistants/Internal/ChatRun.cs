@@ -127,15 +127,20 @@ internal sealed class ChatRun
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
+        var toolResult = result as string;
+        if (toolResult == null)
+        {
+            toolResult = JsonSerializer.Serialize(result);
+        }
 
         return
             new ToolResultModel
             {
                 CallId = callId,
-                Output = result,
+                Output = toolResult!,
             };
 
-        async Task<string> InvokeFunctionCallAsync()
+        async Task<object> InvokeFunctionCallAsync()
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
@@ -152,8 +157,7 @@ internal sealed class ChatRun
             var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
             if (result.ValueType == typeof(AssistantResponse))
             {
-                var response = result.GetValue<AssistantResponse>()!;
-                return response.Response ?? string.Empty;
+                return result.GetValue<AssistantResponse>()!;
             }
 
             return result.GetValue<string>() ?? string.Empty;

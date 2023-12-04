@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
