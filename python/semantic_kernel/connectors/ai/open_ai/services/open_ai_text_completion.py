@@ -36,6 +36,52 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             log: The logger instance to use. (Optional)
         """
 
+    @overload
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an OpenAITextCompletion service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
+        """
+
+    @overload
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an OpenAITextCompletion service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
+        """
+
     def __init__(
         self,
         ai_model_id: str,
