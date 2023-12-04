@@ -1,27 +1,26 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIRequestSettings,
 )
 
 
 def test_default_complete_request_settings():
-    settings = CompleteRequestSettings()
+    settings = OpenAIRequestSettings()
     assert settings.temperature == 0.0
     assert settings.top_p == 1.0
     assert settings.presence_penalty == 0.0
     assert settings.frequency_penalty == 0.0
     assert settings.max_tokens == 256
-    assert settings.stop_sequences == []
+    assert settings.stop is None
     assert settings.number_of_responses == 1
-    assert settings.logprobs == 0
-    assert settings.token_selection_biases == {}
-    assert settings.chat_system_prompt == "Assistant is a large language model."
+    assert settings.logprobs is None
+    assert settings.logit_bias == {}
+    assert settings.messages[0]["content"] == "Assistant is a large language model."
 
 
 def test_custom_complete_request_settings():
-    settings = CompleteRequestSettings(
+    settings = OpenAIRequestSettings(
         temperature=0.5,
         top_p=0.5,
         presence_penalty=0.5,
@@ -31,7 +30,7 @@ def test_custom_complete_request_settings():
         number_of_responses=2,
         logprobs=1,
         token_selection_biases={1: 1},
-        chat_system_prompt="Hello",
+        messages=[{"role": "system", "content": "Hello"}],
     )
     assert settings.temperature == 0.5
     assert settings.top_p == 0.5
@@ -42,25 +41,13 @@ def test_custom_complete_request_settings():
     assert settings.number_of_responses == 2
     assert settings.logprobs == 1
     assert settings.token_selection_biases == {1: 1}
-    assert settings.chat_system_prompt == "Hello"
-
-
-def test_default_chat_request_settings():
-    settings = ChatRequestSettings()
-    assert settings.temperature == 0.0
-    assert settings.top_p == 1.0
-    assert settings.presence_penalty == 0.0
-    assert settings.frequency_penalty == 0.0
-    assert settings.max_tokens == 256
-    assert settings.stop_sequences == []
-    assert settings.number_of_responses == 1
-    assert settings.token_selection_biases == {}
+    assert settings.chat_system_prompt == [{"role": "system", "content": "Hello"}]
 
 
 def test_complete_request_settings_from_default_completion_config():
-    settings = CompleteRequestSettings()
-    chat_settings = ChatRequestSettings.from_completion_config(settings)
-    chat_settings = ChatRequestSettings()
+    settings = OpenAIRequestSettings()
+    chat_settings = OpenAIRequestSettings.from_ai_request(settings)
+    chat_settings = OpenAIRequestSettings()
     assert chat_settings.temperature == 0.0
     assert chat_settings.top_p == 1.0
     assert chat_settings.presence_penalty == 0.0
@@ -72,7 +59,7 @@ def test_complete_request_settings_from_default_completion_config():
 
 
 def test_chat_request_settings_from_custom_completion_config():
-    settings = CompleteRequestSettings(
+    settings = OpenAIRequestSettings(
         temperature=0.5,
         top_p=0.5,
         presence_penalty=0.5,
@@ -84,7 +71,7 @@ def test_chat_request_settings_from_custom_completion_config():
         token_selection_biases={1: 1},
         chat_system_prompt="Hello",
     )
-    chat_settings = ChatRequestSettings.from_completion_config(settings)
+    chat_settings = OpenAIRequestSettings.from_ai_request(settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5

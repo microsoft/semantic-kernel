@@ -9,8 +9,8 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
@@ -133,7 +133,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    complete_request_settings = CompleteRequestSettings()
+    complete_request_settings = OpenAIRequestSettings()
     azure_text_completion = AzureTextCompletion(
         deployment_name=deployment_name,
         endpoint=endpoint,
@@ -170,7 +170,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    complete_request_settings = CompleteRequestSettings()
+    complete_request_settings = OpenAIRequestSettings()
 
     token_bias = {200: 100}
     complete_request_settings.token_selection_biases = token_bias

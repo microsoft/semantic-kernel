@@ -30,7 +30,7 @@ kernel = sk.Kernel()
 api_key = sk.google_palm_settings_from_dot_env()
 palm_chat_completion = sk_gp.GooglePalmChatCompletion("models/chat-bison-001", api_key)
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+prompt_config = sk.PromptConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8
 )
 prompt_template = sk.ChatPromptTemplate(

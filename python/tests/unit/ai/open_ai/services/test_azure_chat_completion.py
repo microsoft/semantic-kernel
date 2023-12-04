@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIRequestSettings
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
@@ -157,7 +157,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
     prompt = "hello world"
     messages_in = [{"role": "user", "content": prompt}]
     messages_out = [{"role": "user", "content": prompt}]
-    complete_request_settings = ChatRequestSettings()
+    complete_request_settings = OpenAIRequestSettings(service_id="test_service_id")
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -195,7 +195,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = ChatRequestSettings()
+    complete_request_settings = OpenAIRequestSettings()
 
     token_bias = {1: -100}
     complete_request_settings.token_selection_biases = token_bias
@@ -238,7 +238,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
 
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = ChatRequestSettings()
+    complete_request_settings = OpenAIRequestSettings()
 
     stop = ["!"]
     complete_request_settings.stop_sequences = stop

@@ -1,10 +1,10 @@
 import pytest
 
 from semantic_kernel.models.chat.chat_message import ChatMessage
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
+from semantic_kernel.semantic_functions.prompt_config import (
+    PromptConfig,
 )
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 
 
 def test_chat_message():
@@ -21,7 +21,7 @@ async def test_chat_message_rendering(create_kernel):
     # Test initialization with custom values
     kernel = create_kernel
     expected_content = "Hello, world!"
-    prompt_config = PromptTemplateConfig.from_completion_parameters(
+    prompt_config = PromptConfig.from_completion_parameters(
         max_tokens=2000, temperature=0.7, top_p=0.8
     )
     content_template = PromptTemplate(

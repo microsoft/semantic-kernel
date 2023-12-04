@@ -3,10 +3,10 @@
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
+from semantic_kernel.semantic_functions.prompt_config import (
+    PromptConfig,
 )
+from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -21,30 +21,32 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplate(PromptTemplateBase):
-    _template: str
-    _template_engine: PromptTemplatingEngine
-    _prompt_config: PromptTemplateConfig
+    template: str
+    template_engine: PromptTemplatingEngine
+    prompt_config: PromptConfig
 
     def __init__(
         self,
         template: str,
         template_engine: PromptTemplatingEngine,
-        prompt_config: PromptTemplateConfig,
+        prompt_config: PromptConfig,
         log: Optional[Any] = None,
     ) -> None:
         if log:
             logger.warning(
                 "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
-        self._template = template
-        self._template_engine = template_engine
-        self._prompt_config = prompt_config
+        super().__init__(
+            template=template,
+            template_engine=template_engine,
+            prompt_config=prompt_config,
+        )
 
     def get_parameters(self) -> List[ParameterView]:
         seen = set()
 
         result = []
-        for param in self._prompt_config.input.parameters:
+        for param in self.prompt_config.parameters:
             if param is None:
                 continue
 
@@ -58,7 +60,7 @@ class PromptTemplate(PromptTemplateBase):
 
             seen.add(param.name)
 
-        blocks = self._template_engine.extract_blocks(self._template)
+        blocks = self.template_engine.extract_blocks(self.template)
         for block in blocks:
             if block.type != BlockTypes.VARIABLE:
                 continue
@@ -78,4 +80,4 @@ class PromptTemplate(PromptTemplateBase):
         return result
 
     async def render_async(self, context: "SKContext") -> str:
-        return await self._template_engine.render_async(self._template, context)
+        return await self.template_engine.render_async(self.template, context)

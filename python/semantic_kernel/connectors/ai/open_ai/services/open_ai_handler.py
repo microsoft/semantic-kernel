@@ -11,6 +11,7 @@ from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
     OpenAIRequestSettings,
@@ -34,10 +35,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-        prompt: Optional[str] = None,
-        messages: Optional[List[Dict[str, str]]] = None,
-        stream: bool = False,
-        functions: Optional[List[Dict[str, Any]]] = None,
     ) -> Union[
         ChatCompletion,
         Completion,
@@ -51,27 +48,31 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         Arguments:
             prompt {str} -- The prompt to complete.
             messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
-            request_settings {CompleteRequestSettings} -- The request settings.
+            request_settings {OpenAIRequestSettings} -- The request settings.
             stream {bool} -- Whether to stream the response.
 
         Returns:
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
+        if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
+            raise AIException(
+                AIException.ErrorCodes.FunctionTypeNotSupported,
+                "The model type is not supported for this operation, please use a text or chat model",
+            )
         chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
-        self._validate_request(request_settings, prompt, messages, chat_mode)
-        model_args = self._create_model_args(
-            request_settings,
-            stream,
-            prompt,
-            messages,
-            functions,
-            chat_mode,
-        )
         try:
             response = await (
-                self.client.chat.completions.create(**model_args)
+                self.client.chat.completions.create(
+                    **request_settings.create_options(
+                        chat_mode=chat_mode, model=self.ai_model_id
+                    )
+                )
                 if chat_mode
-                else self.client.completions.create(**model_args)
+                else self.client.completions.create(
+                    **request_settings.create_options(
+                        chat_mode=chat_mode, model=self.ai_model_id
+                    )
+                )
             )
         except Exception as ex:
             raise AIException(
@@ -85,32 +86,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             self.completion_tokens += response.usage.completion_tokens
             self.total_tokens += response.usage.total_tokens
         return response
-
-    def _validate_request(self, request_settings, prompt, messages, chat_mode):
-        """Validate the request, check if the settings are present and valid."""
-        try:
-            assert (
-                self.ai_model_type != OpenAIModelTypes.EMBEDDING
-            ), "The model type is not supported for this operation, please use a text or chat model"
-        except AssertionError as exc:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported, exc.args[0], exc
-            ) from exc
-        try:
-            assert request_settings, "The request settings cannot be `None`"
-            assert (
-                request_settings.max_tokens >= 1
-            ), f"The max tokens must be greater than 0, but was {request_settings.max_tokens}"
-            if chat_mode:
-                assert (
-                    prompt or messages
-                ), "The messages cannot be `None` or empty, please use either prompt or messages"
-            if not chat_mode:
-                assert prompt, "The prompt cannot be `None` or empty"
-        except AssertionError as exc:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest, exc.args[0], exc
-            ) from exc
 
     def _create_model_args(
         self,
@@ -201,3 +176,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     @abstractmethod
     def get_model_args(self) -> Dict[str, Any]:
         """Return the model args for the specific openai api."""
+
+    def request_settings_factory(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return OpenAIRequestSettings

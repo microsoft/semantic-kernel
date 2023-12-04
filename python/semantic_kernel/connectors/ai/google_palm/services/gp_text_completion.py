@@ -8,8 +8,8 @@ from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
+    GooglePalmRequestSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -41,7 +41,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        request_settings: GooglePalmRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
@@ -57,7 +57,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_stream_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        request_settings: GooglePalmRequestSettings,
         **kwargs,
     ):
         if kwargs.get("logger"):
@@ -69,7 +69,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         )
 
     async def _send_completion_request(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self, prompt: str, request_settings: GooglePalmRequestSettings
     ):
         """
         Completes the given prompt. Returns a single string completion.
@@ -77,7 +77,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
+            request_settings {GooglePalmRequestSettings} -- The request settings.
 
         Returns:
             str -- The completed text.

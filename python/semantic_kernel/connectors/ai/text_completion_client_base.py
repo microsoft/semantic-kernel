@@ -5,9 +5,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncGenerator, List, Optional, Union
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.complete_request_settings import (
-        CompleteRequestSettings,
-    )
+    from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 
 
 class TextCompletionClientBase(ABC):
@@ -17,7 +15,7 @@ class TextCompletionClientBase(ABC):
     async def complete_async(
         self,
         prompt: str,
-        settings: "CompleteRequestSettings",
+        settings: "AIRequestSettings",
         logger: Optional[Any] = None,
     ) -> Union[str, List[str]]:
         """
@@ -25,7 +23,8 @@ class TextCompletionClientBase(ABC):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {CompleteRequestSettings} -- Settings for the request.
+            settings {AIRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging (deprecated).
 
             Returns:
                 Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
@@ -35,7 +34,7 @@ class TextCompletionClientBase(ABC):
     async def complete_stream_async(
         self,
         prompt: str,
-        settings: "CompleteRequestSettings",
+        settings: "AIRequestSettings",
         logger: Optional[Any] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
@@ -43,7 +42,8 @@ class TextCompletionClientBase(ABC):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {CompleteRequestSettings} -- Settings for the request.
+            settings {AIRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging (deprecated).
 
         Yields:
             A stream representing the response(s) from the LLM.

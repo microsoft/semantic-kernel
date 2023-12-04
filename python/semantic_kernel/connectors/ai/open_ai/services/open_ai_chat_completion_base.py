@@ -2,7 +2,6 @@
 
 import logging
 from typing import (
-    Any,
     AsyncGenerator,
     Dict,
     List,
@@ -19,7 +18,7 @@ from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
+from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -30,35 +29,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
         **kwargs,
-    ) -> Union[str, List[str]]:
-        """Executes a chat completion request and returns the result.
-
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
-        """
-        if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        response = await self._send_request(
-            messages=messages, request_settings=settings, stream=False
-        )
-
-        if len(response.choices) == 1:
-            return response.choices[0].message.content
-        else:
-            return [choice.message.content for choice in response.choices]
-
-    async def complete_chat_with_functions_async(
-        self,
-        messages: List[Dict[str, str]],
-        functions: List[Dict[str, Any]],
-        request_settings: OpenAIRequestSettings,
-        **kwargs,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -67,22 +37,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            functions {List[Dict[str, Any]]} -- The functions to use for the chat completion.
-            settings {ChatRequestSettings} -- The settings to use for the chat completion request.
+            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        response = await self._send_request(
-            messages=messages,
-            request_settings=request_settings,
-            stream=False,
-            functions=functions,
-        )
+        settings.messages = messages
+        settings.stream = False
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_request(request_settings=settings)
 
         if len(response.choices) == 1:
             return _parse_message(response.choices[0].message)
@@ -99,18 +64,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {ChatRequestSettings} -- The settings to use for the chat completion request.
+            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        response = await self._send_request(
-            messages=messages, request_settings=settings, stream=True
-        )
+        settings.messages = messages
+        settings.stream = True
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_request(request_settings=settings)
 
         # parse the completion text(s) and yield them
         async for chunk in response:
@@ -120,18 +84,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if settings.number_of_responses > 1:
                 completions = [""] * settings.number_of_responses
                 for choice in chunk.choices:
-                    text, index = self._parse_choices(choice)
+                    text, index = _parse_choices(choice)
                     completions[index] = text
                 yield completions
             # if only one response is requested, yield it
             else:
-                text, index = self._parse_choices(chunk.choices[0])
+                text, index = _parse_choices(chunk.choices[0])
                 yield text
-
-    @staticmethod
-    def _parse_choices(choice) -> Tuple[str, int]:
-        message = ""
-        if choice.delta.content:
-            message += choice.delta.content
-
-        return message, choice.index

@@ -11,8 +11,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.complete_request_settings import (
-        CompleteRequestSettings,
+    from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+        OpenAIRequestSettings,
     )
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -22,25 +22,20 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_async(
         self,
         prompt: str,
-        settings: "CompleteRequestSettings",
+        settings: "OpenAIRequestSettings",
         **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a completion request and returns the result.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {CompleteRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        response = await self._send_request(
-            prompt=prompt, request_settings=settings, stream=False
-        )
+        settings.prompt = prompt
+        response = await self._send_request(request_settings=settings)
 
         if isinstance(response, Completion):
             if len(response.choices) == 1:
@@ -53,7 +48,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_stream_async(
         self,
         prompt: str,
-        settings: "CompleteRequestSettings",
+        settings: "OpenAIRequestSettings",
         **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
@@ -62,18 +57,14 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {CompleteRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        response = await self._send_request(
-            prompt=prompt, request_settings=settings, stream=True
-        )
+        settings.prompt = prompt
+        settings.stream = True
+        response = await self._send_request(request_settings=settings)
 
         async for partial in response:
             if len(partial.choices) == 0:

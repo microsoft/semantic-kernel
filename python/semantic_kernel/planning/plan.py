@@ -9,7 +9,7 @@ from typing import Any, Callable, ClassVar, List, Optional, Union
 from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import CompleteRequestSettings
+from semantic_kernel.connectors.ai import AIRequestSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -42,7 +42,7 @@ class Plan(SKFunctionBase):
     _skill_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
-    _request_settings: CompleteRequestSettings = PrivateAttr()
+    _request_settings: AIRequestSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
@@ -81,7 +81,7 @@ class Plan(SKFunctionBase):
             return not self._is_semantic
 
     @property
-    def request_settings(self) -> CompleteRequestSettings:
+    def request_settings(self) -> AIRequestSettings:
         return self._request_settings
 
     @property
@@ -135,7 +135,7 @@ class Plan(SKFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
@@ -180,7 +180,7 @@ class Plan(SKFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
     ) -> SKContext:
@@ -230,7 +230,7 @@ class Plan(SKFunctionBase):
 
     def set_ai_configuration(
         self,
-        settings: CompleteRequestSettings,
+        settings: AIRequestSettings,
     ) -> SKFunctionBase:
         if self._function is not None:
             self._function.set_ai_configuration(settings)

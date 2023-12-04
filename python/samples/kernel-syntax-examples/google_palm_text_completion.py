@@ -4,8 +4,8 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
+    GooglePalmRequestSettings,
 )
 
 
@@ -24,7 +24,7 @@ async def text_completion_example_complete_async(kernel, api_key, user_mssg, set
 async def main() -> None:
     kernel = sk.Kernel()
     apikey = sk.google_palm_settings_from_dot_env()
-    settings = CompleteRequestSettings()
+    settings = GooglePalmRequestSettings()
 
     user_mssg1 = (
         "Sam has three boxes, each containing a certain number of coins. "

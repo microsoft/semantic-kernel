@@ -9,12 +9,9 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -36,10 +33,10 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
+from semantic_kernel.semantic_functions.prompt_config import (
+    PromptConfig,
 )
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -561,8 +558,6 @@ class Kernel:
 
         if isinstance(service, TextCompletionClientBase):
             self.add_text_completion_service(service_id, service)
-            if self._default_text_completion_service is None:
-                self._default_text_completion_service = service_id
 
         return self
 
@@ -744,9 +739,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
+            req_settings_type = service.__closure__[
+                0
+            ].cell_contents.request_settings_factory()
 
             function.set_chat_configuration(
-                ChatRequestSettings.from_completion_config(
+                req_settings_type.from_ai_request(
                     function_config.prompt_template_config.completion
                 )
             )
@@ -771,7 +769,7 @@ class Kernel:
             )
 
             function.set_ai_configuration(
-                CompleteRequestSettings.from_completion_config(
+                AIRequestSettings.from_completion_config(
                     function_config.prompt_template_config.completion
                 )
             )
@@ -853,7 +851,7 @@ class Kernel:
             if not os.path.exists(prompt_path):
                 continue
 
-            config = PromptTemplateConfig()
+            config = PromptConfig()
             config_path = os.path.join(directory, CONFIG_FILE)
             with open(config_path, "r") as config_file:
                 config = config.from_json(config_file.read())
@@ -893,14 +891,14 @@ class Kernel:
             else f"f_{str(uuid4()).replace('-', '_')}"
         )
 
-        config = PromptTemplateConfig(
+        config = PromptConfig(
             description=(
                 description
                 if description is not None
                 else "Generic function, unknown purpose"
             ),
             type="completion",
-            completion=PromptTemplateConfig.CompletionConfig(
+            completion=PromptConfig.CompletionConfig(
                 temperature,
                 top_p,
                 presence_penalty,

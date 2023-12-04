@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 load_dotenv()
@@ -25,10 +26,13 @@ chat_service = sk_oai.AzureChatCompletion(
     **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_chat_service("chat-gpt", chat_service)
-
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.8
+req_settings = AIRequestSettings(
+    service_id=chat_service.ai_model_id,
+    extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8},
 )
+
+
+prompt_config = sk.PromptConfig(completion=req_settings)
 
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
@@ -61,11 +65,16 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = kernel.run_stream_async(chat_function, input_vars=context_vars)
-    print("Mosscap:> ", end="")
-    async for message in answer:
-        print(message, end="")
-    print("\n")
+    stream = True
+    if stream:
+        answer = kernel.run_stream_async(chat_function, input_vars=context_vars)
+        print("Mosscap:> ", end="")
+        async for message in answer:
+            print(message, end="")
+        print("\n")
+        return True
+    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    print(f"Mosscap:> {answer}")
     return True
 
 

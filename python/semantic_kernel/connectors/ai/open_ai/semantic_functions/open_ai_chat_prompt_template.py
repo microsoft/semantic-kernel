@@ -8,10 +8,10 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message impo
     OpenAIChatMessage,
 )
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
+from semantic_kernel.semantic_functions.prompt_config import (
+    PromptConfig,
 )
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
@@ -22,7 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatPromptTemplate(ChatPromptTemplate):
     def add_function_response_message(self, name: str, content: Any) -> None:
         """Add a function response message to the chat template."""
-        self._messages.append(
+        self.messages.append(
             OpenAIChatMessage(role="function", name=name, fixed_content=str(content))
         )
 
@@ -51,7 +51,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
                     "function_call is not a FunctionCall, ignoring: %s", function_call
                 )
                 function_call = None
-        self._messages.append(
+        self.messages.append(
             OpenAIChatMessage(
                 role=role,
                 content_template=PromptTemplate(
@@ -68,7 +68,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         messages: List[Dict[str, str]],
         template: str,
         template_engine: PromptTemplatingEngine,
-        prompt_config: PromptTemplateConfig,
+        prompt_config: PromptConfig,
         log: Optional[Any] = None,
     ) -> "OpenAIChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.

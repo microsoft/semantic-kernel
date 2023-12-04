@@ -6,15 +6,15 @@ from typing import TYPE_CHECKING
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 
 if TYPE_CHECKING:
-    from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-    from semantic_kernel.semantic_functions.prompt_template_config import (
-        PromptTemplateConfig,
+    from semantic_kernel.semantic_functions.prompt_config import (
+        PromptConfig,
     )
+    from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 
 
 @dataclass
 class SemanticFunctionConfig:
-    prompt_template_config: "PromptTemplateConfig"
+    prompt_template_config: "PromptConfig"
     prompt_template: "PromptTemplate"
 
     @property

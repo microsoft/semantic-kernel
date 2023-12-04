@@ -232,3 +232,11 @@ def _parse_message(
                     tool_content = m.get("content", None)
                     break
         return (content, tool_content, function_call)
+
+
+def _parse_choices(choice) -> Tuple[str, int]:
+    message = ""
+    if choice.delta.content:
+        message += choice.delta.content
+
+    return message, choice.index
