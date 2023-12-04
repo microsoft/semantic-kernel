@@ -83,14 +83,19 @@ We decided to go with options 2: providing special helpers to invoke any functio
 With this approach,
 
 - We will allow customers to use any of the built-in [Handlebars.Net helpers](https://github.com/Handlebars-Net/Handlebars.Net.Helpers).
-- We will provide default utility helpers, which are registered by default.
-- We will provide default prompt helpers (e.g. chat message) which are registered by default.
-- We will register all plugin functions registered on the Kernel.
-- We will allow Kernel function arguments to be easily accessed (i.e., function variables and execution settings).
-- We will allow customer to control when plugin functions are registered as helpers.
+- We will provide utility helpers, which are registered by default.
+- We will provide prompt helpers (e.g. chat message), which are registered by default.
+- We will register all plugin functions registered on the `Kernel`.
+- We will allow customers to control which plugins are registered as helpers
+  - By default, we will honor all options defined in [HandlebarsHelperOptions](https://github.com/Handlebars-Net/Handlebars.Net.Helpers/blob/8f7c9c082e18845f6a620bbe34bf4607dcba405b/src/Handlebars.Net.Helpers/Options/HandlebarsHelpersOptions.cs#L12).
+  - Additionally, we will extend this configuration to include a `RegisterCustomHelpersCallback` option that users can set to register custom helpers.
+- We will allow Kernel function arguments to be easily accessed, i.e., function variables and execution settings, via a `KernelArguments` object.
+- We will allow customers to control when plugin functions are registered as helpers.
   - By default, this is done when template is rendered.
-  - Optionally, this can be done when the Handlebars template factory is constructed by passing in a Plugin collection
-- If conflicts arise between built-in helpers, variables, or kernel objects, we will throw an error clearly explaining what the issue is as well as allow customers to provide their own implementations and overrides, including an option to not register default helpers.
+  - Optionally, this can be done when the Handlebars template factory is constructed by passing in a Plugin collection.
+- If conflicts arise between built-in helpers, variables, or kernel objects:
+  - We will throw an error clearly explaining what the issue is, as well as
+  - Allow customers to provide their own implementations and overrides, including an option to not register default helpers. This can be done by setting `Options.Categories` to an empty array `[]`.
 
 We also decided to follow some guidelines and best practices for designing and implementing the helpers, such as:
 
@@ -114,59 +119,131 @@ Effectively, there will be four buckets of helpers enabled in the Handlebars Tem
 A prototype implementation of a handlebars prompt template engine with built-in helpers could look something like this:
 
 ```csharp
-public async Task<string> RenderAsync(Kernel kernel, ContextVariables contextVariables, CancellationToken cancellationToken = default)
+/// Options for Handlebars helpers (built-in and custom).
+public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
 {
-  return RenderAsync(kernel, contextVariables, new Dictionary<string, object?>(), cancellationToken);
-}
-
-// Overloaded method to support a dict of objects as template variables
-public async Task<string> RenderAsync(Kernel kernel, ContextVariables contextVariables, Dictionary<string, object?> templateVariables, CancellationToken cancellationToken = default)
-{
-  var handlebars = HandlebarsDotNet.Handlebars.Create();
-
-  RegisterKernelFunctionsAsHelpers(kernel, contextVariables, handlebars, templateVariables);
-
-  RegisterSystemHelpers(handlebars, templateVariables);
-
-  var template = handlebars.Compile(this._promptModel.Template);
-
-  var prompt = template(templateVariables);
-
-  return await Task.FromResult(prompt).ConfigureAwait(true);
-}
-
-private static void RegisterKernelFunctionsAsHelpers(
-  Kernel kernel,
-  ContextVariables contextVariables,
-  IHandlebars handlebarsInstance,
-  Dictionary<string, object?> templateVariables,
-  CancellationToken cancellationToken = default)
-{
-  foreach (IKernelPlugin plugin in kernel.Plugins)
+  // Categories tracking built-in system helpers
+  public enum KernelHelperCategories
   {
-      foreach (KernelFunction function in plugin)
-      {
-        handlebarsInstance.RegisterHelper($"{plugin.Name}-{function.Name}", (in HelperOptions options, in Context context, in Arguments arguments)) =>
-        {
-          // 1. Get parameters from HB template arguments
-          // 2. Port parameter values to context variables
-          // 3. Invoke kernel function and write result to the template
-        }
-      }
+    Prompt,
+    Plugin,
+    Context,
+    String,
+    ...
   }
 
+  /// Default character to use for delimiting plugin name and function name in a Handlebars template.
+  public string DefaultNameDelimiter { get; set; } = "-";
+
+  /// Delegate for registering custom helpers.
+  public delegate void RegisterCustomHelpersCallback(IHandlebars handlebarsInstance, KernelArguments executionContext);
+
+  /// Callback for registering custom helpers.
+  public RegisterCustomHelpersCallback? RegisterCustomHelpers { get; set; } = null;
+
+  // Psuedocode, some combination of both KernelHelperCategories and the default HandlebarsHelpersOptions.Categories.
+  public List<Enum> AllCategories = KernelHelperCategories.AddRange(Categories);
 }
 
-private static void RegisterSystemHelpers(
-    IHandlebars handlebarsInstance,
-    Dictionary<string, object?> templateVariables
-)
+// Handlebars Prompt Template
+internal class HandlebarsPromptTemplate : IPromptTemplate
 {
-  // Where each built-in helper will have its own defined class, following the same pattern that is used here https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
-  KernelSystemHelpers.Register(handlebarsContext);
-  KernelPromptHelpers.Register(handlebarsContext);
-  KernelPluginHelpers.Register(handlebarsContext, plugins);
-  ...
+  public async Task<string> RenderAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken = default)
+  {
+    arguments ??= new();
+    var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
+
+    // Add helpers for kernel functions
+    KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+
+    // Add built-in system helpers
+    KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
+
+    // Register any custom helpers
+    if (this._options.RegisterCustomHelpers is not null)
+    {
+      this._options.RegisterCustomHelpers(handlebarsInstance, arguments);
+    }
+    ...
+
+    return await Task.FromResult(prompt).ConfigureAwait(true);
+  }
+}
+
+/// <summary>
+/// Extension class to register Kernel functions as helpers.
+/// </summary>
+public static class KernelFunctionHelpers
+{
+  public static void Register(
+    IHandlebars handlebarsInstance,
+    Kernel kernel,
+    KernelArguments executionContext,
+    string nameDelimiter,
+    CancellationToken cancellationToken = default)
+  {
+      kernel.Plugins.GetFunctionsMetadata().ToList()
+          .ForEach(function =>
+              RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken)
+          );
+  }
+
+  private static void RegisterFunctionAsHelper(
+    Kernel kernel,
+    KernelArguments executionContext,
+    IHandlebars handlebarsInstance,
+    KernelFunctionMetadata functionMetadata,
+    string nameDelimiter,
+    CancellationToken cancellationToken = default)
+  {
+    // Register helper for each function
+    handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments handlebarsArguments) =>
+    {
+      // Get parameters from template arguments; check for required parameters + type match
+
+      // If HashParameterDictionary
+      ProcessHashArguments(functionMetadata, executionContext, handlebarsArguments[0] as IDictionary<string, object>, nameDelimiter);
+
+      // Else
+      ProcessPositionalArguments(functionMetadata, executionContext, handlebarsArguments);
+
+      KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
+
+      InvokeSKFunction(kernel, function, GetKernelArguments(executionContext), cancellationToken);
+    });
+  }
+}
+
+public static class KernelSystemHelpers
+{
+    // Where each built-in helper will have its own defined class, following the same pattern that is used here https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
+    public static void Register(IHandlebars handlebarsInstance, KernelArguments arguments, HandlebarsPromptTemplateOptions options)
+    {
+        RegisterHandlebarsDotNetHelpers(handlebarsInstance, options);
+        RegisterSystemHelpers(handlebarsInstance, arguments, options);
+    }
+
+    private static void RegisterHandlebarsDotNetHelpers(IHandlebars handlebarsInstance, HandlebarsPromptTemplateOptions helperOptions)
+    {
+        HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
+        {
+            ...helperOptions
+        });
+    }
+
+    private static void RegisterSystemHelpers(
+      IHandlebars handlebarsInstance, KernelArguments arguments, HandlebarsPromptTemplateOptions helperOptions)
+    {
+      // Where each built-in helper will have its own defined class, following the same pattern that is used here https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
+
+      if (helperOptions)
+      ...
+      KernelPromptHelpers.Register(handlebarsContext);
+      KernelPluginHelpers.Register(handlebarsContext);
+      KernelStringHelpers..Register(handlebarsContext);
+      ...
+    }
+    ...
 }
 ```
 
