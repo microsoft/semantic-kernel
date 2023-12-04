@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Events;
 using Moq;
 using Xunit;
@@ -26,10 +26,10 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<IServiceProvider, ITextCompletion>>();
+        var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddSingleton<ITextCompletion>(factory.Object);
+            c.AddSingleton<ITextGenerationService>(factory.Object);
         }).Build();
 
         kernel.ImportPluginFromObject<MyPlugin>("mySk");

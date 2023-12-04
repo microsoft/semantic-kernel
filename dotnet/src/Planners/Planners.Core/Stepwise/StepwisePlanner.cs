@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
@@ -348,7 +347,7 @@ public class StepwisePlanner
         }
         else
         {
-            aiService = this._kernel.GetService<ITextCompletion>();
+            aiService = this._kernel.GetService<ITextGeneration>();
             chatHistory = new ChatHistory();
         }
 
@@ -413,7 +412,7 @@ public class StepwisePlanner
             var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
             return llmResponse;
         }
-        else if (aiService is ITextCompletion textCompletion)
+        else if (aiService is ITextGeneration textGeneration)
         {
             var thoughtProcess = string.Join("\n", chatHistory.Select(m => m.Content));
 
@@ -425,7 +424,7 @@ public class StepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textGeneration.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
