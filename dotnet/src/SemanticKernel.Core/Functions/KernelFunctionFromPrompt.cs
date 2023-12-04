@@ -173,14 +173,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 _ when typeof(T) == typeof(string)
                     => (T)(object)content.ToString(),
 
-                _ when typeof(T) == content.GetType()
-                    => (T)(object)content,
-
-                _ when content.InnerContent is not null && typeof(T) == content.InnerContent.GetType()
-                    => (T)content.InnerContent,
-
                 _ when content is T contentAsT
                     => (T)contentAsT,
+
+                _ when content.InnerContent is T innerContentAsT
+                    => (T)innerContentAsT,
 
                 _ when typeof(T) == typeof(byte[])
                     => (T)(object)content.ToByteArray(),
