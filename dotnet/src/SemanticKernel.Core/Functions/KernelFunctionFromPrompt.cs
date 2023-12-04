@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Events;
 
 namespace Microsoft.SemanticKernel;
@@ -211,10 +211,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextCompletion, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<(ITextGeneration, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.GetService<IAIServiceSelector>();
-        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, this, arguments);
+        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextGeneration>(kernel, this, arguments);
         Verify.NotNull(textCompletion);
 
         arguments.ExecutionSettings ??= defaultRequestSettings;

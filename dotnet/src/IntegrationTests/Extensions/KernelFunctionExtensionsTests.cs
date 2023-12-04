@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
@@ -27,7 +27,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextCompletion()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -45,7 +45,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextCompletion()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -65,13 +65,13 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextCompletion : ITextGeneration
     {
         public string? ModelId => null;
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextGeneration.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
         }

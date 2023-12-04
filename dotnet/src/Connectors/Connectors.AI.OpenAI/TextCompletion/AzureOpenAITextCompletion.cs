@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// <summary>
 /// Azure OpenAI text completion client.
 /// </summary>
-public sealed class AzureOpenAITextCompletion : ITextCompletion
+public sealed class AzureOpenAITextCompletion : ITextGeneration
 {
     private readonly AzureOpenAIClientCore _core;
 

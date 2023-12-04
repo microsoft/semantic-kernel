@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Prompts;
@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCompletion
+public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextGeneration
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithData"/> class.

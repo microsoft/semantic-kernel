@@ -2,7 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -44,7 +44,7 @@ public static class Example32_StreamingCompletion
         await TextCompletionStreamAsync(textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task TextCompletionStreamAsync(ITextGeneration textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {

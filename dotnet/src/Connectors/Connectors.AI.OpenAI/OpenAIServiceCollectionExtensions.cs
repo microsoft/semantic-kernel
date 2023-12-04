@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -58,7 +58,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
                 return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -89,7 +89,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -124,7 +124,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
                 return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -156,7 +156,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -186,7 +186,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
                 new AzureOpenAITextCompletion(
                     deploymentName,
                     openAIClient,
@@ -216,7 +216,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextCompletion(
                 deploymentName,
                 openAIClient,
@@ -248,7 +248,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
                 new OpenAITextCompletion(
                     modelId,
                     apiKey,
@@ -278,7 +278,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             new OpenAITextCompletion(
                 modelId,
                 apiKey,
@@ -307,7 +307,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
                 new OpenAITextCompletion(
                     modelId,
                     openAIClient,
@@ -332,7 +332,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             new OpenAITextCompletion(
                 modelId,
                 openAIClient,
@@ -718,7 +718,7 @@ public static class OpenAIServiceCollectionExtensions
             };
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -757,7 +757,7 @@ public static class OpenAIServiceCollectionExtensions
         };
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }
@@ -802,7 +802,7 @@ public static class OpenAIServiceCollectionExtensions
             };
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -842,7 +842,7 @@ public static class OpenAIServiceCollectionExtensions
         };
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }
@@ -874,7 +874,7 @@ public static class OpenAIServiceCollectionExtensions
                 new(deploymentName, openAIClient, modelId, serviceProvider.GetService<ILoggerFactory>());
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -903,7 +903,7 @@ public static class OpenAIServiceCollectionExtensions
             new(deploymentName, openAIClient, modelId, serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }
@@ -935,7 +935,7 @@ public static class OpenAIServiceCollectionExtensions
                     serviceProvider.GetService<ILoggerFactory>());
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -964,7 +964,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }
@@ -1001,7 +1001,7 @@ public static class OpenAIServiceCollectionExtensions
                     serviceProvider.GetService<ILoggerFactory>());
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -1033,7 +1033,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }
@@ -1062,7 +1062,7 @@ public static class OpenAIServiceCollectionExtensions
                 new(modelId, openAIClient, serviceProvider.GetService<ILoggerFactory>());
 
             c.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
         });
     }
 
@@ -1087,7 +1087,7 @@ public static class OpenAIServiceCollectionExtensions
             new(modelId, openAIClient, serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletion>(serviceId, factory);
-        services.AddKeyedSingleton<ITextCompletion>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGeneration>(serviceId, factory);
 
         return services;
     }

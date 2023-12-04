@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
 /// Interface for text completion results.

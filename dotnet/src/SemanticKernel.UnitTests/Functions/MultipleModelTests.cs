@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -17,8 +17,8 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockTextCompletion1 = new Mock<ITextGeneration>();
+        var mockTextCompletion2 = new Mock<ITextGeneration>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -48,8 +48,8 @@ public class MultipleModelTests
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockTextCompletion1 = new Mock<ITextGeneration>();
+        var mockTextCompletion2 = new Mock<ITextGeneration>();
 
         var kernel = new KernelBuilder().WithServices(c =>
         {
@@ -66,7 +66,7 @@ public class MultipleModelTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and names service3 not registered.", exception.Message);
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGeneration and names service3 not registered.", exception.Message);
     }
 
     [Theory]
@@ -75,9 +75,9 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int[] callCount)
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockTextCompletion3 = new Mock<ITextCompletion>();
+        var mockTextCompletion1 = new Mock<ITextGeneration>();
+        var mockTextCompletion2 = new Mock<ITextGeneration>();
+        var mockTextCompletion3 = new Mock<ITextGeneration>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -113,9 +113,9 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockTextCompletion3 = new Mock<ITextCompletion>();
+        var mockTextCompletion1 = new Mock<ITextGeneration>();
+        var mockTextCompletion2 = new Mock<ITextGeneration>();
+        var mockTextCompletion3 = new Mock<ITextGeneration>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });

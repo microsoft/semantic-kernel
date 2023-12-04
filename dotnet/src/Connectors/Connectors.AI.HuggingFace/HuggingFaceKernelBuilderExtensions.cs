@@ -3,7 +3,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -37,7 +37,7 @@ public static class HuggingFaceKernelBuilderExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
                 new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
         });
     }
@@ -61,7 +61,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(services);
         Verify.NotNull(model);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
 

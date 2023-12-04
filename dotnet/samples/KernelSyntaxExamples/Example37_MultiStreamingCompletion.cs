@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -36,14 +36,14 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        ITextCompletion textCompletion = new OpenAIChatCompletion(
+        ITextGeneration textCompletion = new OpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
         await ChatCompletionStreamAsync(textCompletion);
     }
 
-    private static async Task ChatCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task ChatCompletionStreamAsync(ITextGeneration textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -77,7 +77,7 @@ public static class Example37_MultiStreamingCompletion
             Console.WriteLine();
         }
     }
-    private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextGeneration chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var messagePerChoice = new Dictionary<int, string>();
         await foreach (var textUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, executionSettings))

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Xunit;
@@ -215,9 +215,9 @@ public class KernelBuilderTests
             .Build();
 
         Assert.IsType<OpenAIChatCompletion>(kernel.GetService<IChatCompletion>("openai"));
-        Assert.IsType<AzureOpenAITextCompletion>(kernel.GetService<ITextCompletion>("azureopenai"));
+        Assert.IsType<AzureOpenAITextCompletion>(kernel.GetService<ITextGeneration>("azureopenai"));
 
-        Assert.Equal(2, kernel.GetAllServices<ITextCompletion>().Count());
+        Assert.Equal(2, kernel.GetAllServices<ITextGeneration>().Count());
         Assert.Single(kernel.GetAllServices<IChatCompletion>());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());

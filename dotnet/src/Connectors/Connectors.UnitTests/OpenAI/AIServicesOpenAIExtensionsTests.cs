@@ -3,7 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Xunit;
 
@@ -22,7 +22,7 @@ public class AIServicesOpenAIExtensionsTests
             .WithAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
             .Build();
 
-        Assert.NotNull(targetKernel.GetService<ITextCompletion>("azure"));
+        Assert.NotNull(targetKernel.GetService<ITextGeneration>("azure"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
     }
 
@@ -37,10 +37,10 @@ public class AIServicesOpenAIExtensionsTests
             .Build();
 
         // Assert
-        Assert.NotNull(targetKernel.GetService<ITextCompletion>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextCompletion>("oai"));
+        Assert.NotNull(targetKernel.GetService<ITextGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetService<ITextGeneration>("oai"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextCompletion>("oai"));
+        Assert.NotNull(targetKernel.GetService<ITextGeneration>("oai"));
     }
 
     [Fact]
@@ -77,11 +77,11 @@ public class AIServicesOpenAIExtensionsTests
             c.AddSingleton((_) => new OpenAITextCompletion("model", "key"));
             c.AddSingleton((_) => new OpenAITextCompletion("model", "key"));
 
-            c.AddKeyedSingleton<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
-            c.AddKeyedSingleton<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
+            c.AddKeyedSingleton<ITextGeneration>("one", new OpenAITextCompletion("model", "key"));
+            c.AddKeyedSingleton<ITextGeneration>("one", new OpenAITextCompletion("model", "key"));
 
-            c.AddKeyedSingleton<ITextCompletion>("one", (_, _) => new OpenAITextCompletion("model", "key"));
-            c.AddKeyedSingleton<ITextCompletion>("one", (_, _) => new OpenAITextCompletion("model", "key"));
+            c.AddKeyedSingleton<ITextGeneration>("one", (_, _) => new OpenAITextCompletion("model", "key"));
+            c.AddKeyedSingleton<ITextGeneration>("one", (_, _) => new OpenAITextCompletion("model", "key"));
         }).Build();
     }
 }

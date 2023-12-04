@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
@@ -56,9 +56,9 @@ public static class Example16_CustomLLM
         {
             c.AddSingleton(ConsoleLogger.LoggerFactory)
             // Add your text completion service as a singleton instance
-            .AddKeyedSingleton<ITextCompletion>("myService1", new MyTextCompletionService())
+            .AddKeyedSingleton<ITextGeneration>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .AddKeyedSingleton<ITextCompletion>("myService2", (_, _) => new MyTextCompletionService());
+            .AddKeyedSingleton<ITextGeneration>("myService2", (_, _) => new MyTextCompletionService());
         }).Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
@@ -90,13 +90,13 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        ITextCompletion textCompletion = new MyTextCompletionService();
+        ITextGeneration textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";
         await TextCompletionStreamAsync(prompt, textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
+    private static async Task TextCompletionStreamAsync(string prompt, ITextGeneration textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -116,7 +116,7 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
-    private sealed class MyTextCompletionService : ITextCompletion
+    private sealed class MyTextCompletionService : ITextGeneration
     {
         public string? ModelId { get; private set; }
 
