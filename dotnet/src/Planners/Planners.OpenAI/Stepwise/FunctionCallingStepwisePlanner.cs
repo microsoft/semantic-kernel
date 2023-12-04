@@ -78,7 +78,7 @@ public sealed class FunctionCallingStepwisePlanner
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatContent = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false) as OpenAIChatContent;
+            var chatContent = (OpenAIChatContent)await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.AddAssistantMessage(chatContent!.Content);
 
             // Check for function response
