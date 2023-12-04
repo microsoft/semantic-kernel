@@ -619,13 +619,12 @@ internal abstract class ClientCore
             if (message is OpenAIChatMessageContent openAIChatContent)
             {
                 azureMessage.FunctionCall = openAIChatContent.FunctionCall;
-                azureMessage.Name = openAIChatContent.Name;
             }
             else if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? name) is true)
             {
                 if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionArgumentsProperty, out object? arguments) is true)
                 {
-                    azureMessage.FunctionCall = new FunctionCall(azureMessage.Name, arguments?.ToString());
+                    azureMessage.FunctionCall = new FunctionCall(name?.ToString(), arguments?.ToString());
                 }
                 else
                 {
