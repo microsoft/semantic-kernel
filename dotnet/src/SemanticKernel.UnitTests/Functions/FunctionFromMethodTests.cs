@@ -79,7 +79,7 @@ public class FunctionFromMethodTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Cancel();
+            e.Cancel = true;
         };
         var chunkCount = 0;
 
@@ -103,7 +103,7 @@ public class FunctionFromMethodTests
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             // This will have no effect on streaming
-            e.Cancel();
+            e.Cancel = true;
         };
 
         var chunkCount = 0;

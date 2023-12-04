@@ -47,13 +47,11 @@ public sealed class HandlebarsPlan
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
-    public FunctionResult Invoke(
+    public string Invoke(
         Kernel kernel,
         Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
-        string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
-
-        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
+        return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
     }
 }

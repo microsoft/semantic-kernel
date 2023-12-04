@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 
 /// <summary>
 /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.

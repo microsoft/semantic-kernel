@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 
 /// <summary>
 /// The REST API operation response.

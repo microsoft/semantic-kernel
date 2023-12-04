@@ -39,36 +39,14 @@ internal static partial class KernelFunctionLogExtensions
     [LoggerMessage(
         EventId = 2,
         Level = LogLevel.Trace,
-        Message = "Function succeeded.")]
-    public static partial void LogFunctionInvokedSuccess(this ILogger logger);
-
-    /// <summary>
-    /// Logs post-invocation status of a <see cref="KernelFunction"/>.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 3,
-        Level = LogLevel.Trace,
-        Message = "Function invocation {Completion}")]
-    public static partial void LogFunctionInvokedStatus(
-        this ILogger logger,
-        string completion);
-
-    /// <summary>
-    /// Logs result of a <see cref="KernelFunction"/>.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 4,
-        Level = LogLevel.Trace,
-        Message = "Function invocation {Result}")]
-    public static partial void LogFunctionInvokedResult(
-        this ILogger logger,
-        object? result);
+        Message = "Function succeeded. Result: {Result}")]
+    public static partial void LogFunctionInvokedSuccess(this ILogger logger, object? result);
 
     /// <summary>
     /// Logs <see cref="KernelFunction"/> error.
     /// </summary>
     [LoggerMessage(
-        EventId = 5,
+        EventId = 3,
         Level = LogLevel.Error,
         Message = "Function failed. Error: {Message}")]
     public static partial void LogFunctionError(
@@ -80,7 +58,7 @@ internal static partial class KernelFunctionLogExtensions
     /// Logs <see cref="KernelFunction"/> complete.
     /// </summary>
     [LoggerMessage(
-        EventId = 6,
+        EventId = 4,
         Level = LogLevel.Trace,
         Message = "Function completed. Duration: {Duration}ms")]
     public static partial void LogFunctionComplete(
@@ -91,7 +69,7 @@ internal static partial class KernelFunctionLogExtensions
     /// Logs streaming invocation of a <see cref="KernelFunction"/>.
     /// </summary>
     [LoggerMessage(
-        EventId = 7,
+        EventId = 5,
         Level = LogLevel.Trace,
         Message = "Function {FunctionName} streaming invoking with arguments {Arguments}.")]
     public static partial void LogFunctionStreamingInvokingWithArguments(

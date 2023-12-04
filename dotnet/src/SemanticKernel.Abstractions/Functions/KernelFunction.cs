@@ -114,13 +114,12 @@ public abstract class KernelFunction
     /// <param name="arguments">The function arguments.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <exception cref="OperationCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
@@ -130,42 +129,53 @@ public abstract class KernelFunction
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+        FunctionResult? functionResult = null;
         try
         {
-            // Invoke pre hook, and stop if skipping requested.
-            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-            if (invokingEventArgs is not null && invokingEventArgs.CancelToken.IsCancellationRequested)
-            {
-                logger.LogFunctionCanceledPriorToInvoking();
+            // Quick check for cancellation after logging about function start but before
+            // doing any real work.
+            cancellationToken.ThrowIfCancellationRequested();
 
-                return new FunctionResult(this.Name)
-                {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                };
+            // Invoke pre-invocation event handler. If it requests cancellation, throw.
+            CancelKernelEventArgs? eventArgs = kernel.OnFunctionInvoking(this, arguments);
+            if (eventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
-            var result = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            // Invoke the function.
+            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-            logger.LogFunctionInvokedSuccess();
+            // Invoke the post-invocation event handler. If it requests cancellation, throw.
+            (eventArgs, functionResult) = this.CallFunctionInvoked(kernel, arguments, functionResult);
+            if (eventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
 
-            // Invoke the post hook.
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, arguments, result);
-
-            logger.LogFunctionInvokedStatus(invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed");
-            logger.LogFunctionInvokedResult(result.Value);
-
-            result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
-
-            return result;
+            logger.LogFunctionInvokedSuccess(functionResult.Value);
+            return functionResult;
         }
         catch (Exception ex)
         {
+            // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
             tags.Add("error.type", ex.GetType().FullName);
             logger.LogFunctionError(ex, ex.Message);
+
+            // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException.
+#pragma warning disable CA1508
+            if (ex is OperationCanceledException cancelEx)
+#pragma warning restore CA1508
+            {
+                throw new KernelFunctionCanceledException(kernel, this, arguments, functionResult, cancelEx);
+            }
+
+            // Otherwise, propagate the original exception.
             throw;
         }
         finally
         {
+            // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
             logger.LogFunctionComplete(duration.TotalMilliseconds);
@@ -231,7 +241,7 @@ public abstract class KernelFunction
 
         // Invoke pre hook, and stop if skipping requested.
         var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-        if (invokingEventArgs is not null && invokingEventArgs.CancelToken.IsCancellationRequested)
+        if (invokingEventArgs is not null && invokingEventArgs.Cancel)
         {
             logger.LogFunctionCanceledPriorToInvoking();
             yield break;
@@ -264,7 +274,7 @@ public abstract class KernelFunction
     /// <param name="arguments">The kernel function arguments.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected abstract Task<FunctionResult> InvokeCoreAsync(
+    protected abstract ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
@@ -276,12 +286,7 @@ public abstract class KernelFunction
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.ResultValue, result.Culture)
-            {
-                // Updates the eventArgs metadata during invoked handler execution
-                // will reflect in the result metadata
-                Metadata = eventArgs.Metadata
-            };
+            result = new FunctionResult(this, eventArgs.ResultValue, result.Culture, eventArgs.Metadata ?? result.Metadata);
         }
 
         return (eventArgs, result);

@@ -35,7 +35,7 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -57,7 +57,7 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -76,7 +76,7 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
     public AzureOpenAIChatCompletion(
         string deploymentName,
         OpenAIClient openAIClient,
-        string? modelId = null,
+        string modelId,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
