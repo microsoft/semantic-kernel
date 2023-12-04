@@ -131,7 +131,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         StringBuilder fullResult = new();
         // Act
-        await foreach (var content in target.InvokeStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
+        await foreach (var content in target.InvokeStreamingAsync<StreamingContentBase>(plugins["ChatPlugin"]["Chat"], prompt))
         {
             fullResult.Append(content);
         };

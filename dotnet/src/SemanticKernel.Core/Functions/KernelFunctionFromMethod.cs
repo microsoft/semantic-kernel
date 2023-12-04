@@ -98,7 +98,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         // Supports the following provided T types for Method streaming
-        if (typeof(T) == typeof(StreamingContent) ||
+        if (typeof(T) == typeof(StreamingContentBase) ||
             typeof(T) == typeof(StreamingMethodContent))
         {
             if (functionResult.Value is not null)

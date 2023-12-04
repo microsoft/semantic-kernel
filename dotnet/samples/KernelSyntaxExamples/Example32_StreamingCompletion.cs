@@ -58,9 +58,9 @@ public static class Example32_StreamingCompletion
         var prompt = "Write one paragraph why AI is awesome";
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (string message in textGeneration.GetStreamingContentAsync<string>(prompt, executionSettings))
+        await foreach (string message in textGeneration.GetStreamingTextContentsAsync<string>(prompt, executionSettings))
         {
-            Console.Write(message);
+            Console.Write(content);
         }
 
         Console.WriteLine();

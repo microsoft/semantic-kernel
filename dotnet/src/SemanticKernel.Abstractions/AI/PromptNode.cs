@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Prompts;
+namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
 /// Class that contains information about node in prompt.

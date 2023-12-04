@@ -2,10 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Prompts;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// Chat Prompt parser.

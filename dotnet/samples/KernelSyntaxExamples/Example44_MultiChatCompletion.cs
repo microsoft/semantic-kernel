@@ -43,7 +43,7 @@ public static class Example44_MultiChatCompletion
 
     private static async Task RunChatAsync(IChatCompletion chatCompletion)
     {
-        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
@@ -59,10 +59,9 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatExecutionSettings))
+        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
         {
-            ChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
-            chatHistory.Add(chatMessage);
+            chatHistory.AddMessage(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
         }
 
