@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 
 /// <summary>
 /// Represents a delegate that defines the method signature for asynchronously authenticating an HTTP request.

@@ -7,9 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 
 /// <summary>
 /// Provides authentication for HTTP requests to OpenAI using OAuth or verification tokens.

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
 
 /// <summary>
 /// Interface for OpenAPI document parser classes.

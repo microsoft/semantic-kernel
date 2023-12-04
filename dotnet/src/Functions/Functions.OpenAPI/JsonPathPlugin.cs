@@ -6,7 +6,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Provides methods to retrieve JSON elements from a JSON string using JsonPath queries.
