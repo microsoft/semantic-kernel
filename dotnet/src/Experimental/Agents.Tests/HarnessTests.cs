@@ -80,7 +80,7 @@ public class HarnessTests
         var mathematician = new AgentBuilder()
                             .WithName("mathematician")
                             .WithDescription("An assistant that answers math problems with a given user prompt.")
-                            .WithInstructions("You are a mathematician.\nNo need to show your work, just give the answer to the math problem.\n.Use available mathematics function to execute your job.\nResults are not approximative.")
+                            .WithInstructions("You are a mathematician.\nNo need to show your work, just give the result to the math problem.\n. Results are not approximative.")
                             .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
                             .WithPlugin(KernelPluginFactory.CreateFromObject(new MathPlugin(), "math"))
                             .WithLoggerFactory(this._loggerFactory)
@@ -130,13 +130,20 @@ public class HarnessTests
                                {
                                    Agent = mathematician,
                                    Description = "Resolves maths problems.",
-                                   InputDescription = "The word problem to solve in 2-3 sentences. Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it."
+                                   InputDescription = "The word problem to solve in 2-3 sentences.\n" +
+                                                      "Do not give me the formula, just the problem.\n" +
+                                                      "Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it."
                                }
                            },
                            loggerFactory: this._loggerFactory);
 
         var thread = butler.CreateThread();
 
-        var response = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?").ConfigureAwait(true);
+        _ = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?").ConfigureAwait(true);
+        // If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.
+        _ = await thread.InvokeAsync("What if the rate is about 3.6%?").ConfigureAwait(true);
+        // If you start with $25,000 in the stock market and leave it to grow for 20 years at a 3.6% interest rate, the future value of the investment would be approximately $50,714.85.
+        _ = await thread.InvokeAsync("What interest rate is needed to reach a future value of $50,000 in 25 years?").ConfigureAwait(true);
+        // To grow $25,000 to $50,000 in 25 years, you would need an annual interest rate of approximately 2.74%.
     }
 }

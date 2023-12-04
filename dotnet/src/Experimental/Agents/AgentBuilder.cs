@@ -15,14 +15,29 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// </summary>
 public partial class AgentBuilder
 {
+    /// <summary>
+    /// The agent model.
+    /// </summary>
     private readonly AgentModel _model;
 
+    /// <summary>
+    /// The agent's assistants.
+    /// </summary>
     private readonly List<AgentAssistantModel> _agents;
 
+    /// <summary>
+    /// The agent's plugins.
+    /// </summary>
     private readonly List<IKernelPlugin> _plugins;
 
+    /// <summary>
+    /// The logger factory.
+    /// </summary>
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
+    /// <summary>
+    /// The kernel builder.
+    /// </summary>
     private readonly KernelBuilder _kernelBuilder;
 
     /// <summary>

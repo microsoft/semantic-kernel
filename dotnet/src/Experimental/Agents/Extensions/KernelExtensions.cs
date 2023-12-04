@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
@@ -10,13 +9,19 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 /// </summary>
 internal static class KernelExtensions
 {
+    /// <summary>
+    /// Imports the agent's plugin into the kernel.
+    /// </summary>
+    /// <param name="kernel">The Kernel instance.</param>
+    /// <param name="agent">The Agent to import.</param>
+    /// <param name="model">The <see cref="AgentAssistantModel"/> instance.</param>
     public static void ImportPluginFromAgent(this Kernel kernel, IAgent agent, AgentAssistantModel model)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(model, nameof(model));
         Verify.NotNull(model.Agent, nameof(model.Agent));
 
-        var agentConversationPlugin = new KernelPlugin(model.Agent.Name, model.Agent.Description);
+        var agentConversationPlugin = new KernelPlugin(model.Agent.Name!, model.Agent.Description);
 
         agentConversationPlugin.AddFunctionFromMethod(async (string input, KernelArguments args) =>
         {

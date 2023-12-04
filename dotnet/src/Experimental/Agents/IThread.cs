@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -13,5 +15,10 @@ public interface IThread
     /// Invokes the thread.
     /// </summary>
     /// <returns></returns>
-    public Task<string> InvokeAsync(string userMessage);
+    Task<string> InvokeAsync(string userMessage);
+
+    /// <summary>
+    /// Gets the chat messages.
+    /// </summary>
+    IReadOnlyList<ChatMessage> ChatMessages { get; }
 }
