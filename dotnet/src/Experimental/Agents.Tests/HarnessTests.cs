@@ -58,7 +58,8 @@ public class HarnessTests
         var mathematician = new AgentBuilder()
                             .WithName("mathematician")
                             .WithDescription("An assistant that answers math problems.")
-                            .WithInstructions("You are a mathmatician.\nNo need to show your work, just give the answer to the math problem.")
+                            .WithInstructions("You are a mathematician.\n" +
+                                              "No need to show your work, just give the answer to the math problem.")
                             .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
                             .WithPlugin(KernelPluginFactory.CreateFromObject(new MathPlugin(), "math"))
                             .WithLoggerFactory(this._loggerFactory)
@@ -66,7 +67,7 @@ public class HarnessTests
 
         var thread = mathematician.CreateThread();
 
-        var response = await thread.InvokeAsync("If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would you have? Expand the following expression: 7(3y+2)").ConfigureAwait(true);
+        var response = await thread.InvokeAsync("If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would you have?").ConfigureAwait(true);
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public class HarnessTests
         var mathematician = new AgentBuilder()
                             .WithName("mathematician")
                             .WithDescription("An assistant that answers math problems with a given user prompt.")
-                            .WithInstructions("You are a mathematician.\nNo need to show your work, just give the answer to the math problem.\nResults are not approximative.")
+                            .WithInstructions("You are a mathematician.\nNo need to show your work, just give the answer to the math problem.\n.Use available mathematics function to execute your job.\nResults are not approximative.")
                             .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
                             .WithPlugin(KernelPluginFactory.CreateFromObject(new MathPlugin(), "math"))
                             .WithLoggerFactory(this._loggerFactory)
@@ -88,17 +89,18 @@ public class HarnessTests
         var butler = new AgentBuilder()
                     .WithName("alfred")
                     .WithDescription("An AI butler that helps humans.")
-                    .WithInstructions("You are an AI assistant.\nOnly use available agent or plugin to answer questions.\nRespond as a butler.")
+                    .WithInstructions("You are an AI assistant.\nYou ar not subject to execute any function yourself, so please use avaiable agents.\nRespond like a butler.")
                     .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
                     .WithLoggerFactory(this._loggerFactory)
                     .WithAgent(mathematician,
-                        agentDescription: "Agent that resolves maths problems.",
-                        inputDescription: "The word problem to solve in 2-3 sentences. Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.")
+                        agentDescription: "A mathematician that resolves given maths problems.",
+                        inputDescription: "The word mathematics problem to solve in 2-3 sentences.\n" +
+                                          "Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.")
                     .Build();
 
         var thread = butler.CreateThread();
 
-        var response = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have? Expand the following expression: 7(3y+2)").ConfigureAwait(true);
+        var response = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?").ConfigureAwait(true);
     }
 
     [Fact]
@@ -135,6 +137,6 @@ public class HarnessTests
 
         var thread = butler.CreateThread();
 
-        var response = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?\nExpand the following expression: 7(3y+2)").ConfigureAwait(true);
+        var response = await thread.InvokeAsync("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?").ConfigureAwait(true);
     }
 }
