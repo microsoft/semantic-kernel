@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 /// <summary>
 /// HuggingFace text completion service.

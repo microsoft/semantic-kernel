@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
 

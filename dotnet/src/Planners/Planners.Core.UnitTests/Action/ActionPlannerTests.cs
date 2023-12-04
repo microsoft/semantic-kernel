@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Moq;
 using Xunit;
 

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextGeneration"/> class.

@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 /// <summary>
 /// HTTP Schema for completion response.

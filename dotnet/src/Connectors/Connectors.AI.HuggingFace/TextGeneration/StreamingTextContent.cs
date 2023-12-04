@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 /// <summary>
 /// StreamResponse class in <see href="https://github.com/huggingface/text-generation-inference/tree/main/clients/python"></see>

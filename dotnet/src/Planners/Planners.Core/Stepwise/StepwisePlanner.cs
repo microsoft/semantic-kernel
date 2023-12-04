@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Planning;
