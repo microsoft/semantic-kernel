@@ -247,8 +247,8 @@ s_completionTokenCounter.Add(completionTokens, in tags);
 1. New metrics names:
    | Meter | Metrics |
    |---|---|
-   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.success</li><li>sk.planning.failure</li></ul> |
-   |Microsoft.SemanticKernel| <ul><li>sk.function.duration</li><li>sk.function.token_usage.prompt</li><li>sk.function.token_usage.completion</li></ul> |
+   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.create_plan.success</li><li>sk.planning.create_plan.failure</li></ul> |
+   |Microsoft.SemanticKernel| <ul><li>sk.function.execution.duration</li><li>sk.function.execution.token_usage.prompt</li><li>sk.function.execution.token_usage.completion</li></ul> |
 2. Instrumentation
 
 ## Validation
@@ -345,6 +345,8 @@ if (logger.IsEnabled(LogLevel.Trace))
   logger.LogTrace("Plan: {Plan}", plan); // Sensitive data, logging as trace, disabled by default
 }
 ```
+
+> Note: Trace log will contain sensitive data and should be turned off in production: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-level
 
 ## Example of how an application would send the telemetry to Application Insights
 
