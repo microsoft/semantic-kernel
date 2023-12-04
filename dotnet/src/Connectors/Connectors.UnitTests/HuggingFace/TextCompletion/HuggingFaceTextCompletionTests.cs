@@ -3,9 +3,12 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
@@ -174,6 +177,66 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         Assert.NotNull(content);
 
         Assert.Equal("This is test completion response", content);
+    }
+
+    [Fact]
+    public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
+    {
+        //Arrange
+        var textCompletion = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+
+        //Act
+        var contents = await textCompletion.GetTextContentsAsync("fake-test");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"
+            [
+                {
+                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                }
+            ]",
+            Encoding.UTF8,
+            "application/json")
+        };
+
+        // Act
+        var textContent = await textCompletion.GetTextContentAsync("Any prompt");
+
+        // Assert
+        Assert.NotNull(textContent.ModelId);
+        Assert.Equal("fake-model", textContent.ModelId);
+    }
+
+    [Fact]
+    public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
+    {
+        //Arrange
+        var textCompletion = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+
+        //Act
+        var contents = await textCompletion.GetTextContentsAsync("fake-test");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"
+            [
+                {
+                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                }
+            ]",
+            Encoding.UTF8,
+            "application/json")
+        };
+
+        // Act
+        StreamingTextContent? lastTextContent = null;
+        await foreach (var textContent in textCompletion.GetStreamingTextContentsAsync("Any prompt"))
+        {
+            lastTextContent = textContent;
+        };
+
+        // Assert
+        Assert.NotNull(lastTextContent!.ModelId);
+        Assert.Equal("fake-model", lastTextContent.ModelId);
     }
 
     public void Dispose()

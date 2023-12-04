@@ -27,11 +27,12 @@ public class StreamingTextContent : StreamingContentBase
     /// </summary>
     /// <param name="text">Text update</param>
     /// <param name="choiceIndex">Index of the choice</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner chunk object</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
     [JsonConstructor]
-    public StreamingTextContent(string? text, int choiceIndex = 0, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    public StreamingTextContent(string? text, int choiceIndex = 0, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

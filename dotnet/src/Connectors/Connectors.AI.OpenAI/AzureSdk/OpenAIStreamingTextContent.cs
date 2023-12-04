@@ -20,9 +20,21 @@ public sealed class OpenAIStreamingTextContent : StreamingTextContent
     /// <param name="text">Text update</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="innerContentObject">Inner chunk object</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata information</param>
-    internal OpenAIStreamingTextContent(string text, int choiceIndex, object? innerContentObject = null, Dictionary<string, object?>? metadata = null)
-        : base(text, choiceIndex, innerContentObject, Encoding.UTF8, metadata)
+    internal OpenAIStreamingTextContent(
+        string text,
+        int choiceIndex,
+        string modelId,
+        object? innerContentObject = null,
+        Dictionary<string, object?>? metadata = null)
+        : base(
+            text,
+            choiceIndex,
+            modelId,
+            innerContentObject,
+            Encoding.UTF8,
+            metadata)
     {
     }
 

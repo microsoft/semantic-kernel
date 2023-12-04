@@ -25,6 +25,11 @@ public abstract class StreamingContentBase
     public object? InnerContent { get; }
 
     /// <summary>
+    /// The model ID used to generate the content.
+    /// </summary>
+    public string? ModelId { get; }
+
+    /// <summary>
     /// The metadata associated with the content.
     /// </summary>
     public IDictionary<string, object?>? Metadata { get; }
@@ -53,8 +58,9 @@ public abstract class StreamingContentBase
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex"></param>
     /// <param name="metadata"></param>
-    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, IDictionary<string, object?>? metadata = null)
+    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, string? modelId = null, IDictionary<string, object?>? metadata = null)
     {
+        this.ModelId = modelId;
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
         if (metadata is not null)

@@ -67,7 +67,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, encoding, metadata));
+        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
