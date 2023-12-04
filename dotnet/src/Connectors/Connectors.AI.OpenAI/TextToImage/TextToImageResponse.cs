@@ -32,7 +32,7 @@ public class TextToImageResponse
     }
 
     /// <summary>
-    /// List of possible text to images
+    /// List of possible images
     /// </summary>
     [JsonPropertyName("data")]
     public IList<Image> Images { get; set; } = new List<Image>();
