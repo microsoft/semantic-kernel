@@ -137,7 +137,7 @@ internal sealed class ChatRun
             new ToolResultModel
             {
                 CallId = callId,
-                Output = result,
+                Output = toolResult,
             };
 
         async Task<object> InvokeFunctionCallAsync()
