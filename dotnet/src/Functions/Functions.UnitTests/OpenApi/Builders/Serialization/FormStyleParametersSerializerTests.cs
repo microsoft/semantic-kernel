@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
 
 public class FormStyleParametersSerializerTests
 {

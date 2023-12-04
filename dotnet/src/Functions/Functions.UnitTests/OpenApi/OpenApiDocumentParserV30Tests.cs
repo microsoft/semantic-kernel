@@ -9,12 +9,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
-using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public sealed class OpenApiDocumentParserV30Tests : IDisposable
 {
