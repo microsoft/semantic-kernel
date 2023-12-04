@@ -292,7 +292,7 @@ public class FunctionFromPromptTests
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
         // Arrange
-        var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
+        var mockTextCompletion = this.SetupStreamingMocks<StreamingContentBase>(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
         var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
@@ -302,7 +302,7 @@ public class FunctionFromPromptTests
 
         var chunkCount = 0;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, variables))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel, variables))
         {
             chunkCount++;
         }

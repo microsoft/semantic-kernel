@@ -7,12 +7,12 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
-/// Abstraction of chat content chunks when using streaming from <see cref="IChatCompletion"/> interface.
+/// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletion"/> interface.
 /// </summary>
 /// <remarks>
-/// Represents a chat content chunk that was streamed from the remote model.
+/// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
-public abstract class StreamingChatContent : StreamingContent
+public class StreamingChatMessageContent : StreamingContentBase
 {
     /// <summary>
     /// Text associated to the message payload
@@ -31,7 +31,7 @@ public abstract class StreamingChatContent : StreamingContent
     public Encoding Encoding { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingChatContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
@@ -40,7 +40,7 @@ public abstract class StreamingChatContent : StreamingContent
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
     [JsonConstructor]
-    protected StreamingChatContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
     {
         this.Role = role;
         this.Content = content;
@@ -48,8 +48,8 @@ public abstract class StreamingChatContent : StreamingContent
     }
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return this.Content ?? string.Empty;
-    }
+    public override string ToString() => this.Content ?? string.Empty;
+
+    /// <inheritdoc/>
+    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 }

@@ -7,26 +7,26 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// OpenAI specialized chat content
+/// OpenAI specialized chat message content
 /// </summary>
-public sealed class OpenAIChatContent : ChatContent
+public sealed class OpenAIChatMessageContent : ChatMessageContent
 {
     /// <summary>
     /// The metadata key for the <see cref="FunctionCall"/> name property.
     /// </summary>
-    public const string FunctionNameProperty = $"{nameof(OpenAIChatContent.FunctionCall)}.{nameof(OpenAIChatContent.FunctionCall.Name)}";
+    public const string FunctionNameProperty = $"{nameof(OpenAIChatMessageContent.FunctionCall)}.{nameof(OpenAIChatMessageContent.FunctionCall.Name)}";
 
     /// <summary>
     /// The metadata key for the <see cref="FunctionCall"/> arguments property.
     /// </summary>
-    public const string FunctionArgumentsProperty = $"{nameof(OpenAIChatContent.FunctionCall)}.{nameof(OpenAIChatContent.FunctionCall.Arguments)}";
+    public const string FunctionArgumentsProperty = $"{nameof(OpenAIChatMessageContent.FunctionCall)}.{nameof(OpenAIChatMessageContent.FunctionCall.Arguments)}";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatContent"/> class.
+    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatMessage">Azure SDK chat message</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIChatContent(Azure.AI.OpenAI.ChatMessage chatMessage, Dictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(Azure.AI.OpenAI.ChatMessage chatMessage, Dictionary<string, object?>? metadata = null)
         : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, chatMessage, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(4))
     {
         this.FunctionCall = chatMessage.FunctionCall;

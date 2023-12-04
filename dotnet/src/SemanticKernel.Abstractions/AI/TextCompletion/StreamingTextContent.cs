@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextCompletion"/> interface.
 /// </summary>
-public class StreamingTextContent : StreamingContent
+public class StreamingTextContent : StreamingContentBase
 {
     /// <summary>
     /// Text associated to the update

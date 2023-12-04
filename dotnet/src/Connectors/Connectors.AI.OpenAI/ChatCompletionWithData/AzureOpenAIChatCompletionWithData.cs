@@ -55,21 +55,17 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-        => InternalCreateNewChat(instructions);
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return (await this.GetChatContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
+        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
     }
 
     /// <inheritdoc/>
@@ -114,7 +110,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
-    private async Task<IReadOnlyList<ChatContent>> InternalGetChatContentsAsync(
+    private async Task<IReadOnlyList<ChatMessageContent>> InternalGetChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -130,7 +126,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         var metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatContent(choice, metadata)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, metadata)).ToList();
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
@@ -176,7 +172,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
-    private async IAsyncEnumerable<AzureOpenAIWithDataStreamingChatContent> InternalGetChatStreamingContentsAsync(
+    private async IAsyncEnumerable<AzureOpenAIWithDataStreamingChatMessageContent> InternalGetChatStreamingContentsAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -211,7 +207,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new AzureOpenAIWithDataStreamingChatContent(choice, choice.Index, metadata);
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, metadata);
             }
         }
     }

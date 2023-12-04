@@ -11,13 +11,13 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Azure Open AI WithData Specialized streaming chat content.
+/// Azure Open AI WithData Specialized streaming chat message content.
 /// </summary>
 /// <remarks>
-/// Represents a chat content chunk that was streamed from the remote model.
+/// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIWithDataStreamingChatContent : StreamingChatContent
+public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingChatMessageContent
 {
     /// <inheritdoc/>
     public string? FunctionName { get; set; }
@@ -26,24 +26,18 @@ public sealed class AzureOpenAIWithDataStreamingChatContent : StreamingChatConte
     public string? FunctionArgument { get; set; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="OpenAIStreamingChatContent"/> class.
+    /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    internal AzureOpenAIWithDataStreamingChatContent(ChatWithDataStreamingChoice choice, int choiceIndex, IReadOnlyDictionary<string, object?>? metadata = null) : base(AuthorRole.Assistant, null, choice, choiceIndex, Encoding.UTF8, metadata)
+    internal AzureOpenAIWithDataStreamingChatMessageContent(ChatWithDataStreamingChoice choice, int choiceIndex, IReadOnlyDictionary<string, object?>? metadata = null) : base(AuthorRole.Assistant, null, choice, choiceIndex, Encoding.UTF8, metadata)
     {
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
         var messageContent = message?.Delta?.Content;
 
         this.Content = messageContent;
     }
-
-    /// <inheritdoc/>
-    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
-
-    /// <inheritdoc/>
-    public override string ToString() => this.Content ?? string.Empty;
 
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {

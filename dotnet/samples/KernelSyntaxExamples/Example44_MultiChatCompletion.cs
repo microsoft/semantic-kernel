@@ -59,9 +59,9 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (var chatContent in await chatCompletion.GetChatContentsAsync(chatHistory, chatRequestSettings))
+        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory, chatRequestSettings))
         {
-            chatHistory.AddMessage(chatContent!);
+            chatHistory.AddMessage(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
         }
 

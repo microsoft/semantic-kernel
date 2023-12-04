@@ -72,7 +72,7 @@ public static class Example33_StreamingChat
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
 
-        await foreach (var chatUpdate in chatCompletion.GetStreamingChatContentsAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {

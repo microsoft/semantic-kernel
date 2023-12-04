@@ -202,12 +202,12 @@ public abstract class KernelFunction
     /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
+        return this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
     }
 
     /// <summary>

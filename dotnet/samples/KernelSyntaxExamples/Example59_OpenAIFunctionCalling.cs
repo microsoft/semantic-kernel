@@ -64,7 +64,7 @@ public static class Example59_OpenAIFunctionCalling
 
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
-        chatHistory.AddAssistantMessage(await chatCompletion.GetChatContentAsync(chatHistory, executionSettings, kernel));
+        chatHistory.AddAssistantMessage(await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
         Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
     }
 
@@ -75,9 +75,9 @@ public static class Example59_OpenAIFunctionCalling
         chatHistory.AddUserMessage(ask);
 
         // Send request
-        var fullContent = new List<StreamingChatContent>();
+        var fullContent = new List<StreamingChatMessageContent>();
         Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletion.GetStreamingChatContentsAsync(chatHistory, executionSettings, kernel))
+        await foreach (var chatResult in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
             if (chatResult.Content is { Length: > 0 })

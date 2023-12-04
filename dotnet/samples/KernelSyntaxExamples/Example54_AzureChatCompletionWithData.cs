@@ -39,10 +39,10 @@ public static class Example54_AzureChatCompletionWithData
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatContent = (AzureOpenAIWithDataChatContent)await chatCompletion.GetChatContentAsync(chatHistory);
+        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        var response = chatContent.Content;
-        var toolResponse = chatContent.ToolContent;
+        var response = chatMessage.Content;
+        var toolResponse = chatMessage.ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
@@ -67,7 +67,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingChatContentsAsync(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }

@@ -57,9 +57,9 @@ public static class Example36_MultiCompletion
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
 
-        foreach (var chatContent in await chatCompletion.GetChatContentsAsync(chatHistory))
+        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory))
         {
-            Console.Write(chatContent.Content);
+            Console.Write(chatMessageChoice.Content);
             Console.WriteLine("-------------");
         }
 

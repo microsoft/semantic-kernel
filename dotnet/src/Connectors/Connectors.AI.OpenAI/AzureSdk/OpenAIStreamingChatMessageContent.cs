@@ -8,12 +8,12 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Azure OpenAI and OpenAI Specialized streaming chat content.
+/// Azure OpenAI and OpenAI Specialized streaming chat message content.
 /// </summary>
 /// <remarks>
-/// Represents a chat content chunk that was streamed from the remote model.
+/// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
-public sealed class OpenAIStreamingChatContent : StreamingChatContent
+public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageContent
 {
     /// <summary>
     /// Name of the author of the message. Name is required if the role is 'function'.
@@ -31,12 +31,12 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     public string? FunctionArgument { get; set; }
 
     /// <summary>
-    /// Create a new instance of the <see cref="OpenAIStreamingChatContent"/> class.
+    /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIStreamingChatContent(
+    internal OpenAIStreamingChatMessageContent(
         StreamingChatCompletionsUpdate chatUpdate,
         int choiceIndex,
         Dictionary<string, object?>? metadata = null)
@@ -63,7 +63,7 @@ public sealed class OpenAIStreamingChatContent : StreamingChatContent
     /// </summary>
     /// <param name="fullContent"></param>
     /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
-    public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<OpenAIStreamingChatContent> fullContent)
+    public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<OpenAIStreamingChatMessageContent> fullContent)
     {
         StringBuilder arguments = new();
         string? functionName = null;

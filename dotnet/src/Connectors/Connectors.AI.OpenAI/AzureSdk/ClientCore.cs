@@ -216,7 +216,7 @@ internal abstract class ClientCore
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
-    internal async Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(
+    internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -249,13 +249,13 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatContent(chatChoice.Message, metadata)).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, metadata)).ToList();
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatContent result = new(resultChoice.Message, metadata);
+            OpenAIChatMessageContent result = new(resultChoice.Message, metadata);
             OpenAIFunctionResponse? functionCallResponse = null;
             try
             {
@@ -310,7 +310,7 @@ internal abstract class ClientCore
         }
     }
 
-    internal async IAsyncEnumerable<OpenAIStreamingChatContent> GetStreamingChatContentsAsync(
+    internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -367,7 +367,7 @@ internal abstract class ClientCore
                     }
                 }
 
-                yield return new OpenAIStreamingChatContent(update, update.ChoiceIndex ?? 0, metadata);
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, metadata);
             }
 
             // If we don't have a function call to invoke, we're done.
@@ -445,7 +445,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = ClientCore.CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatContentsAsync(chat, executionSettings, kernel, cancellationToken))
+        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
@@ -459,7 +459,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ChatHistory chat = ClientCore.CreateNewChat(text, chatSettings);
-        return (await this.GetChatContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
@@ -615,16 +615,16 @@ internal abstract class ClientCore
         {
             var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
-            if (message is OpenAIChatContent openAIChatContent)
+            if (message is OpenAIChatMessageContent openAIChatContent)
             {
                 azureMessage.FunctionCall = openAIChatContent.FunctionCall;
                 azureMessage.Name = openAIChatContent.Name;
             }
-            else if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionNameProperty, out object? name) is true)
+            else if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? name) is true)
             {
                 azureMessage.Name = name?.ToString() ?? string.Empty;
 
-                if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionArgumentsProperty, out object? arguments) is true)
+                if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionArgumentsProperty, out object? arguments) is true)
                 {
                     azureMessage.FunctionCall = new FunctionCall(azureMessage.Name, arguments?.ToString());
                 }

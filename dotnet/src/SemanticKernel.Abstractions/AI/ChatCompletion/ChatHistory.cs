@@ -13,10 +13,10 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Provides a history of chat messages from a chat conversation.
 /// </summary>
-public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
+public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageContent>
 {
     /// <summary>The messages.</summary>
-    private readonly List<ChatContent> _messages;
+    private readonly List<ChatMessageContent> _messages;
 
     /// <summary>Initializes an empty history.</summary>
     /// <summary>
@@ -42,7 +42,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <summary>Initializes the history will all of the specified messages.</summary>
     /// <param name="messages">The messages to copy into the history.</param>
     /// <exception cref="ArgumentNullException"><paramref name="messages"/> is null.</exception>
-    public ChatHistory(IEnumerable<ChatContent> messages)
+    public ChatHistory(IEnumerable<ChatMessageContent> messages)
     {
         Verify.NotNull(messages);
         this._messages = new(messages);
@@ -54,10 +54,10 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
-    /// <param name="chatContent">Chat content</param>
-    public void AddMessage(ChatContent chatContent)
+    /// <param name="chatMessageContent">Chat message content</param>
+    public void AddMessage(ChatMessageContent chatMessageContent)
     {
-        this.Add(chatContent);
+        this.Add(chatMessageContent);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatContent(authorRole, content, null, encoding, metadata));
+        this.Add(new ChatMessageContent(authorRole, content, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -93,7 +93,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public void Add(ChatContent item)
+    public void Add(ChatMessageContent item)
     {
         Verify.NotNull(item);
         this._messages.Add(item);
@@ -102,7 +102,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <summary>Adds the messages to the history.</summary>
     /// <param name="items">The collection whose messages should be added to the history.</param>
     /// <exception cref="ArgumentNullException"><paramref name="items"/> is null.</exception>
-    public void AddRange(IEnumerable<ChatContent> items)
+    public void AddRange(IEnumerable<ChatMessageContent> items)
     {
         Verify.NotNull(items);
         this._messages.AddRange(items);
@@ -112,7 +112,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <param name="index">The index at which the item should be inserted.</param>
     /// <param name="item">The message to insert.</param>
     /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public void Insert(int index, ChatContent item)
+    public void Insert(int index, ChatMessageContent item)
     {
         Verify.NotNull(item);
         this._messages.Insert(index, item);
@@ -126,7 +126,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of messages in the history is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(ChatContent[] array, int arrayIndex) => this._messages.CopyTo(array, arrayIndex);
+    public void CopyTo(ChatMessageContent[] array, int arrayIndex) => this._messages.CopyTo(array, arrayIndex);
 
     /// <summary>Removes all messages from the history.</summary>
     public void Clear() => this._messages.Clear();
@@ -136,7 +136,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <returns>The message at the specified index.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
-    public ChatContent this[int index]
+    public ChatMessageContent this[int index]
     {
         get => this._messages[index];
         set
@@ -150,7 +150,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <param name="item">The message to locate.</param>
     /// <returns>true if the message is found in the history; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public bool Contains(ChatContent item)
+    public bool Contains(ChatMessageContent item)
     {
         Verify.NotNull(item);
         return this._messages.Contains(item);
@@ -160,7 +160,7 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <param name="item">The message to locate.</param>
     /// <returns>The index of the first found occurrence of the specified message; -1 if the message could not be found.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public int IndexOf(ChatContent item)
+    public int IndexOf(ChatMessageContent item)
     {
         Verify.NotNull(item);
         return this._messages.IndexOf(item);
@@ -175,17 +175,17 @@ public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
     /// <param name="item">The message to remove from the history.</param>
     /// <returns>true if the item was successfully removed; false if it wasn't located in the history.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
-    public bool Remove(ChatContent item)
+    public bool Remove(ChatMessageContent item)
     {
         Verify.NotNull(item);
         return this._messages.Remove(item);
     }
 
     /// <inheritdoc/>
-    bool ICollection<ChatContent>.IsReadOnly => false;
+    bool ICollection<ChatMessageContent>.IsReadOnly => false;
 
     /// <inheritdoc/>
-    IEnumerator<ChatContent> IEnumerable<ChatContent>.GetEnumerator() => this._messages.GetEnumerator();
+    IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator() => this._messages.GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this._messages.GetEnumerator();

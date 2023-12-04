@@ -86,16 +86,12 @@ public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null) =>
-        ClientCore.CreateNewChat(instructions);
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatContentsAsync(chat, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetStreamingChatContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

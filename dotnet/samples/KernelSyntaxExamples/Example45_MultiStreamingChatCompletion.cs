@@ -73,7 +73,7 @@ public static class Example45_MultiStreamingChatCompletion
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
         var chatHistory = new ChatHistory(prompt);
-        await foreach (var chatUpdate in chatCompletion.GetStreamingChatContentsAsync(chatHistory, executionSettings))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);

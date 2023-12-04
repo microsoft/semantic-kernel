@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI;
 /// <summary>
 /// Represents a single update to a streaming content.
 /// </summary>
-public abstract class StreamingContent
+public abstract class StreamingContentBase
 {
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
@@ -47,12 +47,12 @@ public abstract class StreamingContent
     public abstract byte[] ToByteArray();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingContentBase"/> class.
     /// </summary>
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex"></param>
     /// <param name="metadata"></param>
-    protected StreamingContent(object? innerContent, int choiceIndex = 0, IReadOnlyDictionary<string, object?>? metadata = null)
+    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
@@ -63,7 +63,7 @@ public abstract class StreamingContent
     /// Implicit conversion to string
     /// </summary>
     /// <param name="modelContent">model Content</param>
-    public static implicit operator string(StreamingContent modelContent)
+    public static implicit operator string(StreamingContentBase modelContent)
     {
         return modelContent.ToString();
     }

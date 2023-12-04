@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
-public abstract class ModelContent
+public abstract class ContentBase
 {
     /// <summary>
     /// Raw content object reference. (Breaking glass).
@@ -22,11 +22,11 @@ public abstract class ModelContent
     public IDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ModelContent"/> class.
+    /// Initializes a new instance of the <see cref="ContentBase"/> class.
     /// </summary>
     /// <param name="innerContent">Raw content object reference</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected ModelContent(object? innerContent, IDictionary<string, object?>? metadata = null)
+    protected ContentBase(object? innerContent, IDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.Metadata = metadata;
@@ -36,7 +36,7 @@ public abstract class ModelContent
     /// Implicit conversion to string
     /// </summary>
     /// <param name="modelContent">model Content</param>
-    public static implicit operator string(ModelContent modelContent)
+    public static implicit operator string(ContentBase modelContent)
     {
         return modelContent.ToString();
     }

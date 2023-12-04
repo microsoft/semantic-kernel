@@ -25,7 +25,7 @@ public static class OpenAIChatHistoryExtensions
     {
         Verify.NotNull(chatHistory);
 
-        chatHistory.AddMessage(s_functionAuthorRole, message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatContent.FunctionNameProperty, functionName } });
+        chatHistory.AddMessage(s_functionAuthorRole, message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.FunctionNameProperty, functionName } });
     }
 
     /// <summary>
@@ -43,8 +43,8 @@ public static class OpenAIChatHistoryExtensions
             functionCall is not null ?
                 new Dictionary<string, object?>(2)
                 {
-                    { OpenAIChatContent.FunctionNameProperty, functionCall.Name },
-                    { OpenAIChatContent.FunctionArgumentsProperty, functionCall.Arguments }
+                    { OpenAIChatMessageContent.FunctionNameProperty, functionCall.Name },
+                    { OpenAIChatMessageContent.FunctionArgumentsProperty, functionCall.Arguments }
                 } :
             null);
     }

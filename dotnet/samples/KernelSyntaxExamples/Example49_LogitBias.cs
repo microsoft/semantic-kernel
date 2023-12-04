@@ -39,20 +39,20 @@ public static class Example49_LogitBias
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = chatCompletion.CreateNewChat("You are a librarian expert");
+        var chatHistory = new ChatHistory("You are a librarian expert");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking some suggestions");
         await MessageOutputAsync(chatHistory);
 
-        var replyMessage = await chatCompletion.GetChatContentAsync(chatHistory, settings);
+        var replyMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        replyMessage = await chatCompletion.GetChatContentAsync(chatHistory, settings);
+        replyMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
