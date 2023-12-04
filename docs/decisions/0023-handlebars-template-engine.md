@@ -252,7 +252,7 @@ public static class KernelSystemHelpers
     {
       // Where each built-in helper will have its own defined class, following the same pattern that is used by Handlebars.Net.Helpers.
       // https://github.com/Handlebars-Net/Handlebars.Net.Helpers
-      if (helperOptions)
+      if (helperOptions.AllCategories contains helperCategory)
       ...
       KernelPromptHelpers.Register(handlebarsContext);
       KernelPluginHelpers.Register(handlebarsContext);
