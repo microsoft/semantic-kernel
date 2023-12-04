@@ -48,7 +48,7 @@ internal sealed class TemplateTokenizer
     /// </summary>
     /// <param name="text">Text to parse</param>
     /// <returns>List of blocks found in the text</returns>
-    public IList<Block> Tokenize(string? text)
+    public List<Block> Tokenize(string? text)
     {
         // An empty block consists of 4 chars: "{{}}"
         const int EmptyCodeBlockLength = 4;

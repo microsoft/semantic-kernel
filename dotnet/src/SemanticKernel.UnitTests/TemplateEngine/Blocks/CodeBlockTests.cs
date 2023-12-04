@@ -21,7 +21,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName");
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel));
+        await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderCodeAsync(this._kernel));
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class CodeBlockTests
         var target = new CodeBlock("plugin.function");
 
         // Act & Assert
-        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel));
+        await Assert.ThrowsAsync<FormatException>(async () => await target.RenderCodeAsync(this._kernel));
     }
 
     [Fact]
