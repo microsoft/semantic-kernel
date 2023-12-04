@@ -53,7 +53,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToImageService)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(this.GetType()));
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
 
         this._core.RequestCreated += (_, request) =>
