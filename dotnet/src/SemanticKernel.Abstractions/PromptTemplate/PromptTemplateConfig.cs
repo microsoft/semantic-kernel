@@ -8,8 +8,6 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -74,7 +72,7 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Input parameter for semantic functions.
+    /// Input parameter for prompt functions.
     /// </summary>
     public class InputParameter
     {

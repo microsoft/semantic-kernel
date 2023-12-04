@@ -4,12 +4,13 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class PluginTests
 {
     [Theory]
@@ -32,7 +33,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -62,7 +63,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -92,7 +93,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["q"] = query;
         arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
         arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -130,7 +131,7 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["payload"] = payload;
 
         // Act
@@ -161,7 +162,7 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-            var arguments = new KernelFunctionArguments();
+            var arguments = new KernelArguments();
             arguments["payload"] = payload;
 
             // Act
@@ -191,7 +192,7 @@ public class PluginTests
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
         arguments["payload"] = payload;
 
         // Act

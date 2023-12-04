@@ -2,12 +2,12 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// Options for REST API operation run.
 /// </summary>
-internal class RestApiOperationRunOptions
+internal sealed class RestApiOperationRunOptions
 {
     /// <summary>
     /// Override for REST API operation server URL.

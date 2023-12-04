@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -54,7 +53,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("  $var \n ");
-        var arguments = new Dictionary<string, string>()
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar"
         };
@@ -71,7 +70,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("  $var \n ");
-        var arguments = new Dictionary<string, string>()
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
             ["var"] = "able",
@@ -88,7 +87,7 @@ public class VarBlockTests
     public void ItThrowsIfTheVarNameIsEmpty()
     {
         // Arrange
-        var arguments = new Dictionary<string, string>()
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
             ["var"] = "able",
@@ -148,7 +147,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock($" ${name} ");
-        var arguments = new Dictionary<string, string> { [name] = "value" };
+        var arguments = new KernelArguments { [name] = "value" };
 
         // Act
         var result = target.Render(arguments);

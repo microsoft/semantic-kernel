@@ -71,6 +71,7 @@ public sealed class TestConfiguration
         public string ModelId { get; set; }
         public string ChatDeploymentName { get; set; }
         public string ChatModelId { get; set; }
+        public string ImageModelId { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
     }
@@ -107,7 +108,7 @@ public sealed class TestConfiguration
     {
         public string Endpoint { get; set; }
         public string ClientId { get; set; }
-        public string TenantId { get; set; }
+        public string ClientSecret { get; set; }
     }
 
     public class HuggingFaceConfig

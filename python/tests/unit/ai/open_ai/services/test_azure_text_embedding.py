@@ -35,7 +35,7 @@ def test_azure_text_embedding_init() -> None:
 
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
-    assert azure_text_embedding.model_id == deployment_name
+    assert azure_text_embedding.ai_model_id == deployment_name
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
 
 
@@ -46,7 +46,7 @@ def test_azure_text_embedding_init_with_empty_deployment_name() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(ValidationError, match="model_id"):
+    with pytest.raises(ValidationError, match="ai_model_id"):
         AzureTextEmbedding(
             deployment_name="",
             endpoint=endpoint,

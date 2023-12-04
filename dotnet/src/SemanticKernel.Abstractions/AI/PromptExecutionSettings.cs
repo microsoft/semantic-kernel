@@ -3,15 +3,15 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
-/// Request settings for an AI request.
-/// Implementors of <see cref="ITextCompletion"/> or <see cref="IChatCompletion"/> can extend this
+/// Execution settings for an AI request.
+/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
 /// if the service they are calling supports additional properties. For an example please reference
-/// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIRequestSettings implementation.
+/// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </summary>
 public class PromptExecutionSettings
 {

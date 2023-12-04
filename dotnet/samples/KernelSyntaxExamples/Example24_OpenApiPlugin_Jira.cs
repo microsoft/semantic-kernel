@@ -5,9 +5,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -73,7 +73,7 @@ public static class Example24_OpenApiPlugin_Jira
             );
         }
 
-        var arguments = new KernelFunctionArguments();
+        var arguments = new KernelArguments();
 
         // GetIssue Function
         // Set Properties for the Get Issue operation in the openAPI.swagger.json

@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// The REST API operation response.
@@ -37,4 +37,7 @@ public sealed class RestApiOperationResponse
         this.ContentType = contentType;
         this.ExpectedSchema = expectedSchema;
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Content?.ToString() ?? string.Empty;
 }

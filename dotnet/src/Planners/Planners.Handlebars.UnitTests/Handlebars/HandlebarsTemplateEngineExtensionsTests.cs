@@ -16,7 +16,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "Hello {{name}}!";
-        var arguments = new Dictionary<string, object?> { { "name", "World" } };
+        var arguments = new KernelArguments { { "name", "World" } };
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -31,7 +31,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{#if (equal x y)}}Equal{{else}}Not equal{{/if}}";
-        var arguments = new Dictionary<string, object?> { { "x", 10 }, { "y", 10 } };
+        var arguments = new KernelArguments { { "x", 10 }, { "y", 10 } };
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -46,7 +46,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{#each (array 1 2 3)}}{{this}}{{/each}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -61,7 +61,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{#each (range 1 5)}}{{this}}{{/each}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -76,7 +76,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{concat \"Hello\" \" \" \"World\" \"!\"}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -91,7 +91,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{json person}}";
-        var arguments = new Dictionary<string, object?>
+        var arguments = new KernelArguments
             {
                 { "person", new { name = "Alice", age = 25 } }
             };
@@ -109,7 +109,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{#message role=\"title\"}}Hello World!{{/message}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -124,7 +124,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{{{raw}}}}{{x}}{{{{/raw}}}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -139,7 +139,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{set name=\"x\" value=10}}{{get name=\"x\"}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -154,13 +154,13 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "Foo {{Foo-Bar}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
 
-        // Assert   
+        // Assert
         Assert.Equal("Foo Bar", result);
     }
 
@@ -170,13 +170,13 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
 
-        // Assert   
+        // Assert
         Assert.Equal("BazBar", result);
     }
 
@@ -186,13 +186,13 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
-        var variables = new Dictionary<string, object?>();
+        var variables = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, variables);
 
-        // Assert   
+        // Assert
         Assert.Equal("BazBar", result);
     }
 
@@ -202,10 +202,10 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\"}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
-        // Assert   
+        // Assert
         Assert.Throws<KernelException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
 
@@ -215,7 +215,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{Foo-StringifyInt x=\"twelve\"}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
         // Assert
@@ -228,10 +228,10 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Arrange
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Random x=\"random\"}}";
-        var arguments = new Dictionary<string, object?>();
+        var arguments = new KernelArguments();
         kernel.ImportPluginFromObject(new Foo(), "Foo");
 
-        // Assert   
+        // Assert
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
 
