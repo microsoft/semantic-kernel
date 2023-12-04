@@ -2,22 +2,22 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Azure OpenAI image generation response status
+/// Azure OpenAI text to image response status
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
 [Experimental("SKEXP0012")]
 public static class AzureOpenAIImageOperationStatus
 {
     /// <summary>
-    /// Image generation Succeeded
+    /// Text to image Succeeded
     /// </summary>
     public const string Succeeded = "succeeded";
 
     /// <summary>
-    /// Image generation Failed
+    /// Text to image Failed
     /// </summary>
     public const string Failed = "failed";
 

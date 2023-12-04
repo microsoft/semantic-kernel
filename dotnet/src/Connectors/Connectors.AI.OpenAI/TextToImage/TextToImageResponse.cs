@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Image generation response
+/// Text to image response
 /// </summary>
 [Experimental("SKEXP0012")]
-public class ImageGenerationResponse
+public class TextToImageResponse
 {
     /// <summary>
     /// OpenAI Image response
@@ -32,7 +32,7 @@ public class ImageGenerationResponse
     }
 
     /// <summary>
-    /// List of possible image generations
+    /// List of possible images
     /// </summary>
     [JsonPropertyName("data")]
     public IList<Image> Images { get; set; } = new List<Image>();

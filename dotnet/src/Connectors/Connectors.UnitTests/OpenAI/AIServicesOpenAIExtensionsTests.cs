@@ -68,8 +68,8 @@ public class AIServicesOpenAIExtensionsTests
             c.AddOpenAIChatCompletion("model", "key", serviceId: "one");
             c.AddOpenAIChatCompletion("model", "key", serviceId: "one");
 
-            c.AddOpenAIImageGeneration("model", "key", serviceId: "one");
-            c.AddOpenAIImageGeneration("model", "key", serviceId: "one");
+            c.AddOpenAITextToImage("model", "key", serviceId: "one");
+            c.AddOpenAITextToImage("model", "key", serviceId: "one");
 
             c.AddSingleton(new OpenAITextGenerationService("model", "key"));
             c.AddSingleton(new OpenAITextGenerationService("model", "key"));
