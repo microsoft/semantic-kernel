@@ -121,7 +121,7 @@ public static class Example70_Assistant
         // Create assistant, same as the other cases.
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
 
@@ -160,7 +160,7 @@ public static class Example70_Assistant
         // Create assistant
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();

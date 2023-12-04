@@ -30,7 +30,7 @@ public partial class AssistantBuilder
     {
         return
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(model, apiKey)
+                .WithOpenAIChatCompletion(model, apiKey)
                 .WithInstructions(instructions)
                 .WithName(name)
                 .WithDescription(description)

@@ -37,7 +37,7 @@ public static class Example71_AssistantDelegation
 
         var menuAssistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
                 .WithDescription("Answer questions about the menu use the tool.")
                 .WithPlugin(plugin)
@@ -45,13 +45,13 @@ public static class Example71_AssistantDelegation
 
         var parrotAssistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
 
         var toolAssistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
                 .WithPlugins(new[] { menuAssistant.AsPlugin(), parrotAssistant.AsPlugin() })
                 .BuildAsync();

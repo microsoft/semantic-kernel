@@ -71,7 +71,7 @@ public sealed class AssistantHarness
     {
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .FromTemplatePath("Templates/PoetAssistant.yaml")
                 .BuildAsync()
                 .ConfigureAwait(true);

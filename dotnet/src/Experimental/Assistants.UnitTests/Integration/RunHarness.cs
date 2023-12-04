@@ -69,7 +69,7 @@ public sealed class RunHarness
     {
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .FromTemplatePath("Templates/PoetAssistant.yaml")
                 .BuildAsync()
                 .ConfigureAwait(true);
@@ -93,7 +93,7 @@ public sealed class RunHarness
 
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .FromTemplatePath("Templates/GameAssistant.yaml")
                 .WithPlugin(gamePlugin)
                 .BuildAsync()
