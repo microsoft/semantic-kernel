@@ -72,7 +72,7 @@ public class Thread : IThread
                 var plan = await planner.CreatePlanAsync(this._agent.Kernel, goal).ConfigureAwait(false);
                 lastPlan = plan;
 
-                var result = plan.Invoke(this._agent.Kernel, this._arguments);
+                var result = plan.Invoke(this._agent.Kernel, new KernelArguments(this._arguments));
 
                 var response = new ChatMessage(new AuthorRole("function"), result!.Trim(), new Dictionary<string, string>());
                 response!.AdditionalProperties!.Add("Name", this._agent.Name!);
