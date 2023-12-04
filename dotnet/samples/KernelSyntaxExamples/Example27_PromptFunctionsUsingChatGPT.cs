@@ -13,7 +13,7 @@ public static class Example27_PromptFunctionsUsingChatGPT
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Using Chat GPT model for text completion ========");
+        Console.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)

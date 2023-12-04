@@ -16,7 +16,7 @@ public static class Example40_DIContainer
     {
         var collection = new ServiceCollection();
         collection.AddSingleton<ILoggerFactory>(ConsoleLogger.LoggerFactory);
-        collection.AddOpenAITextCompletion(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
 
         // Registering class that uses Kernel to execute a plugin

@@ -19,6 +19,15 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     }
 
     /// <summary>
+    /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
+    /// </summary>
+    public double MaxTokensRatio { get; set; } = 0.1;
+
+    internal int MaxCompletionTokens { get { return (int)(this.MaxTokens * this.MaxTokensRatio); } }
+
+    internal int MaxPromptTokens { get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); } }
+
+    /// <summary>
     /// Delegate to get the prompt template string for the step execution phase.
     /// </summary>
     public Func<string>? GetStepPromptTemplate { get; set; }
@@ -34,7 +43,7 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     public int MinIterationTimeMs { get; set; }
 
     /// <summary>
-    /// The configuration to use for the prompt template.
+    /// The prompt execution settings to use for the step execution phase.
     /// </summary>
-    public OpenAIPromptExecutionSettings? ModelSettings { get; set; }
+    public OpenAIPromptExecutionSettings? ExecutionSettings { get; set; }
 }
