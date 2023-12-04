@@ -106,13 +106,17 @@ class OpenAIRequestSettings(AIRequestSettings):
     #         else None
     #     )
 
-    def update_from_openai_request_settings(self, new_settings: 'OpenAIRequestSettings') -> None:
+    def update_from_openai_request_settings(
+        self, new_settings: "OpenAIRequestSettings"
+    ) -> None:
         """Update the request settings from another request settings."""
         for key, value in new_settings.model_dump().items():
             if key in self.keys:
                 setattr(self, key, value)
 
-    def update_from_ai_request_settings(self, ai_request_settings: AIRequestSettings) -> None:
+    def update_from_ai_request_settings(
+        self, ai_request_settings: AIRequestSettings
+    ) -> None:
         """Update the request settings from another request settings."""
         self.service_id = ai_request_settings.service_id
         self.extension_data = ai_request_settings.extension_data
