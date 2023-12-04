@@ -22,17 +22,23 @@ We want to use Handlebars as a template engine for rendering prompts and planner
 
 Therefore, we need to extend Handlebars with custom helpers that can address these gaps and provide a consistent and convenient way for prompt and planner engineers to write templates.
 
-First, we will do this by baking in a defined set of custom system helpers for common operations and utilities that are not provided by the built-in Handlebars helpers or kernel functions, which:
+First, we will do this by **_baking in a defined set of custom system helpers_** for common operations and utilities that are not provided any the built-in Handlebars helpers, which:
 
 - Allows us full control over what functionality can be executed by the Handlebars template engine.
-- Enhances the functionality and usability of the template engine, by providing helpers for common operations and utilities that are not provided by the built-in Handlebars helpers or kernel functions but is commonly hallucinated by the model.
-- Improves the expressiveness and readability of the rendered template, as the helpers can be used to perform simple or complex logic or transformations on the template data or arguments.
-- Provides flexibility and convenience for the users, as they can choose the syntax and extend or omit certain helpers to best suits their needs and preferences.
+- Enhances the functionality and usability of the template engine, by providing helpers for common operations and utilities that are not provided by any built-in Handlebars helpers but are commonly hallucinated by the model.
+- Improves the expressiveness and readability of the rendered template, as the helpers can be used to perform simple or complex logic or transformations on the template data / arguments.
+- Provides flexibility and convenience for the users, as they can:
+
+  - Choose the syntax, and
+  - Extend, add, or omit certain helpers
+
+  to best suits their needs and preferences.
+
 - Allows for customization of specific operations or utilities that may have different behavior or requirements, such as handling output types, formats, or errors.
 
-These helpers would handle the evaluation of the arguments, the execution of the operation or utility, and the writing of the result to the template. Examples of such operations are `{{concat string1 string2 ...}}`, `{{equal value1 value2}}`, `{{json object}}`, `{{set name=value}}`, `{{get name}}`, `{{or condition1 condition2}}`.
+These helpers would handle the evaluation of the arguments, the execution of the operation or utility, and the writing of the result to the template. Examples of such operations are `{{concat string1 string2 ...}}`, `{{equal value1 value2}}`, `{{json object}}`, `{{set name=value}}`, `{{get name}}`, `{{or condition1 condition2}}`, etc.
 
-Secondly, we have to expose the functions that are registered in the Kernel to the Handlebars template engine. Options for this are detailed below.
+Secondly, we have to **_expose the functions that are registered in the Kernel as helpers_** to the Handlebars template engine. Options for this are detailed below.
 
 ## Decision Drivers
 
@@ -43,7 +49,7 @@ Secondly, we have to expose the functions that are registered in the Kernel to t
 
 ## Considered Options
 
-We considered the following options for extending Handlebars with custom helpers:
+We considered the following options for extending Handlebars with kernel functions as custom helpers:
 
 **1. Use a single helper for invoking functions from the kernel.** This option would use a generic helper, such as `{{invoke pluginName-functionName param1=value1 param2=value2 ...}}`, to call any function from the kernel and pass parameters to it. The helper would handle the execution of the function, the conversion of the parameters and the result, and the writing of the result to the template.
 
@@ -65,7 +71,7 @@ Cons:
 - Reduces the expressiveness and readability of the template, as the function name and parameters are wrapped in a generic helper invocation.
 - Adds additional syntax for the model to learn and keep track of, potentially leading to more errors during render.
 
-**2. Use a generic helper for each function from the kernel**
+**2. Use a generic helper for _each_ function from the kernel**
 
 Pros:
 
@@ -78,7 +84,7 @@ Cons:
 
 ## Decision Outcome
 
-We decided to go with options 2: providing special helpers to invoke any function in the kernel. These helpers will follow the same logic and syntax for each registered function. We believe that this approach, alongside the custom system helpers that will enable special utility logic or behavior, provides the best balance between simplicity, expressiveness, flexibility, and functionality for the template engine and the users.
+We decided to go with option 2: providing special helpers to invoke any function in the kernel. These helpers will follow the same logic and syntax for each registered function. We believe that this approach, alongside the custom system helpers that will enable special utility logic or behavior, provides the best balance between simplicity, expressiveness, flexibility, and functionality for the template engine and the users.
 
 With this approach,
 
@@ -86,7 +92,7 @@ With this approach,
 - We will provide utility helpers, which are registered by default.
 - We will provide prompt helpers (e.g. chat message), which are registered by default.
 - We will register all plugin functions registered on the `Kernel`.
-- We will allow customers to control which plugins are registered as helpers
+- We will allow customers to control which plugins are registered as helpers and the syntax of helpers' signatures.
   - By default, we will honor all options defined in [HandlebarsHelperOptions](https://github.com/Handlebars-Net/Handlebars.Net.Helpers/blob/8f7c9c082e18845f6a620bbe34bf4607dcba405b/src/Handlebars.Net.Helpers/Options/HandlebarsHelpersOptions.cs#L12).
   - Additionally, we will extend this configuration to include a `RegisterCustomHelpersCallback` option that users can set to register custom helpers.
 - We will allow Kernel function arguments to be easily accessed, i.e., function variables and execution settings, via a `KernelArguments` object.
@@ -109,12 +115,14 @@ We also decided to follow some guidelines and best practices for designing and i
 
 Effectively, there will be four buckets of helpers enabled in the Handlebars Template Engine:
 
-1. Default helpers from the Handlebars library to enable loops and conditions (#if, #each, #with, #unless)
+1. Default helpers from the Handlebars library, including:
+   - [Built-in helpers](https://handlebarsjs.com/guide/builtin-helpers.html) that enable loops and conditions (#if, #each, #with, #unless)
+   - [Handlebars.Net.Helpers](https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki)
 2. Functions in the kernel
 3. Helpers helpful to prompt engineers (i.e., message, or)
 4. Utility helpers that can be used to perform simple logic or transformations on the template data or arguments (i.e., set, get, json, concat, equals, range, array)
 
-**HandlebarsPromptTemplate pseudocode**
+### Pseudocode for the Handlebars Prompt Template Engine
 
 A prototype implementation of a handlebars prompt template engine with built-in helpers could look something like this:
 
@@ -141,10 +149,12 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
   /// Callback for registering custom helpers.
   public RegisterCustomHelpersCallback? RegisterCustomHelpers { get; set; } = null;
 
-  // Psuedocode, some combination of both KernelHelperCategories and the default HandlebarsHelpersOptions.Categories.
+  // Pseudocode, some combination of both KernelHelperCategories and the default HandlebarsHelpersOptions.Categories.
   public List<Enum> AllCategories = KernelHelperCategories.AddRange(Categories);
 }
+```
 
+```csharp
 // Handlebars Prompt Template
 internal class HandlebarsPromptTemplate : IPromptTemplate
 {
@@ -170,9 +180,10 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
   }
 }
 
-/// <summary>
+```
+
+```csharp
 /// Extension class to register Kernel functions as helpers.
-/// </summary>
 public static class KernelFunctionHelpers
 {
   public static void Register(
@@ -212,17 +223,21 @@ public static class KernelFunctionHelpers
       InvokeSKFunction(kernel, function, GetKernelArguments(executionContext), cancellationToken);
     });
   }
+  ...
 }
+```
 
+```csharp
+/// Extension class to register additional helpers as Kernel System helpers.
 public static class KernelSystemHelpers
 {
-    // Where each built-in helper will have its own defined class, following the same pattern that is used here https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
     public static void Register(IHandlebars handlebarsInstance, KernelArguments arguments, HandlebarsPromptTemplateOptions options)
     {
         RegisterHandlebarsDotNetHelpers(handlebarsInstance, options);
         RegisterSystemHelpers(handlebarsInstance, arguments, options);
     }
 
+    // Registering all helpers provided by https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
     private static void RegisterHandlebarsDotNetHelpers(IHandlebars handlebarsInstance, HandlebarsPromptTemplateOptions helperOptions)
     {
         HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
@@ -231,11 +246,12 @@ public static class KernelSystemHelpers
         });
     }
 
+    // Registering all helpers built by the SK team to support the kernel.
     private static void RegisterSystemHelpers(
       IHandlebars handlebarsInstance, KernelArguments arguments, HandlebarsPromptTemplateOptions helperOptions)
     {
-      // Where each built-in helper will have its own defined class, following the same pattern that is used here https://github.com/Handlebars-Net/Handlebars.Net.Helpers.
-
+      // Where each built-in helper will have its own defined class, following the same pattern that is used by Handlebars.Net.Helpers.
+      // https://github.com/Handlebars-Net/Handlebars.Net.Helpers
       if (helperOptions)
       ...
       KernelPromptHelpers.Register(handlebarsContext);
@@ -243,7 +259,6 @@ public static class KernelSystemHelpers
       KernelStringHelpers..Register(handlebarsContext);
       ...
     }
-    ...
 }
 ```
 
