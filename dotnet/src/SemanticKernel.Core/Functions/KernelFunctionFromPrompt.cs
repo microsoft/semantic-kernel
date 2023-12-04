@@ -164,10 +164,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (var genericChunk in textCompletion.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var content in textCompletion.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return (T)(object)genericChunk;
+
+            yield return typeof(T) switch
+            {
+                _ when typeof(T) == typeof(string)
+                    => (T)(object)content.ToString(),
+
+                _ when typeof(T) == content.GetType()
+                    => (T)(object)content,
+
+                _ when content.InnerContent is not null && typeof(T) == content.InnerContent.GetType()
+                    => (T)content.InnerContent,
+
+                _ when typeof(T) == typeof(byte[])
+                    => (T)(object)content.ToByteArray(),
+
+                _ => throw new NotSupportedException($"The specified type {typeof(T)} is not supported.")
+            };
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
