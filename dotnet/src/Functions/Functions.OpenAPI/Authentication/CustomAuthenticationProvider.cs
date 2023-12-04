@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 
 /// <summary>
 /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.

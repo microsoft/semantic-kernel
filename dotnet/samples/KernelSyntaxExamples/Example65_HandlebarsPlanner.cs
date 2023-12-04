@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Plugins.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 
@@ -115,7 +114,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 

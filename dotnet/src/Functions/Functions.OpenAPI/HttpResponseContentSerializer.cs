@@ -3,7 +3,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents a delegate for serializing REST API operation response content.
