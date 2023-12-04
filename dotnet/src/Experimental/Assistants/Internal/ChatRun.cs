@@ -128,7 +128,7 @@ internal sealed class ChatRun
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
         var toolResult = result as string;
-        if (result is not string)
+        if (toolResult != null)
         {
             toolResult = JsonSerializer.Serialize(result);
         }
