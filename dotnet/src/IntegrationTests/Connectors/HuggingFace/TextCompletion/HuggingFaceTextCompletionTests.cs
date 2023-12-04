@@ -40,15 +40,15 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(Input);
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
+        var localResponse = await huggingFaceLocal.GetTextContentAsync(Input);
+        var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);
 
         // Assert
-        Assert.NotNull(localResponse);
-        Assert.NotNull(remoteResponse);
+        Assert.NotNull(localResponse.Text);
+        Assert.NotNull(remoteResponse.Text);
 
-        Assert.StartsWith(Input, localResponse, StringComparison.Ordinal);
-        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, localResponse.Text, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
@@ -63,12 +63,12 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
+        var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);
 
         // Assert
-        Assert.NotNull(remoteResponse);
+        Assert.NotNull(remoteResponse.Text);
 
-        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
 
     private string GetApiKey()

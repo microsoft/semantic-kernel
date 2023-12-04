@@ -120,13 +120,10 @@ public static class Example70_Assistant
 
         // Create assistant, same as the other cases.
         var assistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                OpenAIFunctionEnabledModel, // Must be a function-enabled model.
-                EmbeddedResource.Read("Assistants.ParrotAssistant.yaml")); // Defined under ./Resources/Assistants
-
-        // Import assistant as a KernelFunction
-        var plugin = KernelPluginFactory.CreateFromObject(assistant, assistant.Id);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                .BuildAsync();
 
         // Invoke assistant plugin function.
         var arguments = new KernelArguments
@@ -135,7 +132,7 @@ public static class Example70_Assistant
         };
 
         var kernel = new Kernel();
-        var result = await kernel.InvokeAsync(plugin.Single(), arguments);
+        var result = await kernel.InvokeAsync(assistant.AsPlugin().Single(), arguments);
 
         // Display result
         var response = result.GetValue<AssistantResponse>();
@@ -160,16 +157,13 @@ public static class Example70_Assistant
         // Read assistant resource
         var definition = EmbeddedResource.Read(resourcePath);
 
-        // Initialize plugins, if any.
-        var plugins = plugin == null ? new KernelPluginCollection() : new KernelPluginCollection() { plugin };
-
         // Create assistant
         var assistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                OpenAIFunctionEnabledModel,
-                definition,
-                plugins);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(definition)
+                .WithPlugin(plugin)
+                .BuildAsync();
 
         // Display assistant identifier.
         Console.WriteLine($"[{assistant.Id}]");
