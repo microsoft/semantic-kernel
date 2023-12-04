@@ -29,20 +29,10 @@ public static class Example43_GetModelResult
 
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
-        // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync(kernel, new KernelArguments(new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 })
-        {
-            [KernelArguments.InputParameterName] = "Sci-fi"
-        });
-
-        Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.Metadata?.AsJson());
-        Console.WriteLine();
-
         // Using the Kernel InvokeAsync
         var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
         Console.WriteLine(result.GetValue<string>());
-        Console.WriteLine(functionResult.Metadata?["Usage"]?.AsJson());
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
