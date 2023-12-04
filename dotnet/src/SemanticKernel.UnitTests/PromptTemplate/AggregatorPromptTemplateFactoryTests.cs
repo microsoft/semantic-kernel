@@ -82,7 +82,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
         {
             if (templateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
-                result =  new MyPromptTemplate2(templateConfig);
+                result = new MyPromptTemplate2(templateConfig);
                 return true;
             }
 
