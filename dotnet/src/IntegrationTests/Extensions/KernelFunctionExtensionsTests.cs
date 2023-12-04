@@ -27,7 +27,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextGeneration()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -45,7 +45,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextGeneration()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -65,7 +65,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextCompletion : ITextGeneration
+    private sealed class RedirectTextGeneration : ITextGeneration
     {
         public string? ModelId => null;
 
@@ -73,7 +73,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         Task<IReadOnlyList<ITextResult>> ITextGeneration.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
+            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextResult(prompt) });
         }
 
         public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
@@ -82,11 +82,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         }
     }
 
-    internal sealed class RedirectTextCompletionResult : ITextResult
+    internal sealed class RedirectTextResult : ITextResult
     {
         private readonly string _completion;
 
-        public RedirectTextCompletionResult(string completion)
+        public RedirectTextResult(string completion)
         {
             this._completion = completion;
         }

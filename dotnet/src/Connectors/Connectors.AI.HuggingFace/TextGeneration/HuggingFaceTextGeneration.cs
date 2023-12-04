@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// HuggingFace text completion service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextCompletion : ITextGeneration
+public sealed class HuggingFaceTextGeneration : ITextGeneration
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
@@ -30,12 +30,12 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
     private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGeneration"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextCompletion(Uri endpoint, string model)
+    public HuggingFaceTextGeneration(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
@@ -49,7 +49,7 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGeneration"/> class.
     /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// </summary>
     /// <param name="model">The name of the model to use for text completion.</param>
@@ -57,7 +57,7 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
     /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
     /// <param name="endpoint">The endpoint URL for the Hugging Face service.
     /// If not specified, the base address of the HTTP client is used. If the base address is not available, a default endpoint will be used.</param>
-    public HuggingFaceTextCompletion(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
+    public HuggingFaceTextGeneration(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(model);
 
@@ -115,9 +115,9 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<TextGenerationResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
-        var completionRequest = new TextCompletionRequest
+        var completionRequest = new TextGenerationRequest
         {
             Input = text
         };
@@ -134,7 +134,7 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+        List<TextGenerationResponse>? completionResponse = JsonSerializer.Deserialize<List<TextGenerationResponse>>(body);
 
         if (completionResponse is null)
         {
@@ -144,7 +144,7 @@ public sealed class HuggingFaceTextCompletion : ITextGeneration
             };
         }
 
-        return completionResponse.ConvertAll(c => new TextCompletionResult(c));
+        return completionResponse.ConvertAll(c => new TextGenerationResult(c));
     }
 
     /// <summary>

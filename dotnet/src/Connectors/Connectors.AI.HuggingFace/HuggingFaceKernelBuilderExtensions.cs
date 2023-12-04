@@ -24,7 +24,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithHuggingFaceTextCompletion(
+    public static KernelBuilder WithHuggingFaceTextGeneration(
         this KernelBuilder builder,
         string model,
         string? apiKey = null,
@@ -38,7 +38,7 @@ public static class HuggingFaceKernelBuilderExtensions
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-                new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+                new HuggingFaceTextGeneration(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
         });
     }
 
@@ -51,7 +51,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="endpoint">The endpoint URL for the text completion service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHuggingFaceTextCompletion(
+    public static IServiceCollection AddHuggingFaceTextGeneration(
         this IServiceCollection services,
         string model,
         string? apiKey = null,
@@ -62,7 +62,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+            new HuggingFaceTextGeneration(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
 
     /// <summary>

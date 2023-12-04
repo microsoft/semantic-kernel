@@ -16,8 +16,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
@@ -42,7 +42,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithAzureOpenAITextCompletion(
+    public static KernelBuilder WithAzureOpenAITextGeneration(
         this KernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -61,7 +61,7 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
-                return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new AzureOpenAITextGeneration(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
             });
         });
     }
@@ -76,7 +76,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddAzureOpenAITextCompletion(
+    public static IServiceCollection AddAzureOpenAITextGeneration(
         this IServiceCollection services,
         string deploymentName,
         string modelId,
@@ -92,7 +92,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGeneration(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -107,7 +107,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithAzureOpenAITextCompletion(
+    public static KernelBuilder WithAzureOpenAITextGeneration(
         this KernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -127,7 +127,7 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
-                return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new AzureOpenAITextGeneration(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
             });
         });
     }
@@ -142,7 +142,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddAzureOpenAITextCompletion(
+    public static IServiceCollection AddAzureOpenAITextGeneration(
         this IServiceCollection services,
         string deploymentName,
         string modelId,
@@ -159,7 +159,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGeneration(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -172,7 +172,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithAzureOpenAITextCompletion(
+    public static KernelBuilder WithAzureOpenAITextGeneration(
         this KernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -187,7 +187,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-                new AzureOpenAITextCompletion(
+                new AzureOpenAITextGeneration(
                     deploymentName,
                     openAIClient,
                     modelId,
@@ -204,7 +204,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddAzureOpenAITextCompletion(
+    public static IServiceCollection AddAzureOpenAITextGeneration(
         this IServiceCollection services,
         string deploymentName,
         string modelId,
@@ -217,7 +217,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextCompletion(
+            new AzureOpenAITextGeneration(
                 deploymentName,
                 openAIClient,
                 modelId,
@@ -234,7 +234,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithOpenAITextCompletion(
+    public static KernelBuilder WithOpenAITextGeneration(
         this KernelBuilder builder,
         string modelId,
         string apiKey,
@@ -249,7 +249,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-                new OpenAITextCompletion(
+                new OpenAITextGeneration(
                     modelId,
                     apiKey,
                     orgId,
@@ -267,7 +267,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddOpenAITextCompletion(
+    public static IServiceCollection AddOpenAITextGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,
@@ -279,7 +279,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextCompletion(
+            new OpenAITextGeneration(
                 modelId,
                 apiKey,
                 orgId,
@@ -295,7 +295,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithOpenAITextCompletion(
+    public static KernelBuilder WithOpenAITextGeneration(
         this KernelBuilder builder,
         string modelId,
         OpenAIClient openAIClient,
@@ -308,7 +308,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-                new OpenAITextCompletion(
+                new OpenAITextGeneration(
                     modelId,
                     openAIClient,
                     serviceProvider.GetService<ILoggerFactory>()));
@@ -323,7 +323,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddOpenAITextCompletion(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextGeneration(this IServiceCollection services,
         string modelId,
         OpenAIClient openAIClient,
         string? serviceId = null)
@@ -333,7 +333,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextCompletion(
+            new OpenAITextGeneration(
                 modelId,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));

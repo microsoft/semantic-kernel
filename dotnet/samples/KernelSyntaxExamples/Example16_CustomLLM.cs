@@ -42,13 +42,13 @@ public static class Example16_CustomLLM
 
     public static async Task RunAsync()
     {
-        await CustomTextCompletionWithSKFunctionAsync();
+        await CustomTextGenerationWithSKFunctionAsync();
 
-        await CustomTextCompletionAsync();
-        await CustomTextCompletionStreamAsync();
+        await CustomTextGenerationAsync();
+        await CustomTextGenerationStreamAsync();
     }
 
-    private static async Task CustomTextCompletionWithSKFunctionAsync()
+    private static async Task CustomTextGenerationWithSKFunctionAsync()
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
@@ -56,9 +56,9 @@ public static class Example16_CustomLLM
         {
             c.AddSingleton(ConsoleLogger.LoggerFactory)
             // Add your text completion service as a singleton instance
-            .AddKeyedSingleton<ITextGeneration>("myService1", new MyTextCompletionService())
+            .AddKeyedSingleton<ITextGeneration>("myService1", new MyTextGenerationService())
             // Add your text completion service as a factory method
-            .AddKeyedSingleton<ITextGeneration>("myService2", (_, _) => new MyTextCompletionService());
+            .AddKeyedSingleton<ITextGeneration>("myService2", (_, _) => new MyTextGenerationService());
         }).Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
@@ -75,28 +75,28 @@ public static class Example16_CustomLLM
         ));
     }
 
-    private static async Task CustomTextCompletionAsync()
+    private static async Task CustomTextGenerationAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
-        var completionService = new MyTextCompletionService();
+        var completionService = new MyTextGenerationService();
 
         var result = await completionService.CompleteAsync("I missed the training session this morning");
 
         Console.WriteLine(result);
     }
 
-    private static async Task CustomTextCompletionStreamAsync()
+    private static async Task CustomTextGenerationStreamAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        ITextGeneration textCompletion = new MyTextCompletionService();
+        ITextGeneration textCompletion = new MyTextGenerationService();
 
         var prompt = "Write one paragraph why AI is awesome";
-        await TextCompletionStreamAsync(prompt, textCompletion);
+        await TextGenerationStreamAsync(prompt, textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(string prompt, ITextGeneration textCompletion)
+    private static async Task TextGenerationStreamAsync(string prompt, ITextGeneration textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -116,7 +116,7 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
-    private sealed class MyTextCompletionService : ITextGeneration
+    private sealed class MyTextGenerationService : ITextGeneration
     {
         public string? ModelId { get; private set; }
 
@@ -128,7 +128,7 @@ public static class Example16_CustomLLM
 
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
             {
-                new MyTextCompletionStreamingResult()
+                new MyTextGenerationStreamingResult()
             });
         }
 
@@ -169,7 +169,7 @@ public static class Example16_CustomLLM
         }
     }
 
-    private sealed class MyTextCompletionStreamingResult : ITextResult
+    private sealed class MyTextGenerationStreamingResult : ITextResult
     {
         private readonly ModelResult _modelResult = new(new
         {

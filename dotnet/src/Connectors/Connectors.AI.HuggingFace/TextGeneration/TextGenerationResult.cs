@@ -7,13 +7,13 @@ using Microsoft.SemanticKernel.AI.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
-internal sealed class TextCompletionResult : ITextResult
+internal sealed class TextGenerationResult : ITextResult
 {
-    public TextCompletionResult(TextCompletionResponse responseData) =>
+    public TextGenerationResult(TextGenerationResponse responseData) =>
         this.ModelResult = new ModelResult(responseData);
 
     public ModelResult ModelResult { get; }
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult(this.ModelResult.GetResult<TextCompletionResponse>().Text ?? string.Empty);
+        Task.FromResult(this.ModelResult.GetResult<TextGenerationResponse>().Text ?? string.Empty);
 }

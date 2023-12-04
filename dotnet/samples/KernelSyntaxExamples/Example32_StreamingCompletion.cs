@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming Text Completion.
@@ -18,33 +18,33 @@ public static class Example32_StreamingCompletion
 {
     public static async Task RunAsync()
     {
-        await AzureOpenAITextCompletionStreamAsync();
-        await OpenAITextCompletionStreamAsync();
+        await AzureOpenAITextGenerationStreamAsync();
+        await OpenAITextGenerationStreamAsync();
     }
 
-    private static async Task AzureOpenAITextCompletionStreamAsync()
+    private static async Task AzureOpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new AzureOpenAITextCompletion(
+        var textCompletion = new AzureOpenAITextGeneration(
             TestConfiguration.AzureOpenAI.DeploymentName,
             TestConfiguration.AzureOpenAI.ModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await TextGenerationStreamAsync(textCompletion);
     }
 
-    private static async Task OpenAITextCompletionStreamAsync()
+    private static async Task OpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new OpenAITextCompletion("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
+        var textCompletion = new OpenAITextGeneration("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await TextGenerationStreamAsync(textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextGeneration textCompletion)
+    private static async Task TextGenerationStreamAsync(ITextGeneration textCompletion)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {

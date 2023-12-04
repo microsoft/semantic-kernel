@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// <summary>
 /// HTTP schema to perform completion request.
 /// </summary>
-public sealed class TextCompletionRequest
+public sealed class TextGenerationRequest
 {
     /// <summary>
     /// Prompt to complete.
