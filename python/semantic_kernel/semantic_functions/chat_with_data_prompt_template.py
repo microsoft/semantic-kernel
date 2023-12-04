@@ -17,7 +17,7 @@ ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 
 
 class ChatWithDataPromptTemplate(ChatPromptTemplate):
-    _messages: List[ChatMessageT]
+    """A template for chat prompts that include data, which adds handling for tool messages."""
 
     def __init__(
         self,
