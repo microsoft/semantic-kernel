@@ -59,7 +59,7 @@ internal static partial class KernelFunctionLogMessages
     /// </summary>
     [LoggerMessage(
         EventId = 4,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Information,
         Message = "Function completed. Duration: {Duration}s")]
     public static partial void LogFunctionComplete(
         this ILogger logger,
