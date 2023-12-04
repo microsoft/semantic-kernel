@@ -13,14 +13,14 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 /// <summary>
-/// OpenAI text completion service.
+/// OpenAI text generation service.
 /// </summary>
 public sealed class OpenAITextGeneration : ITextGeneration
 {
     private readonly OpenAIClientCore _core;
 
     /// <summary>
-    /// Create an instance of the OpenAI text completion connector
+    /// Create an instance of the OpenAI text generation connector
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
@@ -41,7 +41,7 @@ public sealed class OpenAITextGeneration : ITextGeneration
     }
 
     /// <summary>
-    /// Create an instance of the OpenAI text completion connector
+    /// Create an instance of the OpenAI text generation connector
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>

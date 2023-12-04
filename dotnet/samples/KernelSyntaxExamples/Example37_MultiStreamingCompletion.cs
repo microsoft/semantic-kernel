@@ -36,14 +36,14 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        ITextGeneration textCompletion = new OpenAIChatCompletion(
+        ITextGeneration textGeneration = new OpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(textCompletion);
+        await ChatCompletionStreamAsync(textGeneration);
     }
 
-    private static async Task ChatCompletionStreamAsync(ITextGeneration textCompletion)
+    private static async Task ChatCompletionStreamAsync(ITextGeneration textGeneration)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -59,7 +59,7 @@ public static class Example37_MultiStreamingCompletion
 
         PrepareDisplay();
         var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
-        await ProcessStreamAsyncEnumerableAsync(textCompletion, prompt, executionSettings, consoleLinesPerResult);
+        await ProcessStreamAsyncEnumerableAsync(textGeneration, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
 

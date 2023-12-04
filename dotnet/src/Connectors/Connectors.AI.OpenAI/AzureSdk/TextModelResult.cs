@@ -6,10 +6,10 @@ using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
-/// <summary> Represents a singular result of a text completion.</summary>
+/// <summary> Represents a singular result of a text generation.</summary>
 public sealed class TextModelResult
 {
-    /// <summary> A unique identifier associated with this text completion response. </summary>
+    /// <summary> A unique identifier associated with this text generation response. </summary>
     public string Id { get; }
 
     /// <summary>

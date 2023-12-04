@@ -122,7 +122,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
-        ITextGeneration? textCompletion,
+        ITextGeneration? textGeneration,
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,

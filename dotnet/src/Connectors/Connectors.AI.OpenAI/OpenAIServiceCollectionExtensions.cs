@@ -32,7 +32,7 @@ public static class OpenAIServiceCollectionExtensions
     #region Text Completion
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -67,7 +67,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -97,7 +97,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -133,7 +133,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -164,7 +164,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -196,7 +196,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text completion service with the specified configuration.
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -225,7 +225,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an OpenAI text completion service with the specified configuration.
+    /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -259,7 +259,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an OpenAI text completion service with the specified configuration.
+    /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -288,7 +288,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an OpenAI text completion service with the specified configuration.
+    /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -316,7 +316,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an OpenAI text completion service with the specified configuration.
+    /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>

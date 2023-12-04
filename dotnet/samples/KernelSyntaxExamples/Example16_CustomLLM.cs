@@ -17,14 +17,14 @@ using RepoUtils;
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 /**
- * The following example shows how to plug into SK a custom text completion model.
+ * The following example shows how to plug into SK a custom text generation model.
  *
  * This might be useful in a few scenarios, for example:
  * - You are not using OpenAI or Azure OpenAI models
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
  *
- * Note that all text completion models are deprecated by OpenAI and will be removed in a future release.
+ * Note that all text generation models are deprecated by OpenAI and will be removed in a future release.
  *
  * Refer to example 33 for streaming chat completion.
  */
@@ -55,9 +55,9 @@ public static class Example16_CustomLLM
         Kernel kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton(ConsoleLogger.LoggerFactory)
-            // Add your text completion service as a singleton instance
+            // Add your text generation service as a singleton instance
             .AddKeyedSingleton<ITextGeneration>("myService1", new MyTextGenerationService())
-            // Add your text completion service as a factory method
+            // Add your text generation service as a factory method
             .AddKeyedSingleton<ITextGeneration>("myService2", (_, _) => new MyTextGenerationService());
         }).Build();
 
@@ -90,13 +90,13 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        ITextGeneration textCompletion = new MyTextGenerationService();
+        ITextGeneration textGeneration = new MyTextGenerationService();
 
         var prompt = "Write one paragraph why AI is awesome";
-        await TextGenerationStreamAsync(prompt, textCompletion);
+        await TextGenerationStreamAsync(prompt, textGeneration);
     }
 
-    private static async Task TextGenerationStreamAsync(string prompt, ITextGeneration textCompletion)
+    private static async Task TextGenerationStreamAsync(string prompt, ITextGeneration textGeneration)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -108,7 +108,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, executionSettings))
+        await foreach (var message in textGeneration.GetStreamingContentAsync(prompt, executionSettings))
         {
             Console.Write(message);
         }

@@ -15,7 +15,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 /// <summary>
-/// HuggingFace text completion service.
+/// HuggingFace text generation service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 public sealed class HuggingFaceTextGeneration : ITextGeneration
@@ -52,7 +52,7 @@ public sealed class HuggingFaceTextGeneration : ITextGeneration
     /// Initializes a new instance of the <see cref="HuggingFaceTextGeneration"/> class.
     /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// </summary>
-    /// <param name="model">The name of the model to use for text completion.</param>
+    /// <param name="model">The name of the model to use for text generation.</param>
     /// <param name="apiKey">The API key for accessing the Hugging Face service.</param>
     /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
     /// <param name="endpoint">The endpoint URL for the Hugging Face service.

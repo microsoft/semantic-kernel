@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel;
 public static class HuggingFaceKernelBuilderExtensions
 {
     /// <summary>
-    /// Adds an Hugging Face text completion service with the specified configuration.
+    /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
     /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
-    /// <param name="endpoint">The endpoint URL for the text completion service.</param>
+    /// <param name="endpoint">The endpoint URL for the text generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -43,12 +43,12 @@ public static class HuggingFaceKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an Hugging Face text completion service with the specified configuration.
+    /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
     /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
-    /// <param name="endpoint">The endpoint URL for the text completion service.</param>
+    /// <param name="endpoint">The endpoint URL for the text generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddHuggingFaceTextGeneration(

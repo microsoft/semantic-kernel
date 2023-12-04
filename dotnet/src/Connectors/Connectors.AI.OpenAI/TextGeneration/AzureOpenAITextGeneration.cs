@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 /// <summary>
-/// Azure OpenAI text completion client.
+/// Azure OpenAI text generation client.
 /// </summary>
 public sealed class AzureOpenAITextGeneration : ITextGeneration
 {
