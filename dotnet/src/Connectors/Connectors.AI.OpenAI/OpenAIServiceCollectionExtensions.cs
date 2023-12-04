@@ -10,14 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
@@ -1108,7 +1108,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static KernelBuilder WithAzureOpenAIImageGeneration(
+    public static KernelBuilder WithAzureOpenAITextToImage(
         this KernelBuilder builder,
         string endpoint,
         string modelId,
@@ -1123,8 +1123,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-                new AzureOpenAIImageGeneration(
+            c.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
+                new AzureOpenAITextToImage(
                     endpoint,
                     modelId,
                     apiKey,
@@ -1145,7 +1145,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IServiceCollection AddAzureOpenAIImageGeneration(
+    public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
         string endpoint,
         string modelId,
@@ -1157,8 +1157,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAIImageGeneration(
+        return services.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImage(
                 endpoint,
                 modelId,
                 apiKey,
@@ -1177,7 +1177,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static KernelBuilder WithOpenAIImageGeneration(
+    public static KernelBuilder WithOpenAITextToImage(
         this KernelBuilder builder,
         string apiKey,
         string? orgId = null,
@@ -1189,8 +1189,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-                new OpenAIImageGeneration(
+            c.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
+                new OpenAITextToImage(
                     apiKey,
                     orgId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -1207,7 +1207,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IServiceCollection AddOpenAIImageGeneration(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
         string apiKey,
         string? orgId = null,
         string? serviceId = null)
@@ -1215,8 +1215,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAIImageGeneration(
+        return services.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToImage(
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),

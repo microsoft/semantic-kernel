@@ -5,17 +5,17 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.ImageGeneration;
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAIImageGenerationTests"/> class.
+/// Unit tests for <see cref="AzureOpenAITextToImageTests"/> class.
 /// </summary>
-public sealed class AzureOpenAIImageGenerationTests
+public sealed class AzureOpenAITextToImageTests
 {
     /// <summary>
     /// Returns a mocked instance of <see cref="HttpClient"/>.
@@ -67,7 +67,7 @@ public sealed class AzureOpenAIImageGenerationTests
         using var imageResult = CreateResponseMessage(HttpStatusCode.OK, "image_result_test_response.json");
         using var mockHttpClient = GetHttpClientMock(generateResult, imageResult);
 
-        var generation = new AzureOpenAIImageGeneration("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
+        var generation = new AzureOpenAITextToImage("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
 
         //Act
         var result = await generation.GenerateImageAsync("description", 256, 256);

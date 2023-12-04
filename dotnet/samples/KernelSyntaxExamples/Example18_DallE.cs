@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextToImage;
 using RepoUtils;
 
 /**
@@ -26,12 +26,12 @@ public static class Example18_DallE
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
-            .WithOpenAIImageGeneration(TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+        ITextToImage dallE = kernel.GetService<ITextToImage>();
 
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
@@ -95,12 +95,12 @@ public static class Example18_DallE
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
-            .WithAzureOpenAIImageGeneration(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+        ITextToImage dallE = kernel.GetService<ITextToImage>();
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 

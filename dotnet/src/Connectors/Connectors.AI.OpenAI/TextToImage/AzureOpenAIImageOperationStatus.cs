@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
 /// Azure OpenAI image generation response status

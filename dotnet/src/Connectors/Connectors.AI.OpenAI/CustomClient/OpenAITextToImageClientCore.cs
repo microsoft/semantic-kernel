@@ -11,22 +11,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
-/// <summary>Base type for OpenAI clients.</summary>
-internal sealed class OpenAIImageGenerationClientCore
+/// <summary>Base type for OpenAI text to image clients.</summary>
+internal sealed class OpenAITextToImageClientCore
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIImageGenerationClientCore"/> class.
+    /// Initializes a new instance of the <see cref="OpenAITextToImageClientCore"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    internal OpenAIImageGenerationClientCore(HttpClient? httpClient, ILogger? logger = null)
+    internal OpenAITextToImageClientCore(HttpClient? httpClient, ILogger? logger = null)
     {
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = logger ?? NullLogger.Instance;
@@ -71,10 +71,10 @@ internal sealed class OpenAIImageGenerationClientCore
     internal async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,
-        Func<ImageGenerationResponse.Image, string> extractResponseFunc,
+        Func<TextToImageResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync<TextToImageResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
     }
 
