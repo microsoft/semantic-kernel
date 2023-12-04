@@ -43,7 +43,8 @@ internal static partial class PlannerInstrumentation
         try
         {
             var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
-            logger.LogPlanCreatedWithPlan(plan);
+            logger.LogPlanCreated();
+            logger.LogPlan(plan);
 
             return plan;
         }
@@ -77,17 +78,23 @@ internal static partial class PlannerInstrumentation
     [LoggerMessage(
         EventId = 2,
         Level = LogLevel.Information,
-        Message = "Plan created. Plan:\n{Plan}")]
-    static partial void LogPlanCreatedWithPlan(this ILogger logger, object plan);
+        Message = "Plan created.")]
+    static partial void LogPlanCreated(this ILogger logger);
 
     [LoggerMessage(
         EventId = 3,
+        Level = LogLevel.Information,
+        Message = "Plan:\n{Plan}")]
+    static partial void LogPlan(this ILogger logger, object plan);
+
+    [LoggerMessage(
+        EventId = 4,
         Level = LogLevel.Error,
         Message = "Plan creation failed. Error: {Message}")]
     static partial void LogPlanCreationError(this ILogger logger, Exception exception, string message);
 
     [LoggerMessage(
-        EventId = 4,
+        EventId = 5,
         Level = LogLevel.Information,
         Message = "Plan creation duration: {Duration}ms.")]
     static partial void LogPlanCreationDuration(this ILogger logger, double duration);
