@@ -634,11 +634,13 @@ internal abstract class ClientCore
 
             if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
             {
-                azureMessage.Name = name;
-
                 if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out string? arguments) is true)
                 {
                     azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                }
+                else
+                {
+                    azureMessage.Name = name;
                 }
             }
 
