@@ -23,24 +23,24 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
-        var chatCompletion = new AzureOpenAIChatCompletion(
+        var chatCompletionService = new AzureOpenAIChatCompletionService(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(chatCompletion);
+        await ChatCompletionStreamAsync(chatCompletionService);
     }
 
     private static async Task OpenAIChatCompletionStreamAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        ITextCompletion textCompletion = new OpenAIChatCompletion(
+        ITextCompletion textCompletionService = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(textCompletion);
+        await ChatCompletionStreamAsync(textCompletionService);
     }
 
     private static async Task ChatCompletionStreamAsync(ITextCompletion textCompletion)

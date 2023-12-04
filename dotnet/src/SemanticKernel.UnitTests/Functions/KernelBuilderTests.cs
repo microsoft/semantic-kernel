@@ -214,11 +214,11 @@ public class KernelBuilderTests
             })
             .Build();
 
-        Assert.IsType<OpenAIChatCompletion>(kernel.GetService<IChatCompletion>("openai"));
+        Assert.IsType<OpenAIChatCompletionService>(kernel.GetService<IChatCompletionService>("openai"));
         Assert.IsType<AzureOpenAITextCompletion>(kernel.GetService<ITextCompletion>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextCompletion>().Count());
-        Assert.Single(kernel.GetAllServices<IChatCompletion>());
+        Assert.Single(kernel.GetAllServices<IChatCompletionService>());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
@@ -237,7 +237,7 @@ public class KernelBuilderTests
             .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
             .Build();
 
-        Assert.Equal(8, kernel.GetAllServices<IChatCompletion>().Count());
+        Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
     }
 
     [Fact]
@@ -273,15 +273,15 @@ public class KernelBuilderTests
 
         Assert.NotNull(k);
         Assert.Same(plugins, k.Plugins);
-        Assert.IsAssignableFrom<IChatCompletion>(k.GetService<IChatCompletion>("azureopenai1"));
-        Assert.IsAssignableFrom<IChatCompletion>(k.GetService<IChatCompletion>("azureopenai2"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai1"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai2"));
 
         // This should be 4, not 2. However, there is currently a limitation with Microsoft.Extensions.DependencyInjection
         // that prevents GetAllServices from enumerating named services. KernelBuilder works around this,
         // but when just using DI directly, it will only find unnamed services. Once that issue is fixed and SK
         // brings in the new version, it can update the GetAllServices implementation to remove the workaround,
         // and then this test should be updated accordingly.
-        Assert.Equal(2, k.GetAllServices<IChatCompletion>().Count());
+        Assert.Equal(2, k.GetAllServices<IChatCompletionService>().Count());
 
         // It's possible to explicitly use the same workaround outside of KernelBuilder to get all services,
         // but it's not recommended.
@@ -300,6 +300,6 @@ public class KernelBuilderTests
         //**
 
         k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
-        Assert.Equal(4, k.GetAllServices<IChatCompletion>().Count()); // now this is 4 as expected
+        Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
     }
 }

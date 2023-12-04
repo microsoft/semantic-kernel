@@ -16,7 +16,7 @@ public static class Example49_LogitBias
 {
     public static async Task RunAsync()
     {
-        OpenAIChatCompletion chatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         // To use Logit Bias you will need to know the token ids of the words you want to use.
         // Getting the token ids using the GPT Tokenizer: https://platform.openai.com/tokenizer
@@ -45,14 +45,14 @@ public static class Example49_LogitBias
         chatHistory.AddUserMessage("Hi, I'm looking some suggestions");
         await MessageOutputAsync(chatHistory);
 
-        var replyMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, settings);
+        var replyMessage = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        replyMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, settings);
+        replyMessage = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
