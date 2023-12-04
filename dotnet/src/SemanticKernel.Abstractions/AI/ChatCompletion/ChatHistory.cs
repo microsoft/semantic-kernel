@@ -10,7 +10,9 @@ using System.Text;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-/// <summary>Provides a history of chat messages from a chat conversation.</summary>
+/// <summary>
+/// Provides a history of chat messages from a chat conversation.
+/// </summary>
 public class ChatHistory : IList<ChatContent>, IReadOnlyList<ChatContent>
 {
     /// <summary>The messages.</summary>

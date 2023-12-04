@@ -39,6 +39,8 @@ public static class ChatCompletionExtensions
 
     //                       v Single
     public static async Task<ChatContent> GetChatContentAsync(ChatHistory chatHistory, ...);
+
+    public static IAsyncEnumerable<StreamingChatContent> GetStreamingChatContentsAsync(string prompt, ...);
 }
 ```
 

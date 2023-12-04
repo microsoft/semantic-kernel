@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
-/// Base class for all AI results
+/// Base class for all AI non-streaming results
 /// </summary>
 public abstract class ModelContent
 {
