@@ -15,8 +15,8 @@ using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
