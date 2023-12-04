@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
 import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
@@ -48,11 +49,14 @@ public class Example17ChatGPTTest {
 
         OpenAIChatHistory chatHistory =
                 chatGPT.createNewChat("You are a librarian, expert about books");
+        ChatHistory.Message createdMessage = chatHistory.getMessages().get(0);
+        Assertions.assertEquals(AuthorRoles.System, createdMessage.getAuthorRoles());
+        Assertions.assertEquals(
+                "You are a librarian, expert about books", createdMessage.getContent());
 
         // First user message
         chatHistory.addUserMessage(message);
-        ChatHistory.Message createdMessage =
-                chatHistory.getMessages().get(chatHistory.getMessages().size() - 1);
+        createdMessage = chatHistory.getMessages().get(chatHistory.getMessages().size() - 1);
         Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdMessage.getAuthorRoles());
         Assertions.assertEquals(message, createdMessage.getContent());
 

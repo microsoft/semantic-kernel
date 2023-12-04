@@ -42,14 +42,15 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
     public Mono<List<String>> completeAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
         ChatRequestSettings chatRequestSettings = new ChatRequestSettings(requestSettings);
-        return generateMessageAsync(createNewChat(text), chatRequestSettings).map(Arrays::asList);
+        return generateMessageAsync(internalCreateNewChat(null, text), chatRequestSettings)
+                .map(Arrays::asList);
     }
 
     @Override
     public Flux<String> completeStreamAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
         ChatRequestSettings chatRequestSettings = new ChatRequestSettings(requestSettings);
-        return generateMessageStream(createNewChat(text), chatRequestSettings);
+        return generateMessageStream(internalCreateNewChat(null, text), chatRequestSettings);
     }
 
     @Override
@@ -181,7 +182,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
     @Override
     public OpenAIChatHistory createNewChat(@Nullable String instructions) {
-        return internalCreateNewChat(instructions);
+        return internalCreateNewChat(instructions, null);
     }
 
     @Override
@@ -234,14 +235,18 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
      * Create a new empty chat instance
      *
      * @param instructions Optional chat instructions for the AI service
+     * @param userMessage Optional user message to start the chat
      * @return Chat object
      */
-    private static OpenAIChatHistory internalCreateNewChat(@Nullable String instructions) {
+    private static OpenAIChatHistory internalCreateNewChat(
+            @Nullable String instructions, @Nullable String userMessage) {
         if (instructions == null) {
-            instructions = "";
+            instructions = "Assistant is a large language model.";
         }
-        OpenAIChatHistory history = new OpenAIChatHistory("Assistant is a large language model.");
-        history.addUserMessage(instructions);
+        OpenAIChatHistory history = new OpenAIChatHistory(instructions);
+        if (userMessage != null) {
+            history.addUserMessage(userMessage);
+        }
         return history;
     }
 }
