@@ -97,8 +97,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
-        var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
+        var operationId = await this.StartTextToImageAsync(description, width, height, cancellationToken).ConfigureAwait(false);
+        var result = await this.GetTextToImageResultAsync(operationId, cancellationToken).ConfigureAwait(false);
 
         if (result.Result is null)
         {
@@ -121,7 +121,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <param name="height">Image height in pixels</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns> The operationId that identifies the original text to image request. </returns>
-    private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    private async Task<string> StartTextToImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))
@@ -153,7 +153,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <param name="operationId">The operationId that identifies the original text to image request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    private async Task<AzureOpenAITextToImageResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
+    private async Task<AzureOpenAITextToImageResponse> GetTextToImageResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
         var operationLocation = this.GetUri(GetImageOperation, operationId);
 
