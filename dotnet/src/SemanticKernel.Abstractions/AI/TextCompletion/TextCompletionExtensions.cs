@@ -14,7 +14,7 @@ public static class TextCompletionExtensions
     /// <summary>
     /// Get a single text completion result for the prompt and settings.
     /// </summary>
-    /// <param name="textCompletion"></param>
+    /// <param name="textCompletion">Target <see cref="ITextCompletion"/> instance.</param>
     /// <param name="prompt">The standardized prompt input.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

@@ -64,7 +64,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <summary>
     /// Retrieve the resulting function from the chat result.
     /// </summary>
-    /// <param name="fullContent"></param>
+    /// <param name="fullContent">Full content of the chat</param>
     /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
     public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<OpenAIStreamingChatMessageContent> fullContent)
     {

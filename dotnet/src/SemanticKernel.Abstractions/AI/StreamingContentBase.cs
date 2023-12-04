@@ -56,8 +56,9 @@ public abstract class StreamingContentBase
     /// Initializes a new instance of the <see cref="StreamingContentBase"/> class.
     /// </summary>
     /// <param name="innerContent">Inner content object reference</param>
-    /// <param name="choiceIndex"></param>
-    /// <param name="metadata"></param>
+    /// <param name="choiceIndex">Choice index</param>
+    /// <param name="modelId">The model ID used to generate the content.</param>
+    /// <param name="metadata">Additional metadata associated with the content.</param>
     protected StreamingContentBase(object? innerContent, int choiceIndex = 0, string? modelId = null, IDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
