@@ -3,11 +3,12 @@
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using Markdig;
 using Markdig.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
@@ -30,15 +31,13 @@ public static class KernelFunctionMarkdown
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        string resourcePath = resourceName;
+        Verify.NotNull(resourceName);
+        Verify.NotNull(functionName);
 
-        using Stream stream = assembly.GetManifestResourceStream(resourcePath);
-        using StreamReader reader = new(stream);
-        var text = reader.ReadToEnd();
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
 
         return FromPromptMarkdown(
-            text,
+            reader.ReadToEnd(),
             functionName,
             pluginName,
             promptTemplateFactory,
@@ -61,6 +60,9 @@ public static class KernelFunctionMarkdown
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(text);
+        Verify.NotNull(functionName);
+
         return KernelFunctionFactory.CreateFromPrompt(
             CreateFromPromptMarkdown(text, functionName),
             promptTemplateFactory,
@@ -70,28 +72,26 @@ public static class KernelFunctionMarkdown
     #region Private methods
     internal static PromptTemplateConfig CreateFromPromptMarkdown(string text, string functionName)
     {
-        var promptFunctionModel = new PromptTemplateConfig()
+        PromptTemplateConfig promptFunctionModel = new() { Name = functionName };
+
+        foreach (Block block in Markdown.Parse(text))
         {
-            Name = functionName
-        };
-        var document = Markdig.Markdown.Parse(text);
-        var enumerator = document.GetEnumerator();
-        while (enumerator.MoveNext())
-        {
-            if (enumerator.Current is FencedCodeBlock codeBlock)
+            if (block is FencedCodeBlock codeBlock)
             {
-                if (codeBlock.Info == "sk.prompt")
+                switch (codeBlock.Info)
                 {
-                    promptFunctionModel.Template = codeBlock.Lines.ToString();
-                }
-                else if (codeBlock.Info == "sk.execution_settings")
-                {
-                    var modelSettings = codeBlock.Lines.ToString();
-                    var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
-                    if (executionSettings is not null)
-                    {
-                        promptFunctionModel.ExecutionSettings.Add(executionSettings);
-                    }
+                    case "sk.prompt":
+                        promptFunctionModel.Template = codeBlock.Lines.ToString();
+                        break;
+
+                    case "sk.execution_settings":
+                        var modelSettings = codeBlock.Lines.ToString();
+                        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
+                        if (executionSettings is not null)
+                        {
+                            promptFunctionModel.ExecutionSettings.Add(executionSettings);
+                        }
+                        break;
                 }
             }
         }

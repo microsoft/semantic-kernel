@@ -20,7 +20,8 @@ public static class KernelEventArgsExtensions
     /// <returns>True if the prompt was present</returns>
     public static bool TryGetRenderedPrompt(this KernelEventArgs eventArgs, out string? renderedPrompt)
     {
-        var found = eventArgs.Metadata.TryGetValue(KernelEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptObject);
+        object? renderedPromptObject = null;
+        var found = eventArgs.Metadata?.TryGetValue(KernelEventArgsExtensions.RenderedPromptMetadataKey, out renderedPromptObject) is true;
         renderedPrompt = renderedPromptObject?.ToString();
 
         return found;
@@ -34,7 +35,7 @@ public static class KernelEventArgsExtensions
     /// <returns>True if the prompt exist and was updated</returns>
     public static bool TryUpdateRenderedPrompt(this KernelEventArgs eventArgs, string newPrompt)
     {
-        if (eventArgs.Metadata.ContainsKey(KernelEventArgsExtensions.RenderedPromptMetadataKey))
+        if (eventArgs.Metadata?.ContainsKey(KernelEventArgsExtensions.RenderedPromptMetadataKey) is true)
         {
             eventArgs.Metadata[KernelEventArgsExtensions.RenderedPromptMetadataKey] = newPrompt;
             return true;

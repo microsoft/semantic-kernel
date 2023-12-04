@@ -67,12 +67,12 @@ public static class Example57_KernelHooks
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
             Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Should not trigger");
-            e.Cancel();
+            e.Cancel = true;
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
+            var modelResults = e.Metadata?["ModelResults"] as IReadOnlyCollection<ModelResult>;
             Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
@@ -185,7 +185,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : FunctionInvoking - Cancelling all subsequent invocations");
-            e.Cancel();
+            e.Cancel = true;
         };
 
         // Technically invoked will never be called since the function will be cancelled
@@ -226,7 +226,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             functionInvokedCount++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         var result = await kernel.InvokeAsync(secondFunction);
