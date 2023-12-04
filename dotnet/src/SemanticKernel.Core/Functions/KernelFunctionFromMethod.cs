@@ -299,7 +299,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         string name = SanitizeMetadataName(parameter.Name ?? "");
         bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
-        ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
+        ThrowForInvalidSignatureIf(string.IsNullOrWhiteSpace(name), method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
         ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
         bool fallBackToInput = !sawFirstParameter && !nameIsInput;
