@@ -152,10 +152,10 @@ internal abstract class ClientCore
     {
         return new Dictionary<string, object?>(4)
         {
-            { $"{nameof(Completions)}.{nameof(completions.Id)}", completions.Id },
-            { $"{nameof(Completions)}.{nameof(completions.Created)}", completions.Created },
-            { $"{nameof(Completions)}.{nameof(completions.PromptFilterResults)}", completions.PromptFilterResults },
-            { $"{nameof(Completions)}.{nameof(completions.Usage)}", completions.Usage },
+            { nameof(completions.Id), completions.Id },
+            { nameof(completions.Created), completions.Created },
+            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+            { nameof(completions.Usage), completions.Usage },
         };
     }
 
@@ -163,10 +163,10 @@ internal abstract class ClientCore
     {
         return new Dictionary<string, object?>(4)
         {
-            { $"{nameof(ChatCompletions)}.{nameof(completions.Id)}", completions.Id },
-            { $"{nameof(ChatCompletions)}.{nameof(completions.Created)}", completions.Created },
-            { $"{nameof(ChatCompletions)}.{nameof(completions.PromptFilterResults)}", completions.PromptFilterResults },
-            { $"{nameof(ChatCompletions)}.{nameof(completions.Usage)}", completions.Usage },
+            { nameof(completions.Id), completions.Id },
+            { nameof(completions.Created), completions.Created },
+            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+            { nameof(completions.Usage), completions.Usage },
         };
     }
 
@@ -174,8 +174,8 @@ internal abstract class ClientCore
     {
         return new Dictionary<string, object?>(2)
         {
-            { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Id)}", completions.Id },
-            { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created },
+            { nameof(completions.Id), completions.Id },
+            { nameof(completions.Created), completions.Created },
         };
     }
 
@@ -460,7 +460,7 @@ internal abstract class ClientCore
 
         ChatHistory chat = ClientCore.CreateNewChat(text, chatSettings);
         return (await this.GetChatContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat.Metadata))
+            .Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
 
@@ -620,8 +620,7 @@ internal abstract class ClientCore
                 azureMessage.FunctionCall = openAIChatContent.FunctionCall;
                 azureMessage.Name = openAIChatContent.Name;
             }
-            else
-            if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionNameProperty, out object? name) is true)
+            else if (message.Metadata?.TryGetValue(OpenAIChatContent.FunctionNameProperty, out object? name) is true)
             {
                 azureMessage.Name = name?.ToString() ?? string.Empty;
 

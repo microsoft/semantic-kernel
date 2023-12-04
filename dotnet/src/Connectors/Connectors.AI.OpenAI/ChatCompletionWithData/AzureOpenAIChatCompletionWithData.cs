@@ -137,11 +137,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         return new Dictionary<string, object?>(5)
         {
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Id)}", chatResponse.Id },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Model)}", chatResponse.Model },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Created)}", chatResponse.Created },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Object)}", chatResponse.Object },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Usage)}", chatResponse.Usage },
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
+            { nameof(chatResponse.Usage), chatResponse.Usage },
         };
     }
 
@@ -149,10 +149,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         return new Dictionary<string, object?>(4)
         {
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Id)}", chatResponse.Id },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Model)}", chatResponse.Model },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Created)}", chatResponse.Created },
-            { $"{nameof(ChatWithDataResponse)}.{nameof(chatResponse.Object)}", chatResponse.Object },
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
         };
     }
 
@@ -293,12 +293,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         {
             return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
         }
-
-        // Try to parse the text as a chat history
-        //if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-        //{
-        //    return new OpenAIChatHistory(chatHistory);
-        //}
 
         // If settings is not provided, create a new chat with the text as the system prompt
         var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);

@@ -73,14 +73,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        return await this.InternalGetTextContentsAsync(prompt, cancellationToken).ConfigureAwait(false);
-    }
+        => this.InternalGetTextContentsAsync(prompt, cancellationToken);
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(

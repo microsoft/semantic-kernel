@@ -27,7 +27,7 @@ public sealed class AzureOpenAIWithDataChatContent : ChatContent
     /// <param name="chatChoice">Azure Chat With Data Choice</param>
     /// <param name="metadata">Additional metadata</param>
     internal AzureOpenAIWithDataChatContent(ChatWithDataChoice chatChoice, IDictionary<string, object?>? metadata = null)
-        : base(default, string.Empty, chatChoice, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>())
+        : base(default, string.Empty, chatChoice, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(1))
     {
         // An assistant message content must be present, otherwise the chat is not valid.
         var chatMessage = chatChoice.Messages.First(m => string.Equals(m.Role, AuthorRole.Assistant.Label, System.StringComparison.OrdinalIgnoreCase));
