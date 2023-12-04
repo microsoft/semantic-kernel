@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class RestApiOperationResponseConverterTests
 {

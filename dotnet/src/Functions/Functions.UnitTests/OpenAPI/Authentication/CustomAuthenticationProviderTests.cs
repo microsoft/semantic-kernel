@@ -4,10 +4,10 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Authentication;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Authentication;
 
 public class CustomAuthenticationProviderTests
 {

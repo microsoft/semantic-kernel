@@ -14,14 +14,14 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Moq;
-using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
