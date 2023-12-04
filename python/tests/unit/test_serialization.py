@@ -1,9 +1,9 @@
 import logging
 import typing as t
 
-import pydantic as pdt
 import pytest
 import typing_extensions as te
+from pydantic import Field, Json
 
 from semantic_kernel import SKFunctionBase
 from semantic_kernel.core_skills.conversation_summary_skill import (
@@ -24,7 +24,7 @@ from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.sk_pydantic import PydanticField, SKBaseModel
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.parameter_view import ParameterView
@@ -53,18 +53,18 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
-PydanticFieldT = t.TypeVar("PydanticFieldT", bound=PydanticField)
+SKBaseModelFieldT = t.TypeVar("SKBaseModelFieldT", bound=SKBaseModel)
 
 
 class _Serializable(t.Protocol):
     """A serializable object."""
 
-    def json(self) -> pdt.Json:
+    def json(self) -> Json:
         """Return a JSON representation of the object."""
         raise NotImplementedError
 
     @classmethod
-    def parse_raw(cls: t.Type[te.Self], json: pdt.Json) -> te.Self:
+    def parse_raw(cls: t.Type[te.Self], json: Json) -> te.Self:
         """Return the constructed object from a JSON representation."""
         raise NotImplementedError
 
@@ -120,12 +120,12 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         return SkillCollection()
 
     cls_obj_map = {
-        Block: Block("foo"),
-        CodeBlock: CodeBlock("foo"),
-        FunctionIdBlock: FunctionIdBlock("bar"),
-        TextBlock: TextBlock("baz"),
-        ValBlock: ValBlock("qux"),
-        VarBlock: VarBlock("quux"),
+        Block: Block(content="foo"),
+        CodeBlock: CodeBlock(content="foo"),
+        FunctionIdBlock: FunctionIdBlock(content="bar"),
+        TextBlock: TextBlock(content="baz"),
+        ValBlock: ValBlock(content="qux"),
+        VarBlock: VarBlock(content="quux"),
         CodeTokenizer: CodeTokenizer(log=logging.getLogger("test")),
         PromptTemplateEngine: PromptTemplateEngine(logger=logging.getLogger("test")),
         TemplateTokenizer: TemplateTokenizer(log=logging.getLogger("test")),
@@ -150,13 +150,14 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
         SkillCollection: create_skill_collection(),
-        SKContext[NullMemory]: SKContext(
+        SKContext[NullMemory]: SKContext[NullMemory](
             # TODO: Test serialization with different types of memories.
-            memory=NullMemory(),
             variables=create_context_variables(),
+            memory=NullMemory(),
             skill_collection=create_skill_collection().read_only_skill_collection,
         ),
         NullMemory: NullMemory(),
+        SKFunction: create_sk_function(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -242,7 +243,7 @@ class TestUsageInPydanticFields:
     )
     def test_usage_as_optional_field(
         self,
-        sk_type: t.Type[PydanticFieldT],
+        sk_type: t.Type[SKBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
@@ -259,8 +260,8 @@ class TestUsageInPydanticFields:
     @pytest.mark.parametrize("sk_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
-        sk_factory: t.Callable[[t.Type[PydanticFieldT]], PydanticFieldT],
-        sk_type: t.Type[PydanticFieldT],
+        sk_factory: t.Callable[[t.Type[SKBaseModelFieldT]], SKBaseModelFieldT],
+        sk_type: t.Type[SKBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
@@ -270,16 +271,15 @@ class TestUsageInPydanticFields:
         class TestModel(SKBaseModel):
             """A test model."""
 
-            field: sk_type = pdt.Field(default_factory=lambda: sk_factory(sk_type))
+            field: sk_type = Field(default_factory=lambda: sk_factory(sk_type))
 
         assert_serializable(TestModel(), TestModel)
         assert_serializable(TestModel(field=sk_factory(sk_type)), TestModel)
 
 
 def assert_serializable(obj: _Serializable, obj_type) -> None:
-    """Assert that an object is serializable."""
+    """Assert that an object is serializable, uses both dump and dump_json methods."""
     assert obj is not None
-    serialized = obj.json()
+    serialized = obj.model_dump_json()
     assert isinstance(serialized, str)
-    deserialized = obj_type.parse_raw(serialized)
-    assert deserialized == obj
+    assert obj_type.model_validate_json(serialized).model_dump() == obj.model_dump()

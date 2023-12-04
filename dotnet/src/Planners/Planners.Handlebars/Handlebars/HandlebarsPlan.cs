@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -12,11 +9,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlan
 {
-    /// <summary>
-    /// The kernel instance.
-    /// </summary>
-    private readonly Kernel _kernel;
-
     /// <summary>
     /// The handlebars template representing the plan.
     /// </summary>
@@ -30,12 +22,10 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
-    /// <param name="kernel">Kernel instance.</param>
     /// <param name="generatedPlan">A Handlebars template representing the generated plan.</param>
     /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
-    public HandlebarsPlan(Kernel kernel, string generatedPlan, string createPlanPromptTemplate)
+    public HandlebarsPlan(string generatedPlan, string createPlanPromptTemplate)
     {
-        this._kernel = kernel;
         this._template = generatedPlan;
         this.Prompt = createPlanPromptTemplate;
     }
@@ -52,17 +42,15 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
-    /// <param name="contextVariables">The execution context variables.</param>
-    /// <param name="variables">The variables.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
-    public FunctionResult Invoke(
-        ContextVariables contextVariables,
-        Dictionary<string, object?> variables,
+    public string Invoke(
+        Kernel kernel,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, contextVariables, this._template, variables, cancellationToken);
-        contextVariables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
+        return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
     }
 }

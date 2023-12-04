@@ -38,10 +38,8 @@ public sealed class HandlebarsPlannerTests : IDisposable
         kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new HandlebarsPlanner(kernel);
-
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
 
         // Assert expected function
         Assert.Contains(
@@ -59,10 +57,8 @@ public sealed class HandlebarsPlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
-        var planner = new HandlebarsPlanner(kernel);
-
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
 
         // Assert
         Assert.Contains(
@@ -80,19 +76,21 @@ public sealed class HandlebarsPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
+        return new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
                 c.AddAzureOpenAIChatCompletion(
                     deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    modelId: azureOpenAIConfiguration.ChatModelId!,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
             else
             {
-                c.AddAzureOpenAITextCompletion(
+                c.AddAzureOpenAITextGeneration(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    modelId: azureOpenAIConfiguration.ModelId,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
@@ -101,6 +99,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
             {
                 c.AddAzureOpenAITextEmbeddingGeneration(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
             }

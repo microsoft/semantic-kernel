@@ -11,12 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -63,7 +59,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IEnumerable<PromptExecutionSettings> ExecutionSettings { get; }
+    internal List<PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -73,7 +69,7 @@ public abstract class KernelFunction
     /// <param name="parameters">Function parameters metadata</param>
     /// <param name="returnParameter">Function return parameter metadata</param>
     /// <param name="executionSettings">Prompt execution settings.</param>
-    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, IEnumerable<PromptExecutionSettings>? executionSettings = null)
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, List<PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -84,77 +80,112 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? new()
         };
-        this.ExecutionSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
+        this.ExecutionSettings = executionSettings;
+    }
+
+    /// <summary>
+    /// Execute a function allowing to pass the main input separately from the rest of the context.
+    /// </summary>
+    /// <param name="kernel">Kernel</param>
+    /// <param name="input">Input string for the function</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function execution</returns>
+    public Task<FunctionResult> InvokeAsync(
+        Kernel kernel,
+        string input,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        if (!string.IsNullOrEmpty(input))
+        {
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
+        }
+
+        return this.InvokeAsync(kernel, arguments, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Context variables</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The function arguments.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <exception cref="OperationCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings = null,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        logger.LogTrace("Function invoking.");
+        // Ensure arguments are initialized.
+        arguments ??= new KernelArguments();
 
-        cancellationToken.ThrowIfCancellationRequested();
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
+        }
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+        FunctionResult? functionResult = null;
         try
         {
-            // Invoke pre hook, and stop if skipping requested.
-            var invokingEventArgs = kernel.OnFunctionInvoking(this, variables);
-            if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
-            {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
+            // Quick check for cancellation after logging about function start but before
+            // doing any real work.
+            cancellationToken.ThrowIfCancellationRequested();
 
-                return new FunctionResult(this.Name, variables)
-                {
-                    IsCancellationRequested = invokingEventArgs.CancelToken.IsCancellationRequested,
-                    IsSkipRequested = invokingEventArgs.IsSkipRequested
-                };
+            // Invoke pre-invocation event handler. If it requests cancellation, throw.
+            CancelKernelEventArgs? eventArgs = kernel.OnFunctionInvoking(this, arguments);
+            if (eventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
-            var result = await this.InvokeCoreAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
+            // Invoke the function.
+            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-            logger.LogTrace("Function succeeded.");
-
-            // Invoke the post hook.
-            (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, variables, result);
+            // Invoke the post-invocation event handler. If it requests cancellation, throw.
+            (eventArgs, functionResult) = this.CallFunctionInvoked(kernel, arguments, functionResult);
+            if (eventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Function invocation {Completion}: {Result}",
-                    invokedEventArgs?.CancelToken.IsCancellationRequested ?? false ? "canceled" : "completed",
-                    result.Value);
+                logger.LogTrace("Function succeeded. Result: {Result}", functionResult.Value);
             }
 
-            result.IsCancellationRequested = invokedEventArgs?.CancelToken.IsCancellationRequested ?? false;
-            result.IsRepeatRequested = invokedEventArgs?.IsRepeatRequested ?? false;
-
-            return result;
+            return functionResult;
         }
         catch (Exception ex)
         {
+            // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
             tags.Add("error.type", ex.GetType().FullName);
             if (logger.IsEnabled(LogLevel.Error))
             {
                 logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
             }
+
+            // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException.
+#pragma warning disable CA1508
+            if (ex is OperationCanceledException cancelEx)
+#pragma warning restore CA1508
+            {
+                throw new KernelFunctionCanceledException(kernel, this, arguments, functionResult, cancelEx);
+            }
+
+            // Otherwise, propagate the original exception.
             throw;
         }
         finally
         {
+            // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
             if (logger.IsEnabled(LogLevel.Information))
@@ -167,32 +198,70 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/> in streaming mode.
     /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The function arguments</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
+        Kernel kernel,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
+    /// </summary>
     /// <param name="kernel">The kernel</param>
-    /// <param name="variables">SK context variables</param>
+    /// <param name="input">Input string for the function</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A asynchronous list of streaming result chunks</returns>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        Kernel kernel,
+        string input,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
+        if (!string.IsNullOrEmpty(input))
+        {
+            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
+        }
+
+        return this.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the <see cref="KernelFunction"/> in streaming mode.
+    /// </summary>
+    /// <param name="kernel">The kernel</param>
+    /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming content chunks</returns>
     public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings = null,
+        KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         logger.LogInformation("Function streaming invoking.");
 
+        arguments ??= new KernelArguments();
+
         // Invoke pre hook, and stop if skipping requested.
-        var invokingEventArgs = kernel.OnFunctionInvoking(this, variables);
-        if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
+        var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+        if (invokingEventArgs is not null && invokingEventArgs.Cancel)
         {
             logger.LogTrace("Function canceled or skipped prior to invocation.");
 
             yield break;
         }
 
-        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, variables, executionSettings, cancellationToken))
+        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, arguments, cancellationToken))
         {
             yield return genericChunk;
         }
@@ -204,43 +273,34 @@ public abstract class KernelFunction
     /// <summary>
     /// Invoke as streaming the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">SK context variables</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The kernel function arguments.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings = null,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Context variables</param>
-    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The kernel function arguments.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected abstract Task<FunctionResult> InvokeCoreAsync(
+    protected abstract ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? executionSettings,
+        KernelArguments arguments,
         CancellationToken cancellationToken);
 
     #region private
-    private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, ContextVariables variables, FunctionResult result)
+    private (FunctionInvokedEventArgs?, FunctionResult) CallFunctionInvoked(Kernel kernel, KernelArguments arguments, FunctionResult result)
     {
-        var eventArgs = kernel.OnFunctionInvoked(this, result);
+        var eventArgs = kernel.OnFunctionInvoked(this, arguments, result);
         if (eventArgs is not null)
         {
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventArgs.Variables, eventArgs.Variables.Input)
-            {
-                // Updates the eventArgs metadata during invoked handler execution
-                // will reflect in the result metadata
-                Metadata = eventArgs.Metadata
-            };
+            result = new FunctionResult(this, eventArgs.ResultValue, result.Culture, eventArgs.Metadata ?? result.Metadata);
         }
 
         return (eventArgs, result);

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
@@ -9,7 +8,7 @@ namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 public class KernelFunctionMarkdownTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionConfigFromMarkdown()
+    public void ItShouldCreatePromptFunctionConfigFromMarkdown()
     {
         // Arrange
         // Act
@@ -25,7 +24,7 @@ public class KernelFunctionMarkdownTests
     }
 
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromMarkdown()
+    public void ItShouldCreatePromptFunctionFromMarkdown()
     {
         // Arrange
         var kernel = new Kernel();
@@ -43,14 +42,14 @@ This is a semantic kernel prompt template
 ```sk.prompt
 Hello AI, tell me about {{$input}}
 ```
-These are AI request settings
+These are AI execution settings
 ```sk.execution_settings
 {
     ""model_id"": ""gpt4"",
     ""temperature"": 0.7
 }
 ```
-These are more AI request settings
+These are more AI execution settings
 ```sk.execution_settings
 {
     ""model_id"": ""gpt3.5"",

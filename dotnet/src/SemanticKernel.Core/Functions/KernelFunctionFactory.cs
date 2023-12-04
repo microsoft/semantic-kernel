@@ -7,8 +7,6 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -19,7 +17,7 @@ public static class KernelFunctionFactory
 {
     #region FromMethod
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
@@ -38,7 +36,7 @@ public static class KernelFunctionFactory
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -64,10 +62,10 @@ public static class KernelFunctionFactory
     // TODO: Revise these Create method XML comments
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="executionSettings">Optional LLM request settings</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
@@ -83,7 +81,7 @@ public static class KernelFunctionFactory
         KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
 
     /// <summary>
-    /// Create a semantic function instance, given a prompt function model.
+    /// Create a prompt function instance, given a prompt function model.
     /// </summary>
     /// <param name="promptConfig">Prompt configuration model</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
@@ -95,7 +93,7 @@ public static class KernelFunctionFactory
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
 
     /// <summary>
-    /// Create a semantic function instance, given a prompt function model.
+    /// Create a prompt function instance, given a prompt function model.
     /// </summary>
     /// <param name="promptTemplate">Prompt template</param>
     /// <param name="promptConfig">Prompt configuration model</param>

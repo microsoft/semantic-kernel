@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Yaml;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -14,7 +13,7 @@ namespace SemanticKernel.Functions.UnitTests.Yaml;
 public sealed class PromptExecutionSettingsNodeDeserializerTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
+    public void ItShouldCreatePromptFunctionFromYamlWithCustomModelSettings()
     {
         // Arrange
         var deserializer = new DeserializerBuilder()

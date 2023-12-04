@@ -2,14 +2,10 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ActionPlannerTests
 {
@@ -167,17 +163,17 @@ public sealed class ActionPlannerTests
             .Setup(tr => tr.GetCompletionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(testPlanString);
 
-        var textCompletionResult = new List<ITextResult> { textResult.Object };
+        var textGenerationResult = new List<ITextResult> { textResult.Object };
 
-        var textCompletion = new Mock<ITextCompletion>();
-        textCompletion
+        var textGeneration = new Mock<ITextGeneration>();
+        textGeneration
             .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(textCompletionResult);
+            .ReturnsAsync(textGenerationResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
-            .Returns((textCompletion.Object, new PromptExecutionSettings()));
+            .Setup(ss => ss.SelectAIService<ITextGeneration>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Returns((textGeneration.Object, new PromptExecutionSettings()));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
@@ -13,7 +12,7 @@ using RepoUtils;
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>
-    /// Show how to configure model request settings
+    /// Show how to use a custom AI service selector to select the GPT 3.x model
     /// </summary>
     public static async Task RunAsync()
     {
@@ -26,7 +25,7 @@ public static class Example62_CustomAIServiceSelector
 
         if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -65,7 +64,7 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, ContextVariables variables, KernelFunction function) where T : class, IAIService
+        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
         {
             foreach (var service in kernel.GetAllServices<T>())
             {

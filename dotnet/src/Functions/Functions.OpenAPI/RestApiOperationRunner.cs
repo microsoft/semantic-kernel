@@ -10,12 +10,12 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
@@ -97,7 +97,7 @@ internal sealed class RestApiOperationRunner
         // If no auth callback provided, use empty function
         if (authCallback is null)
         {
-            this._authCallback = _ => Task.CompletedTask;
+            this._authCallback = (_, __) => Task.CompletedTask;
         }
         else
         {
@@ -121,17 +121,39 @@ internal sealed class RestApiOperationRunner
     /// <returns>The task execution result.</returns>
     public Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
-        IDictionary<string, string> arguments,
+        KernelArguments arguments,
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var stringArguments = CastToStringArguments(arguments, operation);
 
-        var headers = operation.RenderHeaders(arguments);
+        var url = this.BuildsOperationUrl(operation, stringArguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        var payload = this.BuildOperationPayload(operation, arguments);
+        var headers = operation.RenderHeaders(stringArguments);
+
+        var payload = this.BuildOperationPayload(operation, stringArguments);
 
         return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+    }
+
+    /// <summary>
+    /// Casts argument values of type object to string.
+    /// </summary>
+    /// <param name="arguments">The kernel arguments to be cast.</param>
+    /// <param name="operation">The REST API operation.</param>
+    /// <returns>A dictionary of arguments with string values.</returns>
+    /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
+    private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, RestApiOperation operation)
+    {
+        return arguments.ToDictionary(item => item.Key, item =>
+        {
+            if (item.Value is string stringValue)
+            {
+                return stringValue;
+            }
+
+            throw new KernelException($"Non-string OpenApi operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Id}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+        });
     }
 
     #region private
@@ -156,7 +178,7 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
-        await this._authCallback(requestMessage).ConfigureAwait(false);
+        await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
         if (payload != null)
         {
@@ -193,11 +215,7 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType?.MediaType;
-        if (mediaType is null)
-        {
-            throw new KernelException("No media type available.");
-        }
+        var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
@@ -230,7 +248,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, string> arguments)
+    private HttpContent? BuildOperationPayload(RestApiOperation operation, Dictionary<string, string> arguments)
     {
         if (operation?.Method != HttpMethod.Put && operation?.Method != HttpMethod.Post)
         {
@@ -308,7 +326,7 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (arguments.TryGetValue(argumentName, out var propertyValue))
+            if (arguments.TryGetValue(argumentName, out string? propertyValue) && propertyValue is not null)
             {
                 result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
                 continue;

@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using Pgvector.Npgsql;
@@ -193,18 +192,17 @@ public static class Example15_TextMemoryPlugin
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemoryPlugin, store and retrieve memories through the Kernel.
         //
-        // This enables semantic functions and the AI (via Planners) to access memories
+        // This enables prompt functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
-        var memoryPlugin = new TextMemoryPlugin(textMemory);
-        var memoryFunctions = kernel.ImportPluginFromObject(memoryPlugin);
+        var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryFunctions["Save"], new ContextVariables()
+        await kernel.InvokeAsync(memoryPlugin["Save"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
@@ -213,7 +211,7 @@ public static class Example15_TextMemoryPlugin
 
         // Retrieve a specific memory with the Kernel
         Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
-        var result = await kernel.InvokeAsync(memoryFunctions["Retrieve"], new ContextVariables()
+        var result = await kernel.InvokeAsync(memoryPlugin["Retrieve"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5"
@@ -247,7 +245,7 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.InvokeAsync(memoryFunctions["Recall"], new ContextVariables()
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
@@ -271,15 +269,15 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Semantic Function
+        // PART 3: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
-        // the text completion model to answer a natural language query.
+        // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Semantic Function ==");
+        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
 
-        // Build a semantic function that uses memory to find facts
+        // Build a prompt function that uses memory to find facts
         const string RecallFunctionDefinition = @"
 Consider only the facts below when answering questions:
 
@@ -295,7 +293,7 @@ Answer:
 
         var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.InvokeAsync(aboutMeOracle, new ContextVariables()
+        result = await kernel.InvokeAsync(aboutMeOracle, new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.RelevanceParam] = "0.79",
