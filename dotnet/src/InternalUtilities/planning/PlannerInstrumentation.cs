@@ -57,7 +57,7 @@ internal static partial class PlannerInstrumentation
         finally
         {
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-            logger.LogPlanCreationDuration(duration.TotalMilliseconds);
+            logger.LogPlanCreationDuration(duration.TotalSeconds);
             s_createPlanDuration.Record(duration.TotalSeconds, in tags);
         }
     }
@@ -83,7 +83,7 @@ internal static partial class PlannerInstrumentation
 
     [LoggerMessage(
         EventId = 3,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Plan:\n{Plan}")]
     static partial void LogPlan(this ILogger logger, object plan);
 
@@ -96,7 +96,7 @@ internal static partial class PlannerInstrumentation
     [LoggerMessage(
         EventId = 5,
         Level = LogLevel.Information,
-        Message = "Plan creation duration: {Duration}ms.")]
+        Message = "Plan creation duration: {Duration}s.")]
     static partial void LogPlanCreationDuration(this ILogger logger, double duration);
 
     #endregion

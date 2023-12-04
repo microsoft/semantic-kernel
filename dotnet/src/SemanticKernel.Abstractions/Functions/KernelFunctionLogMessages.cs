@@ -3,14 +3,14 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Functions;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extensions for logging <see cref="KernelFunction"/> invocations.
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
 /// generate logging code at compile time to achieve optimized code.
 /// </summary>
-internal static partial class KernelFunctionLogExtensions
+internal static partial class KernelFunctionLogMessages
 {
     /// <summary>
     /// Logs invocation of a <see cref="KernelFunction"/>.
@@ -29,7 +29,7 @@ internal static partial class KernelFunctionLogExtensions
     /// </summary>
     [LoggerMessage(
         EventId = 1,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Information,
         Message = "Function canceled prior to invocation.")]
     public static partial void LogFunctionCanceledPriorToInvoking(this ILogger logger);
 
@@ -60,7 +60,7 @@ internal static partial class KernelFunctionLogExtensions
     [LoggerMessage(
         EventId = 4,
         Level = LogLevel.Trace,
-        Message = "Function completed. Duration: {Duration}ms")]
+        Message = "Function completed. Duration: {Duration}s")]
     public static partial void LogFunctionComplete(
         this ILogger logger,
         double duration);
