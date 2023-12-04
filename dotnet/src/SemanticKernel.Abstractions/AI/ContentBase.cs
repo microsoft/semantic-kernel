@@ -11,8 +11,11 @@ namespace Microsoft.SemanticKernel.AI;
 public abstract class ContentBase
 {
     /// <summary>
-    /// Raw content object reference. (Breaking glass).
+    /// The inner content representation. Use this to bypass the current abstraction.
     /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
     [JsonIgnore]
     public object? InnerContent { get; }
 

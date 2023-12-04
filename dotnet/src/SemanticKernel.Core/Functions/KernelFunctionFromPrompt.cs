@@ -114,7 +114,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc/>j
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -167,7 +167,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 _ when typeof(T) == typeof(byte[])
                     => (T)(object)content.ToByteArray(),
 
-                _ => throw new NotSupportedException($"The specified type {typeof(T)} is not supported.")
+                _ => throw new NotSupportedException($"The specific type {typeof(T)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
             };
         }
 
