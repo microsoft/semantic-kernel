@@ -98,18 +98,18 @@ public static class Example30_ChatWithPrompts
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
-        var chatGPT = kernel.GetService<IChatCompletion>();
+        var chatCompletion = kernel.GetService<IChatCompletion>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
         // information needed.
-        var chatHistory = chatGPT.CreateNewChat(systemMessage);
+        var chatHistory = new ChatHistory(systemMessage);
 
         // Add the user query to the chat history
         chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
-        string answer = await chatGPT.GenerateMessageAsync(chatHistory);
+        var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
         Console.WriteLine($"------------------------------------\n{answer}");
 
         /*

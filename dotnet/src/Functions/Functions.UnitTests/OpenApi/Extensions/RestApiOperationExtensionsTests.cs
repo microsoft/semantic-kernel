@@ -275,7 +275,7 @@ public class RestApiOperationExtensionsTests
                     method: new HttpMethod(method),
                     description: "fake-description",
                     parameters: new List<RestApiOperationParameter>(),
-                    headers: new Dictionary<string, string?>(),
+                    headers: new Dictionary<string, string>(),
                     payload: payload);
     }
 

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -52,7 +54,9 @@ internal sealed class GrpcOperationRunner
         Verify.NotNull(operation);
         Verify.NotNull(arguments);
 
-        var address = this.GetAddress(operation, arguments);
+        var stringArgument = CastToStringArguments(arguments, operation);
+
+        var address = this.GetAddress(operation, stringArgument);
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
@@ -73,12 +77,32 @@ internal sealed class GrpcOperationRunner
 
             var invoker = channel.CreateCallInvoker();
 
-            var request = this.GenerateOperationRequest(operation, requestType, arguments);
+            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
 
             var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
 
             return ConvertResponse(response, responseType);
         }
+    }
+
+    /// <summary>
+    /// Casts argument values of type object to string.
+    /// </summary>
+    /// <param name="arguments">The kernel arguments to be cast.</param>
+    /// <param name="operation">The gRPC operation.</param>
+    /// <returns>A dictionary of arguments with string values.</returns>
+    /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
+    private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, GrpcOperation operation)
+    {
+        return arguments.ToDictionary(item => item.Key, item =>
+        {
+            if (item.Value is string stringValue)
+            {
+                return stringValue;
+            }
+
+            throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+        });
     }
 
     /// <summary>
@@ -104,7 +128,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, KernelArguments arguments)
+    private string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
     {
         if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
@@ -152,7 +176,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="type">The operation request data type.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation request instance.</returns>
-    private object GenerateOperationRequest(GrpcOperation operation, Type type, KernelArguments arguments)
+    private object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
         if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||

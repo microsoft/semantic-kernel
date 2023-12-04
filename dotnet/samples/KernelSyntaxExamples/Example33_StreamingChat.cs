@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -46,7 +45,7 @@ public static class Example33_StreamingChat
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
         await MessageOutputAsync(chatHistory);
 
         // First user message
@@ -62,29 +61,25 @@ public static class Example33_StreamingChat
 
         // Second bot assistant message
         await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
-
-        Console.WriteLine("\n------------------------");
     }
 
     private static async Task StreamMessageOutputAsync(IChatCompletion chatCompletion, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
-
-        Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
 
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.ContentUpdate}\n");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
                 roleWritten = true;
             }
 
-            if (chatUpdate.ContentUpdate is { Length: > 0 })
+            if (chatUpdate.Content is { Length: > 0 })
             {
-                fullMessage += chatUpdate.ContentUpdate;
-                Console.Write(chatUpdate.ContentUpdate);
+                fullMessage += chatUpdate.Content;
+                Console.Write(chatUpdate.Content);
             }
         }
 

@@ -391,11 +391,11 @@ public sealed class Kernel
     /// <param name="arguments">The arguments to pass to the invocation of <paramref name="function"/>. If null, no arguments will be supplied.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
 
-        return function.InvokeStreamingAsync<StreamingContent>(this, arguments, CancellationToken.None);
+        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, CancellationToken.None);
     }
 
     /// <summary>
@@ -419,12 +419,12 @@ public sealed class Kernel
     /// <param name="input">The single argument to use as the <see cref="KernelArguments.InputParameterName"/> to the function.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, string input, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(KernelFunction function, string input, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
         Verify.NotNull(input);
 
-        return this.InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
+        return this.InvokeStreamingAsync<StreamingContentBase>(function, input, CancellationToken.None);
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,7 +114,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 

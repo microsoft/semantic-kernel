@@ -42,14 +42,14 @@ This is a semantic kernel prompt template
 ```sk.prompt
 Hello AI, tell me about {{$input}}
 ```
-These are AI request settings
+These are AI execution settings
 ```sk.execution_settings
 {
     ""model_id"": ""gpt4"",
     ""temperature"": 0.7
 }
 ```
-These are more AI request settings
+These are more AI execution settings
 ```sk.execution_settings
 {
     ""model_id"": ""gpt3.5"",

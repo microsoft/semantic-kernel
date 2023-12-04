@@ -8,10 +8,10 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
-/// Request settings for an AI request.
+/// Execution settings for an AI request.
 /// Implementors of <see cref="ITextCompletion"/> or <see cref="IChatCompletion"/> can extend this
 /// if the service they are calling supports additional properties. For an example please reference
-/// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIRequestSettings implementation.
+/// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </summary>
 public class PromptExecutionSettings
 {
