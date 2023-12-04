@@ -10,7 +10,6 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_sett
     DataSourceType,
 )
 
-
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings

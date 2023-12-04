@@ -12,8 +12,6 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
 
-if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
 
 ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 

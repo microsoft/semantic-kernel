@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_config import (

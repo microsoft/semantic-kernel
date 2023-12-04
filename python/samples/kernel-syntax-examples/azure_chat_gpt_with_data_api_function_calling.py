@@ -14,16 +14,11 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_sett
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.azure_chat_with_data_prompt_template import (
     AzureChatWithDataPromptTemplate,
 )
-
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
     get_function_calling_object,
 )
-from semantic_kernel.core_skills import MathSkill
 from semantic_kernel.core_skills.time_skill import TimeSkill
-from semantic_kernel.semantic_functions.chat_with_data_prompt_template import (
-    ChatWithDataPromptTemplate,
-)
 
 kernel = sk.Kernel()
 

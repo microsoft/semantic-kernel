@@ -3,6 +3,9 @@
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion_with_data import (
+    AzureChatCompletionWithData,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
 )
@@ -17,10 +20,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
-)
-
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion_with_data import (
-    AzureChatCompletionWithData,
 )
 
 __all__ = [

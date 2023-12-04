@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, List, Optional
+from dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.semantic_functions.prompt_template_with_data_config import (

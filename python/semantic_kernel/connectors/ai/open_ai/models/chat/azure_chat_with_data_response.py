@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 """Azure OpenAI Chat With Data Streaming Response class."""
 from typing import Tuple
+
 from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
+
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 
@@ -23,7 +25,7 @@ class AzureChatWithDataStreamResponse:
         self._settings = settings
 
     async def _iterate_to_assistant_message(self):
-        """Iterate through the message stream to populate the tool message and prompt filter results and stop at the assistant message."""
+        """Iterate through the message stream to populate the tool message and stop at the assistant message."""
         while True:
             try:
                 message = await self._assistant_message.__anext__()

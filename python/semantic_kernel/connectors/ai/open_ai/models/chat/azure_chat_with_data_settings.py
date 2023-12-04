@@ -34,7 +34,8 @@ class AzureAISearchDataSourceParameters(DataSourceParametersBase):
 
 @dataclass
 class AzureChatWithDataSettings:
-    """Class to hold Azure OpenAI Chat With Data settings, which might include data source type and authentication information."""
+    """Class to hold Azure OpenAI Chat With Data settings,
+    which might include data source type and authentication information."""
 
     data_source_type: DataSourceType = DataSourceType.AZURE_AI_SEARCH
     data_source_parameters: DataSourceParametersBase = None

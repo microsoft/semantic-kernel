@@ -3,12 +3,13 @@
 
 from dataclasses import asdict
 from logging import Logger
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 
-from openai.lib.azure import AsyncAzureADTokenProvider
 from openai import AsyncStream
+from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessage
 
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -16,19 +17,16 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.const import (
     DEFAULT_AZURE_WITH_DATA_API_VERSION,
 )
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
-    AzureChatWithDataSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
     AzureChatWithDataStreamResponse,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
+    AzureChatWithDataSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
-
-
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
@@ -53,7 +51,8 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         Initialize an AzureChatCompletionWithData service.
 
         You must provide:
-        - A deployment_name, endpoint, api_key, and datasource_settings (plus, optionally: ad_token or ad_token_provider)
+        - A deployment_name, endpoint, datasource_settings
+           and one of api_key, ad_token, or ad_token_provider
 
         :param deployment_name: The name of the Azure deployment. This value
             will correspond to the custom name you chose for your deployment
@@ -110,8 +109,9 @@ class AzureChatCompletionWithData(AzureChatCompletion):
             logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
-            Union[Tuple[str, str], List[Tuple[str,str]]] -- The completion result(s) in the format (assistant_message, tool_message).
-            The tool message contains additional information about the data source including citations.
+            Union[Tuple[str, str], List[Tuple[str,str]]] -- The completion result(s)
+            in the format (assistant_message, tool_message). The tool message contains additional
+            information about the data source including citations.
         """
         response = await self._send_request(
             messages=messages, request_settings=settings, stream=False
