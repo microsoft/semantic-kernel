@@ -134,7 +134,7 @@ Packages included in **Microsoft.SemanticKernel**:
 1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
    engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
-   OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
+   OpenAI, allowing to run semantic functions, chats, text to image with GPT3,
    GPT3.5, GPT4, DALL-E2.
 
 Other SK packages available at nuget.org:
