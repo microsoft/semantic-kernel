@@ -26,18 +26,10 @@ public abstract class ModelContent
     /// </summary>
     /// <param name="innerContent">Raw content object reference</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected ModelContent(object? innerContent, IDictionary<string, object?>? metadata = null) : this()
+    protected ModelContent(object? innerContent, IDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.Metadata = metadata;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ModelContent"/> class.
-    /// For serialization purposes only.
-    /// </summary>
-    protected ModelContent()
-    {
     }
 
     /// <summary>
