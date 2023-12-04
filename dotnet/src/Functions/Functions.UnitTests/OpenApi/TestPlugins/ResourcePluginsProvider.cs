@@ -3,7 +3,7 @@
 using System.IO;
 using System.Resources;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 
 internal static class ResourcePluginsProvider
 {

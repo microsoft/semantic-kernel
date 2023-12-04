@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {

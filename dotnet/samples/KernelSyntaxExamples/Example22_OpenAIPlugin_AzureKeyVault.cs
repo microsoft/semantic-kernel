@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using RepoUtils;
 using Resources;
 
