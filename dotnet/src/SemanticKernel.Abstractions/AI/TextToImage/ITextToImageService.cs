@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.ImageGeneration;
+namespace Microsoft.SemanticKernel.AI.TextToImage;
 
 /// <summary>
-/// Interface for image generation services
+/// Interface for text to image services
 /// </summary>
 [Experimental("SKEXP0002")]
-public interface IImageGeneration : IAIService
+public interface ITextToImageService : IAIService
 {
     /// <summary>
     /// Generate an image matching the given description
