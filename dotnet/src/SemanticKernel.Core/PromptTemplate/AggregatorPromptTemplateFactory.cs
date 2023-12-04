@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Implementation of <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
 /// </summary>
-public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
+public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory[] _promptTemplateFactories;
 
