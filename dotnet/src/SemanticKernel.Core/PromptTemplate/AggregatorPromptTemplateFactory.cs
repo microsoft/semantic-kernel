@@ -1,53 +1,48 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Implementation of <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
+/// Provides a <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
 /// </summary>
+/// <remarks>
+/// Attempts via <see cref="TryCreate"/> to create an <see cref="IPromptTemplate"/> from a
+/// <see cref="PromptTemplateConfig"/> will iterate through the aggregated factories, using
+/// the result from the first to successfully handle the supplied configuration.
+/// /// </remarks>
 public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
-    private readonly IPromptTemplateFactory[] _promptTemplateFactories;
+    private readonly IPromptTemplateFactory?[] _promptTemplateFactories;
 
-    /// <summary>
-    /// Constructor for <see cref="AggregatorPromptTemplateFactory"/>.
-    /// </summary>
-    /// <param name="promptTemplateFactories">List of <see cref="IPromptTemplateFactory"/> instances</param>
+    /// <summary>Initializes the instance.</summary>
+    /// <param name="promptTemplateFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
     public AggregatorPromptTemplateFactory(params IPromptTemplateFactory[] promptTemplateFactories)
     {
-        Verify.NotNull(promptTemplateFactories);
-
-        if (promptTemplateFactories.Length == 0)
+        Verify.NotNullOrEmpty(promptTemplateFactories);
+        foreach (IPromptTemplateFactory promptTemplateFactory in promptTemplateFactories)
         {
-            throw new KernelException("At least one prompt template factory must be specified.");
+            Verify.NotNull(promptTemplateFactory, nameof(promptTemplateFactories));
         }
 
         this._promptTemplateFactories = promptTemplateFactories;
     }
 
-    /// <summary>
-    /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration. Throws an <see cref="KernelException"/> if the specified template format is not supported.
-    /// </summary>
-    /// <param name="promptConfig">Prompt template configuration</param>
-    /// <returns></returns>
-    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+    /// <inheritdoc/>
+    public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
+        Verify.NotNull(templateConfig);
+
         foreach (var promptTemplateFactory in this._promptTemplateFactories)
         {
-            try
+            if (promptTemplateFactory?.TryCreate(templateConfig, out result) is true && result is not null)
             {
-                var promptTemplate = promptTemplateFactory.Create(promptConfig);
-                if (promptTemplate != null)
-                {
-                    return promptTemplate;
-                }
-            }
-            catch (KernelException)
-            {
-                // Ignore the exception and try the next factory
+                return true;
             }
         }
 
-        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+        result = null;
+        return false;
     }
 }
