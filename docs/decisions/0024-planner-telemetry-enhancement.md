@@ -11,7 +11,7 @@ informed: {}
 
 ## Context and Problem Statement
 
-It would be extremely beneficial for applications using Semantic Kernel's planning features to be able to continuously monitor the performance of planners and plans.
+It would be extremely beneficial for applications using Semantic Kernel's planning features to be able to continuously monitor the performance of planners and plans as well as debugging them.
 
 ## Scenarios
 
@@ -252,47 +252,10 @@ s_completionTokenCounter.Add(completionTokens, in tags);
 
 > Note that we do not consider services that do not return token usage. Currently only OpenAI & Azure OpenAI services return token usage information.
 
-## To optionally allow the kernel to send sensitive information
-
-In some environments, it is inappropriate to store sensitive information, such as PII, in any services. Nonetheless, those intermediate results (generated using non-customer data) can be extremely useful for debugging purposes. Thus, we need a switch that can turn on and off telemetries that contain sensitive information.
-
-```csharp
-// In a new InstrumentationOptions.cs
-public sealed class InstrumentationOptions
-{
-  public bool IncludeSensitiveInformation { set; get; } = false;
-}
-
-// In Kernel.cs
-...
-public InstrumentationOptions Instrumentation;
-...
-public Kernel(
-  IAIServiceProvider aiServiceProvider,
-  IEnumerable<IKernelPlugin>? plugins = null,
-  IAIServiceSelector? serviceSelector = null,
-  IDelegatingHandlerFactory? httpHandlerFactory = null,
-  ILoggerFactory? loggerFactory = null
-  InstrumentationOptions? instrumentation = null)
-{
-  ...
-  Instrumentation = instrumentation ?? new InstrumentationOptions { IncludeSensitiveInformation = false };
-  ...
-}
-
-// In KernelBuilder.cs
-...
-public KernelBuilder WithInstrumentationOption(InstrumentationOptions instrumentation)
-{
-  this._instrumentation = instrumentation;
-  return this;
-}
-...
-```
-
 ## Decision Outcome
 
-TBD
+1. Update new metrics names: TDB
+2. Instrumentation
 
 ## Validation
 
@@ -376,10 +339,16 @@ ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 // Create and start an activity
 using var activity = s_activitySource.StartActivity(this.Name);
 
-if (kernel.Instrumentation.IncludeSensitiveInformation)
+if (logger.IsEnabled(LogLevel.Trace))
 {
-  activity?.SetTag("sk.planner.goal", goal);
-  activity?.SetTag("sk.planner.plan", plan.ToPlanString());
+  logger.LogTrace("Goal: {Goal}", goal); // Sensitive data, logging as trace, disabled by default
+}
+
+...
+
+if (logger.IsEnabled(LogLevel.Trace))
+{
+  logger.LogTrace("Plan: {Plan}", plan); // Sensitive data, logging as trace, disabled by default
 }
 ```
 
@@ -408,3 +377,9 @@ using var loggerFactory = LoggerFactory.Create(builder =>
   builder.SetMinimumLevel(MinLogLevel);
 });
 ```
+
+## More information
+
+Additional works that need to be done:
+
+1. Update [telemetry doc](../../dotnet/docs/TELEMETRY.md)
