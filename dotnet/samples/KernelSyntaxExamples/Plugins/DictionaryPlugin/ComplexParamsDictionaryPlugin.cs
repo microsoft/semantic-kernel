@@ -27,7 +27,7 @@ public sealed class ComplexParamsDictionaryPlugin
             new DictionaryEntry("elephant", "a large gray mammal with a long trunk, tusks, and ears that lives in Africa and Asia")
         };
 
-    [KernelFunction, KernelName("GetRandomEntry"), System.ComponentModel.Description("Gets a random word from a dictionary of common words and their definitions.")]
+    [KernelFunction, Description("Gets a random word from a dictionary of common words and their definitions.")]
     public DictionaryEntry GetRandomEntry()
     {
         // Get random number
@@ -37,15 +37,15 @@ public sealed class ComplexParamsDictionaryPlugin
         return this._dictionary[index];
     }
 
-    [KernelFunction, KernelName("GetWord"), System.ComponentModel.Description("Gets the word for a given dictionary entry.")]
-    public string GetWord([System.ComponentModel.Description("Word to get definition for.")] DictionaryEntry entry)
+    [KernelFunction, Description("Gets the word for a given dictionary entry.")]
+    public string GetWord([Description("Word to get definition for.")] DictionaryEntry entry)
     {
         // Return the definition or a default message
         return this._dictionary.FirstOrDefault(e => e.Word == entry.Word)?.Word ?? "Entry not found";
     }
 
-    [KernelFunction, KernelName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
-    public string GetDefinition([System.ComponentModel.Description("Word to get definition for.")] string word)
+    [KernelFunction, Description("Gets the definition for a given word.")]
+    public string GetDefinition([Description("Word to get definition for.")] string word)
     {
         // Return the definition or a default message
         return this._dictionary.FirstOrDefault(e => e.Word == word)?.Definition ?? "Word not found";

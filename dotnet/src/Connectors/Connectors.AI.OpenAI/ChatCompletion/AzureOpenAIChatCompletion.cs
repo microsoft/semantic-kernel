@@ -10,17 +10,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// Azure OpenAI chat completion client.
-/// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
+public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextCompletion
 {
+    /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
+    private readonly AzureOpenAIClientCore _core;
+
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
     /// </summary>
@@ -34,11 +35,13 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -54,11 +57,13 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -71,14 +76,20 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     public AzureOpenAIChatCompletion(
         string deploymentName,
         OpenAIClient openAIClient,
-        string? modelId = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
+        string modelId,
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
+    /// <inheritdoc/>
+    public ChatHistory CreateNewChat(string? instructions = null) =>
+        ClientCore.CreateNewChat(instructions);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -87,25 +98,34 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
-    }
+        this._core.LogActionDetails();
 
-    /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return InternalCreateNewChat(instructions);
+        return this._core.GetChatResultsAsync(chat, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsTextAsync(text, executionSettings, kernel, cancellationToken);
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        this._core.LogActionDetails();
+
+        return this._core.GetChatResultsAsTextAsync(prompt, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        var chatHistory = this.CreateChatHistory(prompt, executionSettings);
+        return this._core.GetChatResultsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -115,8 +135,20 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatHistory = this.CreateNewChat(prompt);
-        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+        var chatHistory = this.CreateChatHistory(prompt, executionSettings);
+
+        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <summary>Creates a new chat history from the specified prompt and execution settings.</summary>
+    private OpenAIChatHistory CreateChatHistory(string prompt, PromptExecutionSettings? executionSettings)
+    {
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        this._core.LogActionDetails();
+
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        return ClientCore.CreateNewChat(prompt, openAIExecutionSettings);
     }
 
     /// <inheritdoc/>
@@ -126,6 +158,8 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
+        this._core.LogActionDetails();
+
+        return this._core.GetChatStreamingUpdatesAsync<T>(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

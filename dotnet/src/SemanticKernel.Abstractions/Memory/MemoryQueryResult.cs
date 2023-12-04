@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class MemoryQueryResult
 {
     /// <summary>

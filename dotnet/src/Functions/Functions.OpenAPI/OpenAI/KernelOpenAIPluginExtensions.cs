@@ -10,14 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.
 /// </summary>
-public static class KernelOpenAIPluginExtensions
+public static class OpenAIPluginKernelExtensions
 {
     private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
         new()
@@ -111,7 +110,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -147,7 +146,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,
@@ -214,9 +213,9 @@ public static class KernelOpenAIPluginExtensions
         if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
-            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
+            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request, ct) =>
             {
-                await callback(request, pluginName, openAIAuthConfig).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig, ct).ConfigureAwait(false);
             };
         }
 

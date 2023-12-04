@@ -3,13 +3,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
-/// Provides read-only metadata for an <see cref="KernelFunction"/> parameter.
+/// Provides read-only metadata for a <see cref="KernelFunction"/> parameter.
 /// </summary>
 public sealed class KernelParameterMetadata
 {

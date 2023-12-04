@@ -3,10 +3,7 @@
 using System.Text.Json;
 using Json.Schema;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperationResponse"/> class.

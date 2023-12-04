@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -18,11 +16,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlanner
 {
-    /// <summary>
-    /// Gets the stopwatch used for measuring planning time.
-    /// </summary>
-    public Stopwatch Stopwatch { get; } = new();
-
     private readonly HandlebarsPlannerConfig _config;
 
     /// <summary>
@@ -46,7 +39,7 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlanner));
 
         return PlannerInstrumentation.CreatePlanAsync(
             static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
@@ -209,7 +202,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var arguments = new Dictionary<string, object?>()
+        var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },

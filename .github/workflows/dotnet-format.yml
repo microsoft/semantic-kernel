@@ -27,18 +27,18 @@ jobs:
         include:
         #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
         - { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
-        #- { dotnet: '8.0-preview', configuration: Release, os: ubuntu-latest }
-          
+        #- { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
-      
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Get changed files
         id: changed-files
         if: github.event_name == 'pull_request'
@@ -65,7 +65,7 @@ jobs:
                   csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
                   break
                 fi
-          
+
                 dir=$(echo ${dir%/*})
               done
             done

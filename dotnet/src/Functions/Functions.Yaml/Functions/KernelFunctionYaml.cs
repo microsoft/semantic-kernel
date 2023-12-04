@@ -6,14 +6,15 @@ using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
+namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
 /// </summary>
 public static class KernelFunctionYaml
 {
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
     /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
@@ -24,21 +25,16 @@ public static class KernelFunctionYaml
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        string resourcePath = resourceName;
-
-        using Stream stream = assembly.GetManifestResourceStream(resourcePath);
-        using StreamReader reader = new(stream);
-        var text = reader.ReadToEnd();
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
 
         return FromPromptYaml(
-            text,
+            reader.ReadToEnd(),
             promptTemplateFactory,
             loggerFactory);
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>

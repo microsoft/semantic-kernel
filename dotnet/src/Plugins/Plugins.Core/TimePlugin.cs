@@ -157,8 +157,8 @@ public sealed class TimePlugin
     /// <returns> The date the provided number of days before today </returns>
     [KernelFunction]
     [Description("Get the date offset by a provided number of days from today")]
-    public string DaysAgo([Description("The number of days to offset from today"), KernelName("input")] double daysOffset, IFormatProvider? formatProvider = null) =>
-        DateTimeOffset.Now.AddDays(-daysOffset).ToString("D", formatProvider);
+    public string DaysAgo([Description("The number of days to offset from today")] double input, IFormatProvider? formatProvider = null) =>
+        DateTimeOffset.Now.AddDays(-input).ToString("D", formatProvider);
 
     /// <summary>
     /// Get the current day of the week
@@ -207,7 +207,7 @@ public sealed class TimePlugin
     [KernelFunction]
     [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
     public string DateMatchingLastDayName(
-        [Description("The day name to match"), KernelName("input")] DayOfWeek dayName,
+        [Description("The day name to match")] DayOfWeek input,
         IFormatProvider? formatProvider = null)
     {
         DateTimeOffset dateTime = DateTimeOffset.Now;
@@ -216,7 +216,7 @@ public sealed class TimePlugin
         for (int i = 1; i <= 7; ++i)
         {
             dateTime = dateTime.AddDays(-1);
-            if (dateTime.DayOfWeek == dayName)
+            if (dateTime.DayOfWeek == input)
             {
                 break;
             }

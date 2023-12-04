@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class KernelArgumentsTests
 {
     [Fact]
@@ -27,7 +28,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { };
 
         // Assert
-        Assert.Equal(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings);
         Assert.Empty(sut);
     }
 
@@ -55,7 +56,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
 
         // Assert
-        Assert.Equal(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings);
 
         var argument = Assert.Single(sut);
         Assert.Equal("fake-key", argument.Key);
@@ -68,31 +69,31 @@ public class KernelArgumentsTests
         //Constructor 1
         var executionSettings = new PromptExecutionSettings();
         KernelArguments sut = new(executionSettings) { { "FAKE-key", "fake-value" } };
-        Assert.True(sut.ContainsKey("fake-key"));
+        Assert.True(sut.ContainsName("fake-key"));
 
         //Constructor 2
-        IDictionary<string, string> source = new Dictionary<string, string> { { "FAKE-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "FAKE-key", "fake-value" } };
         sut = new(source);
-        Assert.True(sut.ContainsKey("fake-key"));
+        Assert.True(sut.ContainsName("fake-key"));
 
         //Constructor 3
         KernelArguments other = new() { { "FAKE-key", "fake-value" } };
         sut = new(other);
-        Assert.True(sut.ContainsKey("fake-key"));
+        Assert.True(sut.ContainsName("fake-key"));
     }
 
     [Fact]
     public void ItCanBeInitializedFromIDictionary()
     {
         // Arrange
-        IDictionary<string, string> source = new Dictionary<string, string> { { "fake-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "fake-key", "fake-value" } };
 
         // Act
         KernelArguments sut = new(source);
 
         // Assert
         Assert.Single(sut);
-        Assert.True(sut.ContainsKey("fake-key"));
+        Assert.True(sut.ContainsName("fake-key"));
         Assert.Equal("fake-value", sut["fake-key"]);
 
         Assert.Null(sut.ExecutionSettings);
@@ -110,9 +111,9 @@ public class KernelArgumentsTests
 
         // Assert
         Assert.Single(sut);
-        Assert.True(sut.ContainsKey("fake-key"));
+        Assert.True(sut.ContainsName("fake-key"));
         Assert.Equal("fake-value", sut["fake-key"]);
 
-        Assert.Equal(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings);
     }
 }

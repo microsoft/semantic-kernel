@@ -9,13 +9,9 @@ using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses OpenAI function calling in a stepwise manner to fulfill a user goal or question.
@@ -35,7 +31,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._kernel = kernel;
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
@@ -68,7 +64,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* request settings */, this._kernel, cancellationToken).ConfigureAwait(false));
+        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* execution settings */, this._kernel, cancellationToken).ConfigureAwait(false));
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -152,7 +148,7 @@ public sealed class FunctionCallingStepwisePlanner
             ChatHistory chatHistory,
             CancellationToken cancellationToken)
     {
-        var executionSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
+        var executionSettings = this.PrepareOpenAIExecutionSettingsWithFunctions();
         return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false))[0];
     }
 
@@ -161,7 +157,7 @@ public sealed class FunctionCallingStepwisePlanner
         return await this._kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
-    private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
+    private OpenAIPromptExecutionSettings PrepareOpenAIExecutionSettingsWithFunctions()
     {
         var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
         executionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
