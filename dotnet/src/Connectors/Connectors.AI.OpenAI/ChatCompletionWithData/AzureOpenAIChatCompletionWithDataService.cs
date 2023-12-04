@@ -106,7 +106,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
