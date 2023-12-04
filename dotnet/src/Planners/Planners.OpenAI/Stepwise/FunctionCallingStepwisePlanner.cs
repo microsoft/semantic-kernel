@@ -26,6 +26,7 @@ public sealed class FunctionCallingStepwisePlanner
         FunctionCallingStepwisePlannerConfig? config = null)
     {
         this.Config = config ?? new();
+        this._generatePlanYaml = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
     }
@@ -157,7 +158,7 @@ public sealed class FunctionCallingStepwisePlanner
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(EmbeddedResource.Read("Stepwise.GeneratePlan.yaml"), pluginName: RestrictedPluginName);
+        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml, pluginName: RestrictedPluginName);
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {
@@ -284,6 +285,11 @@ public sealed class FunctionCallingStepwisePlanner
     /// The configuration for the StepwisePlanner
     /// </summary>
     private FunctionCallingStepwisePlannerConfig Config { get; }
+
+    /// <summary>
+    /// The prompt YAML for generating the initial stepwise plan.
+    /// </summary>
+    private readonly string _generatePlanYaml;
 
     /// <summary>
     /// The prompt (system message) for performing the steps.
