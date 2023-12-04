@@ -37,11 +37,11 @@ Contoso is a company that is developing an AI application using SK.
 ## Decision Drivers
 
 - The framework should be telemetry service agnostic.
-- Enabling and disabling specific telemetry items should require minimum effort.
+- Enabling and disabling specific telemetry items should require minimum effort, given an item can be turned on and off.
 
 - The following metrics should be emitted by SK:
-  - Input token usage for prompt
-    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+  - Input token usage for prompt (Prompt)
+    - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
       | ComponentType | ComponentName | Service ID | Model ID | Value |
@@ -50,8 +50,8 @@ Contoso is a company that is developing an AI application using SK.
       | Function | TellJoke | | GPT-4 | 50
       | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 30
       | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 100
-  - Output token usage for prompt
-    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+  - Output token usage for prompt (Completion)
+    - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
       | ComponentType | ComponentName | Service ID | Model ID | Value |
@@ -61,7 +61,7 @@ Contoso is a company that is developing an AI application using SK.
       | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 30
       | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 100
   - Model request time for prompt
-    - Description: A prompt is the smallest unit that consumes tokens. A function can consist of multiple prompts.
+    - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
       | ComponentType | ComponentName | Service ID | Model ID | Value |
@@ -71,7 +71,7 @@ Contoso is a company that is developing an AI application using SK.
       | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 0.3m
       | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 1m
   - Aggregated execution time for functions
-    - Description: A function can consist of multiple prompts. The execution time of a function is the duration from start to end of a function's `invoke` call.
+    - Description: A function can consist of zero or more prompts. The execution time of a function is the duration from start to end of a function's `invoke` call.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
     - Example:
       | ComponentType | ComponentName | Value |
@@ -110,7 +110,7 @@ Contoso is a company that is developing an AI application using SK.
 
 SK currently tracks token usage metrics in connectors; however, these metrics are not categorized. Consequently, developers cannot determine token usage for different operations. To address this issue, we propose the following two approaches:
 
-- Bottom-up: Propagate token usage information from connectors back to the functions, along with model results.
+- Bottom-up: Propagate token usage information from connectors back to the functions, along with model results (See [Option 1](#option-1) and [Option 2](#option-2) under this section).
 - Top-down: Propagate function information down to the connectors, enabling them to tag metric items with function information.
 
 We have decided to implement the bottom-up approach for the following reasons:
@@ -118,7 +118,11 @@ We have decided to implement the bottom-up approach for the following reasons:
 1. SK is already configured to propagate token usage information from connectors via `ModelResult`. We simply need to extend the list of items that get propagated, such as model information.
 2. Currently, SK does not have a method for passing function information down to the connector level. Although we considered using [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/#:~:text=In%20OpenTelemetry%2C%20Baggage%20is%20contextual%20information%20that%E2%80%99s%20passed,available%20to%20any%20span%20created%20within%20that%20trace.) as a means of propagating information downward, experts from the OpenTelemetry team advised against this approach due to security concerns.
 
-With the bottom-up approach, we need to add model information to `IResultBase`:
+With the bottom-up approach, we need to propagate model information from connectors to functions.
+
+#### Option 1
+
+Add to `IResultBase`:
 
 ```csharp
 /// <summary>
@@ -135,6 +139,29 @@ public interface IResultBase
   /// Gets the model result data.
   /// </summary>
   ModelResult ModelResult { get; }
+}
+```
+
+#### Option 2
+
+Add to `ModelResult`:
+
+```csharp
+public sealed class ModelResult
+{
+    private readonly object _result;
+
+    public ModelResult(object result, string modelId)
+    {
+        Verify.NotNull(result);
+
+        this._result = result;
+        this.ModelId = modelId;
+    }
+
+    public string ModelId { get; }
+
+    ...
 }
 ```
 
@@ -223,9 +250,11 @@ s_promptTokensCounter.Add(promptTokens, in tags);
 s_completionTokenCounter.Add(completionTokens, in tags);
 ```
 
+> Note that we do not consider services that do not return token usage. Currently only OpenAI & Azure OpenAI services return token usage information.
+
 ## To optionally allow the kernel to send sensitive information
 
-In some environments, it is not inappropriate to store sensitive information, such as PII, in any services. Nonetheless, those intermediate results (generated using non-customer data) can be extremely useful for debugging purposes. Thus, we need a switch that can turn on and off telemetries that contain sensitive information.
+In some environments, it is inappropriate to store sensitive information, such as PII, in any services. Nonetheless, those intermediate results (generated using non-customer data) can be extremely useful for debugging purposes. Thus, we need a switch that can turn on and off telemetries that contain sensitive information.
 
 ```csharp
 // In a new InstrumentationOptions.cs
@@ -290,12 +319,13 @@ Cons:
 1. Does not create metrics and need additional works to aggregate results.
 2. Relying only on logs does not provide trace details.
 3. Logs are modified more frequently, which could lead an unstable implementation and require extra maintenance.
+4. Hooks only have access to limited function data.
 
-> Note: with distributed tracing already implemented in SK, developers can create custom telemetry within the hooks, which will be sent to the telemetry service once configured, as long as the information is available in the hooks. However, telemetry items created inside the hooks will not be correlated to the functions, as they are outside the scope of the functions.
+> Note: with distributed tracing already implemented in SK, developers can create custom telemetry within the hooks, which will be sent to the telemetry service once configured, as long as the information is available in the hooks. However, telemetry items created inside the hooks will not be correlated to the functions as parent-child relationships, since they are outside the scope of the functions.
 
 ### Distributed tracing
 
-Distributed tracing is a diagnostic technique that can localize failures and performance bottlenecks within distributed applications. .Net has native support to add distributed tracing in your libraries and .Net libraries are also instrumented to produce distributed tracing information automatically.
+Distributed tracing is a diagnostic technique that can localize failures and performance bottlenecks within distributed applications. .Net has native support to add distributed tracing in libraries and .Net libraries are also instrumented to produce distributed tracing information automatically.
 
 For more information, please refer to this document: [.Net distributed tracing](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/)
 
