@@ -135,7 +135,7 @@ internal sealed class ChatRun
                 Output = result,
             };
 
-        async Task<string> InvokeFunctionCallAsync()
+        async Task<object> InvokeFunctionCallAsync()
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
@@ -153,7 +153,7 @@ internal sealed class ChatRun
             if (result.ValueType == typeof(AssistantResponse))
             {
                 var response = result.GetValue<AssistantResponse>()!;
-                return response.Response ?? string.Empty;
+                return JsonSerializer.Serialize(response);
             }
 
             return result.GetValue<string>() ?? string.Empty;
