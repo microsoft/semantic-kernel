@@ -25,6 +25,7 @@ public static class Example44_MultiChatCompletion
 
         AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
@@ -48,7 +49,7 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIPromptExecutionSettings()
+        var chatExecutionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
@@ -58,7 +59,7 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatRequestSettings))
+        foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatExecutionSettings))
         {
             ChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
             chatHistory.Add(chatMessage);

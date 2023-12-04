@@ -2,16 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataStreamingResult
 {
     public ModelResult ModelResult { get; }
@@ -29,9 +29,11 @@ internal sealed class ChatWithDataStreamingResult
         this._choice = choice;
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
     {
-        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        var message = this.GetChatMessage(cancellationToken);
 
         if (message.Content is { Length: > 0 })
         {
@@ -40,13 +42,11 @@ internal sealed class ChatWithDataStreamingResult
     }
 
     #region private ================================================================================
-    private async Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    private AzureOpenAIChatMessage GetChatMessage(CancellationToken cancellationToken = default)
     {
         var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
 
-        var result = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
-
-        return await Task.FromResult<ChatMessage>(result).ConfigureAwait(false);
+        return new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
     }
 
     private readonly ChatWithDataStreamingChoice _choice;

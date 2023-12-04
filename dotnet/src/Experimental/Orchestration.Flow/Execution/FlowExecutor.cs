@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -100,7 +99,7 @@ internal class FlowExecutor : IFlowExecutor
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.GetService<ILoggerFactory>().CreateLogger(typeof(FlowExecutor));
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor));
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;
@@ -687,7 +686,7 @@ internal class FlowExecutor : IFlowExecutor
 
     private static KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new KernelPromptTemplateFactory(kernel.GetService<ILoggerFactory>());
+        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
         return kernel.CreateFunctionFromPrompt(template, config, functionName);
     }

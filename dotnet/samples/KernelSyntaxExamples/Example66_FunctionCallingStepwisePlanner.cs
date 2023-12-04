@@ -49,9 +49,9 @@ public static class Example66_FunctionCallingStepwisePlanner
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: "gpt-3.5")
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         kernel.ImportPluginFromObject(new EmailPlugin(), "EmailPlugin");

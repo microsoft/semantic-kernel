@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.
 /// </summary>
-public static class ChatHistoryExtensions
+public static class OpenAIChatHistoryExtensions
 {
+    private static readonly AuthorRole s_functionAuthorRole = new("function");
+
     /// <summary>
     /// Add a function message to the chat history
     /// </summary>
@@ -23,7 +24,7 @@ public static class ChatHistoryExtensions
     {
         Verify.NotNull(chatHistory);
 
-        chatHistory.AddMessage(AuthorRole.Function, message, new Dictionary<string, string>(1) { { "Name", functionName } });
+        chatHistory.AddMessage(s_functionAuthorRole, message, new Dictionary<string, string>(1) { { "Name", functionName } });
     }
 
     /// <summary>

@@ -11,8 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -45,9 +43,12 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        return await this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken).ConfigureAwait(false);
+        // Make sure all arguments are of string type. This is temporary check until non-string arguments are supported.
+        AssertArgumentOfStringType(arguments);
+
+        return this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken);
     }
 
     #region private
@@ -55,7 +56,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IList<Block>> _blocks;
+    private readonly Lazy<List<Block>> _blocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -63,7 +64,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
     /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
     /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
-    internal IList<Block> ExtractBlocks(string? templateText, bool validate = true)
+    internal List<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
         this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
         var blocks = this._tokenizer.Tokenize(templateText);
@@ -90,20 +91,21 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    internal async Task<string> RenderAsync(IList<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
+    internal async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
-        var tasks = new List<Task<string>>(blocks.Count);
+
+        var result = new StringBuilder();
         foreach (var block in blocks)
         {
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    tasks.Add(Task.FromResult(staticBlock.Render(arguments)));
+                    result.Append(staticBlock.Render(arguments));
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    tasks.Add(dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken));
+                    result.Append(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false));
                     break;
 
                 default:
@@ -113,16 +115,12 @@ public sealed class KernelPromptTemplate : IPromptTemplate
             }
         }
 
-        var result = new StringBuilder();
-        foreach (Task<string> t in tasks)
-        {
-            result.Append(await t.ConfigureAwait(false));
-        }
+        string resultString = result.ToString();
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Rendered prompt: {0}", result);
+        this._logger.LogTrace("Rendered prompt: {0}", resultString);
 
-        return result.ToString();
+        return resultString;
     }
 
     /// <summary>
@@ -138,5 +136,29 @@ public sealed class KernelPromptTemplate : IPromptTemplate
             ? block
             : new TextBlock(((ITextRendering)block).Render(arguments), this._loggerFactory)).ToList();
     }
+
+    /// <summary>
+    /// Validates that all the KernelArguments are of string type.
+    /// </summary>
+    /// <param name="arguments">The collection of KernelArguments to validate.</param>
+    /// <exception cref="KernelException">Thrown when an argument is not of type string.</exception>
+    private static void AssertArgumentOfStringType(KernelArguments? arguments)
+    {
+        if (arguments == null)
+        {
+            return;
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Value is string)
+            {
+                continue;
+            }
+
+            throw new KernelException($"Non-string kernel prompt template arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Argument '{argument.Key}' is of type '{argument.Value?.GetType()}'.");
+        }
+    }
+
     #endregion
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
+[Experimental("SKEXP0003")]
 public sealed class NullMemory : ISemanticTextMemory
 {
     private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);

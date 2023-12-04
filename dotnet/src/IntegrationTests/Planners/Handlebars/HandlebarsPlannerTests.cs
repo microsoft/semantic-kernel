@@ -76,12 +76,13 @@ public sealed class HandlebarsPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
+        return new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
                 c.AddAzureOpenAIChatCompletion(
                     deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    modelId: azureOpenAIConfiguration.ChatModelId!,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
@@ -89,6 +90,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
             {
                 c.AddAzureOpenAITextCompletion(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    modelId: azureOpenAIConfiguration.ModelId,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
@@ -97,6 +99,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
             {
                 c.AddAzureOpenAITextEmbeddingGeneration(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
             }

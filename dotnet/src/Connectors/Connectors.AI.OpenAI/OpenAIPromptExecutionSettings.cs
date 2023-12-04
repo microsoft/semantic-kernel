@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Request settings for an OpenAI completion request.
+/// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class OpenAIPromptExecutionSettings : PromptExecutionSettings
@@ -148,20 +148,20 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             };
         }
 
-        if (executionSettings is OpenAIPromptExecutionSettings requestSettingsOpenAIRequestSettings)
+        if (executionSettings is OpenAIPromptExecutionSettings settings)
         {
-            return requestSettingsOpenAIRequestSettings;
+            return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        if (openAIRequestSettings is not null)
+        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        if (openAIExecutionSettings is not null)
         {
-            return openAIRequestSettings;
+            return openAIExecutionSettings;
         }
 
-        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
     }
 
     /// <summary>
@@ -170,18 +170,18 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromRequestSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
-        var requestSettings = FromExecutionSettings(executionSettings, defaultMaxTokens);
+        var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
 
-        if (requestSettings.StopSequences?.Count == 0)
+        if (settings.StopSequences?.Count == 0)
         {
             // Azure OpenAI WithData API does not allow to send empty array of stop sequences
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
-            requestSettings.StopSequences = null;
+            settings.StopSequences = null;
         }
 
-        return requestSettings;
+        return settings;
     }
 
     #region private ================================================================================

@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="KernelFunctionMetadata"/> class.

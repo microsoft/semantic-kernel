@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
 
 /// <summary>

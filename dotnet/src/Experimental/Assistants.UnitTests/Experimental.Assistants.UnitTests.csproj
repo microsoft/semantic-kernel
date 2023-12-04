@@ -1,4 +1,4 @@
-﻿  	<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Assistants.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Assistants.UnitTests</RootNamespace>
@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CS1591;SKEXP0001</NoWarn>
+    <NoWarn>CS1591;SKEXP0101</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Assistants\Experimental.Assistants.csproj" />

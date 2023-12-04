@@ -16,10 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Services;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -56,7 +53,7 @@ public class StepwisePlanner
         // Set MaxTokens for the prompt config
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
-        ILoggerFactory loggerFactory = this._kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = this._kernel.LoggerFactory;
 
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
@@ -109,7 +106,7 @@ public class StepwisePlanner
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result</returns>
     /// <exception cref="KernelException">No AIService available for getting completions.</exception>
-    [KernelFunction, KernelName("ExecutePlan"), Description("Execute a plan")]
+    [KernelFunction, Description("Execute a plan")]
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,

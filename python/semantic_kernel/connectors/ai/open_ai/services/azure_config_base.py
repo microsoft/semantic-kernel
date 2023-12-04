@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
@@ -12,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.sk_pydantic import HttpsUrl
 
 
@@ -44,6 +46,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 api_key=api_key,
                 azure_ad_token=ad_token,
                 azure_ad_token_provider=ad_token_provider,
+                default_headers={"User-Agent": json.dumps(APP_INFO)}
+                if APP_INFO
+                else None,
             )
         else:
             if not endpoint:
@@ -58,6 +63,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 api_key=api_key,
                 azure_ad_token=ad_token,
                 azure_ad_token_provider=ad_token_provider,
+                default_headers={"User-Agent": json.dumps(APP_INFO)}
+                if APP_INFO
+                else None,
             )
         super().__init__(
             ai_model_id=deployment_name,
