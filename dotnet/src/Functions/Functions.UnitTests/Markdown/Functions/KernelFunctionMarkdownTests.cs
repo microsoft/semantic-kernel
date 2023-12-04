@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 
-[Obsolete("Tests obsoleted by using obsolete methods")]
 public class KernelFunctionMarkdownTests
 {
     [Fact]

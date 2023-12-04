@@ -450,6 +450,7 @@ internal abstract class ClientCore
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
     }
+
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,

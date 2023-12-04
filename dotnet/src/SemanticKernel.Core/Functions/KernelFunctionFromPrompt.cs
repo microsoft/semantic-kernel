@@ -130,25 +130,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        var result = new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>());
-        result.Metadata!.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
+        IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
+        metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
-        // Merge content metadata with the function result metadata
-        if (textContent.Metadata is not null)
-        {
-            foreach (var kv in textContent.Metadata)
-            {
-                if (!result.Metadata.ContainsKey(kv.Key))
-                {
-                    result.Metadata.Add(kv.Key, kv.Value);
-                }
-                else
-                {
-                    result.Metadata[kv.Key] = kv.Value;
-                }
-            }
-        }
-        return result;
+        return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
