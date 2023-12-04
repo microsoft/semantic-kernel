@@ -11,6 +11,15 @@ using RepoUtils;
 
 public static class Program
 {
+    /// <summary>
+    /// Change this filter to select one or more examples.
+    /// Only example with a "name" that contains the given string will be executed.
+    /// examples:
+    ///     DefaultFilter = "18"    => run only example 18 (also "180" if there is such test)
+    ///     DefaultFilter = "chat"  => run all examples with a name that contains "chat"
+    /// </summary>
+    public const string? DefaultFilter = "";
+
     // ReSharper disable once InconsistentNaming
     public static async Task Main(string[] args)
     {
@@ -21,10 +30,8 @@ public static class Program
         using CancellationTokenSource cancellationTokenSource = new();
         CancellationToken cancelToken = cancellationTokenSource.ConsoleCancellationToken();
 
-        string? defaultFilter = null; // Modify to filter examples
-
         // Check if args[0] is provided
-        string? filter = args.Length > 0 ? args[0] : defaultFilter;
+        string? filter = args.Length > 0 ? args[0] : DefaultFilter;
 
         // Run examples based on the filter
         await RunExamplesAsync(filter, cancelToken);
@@ -75,6 +82,7 @@ public static class Program
     private static void LoadUserSecrets()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.Development.json")
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();
