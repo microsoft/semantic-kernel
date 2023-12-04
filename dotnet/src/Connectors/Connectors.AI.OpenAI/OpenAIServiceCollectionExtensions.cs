@@ -10,14 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
@@ -1097,18 +1097,18 @@ public static class OpenAIServiceCollectionExtensions
     #region Images
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static KernelBuilder WithAzureOpenAIImageGeneration(
+    public static KernelBuilder WithAzureOpenAITextToImage(
         this KernelBuilder builder,
         string endpoint,
         string modelId,
@@ -1123,8 +1123,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-                new AzureOpenAIImageGeneration(
+            c.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+                new AzureOpenAITextToImageService(
                     endpoint,
                     modelId,
                     apiKey,
@@ -1135,17 +1135,17 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IServiceCollection AddAzureOpenAIImageGeneration(
+    public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
         string endpoint,
         string modelId,
@@ -1157,8 +1157,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAIImageGeneration(
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
                 endpoint,
                 modelId,
                 apiKey,
@@ -1168,7 +1168,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI Dall-E image generation service to the list
+    /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
@@ -1177,7 +1177,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static KernelBuilder WithOpenAIImageGeneration(
+    public static KernelBuilder WithOpenAITextToImage(
         this KernelBuilder builder,
         string apiKey,
         string? orgId = null,
@@ -1189,8 +1189,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-                new OpenAIImageGeneration(
+            c.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+                new OpenAITextToImageService(
                     apiKey,
                     orgId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -1199,7 +1199,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI Dall-E image generation service to the list
+    /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
@@ -1207,7 +1207,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IServiceCollection AddOpenAIImageGeneration(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
         string apiKey,
         string? orgId = null,
         string? serviceId = null)
@@ -1215,8 +1215,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IImageGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAIImageGeneration(
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToImageService(
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),

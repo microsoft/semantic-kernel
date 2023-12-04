@@ -68,10 +68,11 @@ public sealed class RunHarness
     public async Task VerifyRunFromDefinitionAsync()
     {
         var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                definitionPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .FromTemplatePath("Templates/PoetAssistant.yaml")
+                .BuildAsync()
+                .ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
@@ -91,11 +92,12 @@ public sealed class RunHarness
         var gamePlugin = KernelPluginFactory.CreateFromObject<GuessingGame>();
 
         var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                definitionPath: "Templates/GameAssistant.yaml",
-                plugins: new[] { gamePlugin }).ConfigureAwait(true);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .FromTemplatePath("Templates/GameAssistant.yaml")
+                .WithPlugin(gamePlugin)
+                .BuildAsync()
+                .ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
