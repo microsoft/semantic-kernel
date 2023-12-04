@@ -60,16 +60,6 @@ Contoso is a company that is developing an AI application using SK.
       | Function | TellJoke | | GPT-4 | 50
       | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 30
       | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 100
-  - Model request time for prompt
-    - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
-    - Dimensions: ComponentType, ComponentName, Service ID, Model ID
-    - Example:
-      | ComponentType | ComponentName | Service ID | Model ID | Value |
-      |---|---|---|---|---|
-      | Function | WritePoem | | GPT-3.5-Turbo | 0.5
-      | Function | TellJoke | | GPT-4 | 0.5m
-      | Function | WriteAndTellJoke | | GPT-3.5-Turbo | 0.3m
-      | Planner | CreateHandlebarsPlan | | GPT-3.5-Turbo | 1m
   - Aggregated execution time for functions
     - Description: A function can consist of zero or more prompts. The execution time of a function is the duration from start to end of a function's `invoke` call.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
@@ -254,7 +244,11 @@ s_completionTokenCounter.Add(completionTokens, in tags);
 
 ## Decision Outcome
 
-1. Update new metrics names: TDB
+1. New metrics names:
+   | Meter | Metrics |
+   |---|---|
+   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.success</li><li>sk.planning.failure</li></ul> |
+   |Microsoft.SemanticKernel| <ul><li>sk.function.duration</li><li>sk.function.token_usage.prompt</li><li>sk.function.token_usage.completion</li></ul> |
 2. Instrumentation
 
 ## Validation
