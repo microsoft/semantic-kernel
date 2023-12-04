@@ -67,7 +67,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         Verify.NotNull(chat);
 
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -81,7 +81,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
@@ -96,7 +96,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
@@ -112,7 +112,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
@@ -126,7 +126,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
