@@ -23,26 +23,26 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_google_palm_chat_completion_init() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     api_key = "test_api_key"
 
     gp_chat_completion = GooglePalmChatCompletion(
-        model_id=model_id,
+        ai_model_id=ai_model_id,
         api_key=api_key,
     )
 
-    assert gp_chat_completion.model_id == model_id
+    assert gp_chat_completion.ai_model_id == ai_model_id
     assert gp_chat_completion.api_key == api_key
     assert isinstance(gp_chat_completion, GooglePalmChatCompletion)
 
 
 def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
-    model_id = "test_model_id"
+    ai_model_id = "test_model_id"
     # api_key = "test_api_key"
 
     with pytest.raises(ValidationError, match="api_key"):
         GooglePalmChatCompletion(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key="",
         )
 
@@ -58,11 +58,11 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
         "semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion.palm",
         new=mock_gp,
     ):
-        model_id = "test_model_id"
+        ai_model_id = "test_model_id"
         api_key = "test_api_key"
         prompt = [("user", "hello world")]
         gp_chat_completion = GooglePalmChatCompletion(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
         )
         settings = ChatRequestSettings()
@@ -70,7 +70,7 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
         mock_gp.chat.assert_called_once_with(
-            model=model_id,
+            model=ai_model_id,
             context="",
             examples=None,
             temperature=settings.temperature,

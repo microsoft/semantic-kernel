@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 public class RestApiOperationExtensionsTests
 {
     [Theory]
@@ -274,7 +275,7 @@ public class RestApiOperationExtensionsTests
                     method: new HttpMethod(method),
                     description: "fake-description",
                     parameters: new List<RestApiOperationParameter>(),
-                    headers: new Dictionary<string, string>(),
+                    headers: new Dictionary<string, string?>(),
                     payload: payload);
     }
 

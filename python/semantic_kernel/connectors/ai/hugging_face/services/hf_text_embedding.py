@@ -20,7 +20,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
     def __init__(
         self,
-        model_id: str,
+        ai_model_id: str,
         device: Optional[int] = -1,
         log: Optional[Logger] = None,
     ) -> None:
@@ -28,7 +28,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         Initializes a new instance of the HuggingFaceTextEmbedding class.
 
         Arguments:
-            model_id {str} -- Hugging Face model card string, see
+            ai_model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
             device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
             log {Optional[Logger]} -- Logger instance.
@@ -39,11 +39,11 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
             f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         )
         super().__init__(
-            model_id=model_id,
+            ai_model_id=ai_model_id,
             log=log,
             device=resolved_device,
             generator=sentence_transformers.SentenceTransformer(
-                model_name_or_path=model_id, device=resolved_device
+                model_name_or_path=ai_model_id, device=resolved_device
             ),
         )
 

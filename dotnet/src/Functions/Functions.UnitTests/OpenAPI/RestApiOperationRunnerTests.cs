@@ -14,9 +14,9 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Moq;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
@@ -65,7 +65,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new Dictionary<string, string?>(),
             payload: null
         );
 
@@ -121,7 +121,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Equal("application/json; charset=utf-8", result.ContentType);
 
-        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new Dictionary<string, string?>(),
             payload: null
         );
 
@@ -174,7 +174,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
 
-        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

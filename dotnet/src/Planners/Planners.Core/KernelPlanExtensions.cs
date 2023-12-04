@@ -4,10 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Planning;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Kernel
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for running plans using a kernel

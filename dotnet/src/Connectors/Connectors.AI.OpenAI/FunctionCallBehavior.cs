@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 

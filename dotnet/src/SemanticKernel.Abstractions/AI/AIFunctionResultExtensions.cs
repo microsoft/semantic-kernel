@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.AI;
 
@@ -21,7 +20,9 @@ public static class AIFunctionResultExtensions
     /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
     public static IReadOnlyCollection<ModelResult>? GetModelResults(this FunctionResult result)
     {
-        if (result.TryGetMetadataValue(ModelResultsMetadataKey, out IReadOnlyCollection<ModelResult>? modelResults))
+        if (result.Metadata is { } metadata &&
+            metadata.TryGetValue(ModelResultsMetadataKey, out object? value) &&
+            value is IReadOnlyCollection<ModelResult> modelResults)
         {
             return modelResults;
         }

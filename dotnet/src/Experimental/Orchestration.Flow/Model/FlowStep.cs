@@ -6,9 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.

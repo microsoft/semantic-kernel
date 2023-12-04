@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// <summary>
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGeneration{TValue,TEmbedding}"/> objects.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class EmbeddingGenerationExtensions
 {
     /// <summary>
@@ -22,6 +24,7 @@ public static class EmbeddingGenerationExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
+    [Experimental("SKEXP0001")]
     public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>(
         this IEmbeddingGeneration<TValue, TEmbedding> generator,
         TValue value,

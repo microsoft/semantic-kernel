@@ -16,6 +16,8 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionTests2
 {
+    private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
+
     private readonly Kernel _kernel;
     private readonly Mock<ILoggerFactory> _logger;
 
@@ -620,7 +622,7 @@ public sealed class KernelFunctionTests2
     [Fact]
     public async Task ItSupportsOverridingNameWithAttributeAsync()
     {
-        static string Test([KernelName("input"), Description("description")] string other) => "Result: " + other;
+        static string Test([Description("description")] string input) => "Result: " + input;
 
         var arguments = new KernelArguments();
         arguments["input"] = "input value";
@@ -659,7 +661,7 @@ public sealed class KernelFunctionTests2
     [Fact]
     public async Task ItSupportFunctionResultAsync()
     {
-        FunctionResult Test() => new("function-name", "fake-result", CultureInfo.InvariantCulture);
+        FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
@@ -679,7 +681,7 @@ public sealed class KernelFunctionTests2
         // Arrange
         Task<FunctionResult> Test()
         {
-            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
             return Task.FromResult(functionResult);
         }
 
@@ -701,7 +703,7 @@ public sealed class KernelFunctionTests2
         // Arrange
         ValueTask<FunctionResult> Test()
         {
-            var functionResult = new FunctionResult("function-name", "fake-result", CultureInfo.InvariantCulture);
+            var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
             return ValueTask.FromResult(functionResult);
         }
 
@@ -863,14 +865,14 @@ public sealed class KernelFunctionTests2
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => function.InvokeAsync(this._kernel, arguments));
 
         //Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", arguments["g"]);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", arguments["g"]!);
     }
 
     [Fact]
     public void ItExposesMetadataFromDelegate()
     {
         [Description("Concat information")]
-        static string Test(Guid id, string name, [KernelName("old")] int age) => $"{id} {name} {age}";
+        static string Test(Guid id, string name, int old) => $"{id} {name} {old}";
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -887,7 +889,7 @@ public sealed class KernelFunctionTests2
     public void ItExposesMetadataFromMethodInfo()
     {
         [Description("Concat information")]
-        static string Test(Guid id, string name, [KernelName("old")] int age) => $"{id} {name} {age}";
+        static string Test(Guid id, string name, int old) => $"{id} {name} {old}";
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));

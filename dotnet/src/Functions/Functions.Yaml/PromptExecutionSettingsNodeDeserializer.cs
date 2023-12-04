@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.AI;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Deserializer for <see cref="PromptExecutionSettings"/>.
@@ -26,17 +26,19 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
         var modelSettings = new PromptExecutionSettings();
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
-            if (kv.Key == "service_id")
+            switch (kv.Key)
             {
-                modelSettings.ServiceId = (string)kv.Value;
-            }
-            else if (kv.Key == "model_id")
-            {
-                modelSettings.ModelId = (string)kv.Value;
-            }
-            else
-            {
-                modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                case "service_id":
+                    modelSettings.ServiceId = (string)kv.Value;
+                    break;
+
+                case "model_id":
+                    modelSettings.ModelId = (string)kv.Value;
+                    break;
+
+                default:
+                    modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                    break;
             }
         }
 

@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Hugging Face connectors.
@@ -38,7 +35,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
                 new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
@@ -87,7 +84,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.ConfigureServices(c =>
+        return builder.WithServices(c =>
         {
             c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
                 new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));

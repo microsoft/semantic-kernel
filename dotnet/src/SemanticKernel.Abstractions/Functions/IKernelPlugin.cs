@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
 namespace Microsoft.SemanticKernel;

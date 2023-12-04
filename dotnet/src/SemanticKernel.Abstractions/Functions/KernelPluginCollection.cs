@@ -9,7 +9,6 @@ using System.Linq;
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
 #pragma warning disable CA1725 // Parameter names should match base declaration
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 
 namespace Microsoft.SemanticKernel;
 

@@ -131,7 +131,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         StringBuilder fullResult = new();
         // Act
-        await foreach (var content in target.RunStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
+        await foreach (var content in target.InvokeStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
         {
             fullResult.Append(content);
         };
@@ -182,7 +182,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
-            .ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+            .WithServices(c => c.ConfigureHttpClientDefaults(c =>
                 {
                     // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
                     c.AddStandardResilienceHandler().Configure(o =>
@@ -215,10 +215,11 @@ public sealed class OpenAICompletionTests : IDisposable
         // Use an invalid API key to force a 401 Unauthorized response
         builder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        builder.ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+        builder.WithServices(c => c.ConfigureHttpClientDefaults(c =>
             {
                 // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
                 c.AddStandardResilienceHandler().Configure(o =>
@@ -272,6 +273,7 @@ public sealed class OpenAICompletionTests : IDisposable
             .WithLoggerFactory(this._testOutputHelper)
             .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
+                modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -296,6 +298,7 @@ public sealed class OpenAICompletionTests : IDisposable
             .WithLoggerFactory(this._testOutputHelper)
             .WithAzureOpenAITextCompletion(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
+                modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -347,7 +350,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -460,6 +463,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
@@ -474,6 +478,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         kernelBuilder.WithAzureOpenAITextCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "invalid-api-key",
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
@@ -491,6 +496,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         kernelBuilder.WithAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);

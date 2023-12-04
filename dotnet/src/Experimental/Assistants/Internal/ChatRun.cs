@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -140,19 +139,24 @@ internal sealed class ChatRun
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var stringArguments = new KernelArguments();
+            var functionArguments = new KernelArguments();
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
                 foreach (var argument in arguments)
                 {
-                    stringArguments[argument.Key] = argument.Value.ToString();
+                    functionArguments[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await this._kernel.InvokeAsync(function, stringArguments, cancellationToken).ConfigureAwait(false);
+            var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
+            if (result.ValueType == typeof(AssistantResponse))
+            {
+                var response = result.GetValue<AssistantResponse>()!;
+                return response.Response ?? string.Empty;
+            }
 
-            return results.GetValue<string>() ?? string.Empty;
+            return result.GetValue<string>() ?? string.Empty;
         }
     }
 }

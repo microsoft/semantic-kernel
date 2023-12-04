@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +14,7 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionTests3
 {
+    private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
     private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class KernelFunctionTests3
         }
 
         // Assert
-        Assert.Equal(3, count);
+        Assert.Equal(2, count);
     }
 
     [Fact]
@@ -145,11 +145,6 @@ public sealed class KernelFunctionTests3
 
     private sealed class InvalidPlugin
     {
-        [KernelFunction]
-        public void Invalid1([KernelName("input"), Description("The x parameter")] string x, [KernelName("input"), Description("The y parameter")] string y)
-        {
-        }
-
         [KernelFunction]
         public void Invalid2(string y, CustomUnknownType n)
         {
@@ -260,21 +255,21 @@ public sealed class KernelFunctionTests3
         [KernelFunction]
         public FunctionResult ReturnsFunctionResult()
         {
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]
         public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]
         public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-            return new FunctionResult("fake-function-name", "fake-result", CultureInfo.InvariantCulture);
+            return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
         [KernelFunction]

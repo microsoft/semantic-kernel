@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// A response from an embedding request
 /// </summary>
+[Experimental("SKEXP0011")]
 public sealed class TextEmbeddingResponse
 {
     /// <summary>
