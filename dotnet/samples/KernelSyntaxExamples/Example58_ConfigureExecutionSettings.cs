@@ -8,14 +8,14 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example58_ConfigureRequestSettings
+public static class Example58_ConfigureExecutionSettings
 {
     /// <summary>
-    /// Show how to configure model request settings
+    /// Show how to configure model execution settings
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example58_ConfigureRequestSettings ========");
+        Console.WriteLine("======== Example58_ConfigureExecutionSettings ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -42,7 +42,7 @@ public static class Example58_ConfigureRequestSettings
         var prompt = "Hello AI, what can you do for me?";
 
         // Option 1:
-        // Invoke the prompt function and pass an OpenAI specific instance containing the request settings
+        // Invoke the prompt function and pass an OpenAI specific instance containing the execution settings
         var result = await kernel.InvokePromptAsync(
             prompt,
             new(new OpenAIPromptExecutionSettings()
@@ -53,9 +53,9 @@ public static class Example58_ConfigureRequestSettings
         Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
-        // Load prompt template configuration including the request settings from a JSON payload
+        // Load prompt template configuration including the execution settings from a JSON payload
         // Create the prompt functions using the prompt template and the configuration (loaded in the previous step)
-        // Invoke the prompt function using the implicitly set request settings
+        // Invoke the prompt function using the implicitly set execution settings
         string configPayload = @"{
           ""schema"": 1,
           ""name"": ""HelloAI"",

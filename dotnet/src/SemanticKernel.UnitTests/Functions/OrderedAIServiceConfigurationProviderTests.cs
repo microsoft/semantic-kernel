@@ -40,11 +40,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.NotNull(aiService);
-        Assert.Null(defaultRequestSettings);
+        Assert.Null(defaultExecutionSettings);
     }
 
     [Fact]
@@ -59,11 +59,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.NotNull(aiService);
-        Assert.Null(defaultRequestSettings);
+        Assert.Null(defaultExecutionSettings);
     }
 
     [Fact]
@@ -120,11 +120,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Null(defaultRequestSettings);
+        Assert.Null(defaultExecutionSettings);
     }
 
     [Fact]
@@ -142,11 +142,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultRequestSettings);
+        Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
     [Fact]
@@ -163,11 +163,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.Equal(kernel.GetService<ITextCompletion>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultRequestSettings);
+        Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
     [Theory]
@@ -193,11 +193,11 @@ public class OrderedAIServiceConfigurationProviderTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, function, new KernelArguments());
 
         // Assert
         Assert.Equal(kernel.GetService<ITextCompletion>(expectedServiceId), aiService);
-        Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
+        Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);
     }
 
     [Fact]
