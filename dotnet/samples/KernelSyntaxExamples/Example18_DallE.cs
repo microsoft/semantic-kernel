@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextToImage;
 using RepoUtils;
 
 /**
@@ -21,17 +21,17 @@ public static class Example18_DallE
 
     private static async Task OpenAIDallEAsync()
     {
-        Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
+        Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            // Add your image generation service
-            .WithOpenAIImageGeneration(TestConfiguration.OpenAI.ApiKey)
+            // Add your text to image service
+            .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
 
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
@@ -90,17 +90,17 @@ public static class Example18_DallE
 
     public static async Task AzureOpenAIDallEAsync()
     {
-        Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
+        Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            // Add your image generation service
-            .WithAzureOpenAIImageGeneration(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
+            // Add your text to image service
+            .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
+        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 
