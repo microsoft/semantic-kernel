@@ -292,7 +292,7 @@ public class FunctionFromPromptTests
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
         // Arrange
-        var mockTextGeneration = this.SetupStreamingMocks<StreamingContent>(
+        var mockTextGeneration = this.SetupStreamingMocks<StreamingContentBase>(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
         var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
@@ -309,24 +309,24 @@ public class FunctionFromPromptTests
 
         // Assert
         Assert.Equal(2, chunkCount);
-        mockTextGeneration.Verify(m => m.GetStreamingTextContentsAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        mockTextGeneration.Verify(m => m.GetStreamingTextContentsAsync(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
-    private (Mock<ITextResult> textResultMock, Mock<ITextGenerationService> textGenerationMock) SetupMocks(string? completionResult = null)
+    private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
 
-        var mockTextGeneration = new Mock<ITextGenerationService>();
-        mockTextGeneration.Setup(m => m.GetStreamingContentAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-        return (mockTextResult, mockTextGeneration);
+        var mockTextGenerationService = new Mock<ITextGenerationService>();
+        mockTextGenerationService.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        return (mockTextContent, mockTextGenerationService);
     }
 
-    private Mock<ITextCompletion> SetupStreamingMocks<T>(params StreamingTextContent[] streamingContents)
+    private Mock<ITextGenerationService> SetupStreamingMocks<T>(params StreamingTextContent[] streamingContents)
     {
-        var mockTextGeneration = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(streamingContents));
+        var mockTextGenerationService = new Mock<ITextGenerationService>();
+        mockTextGenerationService.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(streamingContents));
 
-        return mockTextGeneration;
+        return mockTextGenerationService;
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
