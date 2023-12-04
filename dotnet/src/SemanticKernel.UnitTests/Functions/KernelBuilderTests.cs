@@ -215,9 +215,9 @@ public class KernelBuilderTests
             .Build();
 
         Assert.IsType<OpenAIChatCompletion>(kernel.GetService<IChatCompletion>("openai"));
-        Assert.IsType<AzureOpenAITextGeneration>(kernel.GetService<ITextGeneration>("azureopenai"));
+        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetService<ITextGenerationService>("azureopenai"));
 
-        Assert.Equal(2, kernel.GetAllServices<ITextGeneration>().Count());
+        Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
         Assert.Single(kernel.GetAllServices<IChatCompletion>());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());

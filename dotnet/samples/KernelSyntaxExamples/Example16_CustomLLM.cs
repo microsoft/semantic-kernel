@@ -56,9 +56,9 @@ public static class Example16_CustomLLM
         {
             c.AddSingleton(ConsoleLogger.LoggerFactory)
             // Add your text generation service as a singleton instance
-            .AddKeyedSingleton<ITextGeneration>("myService1", new MyTextGenerationService())
+            .AddKeyedSingleton<ITextGenerationService>("myService1", new MyTextGenerationService())
             // Add your text generation service as a factory method
-            .AddKeyedSingleton<ITextGeneration>("myService2", (_, _) => new MyTextGenerationService());
+            .AddKeyedSingleton<ITextGenerationService>("myService2", (_, _) => new MyTextGenerationService());
         }).Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
@@ -90,13 +90,13 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        ITextGeneration textGeneration = new MyTextGenerationService();
+        ITextGenerationService textGeneration = new MyTextGenerationService();
 
         var prompt = "Write one paragraph why AI is awesome";
         await TextGenerationStreamAsync(prompt, textGeneration);
     }
 
-    private static async Task TextGenerationStreamAsync(string prompt, ITextGeneration textGeneration)
+    private static async Task TextGenerationStreamAsync(string prompt, ITextGenerationService textGeneration)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -116,7 +116,7 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
-    private sealed class MyTextGenerationService : ITextGeneration
+    private sealed class MyTextGenerationService : ITextGenerationService
     {
         public string? ModelId { get; private set; }
 

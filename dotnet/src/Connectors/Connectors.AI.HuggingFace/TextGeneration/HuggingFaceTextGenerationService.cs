@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 /// HuggingFace text generation service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextGeneration : ITextGeneration
+public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
@@ -30,12 +30,12 @@ public sealed class HuggingFaceTextGeneration : ITextGeneration
     private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextGeneration(Uri endpoint, string model)
+    public HuggingFaceTextGenerationService(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
@@ -49,7 +49,7 @@ public sealed class HuggingFaceTextGeneration : ITextGeneration
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// </summary>
     /// <param name="model">The name of the model to use for text generation.</param>
@@ -57,7 +57,7 @@ public sealed class HuggingFaceTextGeneration : ITextGeneration
     /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
     /// <param name="endpoint">The endpoint URL for the Hugging Face service.
     /// If not specified, the base address of the HTTP client is used. If the base address is not available, a default endpoint will be used.</param>
-    public HuggingFaceTextGeneration(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
+    public HuggingFaceTextGenerationService(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(model);
 

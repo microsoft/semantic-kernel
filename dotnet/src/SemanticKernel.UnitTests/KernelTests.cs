@@ -26,10 +26,10 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<IServiceProvider, ITextGeneration>>();
+        var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddSingleton<ITextGeneration>(factory.Object);
+            c.AddSingleton<ITextGenerationService>(factory.Object);
         }).Build();
 
         kernel.ImportPluginFromObject<MyPlugin>("mySk");

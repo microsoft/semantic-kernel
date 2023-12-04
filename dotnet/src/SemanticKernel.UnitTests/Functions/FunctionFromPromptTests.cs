@@ -22,7 +22,7 @@ public class FunctionFromPromptTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<IServiceProvider, ITextGeneration>>();
+        var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
         var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton(factory.Object);
@@ -41,7 +41,7 @@ public class FunctionFromPromptTests
     public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
     {
         // Arrange
-        var mockTextGeneration = new Mock<ITextGeneration>();
+        var mockTextGeneration = new Mock<ITextGenerationService>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextGeneration.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -72,8 +72,8 @@ public class FunctionFromPromptTests
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextGeneration1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -103,8 +103,8 @@ public class FunctionFromPromptTests
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
         var kernel = new KernelBuilder().WithServices(c =>
         {
@@ -129,7 +129,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -152,7 +152,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -176,7 +176,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -200,7 +200,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
@@ -226,7 +226,7 @@ public class FunctionFromPromptTests
     {
         // Arrange
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
@@ -248,7 +248,7 @@ public class FunctionFromPromptTests
     public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -271,7 +271,7 @@ public class FunctionFromPromptTests
     public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
         var (mockTextResult, mockTextGeneration) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
@@ -297,7 +297,7 @@ public class FunctionFromPromptTests
         var mockTextGeneration = this.SetupStreamingMocks<StreamingContent>(
             new TestStreamingContent("chunk1"),
             new TestStreamingContent("chunk2"));
-        var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGeneration>(mockTextGeneration.Object)).Build();
+        var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextGeneration.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new KernelArguments { { "input", "importance" } };
@@ -314,19 +314,19 @@ public class FunctionFromPromptTests
         mockTextGeneration.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
-    private (Mock<ITextResult> textResultMock, Mock<ITextGeneration> textGenerationMock) SetupMocks(string? completionResult = null)
+    private (Mock<ITextResult> textResultMock, Mock<ITextGenerationService> textGenerationMock) SetupMocks(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
         mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
 
-        var mockTextGeneration = new Mock<ITextGeneration>();
+        var mockTextGeneration = new Mock<ITextGenerationService>();
         mockTextGeneration.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
         return (mockTextResult, mockTextGeneration);
     }
 
-    private Mock<ITextGeneration> SetupStreamingMocks<T>(params T[] completionResults)
+    private Mock<ITextGenerationService> SetupStreamingMocks<T>(params T[] completionResults)
     {
-        var mockTextGeneration = new Mock<ITextGeneration>();
+        var mockTextGeneration = new Mock<ITextGenerationService>();
         mockTextGeneration.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(completionResults));
 
         return mockTextGeneration;

@@ -17,8 +17,8 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextGeneration1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -48,8 +48,8 @@ public class MultipleModelTests
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
         var kernel = new KernelBuilder().WithServices(c =>
         {
@@ -75,9 +75,9 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int[] callCount)
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
-        var mockTextGeneration3 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
+        var mockTextGeneration3 = new Mock<ITextGenerationService>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextGeneration1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
@@ -113,9 +113,9 @@ public class MultipleModelTests
     public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGeneration>();
-        var mockTextGeneration2 = new Mock<ITextGeneration>();
-        var mockTextGeneration3 = new Mock<ITextGeneration>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
+        var mockTextGeneration3 = new Mock<ITextGenerationService>();
         var mockCompletionResult = new Mock<ITextResult>();
 
         mockTextGeneration1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });

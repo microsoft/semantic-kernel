@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.AI.TextGeneration;
 /// <summary>
 /// Interface for text generation services
 /// </summary>
-public interface ITextGeneration : IAIService
+public interface ITextGenerationService : IAIService
 {
     /// <summary>
     /// Get completion results for the prompt and settings.

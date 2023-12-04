@@ -37,8 +37,8 @@ public static class HuggingFaceKernelBuilderExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-                new HuggingFaceTextGeneration(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+            c.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+                new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
         });
     }
 
@@ -61,8 +61,8 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(services);
         Verify.NotNull(model);
 
-        return services.AddKeyedSingleton<ITextGeneration>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextGeneration(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+        return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
 
     /// <summary>

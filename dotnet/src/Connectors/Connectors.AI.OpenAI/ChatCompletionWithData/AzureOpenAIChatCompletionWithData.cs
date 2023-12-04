@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextGeneration
+public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextGenerationService
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithData"/> class.

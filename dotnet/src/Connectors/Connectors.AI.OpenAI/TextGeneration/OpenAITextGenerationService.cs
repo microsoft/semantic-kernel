@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 /// <summary>
 /// OpenAI text generation service.
 /// </summary>
-public sealed class OpenAITextGeneration : ITextGeneration
+public sealed class OpenAITextGenerationService : ITextGenerationService
 {
     private readonly OpenAIClientCore _core;
 
@@ -27,14 +27,14 @@ public sealed class OpenAITextGeneration : ITextGeneration
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextGeneration(
+    public OpenAITextGenerationService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGeneration)));
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
@@ -46,12 +46,12 @@ public sealed class OpenAITextGeneration : ITextGeneration
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextGeneration(
+    public OpenAITextGenerationService(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextGeneration)));
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

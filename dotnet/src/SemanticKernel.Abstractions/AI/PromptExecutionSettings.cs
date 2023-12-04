@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
 /// Request settings for an AI request.
-/// Implementors of <see cref="ITextGeneration"/> or <see cref="IChatCompletion"/> can extend this
+/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletion"/> can extend this
 /// if the service they are calling supports additional properties. For an example please reference
 /// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIRequestSettings implementation.
 /// </summary>

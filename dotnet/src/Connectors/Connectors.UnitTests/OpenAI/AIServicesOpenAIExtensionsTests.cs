@@ -22,7 +22,7 @@ public class AIServicesOpenAIExtensionsTests
             .WithAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
             .Build();
 
-        Assert.NotNull(targetKernel.GetService<ITextGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("azure"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
     }
 
@@ -37,10 +37,10 @@ public class AIServicesOpenAIExtensionsTests
             .Build();
 
         // Assert
-        Assert.NotNull(targetKernel.GetService<ITextGeneration>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextGeneration>("oai"));
+        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("azure"));
+        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("oai"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextGeneration>("oai"));
+        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("oai"));
     }
 
     [Fact]
@@ -71,17 +71,17 @@ public class AIServicesOpenAIExtensionsTests
             c.AddOpenAIImageGeneration("model", "key", serviceId: "one");
             c.AddOpenAIImageGeneration("model", "key", serviceId: "one");
 
-            c.AddSingleton(new OpenAITextGeneration("model", "key"));
-            c.AddSingleton(new OpenAITextGeneration("model", "key"));
+            c.AddSingleton(new OpenAITextGenerationService("model", "key"));
+            c.AddSingleton(new OpenAITextGenerationService("model", "key"));
 
-            c.AddSingleton((_) => new OpenAITextGeneration("model", "key"));
-            c.AddSingleton((_) => new OpenAITextGeneration("model", "key"));
+            c.AddSingleton((_) => new OpenAITextGenerationService("model", "key"));
+            c.AddSingleton((_) => new OpenAITextGenerationService("model", "key"));
 
-            c.AddKeyedSingleton<ITextGeneration>("one", new OpenAITextGeneration("model", "key"));
-            c.AddKeyedSingleton<ITextGeneration>("one", new OpenAITextGeneration("model", "key"));
+            c.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService("model", "key"));
+            c.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService("model", "key"));
 
-            c.AddKeyedSingleton<ITextGeneration>("one", (_, _) => new OpenAITextGeneration("model", "key"));
-            c.AddKeyedSingleton<ITextGeneration>("one", (_, _) => new OpenAITextGeneration("model", "key"));
+            c.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService("model", "key"));
+            c.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService("model", "key"));
         }).Build();
     }
 }

@@ -211,10 +211,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(ITextGeneration, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.GetService<IAIServiceSelector>();
-        (var textGeneration, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextGeneration>(kernel, this, arguments);
+        (var textGeneration, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         Verify.NotNull(textGeneration);
 
         arguments.ExecutionSettings ??= defaultRequestSettings;

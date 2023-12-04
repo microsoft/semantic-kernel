@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// <summary>
 /// Azure OpenAI chat completion client.
 /// </summary>
-public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextGeneration
+public sealed class AzureOpenAIChatCompletion : IChatCompletion, ITextGenerationService
 {
     /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
     private readonly AzureOpenAIClientCore _core;

@@ -26,7 +26,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        var textGeneration = new AzureOpenAITextGeneration(
+        var textGeneration = new AzureOpenAITextGenerationService(
             TestConfiguration.AzureOpenAI.DeploymentName,
             TestConfiguration.AzureOpenAI.ModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
@@ -39,12 +39,12 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textGeneration = new OpenAITextGeneration("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAITextGenerationService("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
 
         await TextGenerationStreamAsync(textGeneration);
     }
 
-    private static async Task TextGenerationStreamAsync(ITextGeneration textGeneration)
+    private static async Task TextGenerationStreamAsync(ITextGenerationService textGeneration)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {

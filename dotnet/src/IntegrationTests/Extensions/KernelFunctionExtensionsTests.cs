@@ -27,7 +27,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextGeneration()))
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -45,7 +45,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGeneration>(new RedirectTextGeneration()))
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -65,13 +65,13 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextGeneration : ITextGeneration
+    private sealed class RedirectTextGenerationService : ITextGenerationService
     {
         public string? ModelId => null;
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextGeneration.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextGenerationService.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextResult(prompt) });
         }

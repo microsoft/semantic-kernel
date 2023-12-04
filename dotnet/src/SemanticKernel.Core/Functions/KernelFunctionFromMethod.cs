@@ -122,7 +122,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
-        ITextGeneration? textGeneration,
+        ITextGenerationService? textGeneration,
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
@@ -199,7 +199,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextGeneration? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextGenerationService? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();

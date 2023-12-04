@@ -67,7 +67,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public int ResultsPerPrompt { get; set; } = 1;
 
     /// <summary>
-    /// The system prompt to use when generating text generations using a chat model.
+    /// The system prompt to use when generating text using a chat model.
     /// Defaults to "Assistant is a large language model."
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
