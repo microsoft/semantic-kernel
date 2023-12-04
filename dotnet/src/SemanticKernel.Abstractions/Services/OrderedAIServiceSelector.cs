@@ -18,7 +18,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
     {
         var executionSettings = function.ExecutionSettings;
-        if (executionSettings is null || !executionSettings.Any())
+        if (executionSettings is null || executionSettings.Count == 0)
         {
             var service = kernel.Services is IKeyedServiceProvider ?
                 kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
