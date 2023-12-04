@@ -3,9 +3,9 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Web;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'Form' style.

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// The REST API operation parameter.
