@@ -295,110 +295,72 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (static (Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
-        // Handle function arguments
+        // Handle the other types. These can each show up multiple times in the method signature.
 
-        if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
+        string name = SanitizeMetadataName(parameter.Name ?? "");
+        bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
+        ThrowForInvalidSignatureIf(string.IsNullOrWhiteSpace(name), method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
+        ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
+
+        bool fallBackToInput = !sawFirstParameter && !nameIsInput;
+
+        var parser = GetParser(type);
+
+        object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
         {
-            string name = SanitizeMetadataName(parameter.Name ?? "");
-            bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
-            ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
-            ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
-
-            // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
-            // or an override from an applied SKParameter attribute. Note that a default value may be null.
-            DefaultValueAttribute? defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
-            bool hasDefaultValue = defaultValueAttribute is not null;
-            object? defaultValue = defaultValueAttribute?.Value;
-            if (!hasDefaultValue && parameter.HasDefaultValue)
+            // 1. Use the value of the variable if it exists.
+            if (arguments.TryGetValue(name, out object? value))
             {
-                hasDefaultValue = true;
-                defaultValue = parameter.DefaultValue;
+                return Process(value);
             }
 
-            if (hasDefaultValue)
+            // 2. Otherwise, use the default value if there is one, sourced either from an attribute or the parameter's default.
+            if (parameter.HasDefaultValue)
             {
-                // If we got a default value, make sure it's of the right type. This currently supports
-                // null values if the target type is a reference type or a Nullable<T>, strings,
-                // anything that can be parsed from a string via a registered TypeConverter,
-                // and a value that's already the same type as the parameter.
-                if (defaultValue is string defaultStringValue && defaultValue.GetType() != typeof(string))
-                {
-                    // Invariant culture is used here as this value comes from the C# source
-                    // and it should be deterministic across cultures.
-                    defaultValue = parser(defaultStringValue, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    ThrowForInvalidSignatureIf(
-                        defaultValue is null && type.IsValueType && Nullable.GetUnderlyingType(type) is null,
-                        method,
-                        $"Type {type} is a non-nullable value type but a null default value was specified.");
-                    ThrowForInvalidSignatureIf(
-                        defaultValue is not null && !type.IsAssignableFrom(defaultValue.GetType()),
-                        method,
-                        $"Default value {defaultValue} for parameter {name} is not assignable to type {type}.");
-                }
+                return parameter.DefaultValue;
             }
 
-            bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
+            // 3. Otherwise, use "input" if this is the first (or only) parameter.
+            if (fallBackToInput)
             {
-                // 1. Use the value of the variable if it exists.
-                if (arguments.TryGetValue(name, out string? value))
+                arguments.TryGetValue(KernelArguments.InputParameterName, out object? input);
+                return Process(input);
+            }
+
+            // 4. Otherwise, fail.
+            throw new KernelException($"Missing value for parameter '{name}'",
+                new ArgumentException("Missing value function parameter", name));
+
+            object? Process(object? value)
+            {
+                //Converting string argument to target parameter type
+                if (value is string stringValue && value.GetType() != type && parser is Func<string?, CultureInfo, object>)
                 {
-                    return Process(value);
-                }
-
-                // 2. Otherwise, use the default value if there is one, sourced either from an attribute or the parameter's default.
-                if (hasDefaultValue)
-                {
-                    return defaultValue;
-                }
-
-                // 3. Otherwise, use "input" if this is the first (or only) parameter.
-                if (fallBackToInput)
-                {
-                    arguments.TryGetValue(KernelArguments.InputParameterName, out string? input);
-                    return Process(input);
-                }
-
-                // 4. Otherwise, fail.
-                throw new KernelException($"Missing value for parameter '{name}'",
-                    new ArgumentException("Missing value function parameter", name));
-
-                object? Process(string? value)
-                {
-                    if (type == typeof(string))
-                    {
-                        return value;
-                    }
-
                     try
                     {
-                        return parser(value, kernel.Culture);
+                        return parser(stringValue, kernel.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
                         throw new ArgumentOutOfRangeException(name, value, e.Message);
                     }
                 }
+
+                return value;
             }
-
-            sawFirstParameter = true;
-
-            var parameterView = new KernelParameterMetadata(name)
-            {
-                Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                DefaultValue = defaultValue?.ToString(),
-                IsRequired = !parameter.IsOptional,
-                ParameterType = type
-            };
-
-            return (parameterFunc, parameterView);
         }
 
-        // Fail for unknown parameter types.
-        throw GetExceptionForInvalidSignature(method, $"Unknown parameter type {parameter.ParameterType}");
+        sawFirstParameter = true;
+
+        var parameterView = new KernelParameterMetadata(name)
+        {
+            Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+            DefaultValue = parameter.DefaultValue?.ToString(),
+            IsRequired = !parameter.IsOptional,
+            ParameterType = type
+        };
+
+        return (parameterFunc, parameterView);
     }
 
     /// <summary>
@@ -650,7 +612,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 };
             }
 
-            // Finally, look up and use a type converter.  Again, special-case null if it was actually Nullable<T>.
+            // Finally, look up and use a type converter. Again, special-case null if it was actually Nullable<T>.
             if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
             {
                 return (input, cultureInfo) =>
