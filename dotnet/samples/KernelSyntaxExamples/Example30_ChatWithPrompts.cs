@@ -98,7 +98,7 @@ public static class Example30_ChatWithPrompts
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
-        var chatGPT = kernel.GetService<IChatCompletionService>();
+        var chatCompletion = kernel.GetService<IChatCompletionService>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
@@ -109,7 +109,7 @@ public static class Example30_ChatWithPrompts
         chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
-        var answer = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
         Console.WriteLine($"------------------------------------\n{answer}");
 
         /*
