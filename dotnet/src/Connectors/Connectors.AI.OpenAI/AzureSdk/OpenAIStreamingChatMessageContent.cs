@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
