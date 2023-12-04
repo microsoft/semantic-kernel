@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -36,28 +35,6 @@ internal sealed class OpenAIImageGenerationClientCore
     /// Storage for AI service attributes.
     /// </summary>
     internal Dictionary<string, object?> Attributes { get; } = new();
-
-    /// <summary>
-    /// Asynchronously sends a text embedding request for the text.
-    /// </summary>
-    /// <param name="url">URL for the text embedding request API</param>
-    /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>List of text embeddings</returns>
-    [Experimental("SKEXP0011")]
-    internal async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
-        string url,
-        string requestBody,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
-        if (result.Embeddings is not { Count: >= 1 })
-        {
-            throw new KernelException("Embeddings not found");
-        }
-
-        return result.Embeddings.Select(e => e.Values).ToList();
-    }
 
     /// <summary>
     /// Run the HTTP request to generate a list of images
@@ -126,7 +103,7 @@ internal sealed class OpenAIImageGenerationClientCore
         }
 
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        RequestCreated?.Invoke(this, request);
+        this.RequestCreated?.Invoke(this, request);
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
