@@ -31,7 +31,7 @@ public static class Example66_FunctionCallingStepwisePlanner
 
         foreach (var question in questions)
         {
-            FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(question, kernel);
+            FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(kernel, question);
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.

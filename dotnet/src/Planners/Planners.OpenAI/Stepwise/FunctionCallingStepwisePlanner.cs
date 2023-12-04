@@ -28,19 +28,19 @@ public sealed class FunctionCallingStepwisePlanner
         this.Config = config ?? new();
         this._generatePlanYaml = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
-        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
+        this.Config.ExcludedPlugins.Add(StepwisePlannerPluginName);
     }
 
     /// <summary>
     /// Execute a plan
     /// </summary>
-    /// <param name="question">The question to answer</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="question">The question to answer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result containing the model's response message and chat history.</returns>
     public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
-        string question,
         Kernel kernel,
+        string question,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(question);
@@ -51,7 +51,7 @@ public sealed class FunctionCallingStepwisePlanner
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
         var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 
-        // Clone the kernel and modify it to add the final answer function
+        // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
         clonedKernel.ImportPluginFromObject<UserInteraction>();
 
@@ -158,7 +158,7 @@ public sealed class FunctionCallingStepwisePlanner
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml, pluginName: RestrictedPluginName);
+        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml, pluginName: StepwisePlannerPluginName);
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {
@@ -302,7 +302,7 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
-    private const string RestrictedPluginName = "FunctionCallingStepwisePlanner_Excluded";
+    private const string StepwisePlannerPluginName = "StepwisePlanner_Excluded";
 
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
