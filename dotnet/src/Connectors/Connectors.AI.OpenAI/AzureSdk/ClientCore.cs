@@ -629,7 +629,7 @@ internal abstract class ClientCore
                 }
                 else
                 {
-                    azureMessage.Name = name;
+                    azureMessage.Name = name?.ToString();
                 }
             }
 
