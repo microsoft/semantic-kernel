@@ -573,7 +573,7 @@ public sealed class PlanTests : IDisposable
             }
             else
             {
-                c.AddAzureOpenAITextCompletion(
+                c.AddAzureOpenAITextGeneration(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);

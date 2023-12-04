@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
-/// Interface for text completion services
+/// Interface for text generation services
 /// </summary>
-public interface ITextCompletion : IAIService
+public interface ITextGenerationService : IAIService
 {
     /// <summary>
     /// Get completion results for the prompt and settings.
