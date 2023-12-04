@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
-/// Represents chat message content return from a <see cref="IChatCompletion" /> service.
+/// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
 public class ChatMessageContent : ContentBase
 {
