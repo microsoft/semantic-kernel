@@ -116,7 +116,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
+        var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
         using var request = this.GetRequest(chat, openAIExecutionSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -178,7 +178,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -267,6 +267,14 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)
     {
+        // The system role as the unique message is not allowed in the With Data APIs.
+        // This avoids the error: Invalid message request body. Learn how to use Completions extension API, please refer to https://learn.microsoft.com/azure/ai-services/openai/reference#completions-extensions
+        if (chat.Count == 1 && chat[0].Role == AuthorRole.System)
+        {
+            // Converts a system message to a user message if is the unique message in the chat.
+            chat[0].Role = AuthorRole.User;
+        }
+
         return chat
             .Select(message => new ChatWithDataMessage
             {

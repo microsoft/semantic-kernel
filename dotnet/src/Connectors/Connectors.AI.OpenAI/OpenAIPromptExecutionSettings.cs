@@ -170,7 +170,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromRequestSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         var requestSettings = FromExecutionSettings(executionSettings, defaultMaxTokens);
 
