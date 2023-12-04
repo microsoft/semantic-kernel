@@ -1123,8 +1123,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
-                new AzureOpenAITextToImage(
+            c.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+                new AzureOpenAITextToImageService(
                     endpoint,
                     modelId,
                     apiKey,
@@ -1157,8 +1157,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextToImage(
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
                 endpoint,
                 modelId,
                 apiKey,
@@ -1189,8 +1189,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
-                new OpenAITextToImage(
+            c.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+                new OpenAITextToImageService(
                     apiKey,
                     orgId,
                     HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -1215,8 +1215,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextToImage>(serviceId, (serviceProvider, _) =>
-            new OpenAITextToImage(
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToImageService(
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),

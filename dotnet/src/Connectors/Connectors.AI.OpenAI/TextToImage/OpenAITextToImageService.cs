@@ -14,10 +14,10 @@ using Microsoft.SemanticKernel.AI.TextToImage;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// A class for generating images using OpenAI's API.
+/// OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class OpenAITextToImage : ITextToImage
+public sealed class OpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAITextToImageClientCore _core;
 
@@ -37,13 +37,13 @@ public sealed class OpenAITextToImage : ITextToImage
     private readonly string _authorizationHeaderValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToImage"/> class.
+    /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToImage(
+    public OpenAITextToImageService(
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
@@ -53,7 +53,7 @@ public sealed class OpenAITextToImage : ITextToImage
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToImage)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToImageService)));
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
 
         this._core.RequestCreated += (_, request) =>

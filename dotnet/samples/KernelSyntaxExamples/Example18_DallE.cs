@@ -31,7 +31,7 @@ public static class Example18_DallE
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        ITextToImage dallE = kernel.GetService<ITextToImage>();
+        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
 
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
@@ -100,7 +100,7 @@ public static class Example18_DallE
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        ITextToImage dallE = kernel.GetService<ITextToImage>();
+        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 

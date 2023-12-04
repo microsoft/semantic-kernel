@@ -15,11 +15,11 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Azure OpenAI text to image
+/// Azure OpenAI text to image service
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class AzureOpenAITextToImage : ITextToImage
+public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAITextToImageClientCore _core;
 
@@ -63,7 +63,7 @@ public sealed class AzureOpenAITextToImage : ITextToImage
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAITextToImage(
+    public AzureOpenAITextToImageService(
         string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -78,7 +78,7 @@ public sealed class AzureOpenAITextToImage : ITextToImage
         maxRetryCount ??= 5;
         apiVersion ??= "2023-06-01-preview";
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImage)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)));
 
         this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;

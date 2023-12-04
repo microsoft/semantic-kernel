@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.AI.TextToImage;
 /// Interface for text to image services
 /// </summary>
 [Experimental("SKEXP0002")]
-public interface ITextToImage : IAIService
+public interface ITextToImageService : IAIService
 {
     /// <summary>
     /// Generate an image matching the given description

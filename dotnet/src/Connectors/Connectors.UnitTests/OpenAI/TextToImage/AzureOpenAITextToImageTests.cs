@@ -67,7 +67,7 @@ public sealed class AzureOpenAITextToImageTests
         using var imageResult = CreateResponseMessage(HttpStatusCode.OK, "image_result_test_response.json");
         using var mockHttpClient = GetHttpClientMock(generateResult, imageResult);
 
-        var generation = new AzureOpenAITextToImage("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
+        var generation = new AzureOpenAITextToImageService("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
 
         //Act
         var result = await generation.GenerateImageAsync("description", 256, 256);
