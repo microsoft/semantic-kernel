@@ -3,7 +3,7 @@
 using System.IO;
 using System.Resources;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
 
 internal static class ResourceResponseProvider
 {

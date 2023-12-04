@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <see cref="PromptTemplateConfig"/> will iterate through the aggregated factories, using
 /// the result from the first to successfully handle the supplied configuration.
 /// /// </remarks>
-public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
+public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory?[] _promptTemplateFactories;
 

@@ -4,8 +4,8 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming

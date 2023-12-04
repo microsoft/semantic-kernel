@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Plugins.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class JsonPathPluginTests
 {

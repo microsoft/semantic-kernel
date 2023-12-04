@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 /// <summary>
 /// Contains helper methods for OpenAPI related tests.
