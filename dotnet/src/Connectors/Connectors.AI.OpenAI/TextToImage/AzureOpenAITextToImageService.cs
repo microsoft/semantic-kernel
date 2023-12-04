@@ -9,19 +9,19 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// Azure OpenAI Image generation
+/// Azure OpenAI text to image service
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class AzureOpenAIImageGeneration : IImageGeneration
+public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
-    private readonly OpenAIImageGenerationClientCore _core;
+    private readonly OpenAITextToImageClientCore _core;
 
     /// <summary>
     /// Generation Image Operation path
@@ -44,7 +44,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     private readonly string _apiKey;
 
     /// <summary>
-    /// Maximum number of attempts to retrieve the image generation operation result.
+    /// Maximum number of attempts to retrieve the text to image operation result.
     /// </summary>
     private readonly int _maxRetryCount;
 
@@ -54,16 +54,16 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     private readonly string _apiVersion;
 
     /// <summary>
-    /// Create a new instance of Azure OpenAI image generation service
+    /// Create a new instance of Azure OpenAI text to image service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
-    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(
+    public AzureOpenAITextToImageService(
         string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -78,7 +78,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
         maxRetryCount ??= 5;
         apiVersion ??= "2023-06-01-preview";
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIImageGeneration)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)));
 
         this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;
@@ -97,31 +97,31 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
-        var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
+        var operationId = await this.StartTextToImageAsync(description, width, height, cancellationToken).ConfigureAwait(false);
+        var result = await this.GetTextToImageResultAsync(operationId, cancellationToken).ConfigureAwait(false);
 
         if (result.Result is null)
         {
-            throw new KernelException("Azure OpenAI Image Generation null response");
+            throw new KernelException("Azure OpenAI Text To Image null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new KernelException("Azure OpenAI Image Generation result not found");
+            throw new KernelException("Azure OpenAI Text To Image result not found");
         }
 
         return result.Result.Images.First().Url;
     }
 
     /// <summary>
-    /// Start an image generation task
+    /// Start an text to image task
     /// </summary>
     /// <param name="description">Image description</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns> The operationId that identifies the original image generation request. </returns>
-    private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    /// <returns> The operationId that identifies the original text to image request. </returns>
+    private async Task<string> StartTextToImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))
@@ -129,7 +129,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new TextToImageRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
@@ -137,7 +137,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
         });
 
         var uri = this.GetUri(GenerationImageOperation);
-        var result = await this._core.ExecutePostRequestAsync<AzureOpenAIImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this._core.ExecutePostRequestAsync<AzureOpenAITextToImageResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
@@ -148,12 +148,12 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
     }
 
     /// <summary>
-    /// Retrieve the results of an image generation operation.
+    /// Retrieve the results of an text to image operation.
     /// </summary>
-    /// <param name="operationId">The operationId that identifies the original image generation request.</param>
+    /// <param name="operationId">The operationId that identifies the original text to image request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    private async Task<AzureOpenAIImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
+    private async Task<AzureOpenAITextToImageResponse> GetTextToImageResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
         var operationLocation = this.GetUri(GetImageOperation, operationId);
 
@@ -168,7 +168,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
 
             using var response = await this._core.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
             var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-            var result = OpenAIImageGenerationClientCore.JsonDeserialize<AzureOpenAIImageGenerationResponse>(responseJson);
+            var result = OpenAITextToImageClientCore.JsonDeserialize<AzureOpenAITextToImageResponse>(responseJson);
 
             if (result.Status.Equals(AzureOpenAIImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
             {
@@ -176,7 +176,7 @@ public sealed class AzureOpenAIImageGeneration : IImageGeneration
             }
             else if (this.IsFailedOrCancelled(result.Status))
             {
-                throw new KernelException($"Azure OpenAI image generation {result.Status}");
+                throw new KernelException($"Azure OpenAI text to image {result.Status}");
             }
 
             if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))

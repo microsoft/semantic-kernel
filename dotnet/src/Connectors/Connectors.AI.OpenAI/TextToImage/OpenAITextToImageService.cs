@@ -9,17 +9,17 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextToImage;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
-/// A class for generating images using OpenAI's API.
+/// OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class OpenAIImageGeneration : IImageGeneration
+public sealed class OpenAITextToImageService : ITextToImageService
 {
-    private readonly OpenAIImageGenerationClientCore _core;
+    private readonly OpenAITextToImageClientCore _core;
 
     /// <summary>
     /// OpenAI REST API endpoint
@@ -37,13 +37,13 @@ public sealed class OpenAIImageGeneration : IImageGeneration
     private readonly string _authorizationHeaderValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIImageGeneration"/> class.
+    /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAIImageGeneration(
+    public OpenAITextToImageService(
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
@@ -53,7 +53,7 @@ public sealed class OpenAIImageGeneration : IImageGeneration
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(OpenAIImageGeneration)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(this.GetType()));
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
 
         this._core.RequestCreated += (_, request) =>
@@ -84,7 +84,7 @@ public sealed class OpenAIImageGeneration : IImageGeneration
     private async Task<string> GenerateImageAsync(
         string description,
         int width, int height,
-        string format, Func<ImageGenerationResponse.Image, string> extractResponse,
+        string format, Func<TextToImageResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
         Debug.Assert(width == height);
@@ -92,7 +92,7 @@ public sealed class OpenAIImageGeneration : IImageGeneration
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
-        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new TextToImageRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
