@@ -16,7 +16,7 @@ public static class ChatCompletionExtensions
     /// </summary>
     /// <param name="chatCompletion">The target IChatCompletion interface to extend.</param>
     /// <param name="chat">The chat history.</param>
-    /// <param name="executionSettings">The AI request settings (optional).</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The asynchronous cancellation token (optional).</param>
     /// <remarks>This extension does not support multiple prompt results (only the first will be returned).</remarks>

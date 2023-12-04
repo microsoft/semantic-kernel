@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,11 +16,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlanner
 {
-    /// <summary>
-    /// Gets the stopwatch used for measuring planning time.
-    /// </summary>
-    public Stopwatch Stopwatch { get; } = new();
-
     private readonly HandlebarsPlannerConfig _config;
 
     /// <summary>
@@ -208,7 +202,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var arguments = new Dictionary<string, object?>()
+        var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },

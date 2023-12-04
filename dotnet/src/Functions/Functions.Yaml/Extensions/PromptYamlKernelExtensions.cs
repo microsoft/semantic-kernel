@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Functions.Yaml.Functions;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>

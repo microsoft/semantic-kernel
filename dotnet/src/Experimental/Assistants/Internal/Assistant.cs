@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -81,11 +80,10 @@ internal sealed class Assistant : IAssistant
         this._model = model;
         this._restContext = restContext;
 
-        var builder =
+        this.Kernel =
             new KernelBuilder()
-                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
-
-        this.Kernel = builder.Build();
+                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .Build();
 
         if (plugins is not null)
         {
@@ -111,13 +109,14 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [KernelFunction, Description("Provide input to assistant a response")]
+    [KernelFunction, Description("Provide user message to assistant and retrieve the assistant response.")]
     public async Task<AssistantResponse> AskAsync(
-        [Description("The input for the assistant.")]
+        [Description("The user message provided to the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
     {
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+
         await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
         var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
         var response =

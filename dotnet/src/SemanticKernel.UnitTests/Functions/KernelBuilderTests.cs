@@ -35,9 +35,9 @@ public class KernelBuilderTests
         Assert.Same(builder, builder.WithCulture(CultureInfo.InvariantCulture));
         Assert.Same(builder, builder.WithLoggerFactory(NullLoggerFactory.Instance));
         Assert.Same(builder, builder.WithAIServiceSelector(null));
-        Assert.Same(builder, builder.ConfigurePlugins(plugins => { }));
-        Assert.Same(builder, builder.ConfigurePlugins((serviceProvider, plugins) => { }));
-        Assert.Same(builder, builder.ConfigureServices(services => { }));
+        Assert.Same(builder, builder.WithPlugins(plugins => { }));
+        Assert.Same(builder, builder.WithPlugins((plugins, serviceProvider) => { }));
+        Assert.Same(builder, builder.WithServices(services => { }));
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class KernelBuilderTests
         IKernelPlugin plugin2 = new KernelPlugin("plugin2");
 
         Kernel kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
+            .WithPlugins(plugins =>
             {
                 Assert.NotNull(plugins);
                 Assert.Empty(plugins);
@@ -136,13 +136,13 @@ public class KernelBuilderTests
 
         // Delegate taking just plugins
         Kernel kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
+            .WithPlugins(plugins =>
             {
                 Assert.NotNull(plugins);
                 Assert.Empty(plugins);
                 plugins.Add(plugin1);
             })
-            .ConfigurePlugins(plugins =>
+            .WithPlugins(plugins =>
             {
                 Assert.Single(plugins);
                 plugins.Add(plugin2);
@@ -153,13 +153,13 @@ public class KernelBuilderTests
 
         // Delegate taking just serviceProvider and plugins
         kernel = new KernelBuilder()
-            .ConfigurePlugins((_, plugins) =>
+            .WithPlugins((plugins, _) =>
             {
                 Assert.NotNull(plugins);
                 Assert.Empty(plugins);
                 plugins.Add(plugin1);
             })
-            .ConfigurePlugins((_, plugins) =>
+            .WithPlugins((plugins, _) =>
             {
                 Assert.Single(plugins);
                 plugins.Add(plugin2);
@@ -170,13 +170,13 @@ public class KernelBuilderTests
 
         // Both combined
         kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
+            .WithPlugins(plugins =>
             {
                 Assert.NotNull(plugins);
                 Assert.Empty(plugins);
                 plugins.Add(plugin1);
             })
-            .ConfigurePlugins((_, plugins) =>
+            .WithPlugins((plugins, _) =>
             {
                 Assert.Single(plugins);
                 plugins.Add(plugin2);
@@ -193,7 +193,7 @@ public class KernelBuilderTests
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
-            .ConfigurePlugins((serviceProvider, plugins) =>
+            .WithPlugins((plugins, serviceProvider) =>
             {
                 Assert.Same(loggerFactory, serviceProvider.GetService(typeof(ILoggerFactory)));
             })
@@ -204,9 +204,9 @@ public class KernelBuilderTests
     public void ItBuildsServicesIntoKernel()
     {
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithAzureOpenAITextCompletion("hijk", "https://lmnop", "qrs", serviceId: "azureopenai")
-            .ConfigureServices(services =>
+            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .WithAzureOpenAITextCompletion(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai")
+            .WithServices(services =>
             {
                 services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
                 services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -227,14 +227,14 @@ public class KernelBuilderTests
     public void ItSupportsMultipleEqualNamedServices()
     {
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
+            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
             .Build();
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletion>().Count());
@@ -245,9 +245,9 @@ public class KernelBuilderTests
     {
         KernelBuilder builder = new();
 
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigurePlugins((Action<ICollection<IKernelPlugin>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigurePlugins((Action<IServiceProvider, ICollection<IKernelPlugin>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigureServices(null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithPlugins((Action<KernelPluginCollection>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithPlugins((Action<KernelPluginCollection, IServiceProvider>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.WithServices(null!));
 
         builder.WithLoggerFactory(null);
         builder.WithCulture(null);
@@ -262,10 +262,10 @@ public class KernelBuilderTests
         KernelPluginCollection plugins = new() { new KernelPlugin("plugin1") };
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop", serviceId: "azureopenai1");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop", serviceId: "azureopenai2");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai1");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai2");
         serviceCollection.AddSingleton(plugins);
         serviceCollection.AddSingleton<Kernel>();
 
@@ -282,5 +282,24 @@ public class KernelBuilderTests
         // brings in the new version, it can update the GetAllServices implementation to remove the workaround,
         // and then this test should be updated accordingly.
         Assert.Equal(2, k.GetAllServices<IChatCompletion>().Count());
+
+        // It's possible to explicitly use the same workaround outside of KernelBuilder to get all services,
+        // but it's not recommended.
+
+        //** WORKAROUND
+        Dictionary<Type, HashSet<object?>> mapping = new();
+        foreach (var descriptor in serviceCollection)
+        {
+            if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
+            {
+                mapping[descriptor.ServiceType] = keys = new HashSet<object?>();
+            }
+            keys.Add(descriptor.ServiceKey);
+        }
+        serviceCollection.AddKeyedSingleton<Dictionary<Type, HashSet<object?>>>("KernelServiceTypeToKeyMappings", mapping);
+        //**
+
+        k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
+        Assert.Equal(4, k.GetAllServices<IChatCompletion>().Count()); // now this is 4 as expected
     }
 }

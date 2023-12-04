@@ -33,7 +33,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -54,7 +54,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         string deploymentName,
         string endpoint,
         TokenCredential credential,
-        string? modelId = null,
+        string modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -73,7 +73,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     public AzureOpenAITextCompletion(
         string deploymentName,
         OpenAIClient openAIClient,
-        string? modelId = null,
+        string modelId,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));

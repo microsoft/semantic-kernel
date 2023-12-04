@@ -2,9 +2,9 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'SpaceDelimited' style.

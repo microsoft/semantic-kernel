@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
 /**
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
@@ -24,11 +24,11 @@ public static class Example59_OpenAIFunctionCalling
         // Create kernel with chat completions service and plugins
         Kernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .ConfigureServices(services =>
+            .WithServices(services =>
             {
                 services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
             })
-            .ConfigurePlugins(plugins =>
+            .WithPlugins(plugins =>
             {
                 plugins.AddPluginFromObject<TimePlugin>();
                 plugins.AddPluginFromObject<WidgetPlugin>();
