@@ -31,7 +31,7 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(GetCompletionWithDataConfig());
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
         var chatHistory = new ChatHistory();
 
         // First question without previous context based on uploaded content.
