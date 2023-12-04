@@ -202,7 +202,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var arguments = new Dictionary<string, object?>()
+        var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },

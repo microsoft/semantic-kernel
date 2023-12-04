@@ -52,9 +52,9 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
-    private Dictionary<string, string> GetVariables(KernelArguments? arguments)
+    private Dictionary<string, object?> GetVariables(KernelArguments? arguments)
     {
-        Dictionary<string, string> result = new();
+        Dictionary<string, object?> result = new();
 
         foreach (var p in this._promptModel.InputParameters)
         {

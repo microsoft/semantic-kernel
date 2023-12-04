@@ -161,9 +161,11 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("SayHello", optionsJson.GetProperty("messages")[0].GetProperty("name").GetString());
         Assert.Equal("SayHello", optionsJson.GetProperty("messages")[0].GetProperty("function_call").GetProperty("name").GetString());
         Assert.Equal("{ \"user\": \"John Doe\" }", optionsJson.GetProperty("messages")[0].GetProperty("function_call").GetProperty("arguments").GetString());
+
+        // When both name and arguments are present, name should only be included in the function_call property.
+        Assert.Throws<KeyNotFoundException>(() => optionsJson.GetProperty("messages")[0].GetProperty("name"));
     }
 
     public void Dispose()
