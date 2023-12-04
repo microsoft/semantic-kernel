@@ -152,7 +152,7 @@ internal sealed class RestApiOperationRunner
                 return stringValue;
             }
 
-            throw new KernelException($"Rest API operation '{operation.Id}' runner arguments must be of type string. Argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+            throw new KernelException($"Non-string OpenApi operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Id}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
         });
     }
 

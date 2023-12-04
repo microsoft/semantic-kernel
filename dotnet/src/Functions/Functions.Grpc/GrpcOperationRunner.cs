@@ -101,7 +101,7 @@ internal sealed class GrpcOperationRunner
                 return stringValue;
             }
 
-            throw new KernelException($"gRPC operation '{operation.Name}' arguments must be of type string. Argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+            throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
         });
     }
 

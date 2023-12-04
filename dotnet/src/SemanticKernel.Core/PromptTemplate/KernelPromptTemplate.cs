@@ -159,7 +159,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
                 continue;
             }
 
-            throw new KernelException($"Kernel prompt template arguments must be of type string. Argument '{argument.Key}' is of type '{argument.Value?.GetType()}'");
+            throw new KernelException($"Non-string kernel prompt template arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Argument '{argument.Key}' is of type '{argument.Value?.GetType()}'.");
         }
     }
 
