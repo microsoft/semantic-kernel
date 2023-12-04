@@ -314,7 +314,7 @@ public static class KernelExtensions
 
             // Load prompt template
             promptConfig.Template = File.ReadAllText(promptPath);
-            IPromptTemplate? promptTemplateInstance = factory.Create(promptConfig);
+            IPromptTemplate promptTemplateInstance = factory.Create(promptConfig);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {

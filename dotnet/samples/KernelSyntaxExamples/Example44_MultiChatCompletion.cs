@@ -49,7 +49,7 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIPromptExecutionSettings()
+        var chatExecutionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
@@ -59,7 +59,7 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory, chatRequestSettings))
+        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
         {
             chatHistory.AddMessage(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
