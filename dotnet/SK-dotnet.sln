@@ -169,6 +169,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "planning", "planning", "{A7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\planning\Extensions\ChatHistoryExtensions.cs = src\InternalUtilities\planning\Extensions\ChatHistoryExtensions.cs
 		src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs
 		src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs = src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs
 	EndProjectSection
