@@ -642,7 +642,7 @@ internal abstract class ClientCore
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -652,7 +652,7 @@ internal abstract class ClientCore
         {
             // We can remove this restriction in the future if valuable. However, multiple results per prompt is rare,
             // and limiting this significantly curtails the complexity of the implementation.
-            throw new KernelException($"{nameof(FunctionCallBehavior)}.{nameof(FunctionCallBehavior.AutoInvoke)} may only be used with a {nameof(OpenAIPromptExecutionSettings.ResultsPerPrompt)} of 1.");
+            throw new ArgumentException($"{nameof(FunctionCallBehavior)}.{nameof(FunctionCallBehavior.AutoInvoke)} may only be used with a {nameof(OpenAIPromptExecutionSettings.ResultsPerPrompt)} of 1.");
         }
     }
 
