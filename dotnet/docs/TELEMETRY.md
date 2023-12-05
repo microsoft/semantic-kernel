@@ -71,11 +71,12 @@ Available meters:
   - `sk.planning.create_plan.success` - number of successful plan creation
   - `sk.planning.create_plan.failure` - number of failed plan creation
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
-  - `sk.function.execution.duration` - function execution time (in seconds)
-  - `sk.function.execution.success` - number of successful function executions
-  - `sk.function.execution.failure` - number of failed function executions
-  - `sk.function.execution.token_usage.prompt` - number of prompt token usage (only for `KernelFunctionFromPrompt`)
-  - `sk.function.execution.token_usage.completion` - number of completion token usage (only for `KernelFunctionFromPrompt`)
+  - `sk.function.invocation.duration` - function execution time (in seconds)
+  - `sk.function.streaming.duration` - function streaming execution time (in seconds)
+  - `sk.function.invocation.success` - number of successful function executions
+  - `sk.function.invocation.failure` - number of failed function executions
+  - `sk.function.invocation.token_usage.prompt` - number of prompt token usage (only for `KernelFunctionFromPrompt`)
+  - `sk.function.invocation.token_usage.completion` - number of completion token usage (only for `KernelFunctionFromPrompt`)
 - _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
   - `sk.connectors.openai.tokens.prompt` - number of prompt tokens used.
   - `sk.connectors.openai.tokens.completion` - number of completion tokens used.

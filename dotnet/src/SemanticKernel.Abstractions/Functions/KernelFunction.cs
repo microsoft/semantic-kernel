@@ -41,6 +41,18 @@ public abstract class KernelFunction
         unit: "s",
         description: "Measures the duration of a function’s streaming execution");
 
+    /// <summary><see cref="Counter{T}"/> to record function invocation success counts.</summary>
+    private static readonly Counter<int> s_invocationSuccess = s_meter.CreateCounter<int>(
+        name: "sk.function.invocation.success",
+        unit: "{time}",
+        description: "Measures the number of successful function executions");
+
+    /// <summary><see cref="Counter{T}"/> to record function invocation failure counts.</summary>
+    private static readonly Counter<int> s_invocationFailure = s_meter.CreateCounter<int>(
+        name: "sk.function.invocation.failure",
+        unit: "{time}",
+        description: "Measures the number of failed function executions");
+
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -178,10 +190,13 @@ public abstract class KernelFunction
             }
 
             logger.LogFunctionInvokedSuccess(functionResult.Value);
+            s_invocationSuccess.Add(1, in tags);
+
             return functionResult;
         }
         catch (Exception ex)
         {
+            s_invocationFailure.Add(1, in tags);
             HandleException(ex, logger, this, kernel, arguments, functionResult, ref tags);
             throw;
         }
@@ -327,10 +342,7 @@ public abstract class KernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function streaming completed. Duration: {Duration}s", duration.TotalSeconds);
-            }
+            logger.LogFunctionStreamingComplete(duration.TotalSeconds);
         }
     }
 

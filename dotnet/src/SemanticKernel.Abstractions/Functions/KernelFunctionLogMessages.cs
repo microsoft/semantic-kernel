@@ -76,4 +76,15 @@ internal static partial class KernelFunctionLogMessages
         this ILogger logger,
         string functionName,
         KernelArguments arguments);
+
+    /// <summary>
+    /// Logs <see cref="KernelFunction"/> streaming complete.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 6,
+        Level = LogLevel.Information,
+        Message = "Function streaming completed. Duration: {Duration}s.")]
+    public static partial void LogFunctionStreamingComplete(
+        this ILogger logger,
+        double duration);
 }

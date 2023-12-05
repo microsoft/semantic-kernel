@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -133,6 +134,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
         metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
+        this.CaptureUsageDetails(textContent.ModelId, metadata, this._logger);
         return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
     }
 
@@ -199,6 +201,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
+    /// <summary><see cref="Meter"/> for function-related metrics.</summary>
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+
+    /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
+    private static readonly Histogram<int> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<int>(
+        name: "sk.function.invocation.token_usage.prompt",
+        unit: "{token}",
+        description: "Measures the prompt token usage");
+
+    /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
+    private static readonly Histogram<int> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<int>(
+        name: "sk.function.invocation.token_usage.completion",
+        unit: "{token}",
+        description: "Measures the completion token usage");
+
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
@@ -230,6 +247,60 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? metadata, ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            logger.LogWarning("No model ID provided to capture usage details.");
+            return;
+        }
+
+        if (metadata is null)
+        {
+            logger.LogWarning("No metadata provided to capture usage details.");
+            return;
+        }
+
+        if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
+        {
+            logger.LogWarning("No usage details provided to capture usage details.");
+            return;
+        }
+
+        var promptTokens = 0;
+        var completionTokens = 0;
+        try
+        {
+            var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+            promptTokens = jsonObject.GetProperty("PromptTokens").GetInt32();
+            completionTokens = jsonObject.GetProperty("CompletionTokens").GetInt32();
+        }
+        catch (Exception ex) when (ex is KeyNotFoundException)
+        {
+            logger.LogInformation("Usage details not found in model result.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while parsing usage details from model result.");
+            throw;
+        }
+
+        logger.LogInformation(
+                    "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+                    promptTokens, completionTokens);
+
+        TagList tags = new() {
+            { "sk.function.name", this.Name },
+            { "sk.function.model_id", modelId }
+        };
+
+        s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
+        s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
+    }
 
     #endregion
 }
