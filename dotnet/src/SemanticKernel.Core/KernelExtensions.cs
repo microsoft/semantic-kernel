@@ -134,7 +134,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region CreatePluginFromObject
+    #region CreatePluginFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -144,14 +144,16 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.LoggerFactory);
     }
+    #endregion
 
+    #region CreatePluginFromObject
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -169,7 +171,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region ImportPluginFromObject
+    #region ImportPluginFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -179,10 +181,10 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
+    public static IKernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
         where T : new()
     {
-        IKernelPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
+        IKernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -197,14 +199,16 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddPluginFromObject<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static IKernelPlugin AddPluginFromType<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
         where T : new()
     {
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
     }
+    #endregion
 
+    #region ImportPluginFromObject
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>

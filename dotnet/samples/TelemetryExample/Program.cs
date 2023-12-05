@@ -105,8 +105,8 @@ public sealed class Program
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>();
+        kernel.ImportPluginFromType<LanguageCalculatorPlugin>("advancedCalculator");
+        kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
     }

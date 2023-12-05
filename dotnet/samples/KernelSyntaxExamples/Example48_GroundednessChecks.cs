@@ -138,7 +138,7 @@ which are not grounded in the original.
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        kernel.ImportPluginFromObject<TextPlugin>();
+        kernel.ImportPluginFromType<TextPlugin>();
 
         var planner = new HandlebarsPlanner();
         var plan = await planner.CreatePlanAsync(kernel, ask);

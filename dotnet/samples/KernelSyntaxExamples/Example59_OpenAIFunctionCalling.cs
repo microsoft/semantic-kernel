@@ -30,8 +30,8 @@ public static class Example59_OpenAIFunctionCalling
             })
             .WithPlugins(plugins =>
             {
-                plugins.AddPluginFromObject<TimePlugin>();
-                plugins.AddPluginFromObject<WidgetPlugin>();
+                plugins.AddPluginFromType<TimePlugin>();
+                plugins.AddPluginFromType<WidgetPlugin>();
             })
             .Build();
 

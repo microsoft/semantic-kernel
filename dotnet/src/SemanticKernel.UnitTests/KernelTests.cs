@@ -34,7 +34,7 @@ public class KernelTests
             c.AddSingleton<ITextGenerationService>(factory.Object);
         }).Build();
 
-        kernel.ImportPluginFromObject<MyPlugin>("mySk");
+        kernel.ImportPluginFromType<MyPlugin>("mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.NotNull(kernel.Plugins.GetFunction("mySk", "sayhello"));
@@ -48,7 +48,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
@@ -62,7 +62,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        kernel.ImportPluginFromObject<MyPlugin>("mySk");
+        kernel.ImportPluginFromType<MyPlugin>("mySk");
 
         using CancellationTokenSource cts = new();
 
@@ -77,7 +77,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IKernelPlugin plugin = new Kernel().ImportPluginFromObject<MyPlugin>();
+        IKernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
 
         // Assert
         Assert.Equal(3, plugin.Count());
@@ -93,10 +93,10 @@ public class KernelTests
         var kernel = new Kernel();
 
         // Act - Assert no exception occurs
-        kernel.ImportPluginFromObject<MyPlugin>();
-        kernel.ImportPluginFromObject<MyPlugin>("plugin1");
-        kernel.ImportPluginFromObject<MyPlugin>("plugin2");
-        kernel.ImportPluginFromObject<MyPlugin>("plugin3");
+        kernel.ImportPluginFromType<MyPlugin>();
+        kernel.ImportPluginFromType<MyPlugin>("plugin1");
+        kernel.ImportPluginFromType<MyPlugin>("plugin2");
+        kernel.ImportPluginFromType<MyPlugin>("plugin3");
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -277,7 +277,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>

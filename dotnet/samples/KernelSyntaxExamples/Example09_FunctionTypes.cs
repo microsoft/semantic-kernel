@@ -21,7 +21,7 @@ public static class Example09_FunctionTypes
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
+        var plugin = kernel.ImportPluginFromType<LocalExamplePlugin>("test");
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));

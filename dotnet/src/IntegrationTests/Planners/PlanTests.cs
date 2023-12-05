@@ -591,7 +591,7 @@ public sealed class PlanTests : IDisposable
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
 
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
         return kernel;
     }
 

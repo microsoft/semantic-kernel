@@ -43,7 +43,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromType<Foo>();
         var template = "Foo {{Foo_Bar}}";
         var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
@@ -59,7 +59,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersAsyncFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromType<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
         var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);

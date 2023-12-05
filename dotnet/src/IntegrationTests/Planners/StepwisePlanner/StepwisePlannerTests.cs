@@ -48,7 +48,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
@@ -74,7 +74,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
@@ -99,11 +99,11 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TextPlugin>("text");
-        kernel.ImportPluginFromObject<ConversationSummaryPlugin>("ConversationSummary");
-        kernel.ImportPluginFromObject<MathPlugin>("Math");
-        kernel.ImportPluginFromObject<FileIOPlugin>("FileIO");
-        kernel.ImportPluginFromObject<HttpPlugin>("Http");
+        kernel.ImportPluginFromType<TextPlugin>("text");
+        kernel.ImportPluginFromType<ConversationSummaryPlugin>("ConversationSummary");
+        kernel.ImportPluginFromType<MathPlugin>("Math");
+        kernel.ImportPluginFromType<FileIOPlugin>("FileIO");
+        kernel.ImportPluginFromType<HttpPlugin>("Http");
 
         var planner = new StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 

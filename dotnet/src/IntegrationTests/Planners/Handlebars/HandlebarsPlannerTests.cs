@@ -35,7 +35,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
+        kernel.ImportPluginFromType<EmailPluginFake>(expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act

@@ -39,7 +39,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new SequentialPlanner(kernel);
@@ -87,7 +87,7 @@ public sealed class SequentialPlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel(useEmbeddings);
         ISemanticTextMemory memory = this.InitializeMemory(kernel.GetService<ITextEmbeddingGeneration>());
 
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);

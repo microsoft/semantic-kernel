@@ -28,7 +28,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
             .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithPlugins(plugins => plugins.AddPluginFromType<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
@@ -46,7 +46,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
             .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithPlugins(plugins => plugins.AddPluginFromType<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";

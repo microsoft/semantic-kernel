@@ -109,8 +109,8 @@ public static class Example51_StepwisePlanner
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("semanticCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<LanguageCalculatorPlugin>("semanticCalculator");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();

@@ -21,7 +21,7 @@ public static class KernelPluginFactory
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
+    public static IKernelPlugin CreateFromType<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
         CreateFromObject(new T(), pluginName, loggerFactory);
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>

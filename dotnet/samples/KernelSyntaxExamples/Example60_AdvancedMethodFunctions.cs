@@ -29,7 +29,7 @@ public static class Example60_AdvancedMethodFunctions
 
         var kernel = new KernelBuilder().Build();
 
-        var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
+        var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
 
         var result = await kernel.InvokeAsync(functions["Function1"]);
         var customType = result.GetValue<MyCustomType>()!;

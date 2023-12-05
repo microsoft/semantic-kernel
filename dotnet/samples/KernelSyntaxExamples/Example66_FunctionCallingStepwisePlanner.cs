@@ -54,9 +54,9 @@ public static class Example66_FunctionCallingStepwisePlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        kernel.ImportPluginFromObject(new EmailPlugin(), "EmailPlugin");
-        kernel.ImportPluginFromObject(new MathPlugin(), "MathPlugin");
-        kernel.ImportPluginFromObject(new TimePlugin(), "TimePlugin");
+        kernel.ImportPluginFromType<EmailPlugin>();
+        kernel.ImportPluginFromType<MathPlugin>();
+        kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
     }

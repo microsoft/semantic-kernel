@@ -155,7 +155,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     {
         // Arrange
         var kernel = new KernelBuilder()
-            .WithPlugins(plugins => plugins.AddPluginFromObject<MyPlugin>("MyPlugin"))
+            .WithPlugins(plugins => plugins.AddPluginFromType<MyPlugin>("MyPlugin"))
             .Build();
 
         var functionView = kernel.Plugins["MyPlugin"].First().Metadata;

@@ -16,8 +16,7 @@ public static class Example11_WebSearchQueries
         Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Load native plugins
-        var plugin = new SearchUrlPlugin();
-        var bing = kernel.ImportPluginFromObject(plugin, "search");
+        var bing = kernel.ImportPluginFromType<SearchUrlPlugin>("search");
 
         // Run
         var ask = "What's the tallest building in Europe?";

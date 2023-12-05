@@ -107,7 +107,7 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
-        kernel.ImportPluginFromObject<EmailPlugin>("email");
+        kernel.ImportPluginFromType<EmailPlugin>("email");
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
@@ -238,9 +238,9 @@ internal static class Example12_SequentialPlanner
             kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginFolder));
         }
 
-        kernel.ImportPluginFromObject<EmailPlugin>("email");
-        kernel.ImportPluginFromObject<StaticTextPlugin>("statictext");
-        kernel.ImportPluginFromObject<TextPlugin>("coretext");
+        kernel.ImportPluginFromType<EmailPlugin>("email");
+        kernel.ImportPluginFromType<StaticTextPlugin>("statictext");
+        kernel.ImportPluginFromType<TextPlugin>("coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 

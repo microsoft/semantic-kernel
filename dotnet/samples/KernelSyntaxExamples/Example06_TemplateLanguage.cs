@@ -36,7 +36,7 @@ public static class Example06_TemplateLanguage
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         // Prompt Function invoking time.Date and time.Time method functions
         const string FunctionDefinition = @"

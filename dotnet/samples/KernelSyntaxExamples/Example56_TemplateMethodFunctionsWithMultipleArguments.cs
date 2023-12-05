@@ -45,7 +45,7 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.ImportPluginFromObject<TextPlugin>("text");
+        kernel.ImportPluginFromType<TextPlugin>("text");
 
         // Prompt Function invoking text.Concat method function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
