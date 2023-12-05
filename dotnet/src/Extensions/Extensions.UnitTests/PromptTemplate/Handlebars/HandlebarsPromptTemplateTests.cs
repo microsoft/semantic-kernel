@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
-using static Microsoft.SemanticKernel.PromptTemplateConfig;
 
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
@@ -81,17 +80,17 @@ public sealed class HandlebarsPromptTemplateTests
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "bar",
             Description = "Bar",
-            DefaultValue = "Bar"
+            Default = "Bar"
         });
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "baz",
             Description = "Baz",
-            DefaultValue = "Baz"
+            Default = "Baz"
         });
         promptConfig.Template = "Foo {{bar}} {{baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);

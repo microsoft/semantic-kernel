@@ -77,13 +77,13 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
 ";
 
     private readonly string _yaml = @"
@@ -91,13 +91,13 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
     execution_settings:
       - model_id:          gpt-4
         temperature:       1.0
@@ -120,13 +120,13 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
     execution_settings:
       - model_id:          gpt-4
         temperature:       1.0

@@ -20,6 +20,11 @@ public abstract class ContentBase
     public object? InnerContent { get; }
 
     /// <summary>
+    /// The model ID used to generate the content.
+    /// </summary>
+    public string? ModelId { get; }
+
+    /// <summary>
     /// The metadata associated with the content.
     /// </summary>
     public IDictionary<string, object?>? Metadata { get; }
@@ -27,10 +32,12 @@ public abstract class ContentBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ContentBase"/> class.
     /// </summary>
-    /// <param name="innerContent">Raw content object reference</param>
+    /// <param name="innerContent">The inner content representation</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected ContentBase(object? innerContent, IDictionary<string, object?>? metadata = null)
+    protected ContentBase(object? innerContent, string? modelId = null, IDictionary<string, object?>? metadata = null)
     {
+        this.ModelId = modelId;
         this.InnerContent = innerContent;
         if (metadata is not null)
         {
