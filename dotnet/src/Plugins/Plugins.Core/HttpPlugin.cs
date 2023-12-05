@@ -11,15 +11,6 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// A plugin that provides HTTP functionality.
 /// </summary>
-/// <example>
-/// Usage: kernel.ImportFunctions(new HttpPlugin(), "http");
-/// Examples:
-/// SKContext.Variables["url"] = "https://www.bing.com"
-/// {{http.getAsync $url}}
-/// {{http.postAsync $url}}
-/// {{http.putAsync $url}}
-/// {{http.deleteAsync $url}}
-/// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpPlugin
