@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /** Abstract implementation of the SKFunction interface. */
-public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFunction {
+public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFunction {
 
     private final List<ParameterView> parameters;
     private final String skillName;
@@ -37,7 +37,7 @@ public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFun
      * @param description The description of the function.
      * @param skillsSupplier The skill supplier.
      */
-    public AbstractSkFunction(
+    public AbstractSKFunction(
             List<ParameterView> parameters,
             String skillName,
             String functionName,

@@ -40,7 +40,7 @@ import reactor.core.scheduler.Schedulers;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class NativeSKFunction extends AbstractSkFunction {
+public class NativeSKFunction extends AbstractSKFunction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeSKFunction.class);
 
