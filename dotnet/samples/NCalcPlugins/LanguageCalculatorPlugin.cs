@@ -14,15 +14,6 @@ namespace NCalcPlugins;
 /// <summary>
 /// Plugin that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
 /// </summary>
-/// <example>
-/// usage :
-/// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
-/// var question = "what is the square root of 625";
-/// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
-/// var summary = await kernel.InvokeAsync(questions, calculatorPlugin["Calculate"]);
-/// Console.WriteLine("Result :");
-/// Console.WriteLine(summary.Result);
-/// </example>
 public class LanguageCalculatorPlugin
 {
     private readonly KernelFunction _mathTranslator;
@@ -96,7 +87,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.InvokeAsync(this._mathTranslator, input).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, new(input)).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

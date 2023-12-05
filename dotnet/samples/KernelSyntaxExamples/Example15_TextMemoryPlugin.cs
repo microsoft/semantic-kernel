@@ -202,11 +202,10 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryPlugin["Save"], new KernelArguments()
+        await kernel.InvokeAsync(memoryPlugin["Save"], new("My family is from New York")
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
-            ["input"] = "My family is from New York"
         }, cancellationToken);
 
         // Retrieve a specific memory with the Kernel
@@ -245,12 +244,11 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new KernelArguments()
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new("Ask: where do I live?")
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
         Console.WriteLine($"Answer: {result.GetValue<string>()}");
@@ -293,11 +291,10 @@ Answer:
 
         var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.InvokeAsync(aboutMeOracle, new KernelArguments()
+        result = await kernel.InvokeAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Do I live in the same town where I grew up?"
         }, cancellationToken);
 
         Console.WriteLine("Ask: Do I live in the same town where I grew up?");

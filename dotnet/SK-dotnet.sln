@@ -91,7 +91,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D794-4EC3-8E8F-F90D4D166420}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
-		src\InternalUtilities\test\FunctionHelpers.cs = src\InternalUtilities\test\FunctionHelpers.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
 EndProject

@@ -20,9 +20,8 @@ public static class Example03_Variables
         Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
         var textPlugin = kernel.ImportPluginFromObject<StaticTextPlugin>();
 
-        var arguments = new KernelArguments
+        var arguments = new KernelArguments("Today is: ")
         {
-            ["input"] = "Today is: ",
             ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
         };
 

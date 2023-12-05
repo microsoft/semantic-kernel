@@ -54,9 +54,9 @@ public class TimePluginTests
     [Fact]
     public async Task LastMatchingDayBadInputAsync()
     {
-        var plugin = new TimePlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<TimePlugin>()["DateMatchingLastDayName"];
 
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(plugin, "DateMatchingLastDayName", ("input", "not a day name")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new("not a day name")));
 
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "input", "not a day name");
     }

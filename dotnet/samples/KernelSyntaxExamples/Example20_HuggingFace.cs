@@ -34,7 +34,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new("What is New York?"));
 
         Console.WriteLine(result.GetValue<string>());
     }
@@ -70,7 +70,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new("What is New York?"));
 
         Console.WriteLine(result.GetValue<string>());
     }

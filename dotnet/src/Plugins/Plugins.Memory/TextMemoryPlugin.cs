@@ -14,12 +14,6 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
-/// <example>
-/// Usage: kernel.ImportFunctions(new TextMemoryPlugin(), "memory");
-/// Examples:
-/// SKContext.Variables["input"] = "what is the capital of France?"
-/// {{memory.recall $input }} => "Paris"
-/// </example>
 public sealed class TextMemoryPlugin
 {
     /// <summary>
@@ -63,10 +57,6 @@ public sealed class TextMemoryPlugin
     /// <param name="key">The key associated with the memory to retrieve.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <example>
-    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
-    /// {{memory.retrieve }}
-    /// </example>
     [KernelFunction, Description("Key-based lookup for a specific memory")]
     public async Task<string> RetrieveAsync(
         [Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)] string? collection,
@@ -87,10 +77,6 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Semantic search and return up to N memories related to the input text
     /// </summary>
-    /// <example>
-    /// SKContext.Variables["input"] = "what is the capital of France?"
-    /// {{memory.recall $input }} => "Paris"
-    /// </example>
     /// <param name="input">The input text to find related memories for.</param>
     /// <param name="collection">Memories collection to search.</param>
     /// <param name="relevance">The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
@@ -133,11 +119,6 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Save information to semantic memory
     /// </summary>
-    /// <example>
-    /// SKContext.Variables["input"] = "the capital of France is Paris"
-    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
-    /// {{memory.save $input }}
-    /// </example>
     /// <param name="input">The information to save</param>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
@@ -162,10 +143,6 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Remove specific memory
     /// </summary>
-    /// <example>
-    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
-    /// {{memory.remove }}
-    /// </example>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>

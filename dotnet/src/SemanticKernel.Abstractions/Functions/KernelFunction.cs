@@ -100,33 +100,6 @@ public abstract class KernelFunction
     /// Invokes the<see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    public Task<FunctionResult> InvokeAsync(
-        Kernel kernel,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
-        if (!string.IsNullOrEmpty(input))
-        {
-            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
-        }
-
-        return this.InvokeAsync(kernel, arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
@@ -210,36 +183,6 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
         this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <remarks>
-    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
-    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
-    /// </remarks>
-    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
-        Kernel kernel,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
-        if (!string.IsNullOrEmpty(input))
-        {
-            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
-        }
-
-        return this.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
-    }
 
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/> and streams its results.

@@ -46,7 +46,7 @@ public class WaitPluginTests
 
         // Act and Assert
         long startingTime = timeProvider.GetTimestamp();
-        Task wait = FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds));
+        Task wait = KernelPluginFactory.CreateFromObject(target)["Seconds"].InvokeAsync(new(), new(textSeconds));
 
         if (expectedMilliseconds > 0)
         {
@@ -75,10 +75,10 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenInvalidParametersFailsAsync(string textSeconds)
     {
         // Arrange
-        var target = new WaitPlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<WaitPlugin>()["Seconds"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new(textSeconds)));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "seconds", textSeconds);
