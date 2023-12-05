@@ -27,13 +27,11 @@ public static class PromptYamlKernelExtensions
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction CreateFunctionFromPromptYaml(
         this Kernel kernel,
         string text,
-        string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
