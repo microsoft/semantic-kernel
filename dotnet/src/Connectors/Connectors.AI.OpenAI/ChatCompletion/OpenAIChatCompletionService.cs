@@ -18,6 +18,21 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
+    #region BreakingGlass Properties
+    /// <summary>
+    /// Model Id for OpenAI or Deployment Name when using Azure OpenAI.
+    /// </summary>
+    public string DeploymentOrModelName => this._core.DeploymentOrModelName;
+
+    /// <summary>
+    /// OpenAI / Azure OpenAI Client
+    /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
+    public OpenAIClient Client => this._core.Client;
+    #endregion
+
     private readonly OpenAIClientCore _core;
 
     /// <summary>

@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
@@ -236,6 +238,23 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         // Assert
         Assert.NotNull(lastTextContent!.ModelId);
         Assert.Equal("fake-model", lastTextContent.ModelId);
+    }
+
+    [Fact]
+    public async Task ItCanGetClientFromPropertyAsync()
+    {
+        // Arrange
+        const string ExpectedUri = "https://fake-completion-endpoint";
+        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
+        var textGeneration = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        var client = textGeneration.Client;
+
+        // Act
+        client.BaseAddress = new Uri(ExpectedUri);
+        await textGeneration.GetTextContentAsync("hello");
+
+        // Assert
+        Assert.Contains(ExpectedUri, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()

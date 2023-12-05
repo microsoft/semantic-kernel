@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -205,6 +206,21 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(textContent.ModelId);
         Assert.Equal("gpt-3.5-turbo", textContent.ModelId);
+    }
+
+    [Fact]
+    public async Task ItCanGetClientFromPropertyAsync()
+    {
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(AzureChatCompletionResponse, Encoding.UTF8, "application/json") };
+
+        var client = chatCompletion.Client;
+
+        var result = (await client.GetChatCompletionsAsync(new Azure.AI.OpenAI.ChatCompletionsOptions("gpt-3.5-turbo", new[] { new ChatMessage(ChatRole.User, "Hello") }))).Value;
+
+        Assert.Equal(23, result.Usage.PromptTokens);
+        Assert.Equal("Hello! How can I help you today? Please provide me with a question or topic you would like information on.", result.Choices[0].Message.Content);
     }
 
     public void Dispose()

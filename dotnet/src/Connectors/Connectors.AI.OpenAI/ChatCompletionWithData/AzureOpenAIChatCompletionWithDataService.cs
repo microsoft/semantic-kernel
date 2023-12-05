@@ -31,6 +31,21 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 [Experimental("SKEXP0010")]
 public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
+    #region BreakingGlass Properties
+    /// <summary>
+    /// Model Id.
+    /// </summary>
+    public string? ModelId => this.GetModelId();
+
+    /// <summary>
+    /// Http Client used for the service call.
+    /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
+    public HttpClient Client => this._httpClient;
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataService"/> class.
     /// </summary>

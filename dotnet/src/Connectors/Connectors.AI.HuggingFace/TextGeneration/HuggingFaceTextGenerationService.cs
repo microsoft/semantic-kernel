@@ -29,6 +29,21 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     private readonly string? _apiKey;
     private readonly Dictionary<string, object?> _attributes = new();
 
+    #region BreakingGlass Properties
+    /// <summary>
+    /// Model Id.
+    /// </summary>
+    public string? ModelId => this.GetModelId();
+
+    /// <summary>
+    /// Http Client used for the service call.
+    /// </summary>
+    /// <remarks>
+    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// </remarks>
+    public HttpClient Client => this._httpClient;
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.

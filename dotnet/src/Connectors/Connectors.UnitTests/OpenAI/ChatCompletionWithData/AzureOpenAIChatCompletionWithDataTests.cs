@@ -69,6 +69,24 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         Assert.Contains("2023-06-01-preview", actualUri, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task ItCanGetClientFromPropertyAsync()
+    {
+        // Arrange
+        const string ExpectedUri = "https://fake-completion-endpoint";
+        this._httpClient.BaseAddress = new Uri("https://original-url");
+
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
+        var client = chatCompletion.Client;
+
+        // Act
+        client.BaseAddress = new Uri(ExpectedUri);
+        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory());
+
+        // Assert
+        Assert.Contains(ExpectedUri, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
