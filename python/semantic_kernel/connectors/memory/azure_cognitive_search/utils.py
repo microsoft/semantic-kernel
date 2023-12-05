@@ -5,9 +5,6 @@ import os
 from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
 from azure.search.documents.indexes.models import (
     SearchableField,
     SearchField,
@@ -16,6 +13,9 @@ from azure.search.documents.indexes.models import (
 )
 from dotenv import load_dotenv
 
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 SEARCH_FIELD_ID = "Id"
