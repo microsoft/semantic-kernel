@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -237,6 +238,41 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AzureOpenAIShouldReturnTokenUsageInMetadataAsync(bool useChatModel)
+    {
+        // Arrange
+        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+
+        if (useChatModel)
+        {
+            this.ConfigureAzureOpenAIChatAsText(builder);
+        }
+        else
+        {
+            this.ConfigureAzureOpenAI(builder);
+        }
+
+        Kernel target = builder.Build();
+
+        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+
+        // Act and Assert
+        FunctionResult result = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
+
+        Assert.NotNull(result.Metadata);
+        Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
+        Assert.NotNull(usageObject);
+
+        var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+        Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokens));
+        Assert.NotEqual(0, promptTokens.GetInt32());
+        Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokens));
+        Assert.NotEqual(0, completionTokens.GetInt32());
     }
 
     [Fact]
