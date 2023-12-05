@@ -68,6 +68,7 @@ async def test_azure_e2e_chat_completion_with_skill_and_provided_client(
     print(f"* Deployment: {deployment_name}")
 
     client = AsyncAzureOpenAI(
+        azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
         api_version="2023-05-15",

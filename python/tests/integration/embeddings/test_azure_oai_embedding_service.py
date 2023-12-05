@@ -55,6 +55,7 @@ async def test_azure_text_embedding_service_with_provided_client(
         deployment_name = "text-embedding-ada-002"
 
     client = AsyncAzureOpenAI(
+        azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
         api_version="2023-05-15",
