@@ -1,8 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugin;
 
-import java.util.Collection;
-
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import java.util.Collection;
 
 public interface Plugin {
     String name();

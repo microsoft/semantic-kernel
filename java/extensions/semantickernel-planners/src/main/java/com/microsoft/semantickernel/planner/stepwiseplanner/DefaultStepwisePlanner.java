@@ -20,7 +20,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -94,7 +93,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
     private final Kernel kernel;
     private final StepwisePlannerConfig config;
-    private final SKFunction<?> systemStepFunction;
+    private final SKFunction systemStepFunction;
     private final SKContext context;
     private final ReadOnlyFunctionCollection nativeFunctions;
 
@@ -189,7 +188,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
         String functionDescriptions = this.getFunctionDescriptions();
 
-        SKFunction<?> planStep = nativeFunctions.getFunction("ExecutePlan", SKFunction.class);
+        SKFunction planStep = nativeFunctions.getFunction("ExecutePlan", SKFunction.class);
 
         ContextVariables parameters =
                 SKBuilders.variables()
@@ -527,8 +526,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
     }
 
     private Mono<String> invokeActionAsync(String actionName, Map<String, String> actionVariables) {
-        List<SKFunction<?>> availableFunctions = this.getAvailableFunctions();
-        Optional<SKFunction<?>> targetFunction =
+        List<SKFunction> availableFunctions = this.getAvailableFunctions();
+        Optional<SKFunction> targetFunction =
                 availableFunctions.stream()
                         .filter(
                                 f -> {
@@ -548,7 +547,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                     ErrorCodes.UNKNOWN_ERROR, "The function '" + actionName + "' was not found.");
         }
 
-        SKFunction<?> function =
+        SKFunction function =
                 kernel.getFunction(
                         targetFunction.get().getSkillName(), targetFunction.get().getName());
 
@@ -575,7 +574,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         return actionContext;
     }
 
-    private List<SKFunction<?>> getAvailableFunctions() {
+    private List<SKFunction> getAvailableFunctions() {
         return this.context.getSkills().getAllFunctions().getAll().stream()
                 .filter(
                         fun ->
@@ -585,22 +584,21 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                                                 .contains(fun.getName()))
                 .sorted(
                         (a, b) ->
-                                Comparator.<SKFunction<?>, String>comparing(
-                                                SKFunction::getSkillName)
+                                Comparator.<SKFunction, String>comparing(SKFunction::getSkillName)
                                         .thenComparing(SKFunction::getName)
                                         .compare(a, b))
                 .collect(Collectors.toList());
     }
 
     private String getFunctionDescriptions() {
-        List<SKFunction<?>> availableFunctions = this.getAvailableFunctions();
+        List<SKFunction> availableFunctions = this.getAvailableFunctions();
 
         return availableFunctions.stream()
                 .map(x -> toManualString(Objects.requireNonNull(x.describe())))
                 .collect(Collectors.joining("\n"));
     }
 
-    private SKFunction<CompletionRequestSettings> importStepwiseFunction(
+    private SKFunction importStepwiseFunction(
             Kernel kernel, String promptTemplate, PromptTemplateConfig config) {
         PromptTemplate template =
                 SKBuilders.promptTemplate()

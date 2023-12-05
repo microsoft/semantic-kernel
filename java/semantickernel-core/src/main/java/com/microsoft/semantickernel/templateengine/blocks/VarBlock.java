@@ -33,7 +33,8 @@ public final class VarBlock extends Block implements TextRendering {
                     "Variable rendering failed, the variable name is empty");
         }
 
-        String value = variables.asMap().get(name);
+        // TODO: 1.0 fix cast
+        String value = (String) variables.asMap().get(name);
 
         if (value == null) {
 

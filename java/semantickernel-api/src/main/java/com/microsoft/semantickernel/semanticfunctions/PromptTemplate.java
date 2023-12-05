@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
@@ -25,7 +26,10 @@ public interface PromptTemplate extends Buildable {
      * @param executionContext Kernel execution context helpers
      * @return Prompt rendered to string
      */
+    @Deprecated
     Mono<String> renderAsync(SKContext executionContext);
+
+    Mono<String> renderAsync(ContextVariables variables);
 
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);

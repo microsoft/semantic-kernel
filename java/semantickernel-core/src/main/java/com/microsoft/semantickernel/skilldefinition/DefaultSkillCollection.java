@@ -75,14 +75,13 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
 
     @Override
     @Nullable
-    public <T extends SKFunction<?>> T getFunction(
-            String funName, @Nullable Class<T> functionClazz) {
+    public <T extends SKFunction> T getFunction(String funName, @Nullable Class<T> functionClazz) {
         return getFunction(GlobalSkill, funName, functionClazz);
     }
 
     @Override
     @Nullable
-    public <T extends SKFunction<?>> T getFunction(
+    public <T extends SKFunction> T getFunction(
             String skillName, String funName, @Nullable Class<T> functionClazz) {
         FunctionCollection skills = skillCollection.get(skillName.toLowerCase(Locale.ROOT));
         if (skills == null) {

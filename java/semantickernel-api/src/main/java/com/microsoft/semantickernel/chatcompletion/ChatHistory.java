@@ -90,13 +90,12 @@ public class ChatHistory {
     public void addMessage(AuthorRoles authorRole, String content) {
         this.messages.add(new Message(authorRole, content));
     }
-    
+
     /**
      * Add a message to the chat history with the user as the author
      *
      * @param content Message content
-     * @since 1.0.0
-     * @
+     * @since 1.0.0 @
      */
     public void addUserMessage(String content) {
         this.messages.add(new Message(AuthorRoles.User, content));
@@ -111,5 +110,4 @@ public class ChatHistory {
     public void addAssistantMessage(String content) {
         this.messages.add(new Message(AuthorRoles.Assistant, content));
     }
-
 }

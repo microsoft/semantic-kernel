@@ -106,12 +106,6 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
-    public SKContext appendToVariable(@Nonnull String key, @Nonnull String content) {
-        variables.appendToVariable(key, content);
-        return getThis();
-    }
-
-    @Override
     public SKContext update(@Nonnull String content) {
         variables.update(content);
         return getThis();

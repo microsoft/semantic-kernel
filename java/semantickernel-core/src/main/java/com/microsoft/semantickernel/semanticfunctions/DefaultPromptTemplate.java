@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
@@ -66,6 +67,11 @@ public class DefaultPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(SKContext executionContext) {
         return templateEngine.renderAsync(this.promptTemplate, executionContext);
+    }
+
+    @Override
+    public Mono<String> renderAsync(ContextVariables variables) {
+        return null;
     }
 
     public static final class Builder implements PromptTemplate.Builder {

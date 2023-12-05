@@ -1,21 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import java.util.Map;
-
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.KernelResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /**
  * Semantic Kernel callable function interface
- * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
+ *
+ * @apiNote Breaking change: s/SKFunction/SKFunction/
  */
 public interface SKFunction {
     /**
@@ -58,9 +56,7 @@ public interface SKFunction {
     /**
      * The type of the configuration argument that will be provided when the function is invoked
      *
-     * @return The type
-    @Nullable
-    Class<RequestConfiguration> getType();
+     * @return The type @Nullable Class<RequestConfiguration> getType();
      */
 
     /**
@@ -70,7 +66,25 @@ public interface SKFunction {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+    @Deprecated
     Mono<SKContext> invokeAsync(SKContext context);
+
+    /**
+     * The type of the configuration argument that will be provided when the function is invoked
+     *
+     * @return The type @Nullable Class<RequestConfiguration> getType();
+     */
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param kernel Associated Kernel
+     * @param variables Request variables
+     * @param streaming Whether streaming is on or not
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming);
 
     /**
      * Invokes the function with the given context and settings
@@ -82,16 +96,8 @@ public interface SKFunction {
      */
     @CheckReturnValue
     @Deprecated
-     Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
 
-    /**
-     * @return The result of invoking the function. 
-     * @param kernel The kernel to invoke the function on
-     * @param variables The variables to invoke the function with
-     * @since 1.0.0 
-     */
-    Mono<FunctionResult> invokeAsync(Kernel kernel, Map<String,Object> variables);
-    
     /**
      * @return The name of the skill that this function is within
      */

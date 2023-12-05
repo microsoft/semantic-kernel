@@ -13,7 +13,7 @@ import reactor.util.annotation.NonNull;
 /// </summary>
 class DefaultContextVariables implements ContextVariables, WritableContextVariables {
 
-    private final CaseInsensitiveMap<String> variables;
+    private final CaseInsensitiveMap<Object> variables;
 
     /// <summary>
     /// In the simplest scenario, the data is an input string, stored here.
@@ -24,37 +24,23 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    DefaultContextVariables(@NonNull String content) {
+    DefaultContextVariables(@NonNull Object content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
     }
 
-    DefaultContextVariables(Map<String, String> variables) {
+    DefaultContextVariables(Map<String, Object> variables) {
         this.variables = new CaseInsensitiveMap<>(variables);
     }
 
     @Override
-    public ContextVariables setVariable(@NonNull String key, @NonNull String content) {
+    public ContextVariables setVariable(@NonNull String key, @NonNull Object content) {
         this.variables.put(key, content);
         return this;
     }
 
     @Override
-    public ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
-        String existing = this.variables.get(key);
-
-        String newVal;
-        if (existing == null) {
-            newVal = content;
-        } else {
-            newVal = existing + content;
-        }
-
-        return setVariable(key, newVal);
-    }
-
-    @Override
-    public Map<String, String> asMap() {
+    public Map<String, Object> asMap() {
         return Collections.unmodifiableMap(variables);
     }
 
@@ -66,7 +52,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
     @Override
-    public ContextVariables update(@NonNull String content) {
+    public ContextVariables update(@NonNull Object content) {
         return setVariable(MAIN_KEY, content);
     }
 
@@ -82,7 +68,6 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// <param name="merge">Whether to merge and keep old data, or replace. False == discard old
     // data.</param>
     /// <returns>The current instance</returns>
-
     @Override
     public DefaultContextVariables update(@NonNull ContextVariables newData, boolean merge) {
         /*
@@ -112,7 +97,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
     @Override
     @Nullable
-    public String getInput() {
+    public Object getInput() {
         return get(MAIN_KEY);
     }
 
@@ -132,28 +117,28 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
     @Override
     @Nullable
-    public String get(String key) {
+    public Object get(String key) {
         return variables.get(key);
     }
 
     public static class WritableBuilder implements WritableContextVariables.Builder {
         @Override
-        public WritableContextVariables build(Map<String, String> map) {
+        public WritableContextVariables build(Map<String, Object> map) {
             return new DefaultContextVariables(map);
         }
     }
 
     public static class Builder implements ContextVariables.Builder {
 
-        private final Map<String, String> variables;
+        private final Map<String, Object> variables;
 
         public Builder() {
             variables = new CaseInsensitiveMap<>();
-            this.variables.put(MAIN_KEY, "");
+//            this.variables.put(MAIN_KEY, "");
         }
 
         @Override
-        public ContextVariables.Builder withVariable(String key, String value) {
+        public ContextVariables.Builder withVariable(String key, Object value) {
             variables.put(key, value);
             return this;
         }
@@ -165,7 +150,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         }
 
         @Override
-        public Builder withVariables(Map<String, String> map) {
+        public Builder withVariables(Map<String, Object> map) {
             variables.putAll(map);
             return this;
         }

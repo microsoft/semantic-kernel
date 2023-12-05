@@ -32,8 +32,7 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class DefaultCompletionSKFunction
-        extends DefaultSemanticSKFunction<CompletionRequestSettings>
+public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
         implements CompletionSKFunction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
@@ -138,9 +137,10 @@ public class DefaultCompletionSKFunction
                         .skip(1) // Skip the first element, which is the initial context
                         .concatMap(it -> it);
 
+        // TODO: fix
         return results.map(
                         result -> {
-                            return result.getResult();
+                            return (String) result.getResult();
                         })
                 .collect(Collectors.joining("\n"))
                 .map(context::update);
@@ -148,8 +148,7 @@ public class DefaultCompletionSKFunction
 
     // Run the semantic function
     @Override
-    protected Mono<SKContext> invokeAsyncInternal(
-            SKContext context, @Nullable CompletionRequestSettings settings) {
+    protected Mono<SKContext> invokeAsyncInternal(SKContext context, @Nullable Object settings) {
         // TODO
         // this.VerifyIsSemantic();
         // this.ensureContextHasSkills(context);
@@ -167,7 +166,8 @@ public class DefaultCompletionSKFunction
             throw new IllegalStateException("Failed to initialise aiService");
         }
 
-        CompletionRequestSettings finalSettings = settings;
+        // TODO: 1.0 fix properly using settings object
+        CompletionRequestSettings finalSettings = new CompletionRequestSettings(0.9, 0, 0, 0, 1000);
 
         return function.run(this.aiService.get(), finalSettings, context)
                 .map(
@@ -257,11 +257,6 @@ public class DefaultCompletionSKFunction
         }
     }
 
-    @Override
-    public Class<CompletionRequestSettings> getType() {
-        return CompletionRequestSettings.class;
-    }
-
     private static String randomFunctionName() {
         return "func" + UUID.randomUUID();
     }
@@ -275,6 +270,11 @@ public class DefaultCompletionSKFunction
                 super.getParametersView(),
                 true,
                 false);
+    }
+
+    @Override
+    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        return null;
     }
 
     public static class Builder implements CompletionSKFunction.Builder {

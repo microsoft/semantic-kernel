@@ -20,16 +20,6 @@ public interface WritableContextVariables extends ContextVariables {
     ContextVariables setVariable(String key, Object content);
 
     /**
-     * Append to the variable's value
-     *
-     * @param key variable name
-     * @param content value to append
-     * @return Context for fluent calls
-     * @apiNote Breaking change: s/String content/Object content/
-     */
-    ContextVariables appendToVariable(String key, Object content);
-
-    /**
      * Updates the main input text with the new value after a function is complete.
      *
      * @param content The new input value, for the next function in the pipeline, or as a result for
