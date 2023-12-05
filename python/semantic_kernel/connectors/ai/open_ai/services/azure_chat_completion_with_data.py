@@ -72,15 +72,20 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         :param ad_token: The Azure AD token to use. (Optional)
         :param ad_token_provider: The Azure AD token provider to use. (Optional)
         """
-        if not deployment_name:
-            raise ValueError("The deployment name cannot be `None` or empty")
-
         base_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
 
         if isinstance(endpoint, str):
             endpoint = HttpsUrl(endpoint)
         if not data_source_settings:
-            raise ValueError("The data source settings cannot be `None`")
+            raise AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                "`data_source_settings` cannot be `None`",
+            )
+        if not data_source_settings.data_source_parameters:
+            raise AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                "`data_source_parameters` in `data_source_settings` cannot be `None`",
+            )
 
         super().__init__(
             deployment_name,
@@ -94,6 +99,40 @@ class AzureChatCompletionWithData(AzureChatCompletion):
         )
 
         self._data_source_settings = data_source_settings
+
+    @classmethod
+    def from_dict(cls, settings: Dict[str, any]) -> "AzureChatCompletionWithData":
+        """
+        Initialize an Azure OpenAI service from a dictionary of settings.
+
+        Arguments:
+            settings: A dictionary of settings for the service.
+                should contains keys: deployment_name, endpoint, api_key, data_source_settings
+                and optionally: api_version, ad_auth, log
+
+            `data_source_settings` should contain keys: data_source_type, data_source_parameters
+        """
+        data_source_settings = AzureChatWithDataSettings(
+            **settings.get("data_source_settings", {})
+        )
+
+        return AzureChatCompletionWithData(
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            api_version=settings.get(
+                "api_version", DEFAULT_AZURE_WITH_DATA_API_VERSION
+            ),
+            api_key=settings.get("api_key"),
+            ad_token=settings.get("ad_token"),
+            ad_token_provider=settings.get("ad_token_provider"),
+            log=settings.get("log"),
+            data_source_settings=data_source_settings,
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        base_dict = super().to_dict()
+        base_dict["data_source_settings"] = asdict(self._data_source_settings)
+        return base_dict
 
     async def complete_chat_async(
         self,

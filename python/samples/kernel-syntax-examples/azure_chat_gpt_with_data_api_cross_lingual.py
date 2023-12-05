@@ -45,7 +45,7 @@ kernel.add_chat_service(
 )
 
 prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.8, inputLanguage="fr", outputLanguage="es"
+    max_tokens=2000, temperature=0.7, top_p=0.8, inputLanguage="fr", outputLanguage="de"
 )
 
 prompt_template = sk.ChatWithDataPromptTemplate(
@@ -53,7 +53,9 @@ prompt_template = sk.ChatWithDataPromptTemplate(
 )
 
 prompt_template.add_user_message("Bonjour!")
-prompt_template.add_assistant_message("¡Hola! ¿Cómo puedo ayudarle?")
+prompt_template.add_assistant_message(
+    "Ich freue mich, euch die Geschichte von Emily und David erzählen zu können. Was möchten Sie wissen?"
+)
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
@@ -64,7 +66,8 @@ async def chat() -> bool:
     print(
         "Welcome to the chat bot!\
     \n  Type 'exit' to exit.\
-    \n  Type your question in French, and see the response in Spanish."
+    \n  Type your question in French, and see the response in German. \
+    \n  For example, 'Où Emily et David se sont-ils rencontrés?'"
     )
     try:
         user_input = input("User:> ")
