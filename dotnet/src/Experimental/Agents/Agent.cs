@@ -53,6 +53,16 @@ internal class Agent : IAgent
     IChatCompletion IAgent.ChatCompletion => this._kernel.Services.GetService<IChatCompletion>()!;
 
     /// <summary>
+    /// Gets the assistant threads.
+    /// </summary>
+    Dictionary<IAgent, IThread> IAgent.AssistantThreads { get; } = new Dictionary<IAgent, IThread>();
+
+    /// <summary>
+    /// Gets the planner.
+    /// </summary>
+    public string Planner => this._model.Planner!;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Agent"/> class.
     /// </summary>
     /// <param name="model">The model</param>

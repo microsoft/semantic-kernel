@@ -161,6 +161,28 @@ public partial class AgentBuilder
     }
 
     /// <summary>
+    /// Defines the agent's planner.
+    /// </summary>
+    /// <param name="plannerName">The agent's planner name.</param>
+    /// <returns></returns>
+    public AgentBuilder WithPlanner(string plannerName)
+    {
+        this._model.Planner = plannerName;
+        return this;
+    }
+
+    /// <summary>
+    /// Defines the agent's model.
+    /// </summary>
+    /// <param name="modelName">The model name used by the agent.</param>
+    /// <returns></returns>
+    public AgentBuilder WithModel(string modelName)
+    {
+        this._model.Model = modelName;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the logger factory to use.
     /// </summary>
     /// <param name="loggerFactory">The logger factory.</param>
@@ -203,7 +225,9 @@ public partial class AgentBuilder
             .WithName(agentModel.Name!.Trim())
             .WithDescription(agentModel.Description!.Trim())
             .WithInstructions(agentModel.Instructions.Trim())
-            .WithAzureOpenAIChatCompletion(deploymentName, modelId, azureOpenAIEndpoint, azureOpenAIKey);
+            .WithPlanner(agentModel.Planner!.Trim())
+            .WithModel(agentModel.Model!.Trim())
+            .WithAzureOpenAIChatCompletion(agentModel.Model!, agentModel.Model!, azureOpenAIEndpoint, azureOpenAIKey);
 
         if (plugins is not null)
         {

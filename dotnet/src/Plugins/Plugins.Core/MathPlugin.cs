@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 public sealed class MathPlugin
 {
     [KernelFunction]
-    [Description("Adds two numbers.")]
+    [Description("Adds two numbers. This takes only 2 numbers.")]
     [return: Description("The summation of the numbers.")]
     public static double Add(
        [Description("The first number to add")] double number1,
@@ -20,7 +20,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Subtracts two numbers.")]
+    [Description("Subtracts two numbers. This takes only 2 numbers.")]
     [return: Description("The difference between the minuend and subtrahend.")]
     public static double Subtract(
         [Description("The minuend")] double number1,
@@ -30,7 +30,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Multiplies two numbers.")]
+    [Description("Multiplies two numbers. This takes only 2 numbers.")]
     [return: Description("The product of the numbers.")]
     public static double Multiply(
         [Description("The first number to multiply")] double number1,
@@ -40,7 +40,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Divides two numbers.")]
+    [Description("Divides two numbers. This takes only 2 numbers.")]
     [return: Description("The quotient of the dividend and divisor.")]
     public static double Divide(
         [Description("The dividend")] double number1,
@@ -50,7 +50,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Gets the remainder of two numbers.")]
+    [Description("Gets the remainder of two numbers. This takes only 2 numbers.")]
     [return: Description("The remainder of the dividend and divisor.")]
     public static double Modulo(
         [Description("The dividend")] double number1,
@@ -87,7 +87,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Gets the maximum of two numbers.")]
+    [Description("Gets the maximum of two numbers. This takes only 2 numbers.")]
     [return: Description("The maximum of the two numbers.")]
     public static double Max(
         [Description("The first number")] double number1,
@@ -97,7 +97,7 @@ public sealed class MathPlugin
     }
 
     [KernelFunction]
-    [Description("Gets the minimum of two numbers.")]
+    [Description("Gets the minimum of two numbers. This takes only 2 numbers.")]
     [return: Description("The minimum of the two numbers.")]
     public static double Min(
         [Description("The first number")] double number1,

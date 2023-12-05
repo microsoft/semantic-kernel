@@ -14,4 +14,10 @@ internal class AgentModel
 
     [YamlMember(Alias = "instructions")]
     public string Instructions { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "planner")]
+    public string? Planner { get; set; }
+
+    [YamlMember(Alias = "model")]
+    public string? Model { get; set; }
 }

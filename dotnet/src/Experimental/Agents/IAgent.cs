@@ -26,6 +26,16 @@ public interface IAgent
     public string Instructions { get; }
 
     /// <summary>
+    /// Gets the planner.
+    /// </summary>
+    public string Planner { get; }
+
+    /// <summary>
+    /// Tools defined for run execution.
+    /// </summary>
+    public KernelPluginCollection Plugins { get; }
+
+    /// <summary>
     /// A semantic-kernel <see cref="Kernel"/> instance associated with the assistant.
     /// </summary>
     internal Kernel Kernel { get; }
@@ -36,9 +46,9 @@ public interface IAgent
     internal IChatCompletion ChatCompletion { get; }
 
     /// <summary>
-    /// Tools defined for run execution.
+    /// Gets the agent threads.
     /// </summary>
-    public KernelPluginCollection Plugins { get; }
+    internal Dictionary<IAgent, IThread> AssistantThreads { get; }
 
     /// <summary>
     /// Create a new conversable thread.
@@ -49,4 +59,5 @@ public interface IAgent
     /// Create a new conversable thread using actual kernel arguments.
     /// </summary>
     internal IThread CreateThread(IAgent initatedAgent, Dictionary<string, object?> arguments);
+
 }

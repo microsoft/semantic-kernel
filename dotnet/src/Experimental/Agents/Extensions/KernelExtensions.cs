@@ -25,7 +25,12 @@ internal static class KernelExtensions
 
         agentConversationPlugin.AddFunctionFromMethod(async (string input, KernelArguments args) =>
         {
-            var thread = model.Agent.CreateThread(agent, args.ToDictionary());
+            if (!agent.AssistantThreads.TryGetValue(model.Agent, out var thread))
+            {
+                thread = model.Agent.CreateThread();
+                agent.AssistantThreads.Add(model.Agent, thread);
+            }
+
             return await thread.InvokeAsync(input).ConfigureAwait(false);
         },
         functionName: "Ask",
