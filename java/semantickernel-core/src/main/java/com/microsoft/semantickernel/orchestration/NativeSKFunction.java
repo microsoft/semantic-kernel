@@ -40,7 +40,7 @@ import reactor.core.scheduler.Schedulers;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class NativeSKFunction extends AbstractSkFunction<Void> {
+public class NativeSKFunction extends AbstractSKFunction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeSKFunction.class);
 
@@ -76,8 +76,8 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
     }
 
     @Override
-    public Class<Void> getType() {
-        return Void.class;
+    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        return null;
     }
 
     @Override
@@ -152,7 +152,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 
     // Run the native function
     @Override
-    protected Mono<SKContext> invokeAsyncInternal(SKContext context, @Nullable Void settings) {
+    protected Mono<SKContext> invokeAsyncInternal(SKContext context, @Nullable Object settings) {
         return this.function.run(context);
     }
 
@@ -352,11 +352,12 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             Method method, SKContext context, Parameter parameter, Set<Parameter> inputArgs) {
         String variableName = getGetVariableName(parameter);
 
-        String arg = context.getVariables().get(variableName);
+        // TODO: 1.0 fix cast
+        String arg = (String) context.getVariables().get(variableName);
         if (arg == null) {
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
-                String input = context.getVariables().get(ContextVariables.MAIN_KEY);
+                String input = (String) context.getVariables().get(ContextVariables.MAIN_KEY);
                 if (input != null) {
                     arg = input;
                 }

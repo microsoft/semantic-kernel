@@ -185,6 +185,11 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
     }
 
     @Override
+    public OpenAIChatHistory createNewChat() {
+        return internalCreateNewChat(null);
+    }
+
+    @Override
     public Flux<String> generateMessageStream(
             OpenAIChatHistory chat, @Nullable ChatRequestSettings requestSettings) {
         return this.getStreamingChatCompletionsAsync(chat, requestSettings)
@@ -237,11 +242,10 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
      * @return Chat object
      */
     private static OpenAIChatHistory internalCreateNewChat(@Nullable String instructions) {
-        if (instructions == null) {
-            instructions = "";
+        OpenAIChatHistory history = new OpenAIChatHistory(instructions);
+        if (instructions != null && !instructions.isEmpty()) {
+            history.addUserMessage(instructions);
         }
-        OpenAIChatHistory history = new OpenAIChatHistory("Assistant is a large language model.");
-        history.addUserMessage(instructions);
         return history;
     }
 }

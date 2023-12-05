@@ -16,9 +16,7 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public abstract class DefaultSemanticSKFunction<RequestConfiguration>
-        extends AbstractSkFunction<RequestConfiguration>
-        implements SKFunction<RequestConfiguration> {
+public abstract class DefaultSemanticSKFunction extends AbstractSKFunction implements SKFunction {
 
     public DefaultSemanticSKFunction(
             List<ParameterView> parameters,
@@ -37,9 +35,7 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
 
     @Override
     public Mono<SKContext> invokeAsync(
-            @Nullable String input,
-            @Nullable SKContext context,
-            @Nullable RequestConfiguration settings) {
+            @Nullable String input, @Nullable SKContext context, @Nullable Object settings) {
         if (context == null) {
             assertSkillSupplierRegistered();
             context =

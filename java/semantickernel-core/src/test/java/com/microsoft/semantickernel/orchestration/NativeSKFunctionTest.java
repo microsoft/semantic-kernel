@@ -48,8 +48,8 @@ public class NativeSKFunctionTest {
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables = SKBuilders.variables().build();
-        variables = variables.writableClone().appendToVariable("input", "foo");
-        variables = variables.writableClone().appendToVariable("secondInput", "ignore");
+        variables = variables.writableClone().setVariable("input", "foo");
+        variables = variables.writableClone().setVariable("secondInput", "ignore");
         skills.getFunction("doSomething").invokeWithCustomInputAsync(variables, null, null).block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo", "ignore");
     }
@@ -68,8 +68,8 @@ public class NativeSKFunctionTest {
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables = SKBuilders.variables().build();
-        variables = variables.writableClone().appendToVariable("anInput", "foo");
-        variables = variables.writableClone().appendToVariable("secondInput", "ignore");
+        variables = variables.writableClone().setVariable("anInput", "foo");
+        variables = variables.writableClone().setVariable("secondInput", "ignore");
         skills.getFunction("doSomething").invokeWithCustomInputAsync(variables, null, null).block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo", "ignore");
     }
@@ -86,7 +86,7 @@ public class NativeSKFunctionTest {
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables =
-                SKBuilders.variables().build().writableClone().appendToVariable("input", "foo");
+                SKBuilders.variables().build().writableClone().setVariable("input", "foo");
         Assertions.assertThrows(
                 AIException.class,
                 () -> {

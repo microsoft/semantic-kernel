@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
@@ -17,9 +12,13 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import java.util.function.Function;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /** Interface for the semantic kernel. */
@@ -53,7 +52,7 @@ public interface Kernel extends Buildable {
      *
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
+     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
     Mono<KernelResult> runAsync(SKFunction... pipeline);
@@ -64,7 +63,7 @@ public interface Kernel extends Buildable {
      * @param input Input to process
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
+     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
     Mono<KernelResult> runAsync(String input, SKFunction... pipeline);
@@ -75,19 +74,21 @@ public interface Kernel extends Buildable {
      * @param variables variables to initialise the context with
      * @param pipeline List of functions
      * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
+     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
+     *
      * @param streaming Whether to stream the results of the pipeline
      * @param variables variables to initialise the context with
      * @param pipeline List of functions
      * @return Result of the function composition
      * @since 1.0.0
      */
-    Mono<KernelResult> runAsync(boolean streaming, ContextVariables variables, SKFunction... pipeline);
+    Mono<KernelResult> runAsync(
+            boolean streaming, ContextVariables variables, SKFunction... pipeline);
 
     /**
      * Register a semantic function on this kernel
@@ -113,15 +114,20 @@ public interface Kernel extends Buildable {
     <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
             throws KernelException;
 
-    /** Registers a semantic function on this kernel 
-     * @apiNote Breaking change: s/<RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>/<FunctionType extends SKFunction>/
-    */
+    /**
+     * Registers a semantic function on this kernel
+     *
+     * @apiNote Breaking change: s/<RequestConfiguration, FunctionType extends
+     *     SKFunction>/<FunctionType extends SKFunction>/
+     */
     @Deprecated
-    <FunctionType extends SKFunction>
-            FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
+    <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
+            FunctionType semanticFunctionDefinition);
 
-    /** Obtains a semantic function with the given name 
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
+    /**
+     * Obtains a semantic function with the given name
+     *
+     * @apiNote Breaking change: s/SKFunction/SKFunction/
      */
     @Deprecated
     SKFunction getFunction(String skill, String function);
@@ -129,6 +135,12 @@ public interface Kernel extends Buildable {
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
     }
+
+    @Deprecated
+    ReadOnlySkillCollection getSkills();
+
+    @Deprecated
+    ReadOnlyFunctionCollection getSkill();
 
     interface Builder extends SemanticKernelBuilder<Kernel> {
         /**
@@ -244,6 +256,7 @@ public interface Kernel extends Buildable {
 
         /**
          * Add plugins to the kernel to be built.
+         *
          * @param plugins Plugins to add.
          * @return Updated kernel builder including the plugins.
          * @since 1.0.0

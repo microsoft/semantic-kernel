@@ -37,6 +37,11 @@ public class DefaultSKContext extends AbstractSKContext {
         return new DefaultSKContext(variables, memory, skillCollection);
     }
 
+    @Override
+    public SKContext appendToVariable(String key, String content) {
+        throw new RuntimeException("Append no longer supported in objects");
+    }
+
     public static class Builder implements SKContext.Builder {
 
         private ContextVariables variables;

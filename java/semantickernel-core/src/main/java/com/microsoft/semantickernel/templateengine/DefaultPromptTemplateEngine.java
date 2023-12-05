@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine;
 
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
@@ -60,6 +61,12 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
         // this._log.LogTrace("Rendering string template: {0}", templateText);
         List<Block> blocks = this.extractBlocks(templateText);
         return this.renderAsync(blocks, context);
+    }
+
+    @Override
+    public Mono<String> renderAsync(String templateText, ContextVariables variables) {
+        // TODO
+        return null;
     }
 
     /// <inheritdoc/>
