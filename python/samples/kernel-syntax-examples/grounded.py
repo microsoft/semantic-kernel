@@ -92,7 +92,7 @@ def setup(use_azure: bool = False):
 
 
 def get_summary_text():
-    summary_text = """My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of misfortunes, moved to Zurich in poverty. My father was upset by his friend's troubles and sought him out, finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and his daughter, Mary. Mary procured work to eek out a living, but after ten months her father died, leaving her a beggar. My father came to her aid and two years later they married when they visited Rome."""
+    summary_text = """My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of misfortunes, moved to Zurich in poverty. My father was upset by his friend's troubles and sought him out, finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and his daughter, Mary. Mary procured work to eek out a living, but after ten months her father died, leaving her a beggar. My father came to her aid and two years later they married when they visited Rome."""  # noqa: E501
 
     summary_text = summary_text.replace("\n", " ").replace("  ", " ")
     return summary_text
@@ -120,9 +120,7 @@ async def run_reference_check(semantic_functions, extraction_result, context):
     return grounding_result, context
 
 
-async def run_entity_excision(
-    semantic_functions, summary_text, context
-):
+async def run_entity_excision(semantic_functions, summary_text, context):
     excision_result = semantic_functions["ExciseEntities"](
         summary_text, context=context
     )
@@ -133,15 +131,17 @@ async def run_grounding(use_azure: bool = False):
     kernel, semantic_functions = setup(use_azure)
     print(f"\n{Colors.CBOLD}Groundingsness Checking Skills\n{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
-    print(f"""{Colors.CGREEN}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).
+    print(
+        f"""{Colors.CGREEN}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).  # noqa: E501
 
-In this sample we run a simple grounding pipeline, to see if a summary text has any ungrounded additions as compared to the original, and use this information to improve the summary text. This can be done in three stages:
+In this sample we run a simple grounding pipeline, to see if a summary text has any ungrounded additions as compared to the original, and use this information to improve the summary text. This can be done in three stages:  # noqa: E501
 
 1. Make a list of the entities in the summary text
 1. Check to see if these entities appear in the original (grounding) text
 1. Remove the ungrounded entities from the summary text
 
-What is an 'entity' in this context? In its simplest form, it's a named object such as a person or place (so 'Dean' or 'Seattle'). However, the idea could be a _claim_ which relates concepts (such as 'Dean lives near Seattle'). In this sample, we will keep to the simpler case of named objects.""")
+What is an 'entity' in this context? In its simplest form, it's a named object such as a person or place (so 'Dean' or 'Seattle'). However, the idea could be a _claim_ which relates concepts (such as 'Dean lives near Seattle'). In this sample, we will keep to the simpler case of named objects."""  # noqa: E501
+    )
 
     print(f"\nThe grounding text: \n{Colors.CGREY}{get_grounding_text()}{Colors.CEND}")
 
@@ -149,7 +149,8 @@ What is an 'entity' in this context? In its simplest form, it's a named object s
     summary_text = get_summary_text()
     print(f"Summary text: \n{Colors.CBLUE}{summary_text}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
-    print(f"""{Colors.CGREEN}Some things to note:
+    print(
+        f"""{Colors.CGREEN}Some things to note:
 
 - The implied residence of Geneva has been changed to Milan
 - Lucerne has been changed to Zurich
@@ -163,25 +164,34 @@ The grounding skill has three stages:
 2. Perform a reference check against the grounding text
 3. Excise any entities which failed the reference check from the summary
 
-Now, let us start calling individual semantic functions.{Colors.CEND}""")
+Now, let us start calling individual semantic functions.{Colors.CEND}"""
+    )
     print(f"\n{ '-'*80 }\n")
-    print(f"{Colors.CGREEN}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND}")
+    print(
+        f"{Colors.CGREEN}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND}"  # noqa: E501
+    )
     extraction_result, context = await run_entity_extraction(
         kernel, semantic_functions, summary_text
     )
     print(f"Extraction result: \n{Colors.CBLUE}{extraction_result.result}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
-    print(f"{Colors.CGREEN}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND}")
+    print(
+        f"{Colors.CGREEN}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND}"  # noqa: E501
+    )
     grounding_result, context = await run_reference_check(
         semantic_functions, extraction_result, context
     )
     print(f"Grounding result: \n{Colors.CBLUE}{grounding_result.result}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
-    print(f"{Colors.CGREEN}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND}")
+    print(
+        f"{Colors.CGREEN}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND}"  # noqa: E501
+    )
     excision_result, context = await run_entity_excision(
         semantic_functions, summary_text, context
     )
-    print(f"The final summary text: \n{Colors.CBLUE}{excision_result.result}{Colors.CEND}")
+    print(
+        f"The final summary text: \n{Colors.CBLUE}{excision_result.result}{Colors.CEND}"
+    )
     print(f"\n{ '-'*80 }\n")
     print(f"{Colors.CBOLD}Finished!{Colors.CEND}")
 
