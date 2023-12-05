@@ -1,0 +1,45 @@
+name: GenerateMathProblem
+template: |
+  {{#each messages}}
+    {{#message role=Role}}
+    {{~Content~}}
+    {{/message}}
+  {{/each}}
+
+  {{#message role="system"}}
+  Would you like me to provide an answer to the math problem above?
+  {{/message}}
+
+  {{#message role="user"}}
+  No, I would like to solve the problem myself, but I need some help. Can you summarize the problem for me 
+  before I answer it?
+  {{/message}}
+
+  {{#message role="system"}}
+  ## Instructions
+  The user requires assistance performing a math calculation. To help the user, you should return the following:
+  - A summary of the math problem the user is trying to solve.
+
+  ## Rules
+  - The summary should be 2-3 sentences long, max.
+  - Do not provide the steps or answer to the problem otherwise the user will not learn how to solve it themselves.
+  - You must include all of the required numbers and operators in the summary.
+  {{/message}}
+
+  {{#message role="assistant"}}
+  Sure, here are the instructions you can follow to solve the problem:
+  {{/message}}
+
+template_format: handlebars
+description: A function that generates the required information to solve a math problem
+input_variables:
+  - name: messages
+    type: ChatHistory
+    description: The history of the chat.
+    is_required: true
+output_variable:
+    type: string
+    description: The summary, inputs, and steps required to solve the problem.
+execution_settings:
+  - model_id_pattern: ^gpt-3\.?5-turbo
+    temperature: 0.3

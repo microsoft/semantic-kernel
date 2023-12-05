@@ -1,0 +1,35 @@
+name: GroundedChat
+template: |
+  {{#message role="system"}}
+  {{persona}}
+  {{/message}}
+
+  {{#each messages}}
+    {{#message role=Role}}
+    {{~Content~}}
+    {{/message}}
+  {{/each}}
+
+  {{#message role="system"}}
+    {{Search_Search query=(Search_GetSearchQuery messages=messages)}}
+  {{/message}}
+template_format: handlebars
+description: A function that gets uses the chat history to respond to the user.
+input_variables:
+  - name: persona
+    type: string
+    description: The persona of the assistant.
+    default_value: You are a helpful assistant.
+    is_required: false
+  - name: messages
+    type: ChatHistory
+    description: The history of the chat.
+    is_required: true
+output_variable:
+    type: string
+    description: The response from the assistant.
+execution_settings:
+  - model_id_pattern: ^gpt-4
+    temperature: 0.7
+  - model_id_pattern: ^gpt-3\.?5-turbo
+    temperature: 0.3
