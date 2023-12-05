@@ -23,9 +23,9 @@ public static class Example58_ConfigureExecutionSettings
         string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (serviceId == null || apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI serviceId, modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -77,8 +77,6 @@ public static class Example58_ConfigureExecutionSettings
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
-Hello! As an AI language model, I can help you with a variety of
-
 Hello! As an AI language model, I can help you with a variety of tasks, such as:
 
 1. Answering general questions and providing information on a wide range of topics.

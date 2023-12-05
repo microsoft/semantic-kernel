@@ -70,10 +70,11 @@ public sealed class AssistantHarness
     public async Task VerifyAssistantDefinitionAsync()
     {
         var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                definitionPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .FromTemplatePath("Templates/PoetAssistant.yaml")
+                .BuildAsync()
+                .ConfigureAwait(true);
 
         this.DumpAssistant(assistant);
 

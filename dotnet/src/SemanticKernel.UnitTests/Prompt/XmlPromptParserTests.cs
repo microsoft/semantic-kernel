@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Prompts;
+using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Prompt;

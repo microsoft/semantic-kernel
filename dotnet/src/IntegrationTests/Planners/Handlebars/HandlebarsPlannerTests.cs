@@ -88,7 +88,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
             }
             else
             {
-                c.AddAzureOpenAITextCompletion(
+                c.AddAzureOpenAITextGeneration(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     modelId: azureOpenAIConfiguration.ModelId,
                     endpoint: azureOpenAIConfiguration.Endpoint,

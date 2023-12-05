@@ -67,7 +67,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public int ResultsPerPrompt { get; set; } = 1;
 
     /// <summary>
-    /// The system prompt to use when generating text completions using a chat model.
+    /// The system prompt to use when generating text using a chat model.
     /// Defaults to "Assistant is a large language model."
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
@@ -128,7 +128,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
 
     /// <summary>
-    /// Default max tokens for a text completion
+    /// Default max tokens for a text generation
     /// </summary>
     internal static int DefaultTextMaxTokens { get; } = 256;
 

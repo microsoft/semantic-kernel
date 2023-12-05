@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -98,7 +98,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         // Supports the following provided T types for Method streaming
-        if (typeof(T) == typeof(StreamingContent) ||
+        if (typeof(T) == typeof(StreamingContentBase) ||
             typeof(T) == typeof(StreamingMethodContent))
         {
             if (functionResult.Value is not null)
@@ -122,7 +122,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
-        ITextCompletion? textCompletion,
+        ITextGenerationService? textGeneration,
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
@@ -199,7 +199,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextGenerationService? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -364,7 +364,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <summary>
-    /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
+    /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
     /// </summary>
     private static Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {

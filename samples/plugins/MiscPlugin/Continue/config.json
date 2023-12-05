@@ -10,11 +10,11 @@
       "frequency_penalty": 0.0
     }
   ],
-  "input_parameters": [
+  "input_variables": [
     {
       "name": "input",
       "description": "The text to continue.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }
