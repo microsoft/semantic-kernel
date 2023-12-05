@@ -66,31 +66,21 @@ public sealed class HandlebarsPlannerTests
     {
         plugins ??= new KernelPluginCollection();
 
-        var chatMessage = new ChatMessage(AuthorRole.Function, testPlanString);
+        var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
 
-        var chatResult = new Mock<IChatResult>();
-        chatResult
-            .Setup(cr => cr.GetChatMessageAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(chatMessage);
-
-        var chatCompletionResult = new List<IChatResult> { chatResult.Object };
-
-        var chatCompletion = new Mock<IChatCompletion>();
+        var chatCompletion = new Mock<IChatCompletionService>();
         chatCompletion
-            .Setup(cc => cc.GetChatCompletionsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(chatCompletionResult);
-        chatCompletion
-            .Setup(cc => cc.CreateNewChat(It.IsAny<string>()))
-            .Returns(new ChatHistory());
+            .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<IChatCompletion>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelFunctionArguments>()))
+            .Setup(ss => ss.SelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
             .Returns((chatCompletion.Object, new PromptExecutionSettings()));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
-        serviceCollection.AddSingleton<IChatCompletion>(chatCompletion.Object);
+        serviceCollection.AddSingleton<IChatCompletionService>(chatCompletion.Object);
 
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
