@@ -26,7 +26,7 @@ public sealed class HandlebarsPlannerTests
     {
         // Arrange
         var plugins = this.CreatePluginCollection();
-        var kernel = this.CreateKernel(PlanString, plugins);
+        var kernel = this.CreateKernelWithMockCompletionResult(PlanString, plugins);
         var planner = new HandlebarsPlanner();
 
         // Act
@@ -41,7 +41,7 @@ public sealed class HandlebarsPlannerTests
     public async Task EmptyGoalThrowsAsync()
     {
         // Arrange
-        var kernel = this.CreateKernel(PlanString);
+        var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
 
         var planner = new HandlebarsPlanner();
 
@@ -53,7 +53,7 @@ public sealed class HandlebarsPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var kernel = this.CreateKernel("<plan>notvalid<</plan>");
+        var kernel = this.CreateKernelWithMockCompletionResult("<plan>notvalid<</plan>");
 
         var planner = new HandlebarsPlanner();
 
@@ -62,7 +62,7 @@ public sealed class HandlebarsPlannerTests
         Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
     }
 
-    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
+    private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
         plugins ??= new KernelPluginCollection();
 
