@@ -35,23 +35,20 @@ public interface FunctionResult {
      * Get the function result.
      *
      * @return The function result.
-     * @param <T> The type of the function result.
      */
-    <T> Mono<T> getValueAsync();
+    Mono<String> getValueAsync();
 
     /**
      * Get the function result.
      *
      * @return The function result.
-     * @param <T> The type of the function result.
      */
-    <T> Flux<T> getStreamingValueAsync();
+    Flux<String> getStreamingValueAsync();
 
     /**
      * Get the function result.
      *
      * @return The function result.
-     * @param <T> The type of the function result.
      */
-    <T> T getValue();
+    String getValue();
 }

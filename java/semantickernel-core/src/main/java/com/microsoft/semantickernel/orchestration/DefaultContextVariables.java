@@ -134,7 +134,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
         public Builder() {
             variables = new CaseInsensitiveMap<>();
-            this.variables.put(MAIN_KEY, "");
+//            this.variables.put(MAIN_KEY, "");
         }
 
         @Override

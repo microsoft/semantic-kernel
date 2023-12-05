@@ -20,12 +20,11 @@ import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import jakarta.inject.Inject;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -283,76 +282,26 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline) {
-        if (pipeline == null || pipeline.length == 0) {
-            throw new SKException("No parameters provided to pipeline");
-        }
-        // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
-        //       Not sure registerMemory is the right way.
-        Mono<SKContext> pipelineBuilder =
-                Mono.just(
-                        SKBuilders.context()
-                                .withVariables(variables)
-                                .withSkills(getSkills())
-                                .build());
-
-        // TODO: 1.0 iterate
-        Mono<SKContext> resultContext = null;
-        for (SKFunction f : Arrays.asList(pipeline)) {
-            SKContext context =
-                    SKBuilders.context().withVariables(variables).withSkills(getSkills()).build();
-
-            resultContext = f.invokeAsync(context, null);
-        }
-
-        Mono<SKContext> finalResultContext = resultContext;
-        return Mono.just(
-                new KernelResult() {
-                    @Override
-                    public Collection<FunctionResult> functionResults() {
-                        ArrayList<FunctionResult> f = new ArrayList<>();
-                        f.add(
-                                new FunctionResult() {
-
-                                    @Override
-                                    public String functionName() {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public String pluginName() {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public Map<String, Object> metadata() {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public <T> Mono<T> getValueAsync() {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public <T> Flux<T> getStreamingValueAsync() {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public <T> T getValue() {
-                                        return (T) finalResultContext.block().getResult();
-                                    }
-                                });
-
-                        return f;
-                    }
-                });
+        return null;
     }
 
     @Override
     public Mono<KernelResult> runAsync(
             boolean streaming, ContextVariables variables, SKFunction... pipeline) {
-        return null;
+        // TODO: 1.0 support pipeline
+
+        if (pipeline == null || pipeline.length == 0) {
+            throw new SKException("No parameters provided to pipeline");
+        }
+
+        List<Mono<FunctionResult>> results = new ArrayList<>();
+        for (SKFunction f : Arrays.asList(pipeline)) {
+            results.add(f.invokeAsync(this, variables, streaming));
+        }
+
+        return Flux.merge(results)
+                .collectList()
+                .map(DefaultKernelResult::new);
     }
 
     public static class Builder implements Kernel.Builder {

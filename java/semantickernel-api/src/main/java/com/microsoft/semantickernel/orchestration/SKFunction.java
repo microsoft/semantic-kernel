@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.KernelResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -64,7 +66,25 @@ public interface SKFunction {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+    @Deprecated
     Mono<SKContext> invokeAsync(SKContext context);
+
+    /**
+     * The type of the configuration argument that will be provided when the function is invoked
+     *
+     * @return The type @Nullable Class<RequestConfiguration> getType();
+     */
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param kernel Associated Kernel
+     * @param variables Request variables
+     * @param streaming Whether streaming is on or not
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming);
 
     /**
      * Invokes the function with the given context and settings

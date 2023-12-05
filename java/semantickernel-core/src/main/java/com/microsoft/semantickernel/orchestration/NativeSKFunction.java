@@ -76,6 +76,11 @@ public class NativeSKFunction extends AbstractSkFunction {
     }
 
     @Override
+    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        return null;
+    }
+
+    @Override
     public void registerOnKernel(Kernel kernel) {
         // No actions needed
     }

@@ -20,6 +20,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class SemanticFunction extends DefaultSemanticSKFunction {
@@ -61,30 +62,33 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
                 .withPromptTemplate(
                         new HandlebarsPromptTemplate(
                                 functionModel.getTemplate(), new HandlebarsPromptTemplateEngine()))
-                .withPluginName(functionModel.getName())
+                .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
                 .withExecutionSettings(functionModel.getExecutionSettings())
                 .withDescription(functionModel.getDescription())
                 .build();
     }
 
-    public Mono<SemanticFunctionResult> invokeAsync(Kernel kernel, ContextVariables input) throws IOException {
+    @Override
+    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables input, boolean streaming) {
         TextCompletion client = kernel.getService(null, TextCompletion.class);
         if (client == null) {
             throw new IllegalStateException("Failed to initialise aiService");
         }
 
+        // TODO: 1.0 check model pattern Id to select execution settings
         SemanticFunctionModel.ExecutionSettingsModel executionSettingsModel =
                 this.executionSettings.get(0);
 
         // TODO: 1.0 fix settings
-        CompletionRequestSettings requestSettings = new CompletionRequestSettings(0.9, 0, 0, 0, 1000);
+        CompletionRequestSettings requestSettings = new CompletionRequestSettings(
+                Double.valueOf(executionSettingsModel.getTemperature()), 0, 0, 0, 1000);
 
         return this.promptTemplate
                         .renderAsync(input)
                         .flatMap(
                                 prompt ->
                                         performCompletionRequest(
-                                                client, requestSettings, prompt))
+                                                client, requestSettings, prompt ,streaming))
                         .doOnError(
                                 ex -> {
                                     LOGGER.warn(
@@ -121,24 +125,20 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
                                 });
     }
 
-    private static Mono<SemanticFunctionResult> performCompletionRequest(
-            TextCompletion client, CompletionRequestSettings requestSettings, String prompt) {
+    private Mono<FunctionResult> performCompletionRequest(
+            TextCompletion client, CompletionRequestSettings requestSettings, String prompt, boolean streaming) {
 
         LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-        switch (client.defaultCompletionType()) {
-            case NON_STREAMING:
-                return client.completeAsync(prompt, requestSettings)
-                        .single()
-                        .map(completion -> new SemanticFunctionResult(completion.get(0)));
+        if (streaming) {
+            Flux<String> completionStream = client.completeStreamAsync(prompt, requestSettings);
 
-            case STREAMING:
-            default:
-                return client.completeStreamAsync(prompt, requestSettings)
-                        .filter(completion -> !completion.isEmpty())
-                        .take(1)
-                        .single()
-                        .map(SemanticFunctionResult::new);
+            return Mono.just(new SemanticFunctionResult(pluginName, name, completionStream.reduce(String::concat), completionStream));
+        } else {
+            Mono<String> completion = client.completeAsync(prompt, requestSettings)
+                    .map(list -> list.isEmpty() ? null : list.get(0));
+
+            return Mono.just(new SemanticFunctionResult(pluginName, name, completion));
         }
     }
 

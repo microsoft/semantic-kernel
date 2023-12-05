@@ -166,7 +166,7 @@ public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
             throw new IllegalStateException("Failed to initialise aiService");
         }
 
-        // TODO: 1.0 fix properly
+        // TODO: 1.0 fix properly using settings object
         CompletionRequestSettings finalSettings = new CompletionRequestSettings(0.9, 0, 0, 0, 1000);
 
         return function.run(this.aiService.get(), finalSettings, context)
@@ -270,6 +270,11 @@ public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
                 super.getParametersView(),
                 true,
                 false);
+    }
+
+    @Override
+    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        return null;
     }
 
     public static class Builder implements CompletionSKFunction.Builder {

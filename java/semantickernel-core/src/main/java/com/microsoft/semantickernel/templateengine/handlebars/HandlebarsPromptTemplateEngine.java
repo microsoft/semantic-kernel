@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import reactor.core.publisher.Mono;
 
@@ -38,7 +39,6 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
     public static class HandleBarsPromptTemplateHandler {
         private final String template;
         private final Handlebars handlebars;
-        private final ObjectMapper objectMapper;
 
         public HandleBarsPromptTemplateHandler(String template) {
             this.template = template;
@@ -49,47 +49,52 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
                         @Override
                         public Object apply(Object context, Options options) throws IOException {
                             String role = options.hash("role");
+                            String content = (String) options.fn(context);
 
-                            if (role == null || role.isEmpty()) {
-                                role =
-                                        ((ChatHistory.Message) context)
-                                                .getAuthorRoles()
+                            if (context instanceof Optional) {
+                                ChatHistory.Message message = ((Optional<ChatHistory.Message>) context).orElse(null);
+                                role = message.getAuthorRoles()
                                                 .toString()
                                                 .toLowerCase();
+                                content = message.getContent();
                             }
 
-                            if (!role.isEmpty()) {
+                            if (role != null && !role.isEmpty()) {
                                 return new Handlebars.SafeString(
                                         String.format(
                                                 "<message role=\"%s\">%s</message>",
-                                                role, options.fn(context)));
+                                                role, content));
                             }
                             return "";
                         }
                     });
 
-            this.objectMapper = new ObjectMapper();
+            // TODO: 1.0 Add more helpers
         }
 
         public Mono<String> render(ContextVariables variables) {
-            AtomicReference<String> template = new AtomicReference<>(this.template);
+            try {
+                String result = handlebars.compileInline(template).apply(variables.asMap());
+                return Mono.just(result);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-            variables
-                    .asMap()
-                    .forEach(
-                            (k, v) -> {
-                                try {
-                                    // TODO: 1.0 fix
-                                    if (k.equals("messages")) {
-                                        template.set(
-                                                handlebars.compileInline(template.get()).apply(v));
-                                    }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-
-            return Mono.just(template.get());
+//            AtomicReference<String> template = new AtomicReference<>(this.template);
+//
+//            variables
+//                    .asMap()
+//                    .forEach(
+//                            (k, v) -> {
+//                                try {
+//                                    template.set(
+//                                            handlebars.compileInline(template.get()).apply(v));
+//                                } catch (IOException e) {
+//                                    throw new RuntimeException(e);
+//                                }
+//                            });
+//
+//            return Mono.just(template.get());
         }
     }
 }
