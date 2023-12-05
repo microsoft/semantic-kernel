@@ -5,6 +5,9 @@ import os
 from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from azure.search.documents.indexes.models import (
     SearchableField,
     SearchField,
@@ -83,7 +86,7 @@ def get_search_index_async_client(
     if azure_credential is None and token_credential is None:
         raise ValueError("Error: Azure Cognitive Search credentials not set.")
 
-    sk_headers = {"User-Agent": "Semantic-Kernel"}
+    sk_headers = {USER_AGENT: "Semantic-Kernel"}
 
     if azure_credential:
         return SearchIndexClient(

@@ -9,6 +9,9 @@ from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompl
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -291,4 +294,4 @@ def test_azure_chat_completion_serialize() -> None:
         assert dumped_settings["default_headers"][key] == value
 
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
-    assert "User-agent" not in dumped_settings["default_headers"]
+    assert USER_AGENT not in dumped_settings["default_headers"]

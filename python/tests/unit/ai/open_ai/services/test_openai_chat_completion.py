@@ -6,6 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
@@ -98,7 +101,7 @@ def test_open_ai_chat_completion_serialize() -> None:
         assert key in dumped_settings["default_headers"]
         assert dumped_settings["default_headers"][key] == value
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
-    assert "User-agent" not in dumped_settings["default_headers"]
+    assert USER_AGENT not in dumped_settings["default_headers"]
 
 
 def test_open_ai_chat_completion_serialize_with_org_id() -> None:
@@ -120,4 +123,4 @@ def test_open_ai_chat_completion_serialize_with_org_id() -> None:
     assert dumped_settings["api_key"] == api_key
     assert dumped_settings["org_id"] == org_id
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
-    assert "User-agent" not in dumped_settings["default_headers"]
+    assert USER_AGENT not in dumped_settings["default_headers"]

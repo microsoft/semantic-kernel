@@ -8,6 +8,9 @@ from openai import AsyncOpenAI
 from pydantic import Field, validate_call
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
@@ -52,7 +55,7 @@ class OpenAIConfigBase(OpenAIHandler):
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
-            merged_headers["User-Agent"] = json.dumps(APP_INFO)
+            merged_headers[USER_AGENT] = json.dumps(APP_INFO)
 
         if not async_client:
             if not api_key:
@@ -60,7 +63,6 @@ class OpenAIConfigBase(OpenAIHandler):
                     AIException.ErrorCodes.InvalidConfiguration,
                     "Please provide an api_key",
                 )
-            # TODO: add SK user-agent here
             async_client = AsyncOpenAI(
                 api_key=api_key,
                 organization=org_id,
@@ -81,9 +83,7 @@ class OpenAIConfigBase(OpenAIHandler):
         client_settings = {
             "api_key": self.client.api_key,
             "default_headers": {
-                k: v
-                for k, v in self.client.default_headers.items()
-                if k != "User-agent"
+                k: v for k, v in self.client.default_headers.items() if k != USER_AGENT
             },
         }
         if self.client.organization:

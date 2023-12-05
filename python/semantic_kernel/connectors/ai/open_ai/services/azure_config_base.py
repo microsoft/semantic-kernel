@@ -8,7 +8,10 @@ from openai import AsyncAzureOpenAI
 from pydantic import validate_call
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.connectors.ai.open_ai.const import (
+    DEFAULT_AZURE_API_VERSION,
+    USER_AGENT,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
     OpenAIModelTypes,
@@ -59,7 +62,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
-            merged_headers["User-Agent"] = json.dumps(APP_INFO)
+            merged_headers[USER_AGENT] = json.dumps(APP_INFO)
 
         if not async_client:
             if not api_key and not ad_token and not ad_token_provider:
@@ -107,9 +110,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "ad_token": self.client._azure_ad_token,
             "ad_token_provider": self.client._azure_ad_token_provider,
             "default_headers": {
-                k: v
-                for k, v in self.client.default_headers.items()
-                if k != "User-agent"
+                k: v for k, v in self.client.default_headers.items() if k != USER_AGENT
             },
         }
         base = self.model_dump(
