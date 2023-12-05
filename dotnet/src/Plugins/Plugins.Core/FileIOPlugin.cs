@@ -11,12 +11,6 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// Read and write from a file.
 /// </summary>
-/// <example>
-/// Usage: kernel.ImportFunctions(new FileIOPlugin(), "file");
-/// Examples:
-/// {{file.readAsync $path }} => "hello world"
-/// {{file.writeAsync}}
-/// </example>
 public sealed class FileIOPlugin
 {
     /// <summary>
