@@ -77,7 +77,6 @@ public interface Kernel extends Buildable {
      * @return Result of the function composition
      * @apiNote Breaking change: s/SKFunction<?>/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
-    @Deprecated
     Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline);
 
     /**
