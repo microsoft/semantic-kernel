@@ -4,23 +4,23 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
+namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
 
 /// <summary>
-/// Integration tests for <see cref="HuggingFaceTextCompletion"/>.
+/// Integration tests for <see cref="HuggingFaceTextGenerationService"/>.
 /// </summary>
-public sealed class HuggingFaceTextCompletionTests
+public sealed class HuggingFaceTextGenerationTests
 {
     private const string Endpoint = "http://localhost:5000/completions";
     private const string Model = "gpt2";
 
     private readonly IConfigurationRoot _configuration;
 
-    public HuggingFaceTextCompletionTests()
+    public HuggingFaceTextGenerationTests()
     {
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -31,13 +31,13 @@ public sealed class HuggingFaceTextCompletionTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task HuggingFaceLocalAndRemoteTextCompletionAsync()
+    public async Task HuggingFaceLocalAndRemoteTextGenerationAsync()
     {
         // Arrange
         const string Input = "This is test";
 
-        var huggingFaceLocal = new HuggingFaceTextCompletion(Model, endpoint: Endpoint);
-        var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
+        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endpoint: Endpoint);
+        var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey());
 
         // Act
         var localResponse = await huggingFaceLocal.GetTextContentAsync(Input);
@@ -52,7 +52,7 @@ public sealed class HuggingFaceTextCompletionTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task RemoteHuggingFaceTextCompletionWithCustomHttpClientAsync()
+    public async Task RemoteHuggingFaceTextGenerationWithCustomHttpClientAsync()
     {
         // Arrange
         const string Input = "This is test";
@@ -60,7 +60,7 @@ public sealed class HuggingFaceTextCompletionTests
         using var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("https://api-inference.huggingface.co/models");
 
-        var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
+        var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
         var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);

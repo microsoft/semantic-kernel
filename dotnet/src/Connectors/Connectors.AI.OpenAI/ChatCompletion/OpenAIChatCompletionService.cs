@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// <summary>
 /// OpenAI chat completion service.
 /// </summary>
-public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextCompletion
+public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     private readonly OpenAIClientCore _core;
 

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
-/// Abstraction of text content chunks when using streaming from <see cref="ITextCompletion"/> interface.
+/// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
 public class StreamingTextContent : StreamingContentBase
 {

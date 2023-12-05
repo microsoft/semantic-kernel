@@ -36,26 +36,25 @@ public static class Example71_AssistantDelegation
         var plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         var menuAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                new[] { plugin });
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                .WithDescription("Answer questions about how the menu uses the tool.")
+                .WithPlugin(plugin)
+                .BuildAsync();
 
         var parrotAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
-
-        var helperAssistantPlugins = Import(menuAssistant, parrotAssistant);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                .BuildAsync();
 
         var toolAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                helperAssistantPlugins);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                .WithPlugins(new[] { menuAssistant.AsPlugin(), parrotAssistant.AsPlugin() })
+                .BuildAsync();
 
         var messages = new string[]
         {
@@ -72,18 +71,6 @@ public static class Example71_AssistantDelegation
 
             var assistantMessages = await thread.InvokeAsync(toolAssistant).ConfigureAwait(true);
             DisplayMessages(assistantMessages);
-        }
-
-        IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
-        {
-            var plugins = new KernelPluginCollection();
-
-            foreach (var assistant in assistants)
-            {
-                plugins.Add(KernelPluginFactory.CreateFromObject(assistant, assistant.Id));
-            }
-
-            return plugins;
         }
     }
 

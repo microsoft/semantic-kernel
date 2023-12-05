@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
-/// Represents text content return from a <see cref="ITextCompletion" /> service.
+/// Represents text content return from a <see cref="ITextGenerationService" /> service.
 /// </summary>
 public sealed class TextContent : ContentBase
 {
