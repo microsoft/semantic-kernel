@@ -77,14 +77,14 @@ public sealed class PromptTemplateConfig
     public class InputVariable
     {
         /// <summary>
-        /// Name of the parameter to pass to the function.
+        /// Name of the variable to pass to the prompt function.
         /// e.g. when using "{{$input}}" the name is "input", when using "{{$style}}" the name is "style", etc.
         /// </summary>
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Parameter description for UI apps and planner. Localization is not supported here.
+        /// Variable description for UI applications and planners. Localization is not supported here.
         /// </summary>
         [JsonPropertyName("description")]
         public string Description { get; set; } = string.Empty;
@@ -96,14 +96,14 @@ public sealed class PromptTemplateConfig
         public string DefaultValue { get; set; } = string.Empty;
 
         /// <summary>
-        /// True to indeicate the input parameter is required. True by default.
+        /// True to indicate the input variable is required. True by default.
         /// </summary>
         [JsonPropertyName("is_required")]
         public bool IsRequired { get; set; } = true;
     }
 
     /// <summary>
-    /// Return the input parameters metadata.
+    /// Return the input variables metadata.
     /// </summary>
     internal List<KernelParameterMetadata> GetKernelParametersMetadata()
     {
