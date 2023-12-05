@@ -25,9 +25,10 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatMessage">Azure SDK chat message</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIChatMessageContent(Azure.AI.OpenAI.ChatMessage chatMessage, Dictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, chatMessage, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(4))
+    internal OpenAIChatMessageContent(Azure.AI.OpenAI.ChatMessage chatMessage, string modelId, Dictionary<string, object?>? metadata = null)
+        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(4))
     {
         this.FunctionCall = chatMessage.FunctionCall;
         this.Name = chatMessage.Name;
