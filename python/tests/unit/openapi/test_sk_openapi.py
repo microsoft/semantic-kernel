@@ -5,6 +5,9 @@ import pytest
 import yaml
 from openapi_core import Spec
 
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.openapi.sk_openapi import (
     OpenApiParser,
     OpenApiRunner,
@@ -95,7 +98,7 @@ def test_prepare_request_with_path_params():
         headers={
             "Authorization": "Bearer abc123",
             "Content-Type": "application/json",
-            "User-Agent": "Semantic-Kernel",
+            USER_AGENT: "Semantic-Kernel",
         },
         request_body={"title": "Buy milk", "completed": False},
     )
@@ -134,7 +137,7 @@ def test_prepare_request_with_default_query_param():
         headers={
             "Authorization": "Bearer abc123",
             "Content-Type": "application/json",
-            "User-Agent": "Semantic-Kernel",
+            USER_AGENT: "Semantic-Kernel",
         },
         request_body={"title": "Buy milk", "completed": False},
     )
@@ -156,7 +159,7 @@ def test_prepare_request_with_default_header():
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
-        headers={"Content-Type": "application/json", "User-Agent": "Semantic-Kernel"},
+        headers={"Content-Type": "application/json", USER_AGENT: "Semantic-Kernel"},
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -171,14 +174,14 @@ def test_prepare_request_with_default_header():
 def test_prepare_request_with_existing_user_agent():
     path_params = {"id": 1}
     query_params = {"completed": False}
-    headers = {"User-Agent": "API/1.0 PythonBindings"}
+    headers = {USER_AGENT: "API/1.0 PythonBindings"}
     request_body = {"title": "Buy milk", "completed": False}
     expected_request = PreparedRestApiRequest(
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
         headers={
-            "User-Agent": "Semantic-Kernel API/1.0 PythonBindings",
+            USER_AGENT: "Semantic-Kernel API/1.0 PythonBindings",
             "Content-Type": "application/json",
         },
         request_body={"title": "Buy milk", "completed": False},

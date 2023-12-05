@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-"""Base class for text completion AI services."""
+
+
 from abc import ABC, abstractmethod
 from logging import Logger
 from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
