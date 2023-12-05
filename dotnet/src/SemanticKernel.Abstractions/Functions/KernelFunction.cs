@@ -44,13 +44,13 @@ public abstract class KernelFunction
     /// <summary><see cref="Counter{T}"/> to record function invocation success counts.</summary>
     private static readonly Counter<int> s_invocationSuccess = s_meter.CreateCounter<int>(
         name: "sk.function.invocation.success",
-        unit: "{time}",
+        unit: "{invocation}",
         description: "Measures the number of successful function executions");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation failure counts.</summary>
     private static readonly Counter<int> s_invocationFailure = s_meter.CreateCounter<int>(
         name: "sk.function.invocation.failure",
-        unit: "{time}",
+        unit: "{invocation}",
         description: "Measures the number of failed function executions");
 
     /// <summary>

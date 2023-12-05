@@ -37,8 +37,6 @@ Contoso is a company that is developing an AI application using SK.
 ## Decision Drivers
 
 - The framework should be telemetry service agnostic.
-- Enabling and disabling specific telemetry items should require minimum effort, given an item can be turned on and off.
-
 - The following metrics should be emitted by SK:
   - Input token usage for prompt (Prompt)
     - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
@@ -105,10 +103,10 @@ SK currently tracks token usage metrics in connectors; however, these metrics ar
 
 We have decided to implement the bottom-up approach for the following reasons:
 
-1. SK is already configured to propagate token usage information from connectors via `ModelResult`. We simply need to extend the list of items that get propagated, such as model information.
+1. SK is already configured to propagate token usage information from connectors via `ContentBase`. We simply need to extend the list of items that need to be propagated, such as model information.
 2. Currently, SK does not have a method for passing function information down to the connector level. Although we considered using [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/#:~:text=In%20OpenTelemetry%2C%20Baggage%20is%20contextual%20information%20that%E2%80%99s%20passed,available%20to%20any%20span%20created%20within%20that%20trace.) as a means of propagating information downward, experts from the OpenTelemetry team advised against this approach due to security concerns.
 
-With the bottom-up approach, we need to propagate model usage information from connectors to functions.
+With the bottom-up approach, we need to retrieve the token usage information from the metadata:
 
 ```csharp
 // Note that not all services support usage details.
@@ -228,8 +226,9 @@ Overall cons:
 Logs will be used to record interesting events while the code is running.
 
 ```csharp
-this._logger.LogInformation("{PlannerType}: Received planning request.", PlannerType);
-this._logger.LogInformation("{PlannerType}: Successfully created plan. Plan: {plan}", PlannerType, plan.ToPlanString());
+// Use LoggerMessage attribute for optimal performance
+this._logger.LogPlanCreationStarted();
+this._logger.LogPlanCreated();
 ```
 
 #### [Metrics](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics)
@@ -242,8 +241,8 @@ private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
 /// <summary><see cref="Counter{T}"/> to keep track of the number of successful execution.</summary>
 private static readonly Counter<int> s_successCounter = s_meter.CreateCounter<int>(
-    name: "sk.function.success",
-    unit: "{execution}",
+    name: "sk.function.invocation.success",
+    unit: "{invocation}",
     description: "Number of successful function executions");
 
 // Add a measurement with a custom dimension to categorize measurements based on function.
@@ -260,17 +259,9 @@ ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 // Create and start an activity
 using var activity = s_activitySource.StartActivity(this.Name);
 
-if (logger.IsEnabled(LogLevel.Trace))
-{
-  logger.LogTrace("Goal: {Goal}", goal); // Sensitive data, logging as trace, disabled by default
-}
-
-...
-
-if (logger.IsEnabled(LogLevel.Trace))
-{
-  logger.LogTrace("Plan: {Plan}", plan); // Sensitive data, logging as trace, disabled by default
-}
+// Use LoggerMessage attribute for optimal performance
+logger.LoggerGoal(goal);
+logger.LoggerPlan(plan);
 ```
 
 > Note: Trace log will contain sensitive data and should be turned off in production: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-level
