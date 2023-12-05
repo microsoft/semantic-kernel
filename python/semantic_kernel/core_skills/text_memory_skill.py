@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import typing as t
-
 from typing import ClassVar
+
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
