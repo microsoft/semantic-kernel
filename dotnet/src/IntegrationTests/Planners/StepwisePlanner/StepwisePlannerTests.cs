@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -143,7 +143,7 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
+        return new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
@@ -154,7 +154,7 @@ public sealed class StepwisePlannerTests : IDisposable
             }
             else
             {
-                c.AddAzureOpenAITextCompletion(
+                c.AddAzureOpenAITextGeneration(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);

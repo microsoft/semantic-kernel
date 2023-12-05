@@ -14,6 +14,10 @@ using Resources;
 /// </summary>
 public static class Example71_AssistantDelegation
 {
+    /// <summary>
+    /// Specific model is required that supports assistants and function calling.
+    /// Currently this is limited to Open AI hosted services.
+    /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     /// <summary>
@@ -32,54 +36,40 @@ public static class Example71_AssistantDelegation
         var plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
 
         var menuAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                new[] { plugin });
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                .WithDescription("Answer questions about how the menu uses the tool.")
+                .WithPlugin(plugin)
+                .BuildAsync();
 
         var parrotAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
-
-        var helperAssistantPlugins = Import(menuAssistant, parrotAssistant);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                .BuildAsync();
 
         var toolAssistant =
-            await AssistantBuilder.FromDefinitionAsync(
-                TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
-                helperAssistantPlugins);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                .WithPlugins(new[] { menuAssistant.AsPlugin(), parrotAssistant.AsPlugin() })
+                .BuildAsync();
 
-        await ChatAsync(
-            toolAssistant,
+        var messages = new string[]
+        {
             "What's on the menu?",
             "Can you talk like pirate?",
-            "Thank you");
+            "Thank you",
+        };
 
-        IEnumerable<IKernelPlugin> Import(params IAssistant[] assistants)
-        {
-            var plugins = new KernelPluginCollection();
-
-            foreach (var assistant in assistants)
-            {
-                plugins.Add(KernelPluginFactory.CreateFromObject(assistant, assistant.Id));
-            }
-
-            return plugins;
-        }
-    }
-    private static async Task ChatAsync(IAssistant assistant, params string[] messages)
-    {
-        var thread = await assistant.NewThreadAsync();
+        var thread = await toolAssistant.NewThreadAsync();
         foreach (var message in messages)
         {
             var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
             DisplayMessage(messageUser);
 
-            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
+            var assistantMessages = await thread.InvokeAsync(toolAssistant).ConfigureAwait(true);
             DisplayMessages(assistantMessages);
         }
     }

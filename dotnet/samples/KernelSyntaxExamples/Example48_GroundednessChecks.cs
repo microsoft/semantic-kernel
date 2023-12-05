@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,6 +63,7 @@ after this event Caroline became his wife.""";
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -128,6 +128,7 @@ which are not grounded in the original.
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -143,8 +144,8 @@ which are not grounded in the original.
 
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
-        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine(result.GetValue<string>());
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        Console.WriteLine(result);
     }
 }
 

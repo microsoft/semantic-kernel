@@ -57,8 +57,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
         """
-        # TODO: add SK user-agent here
-
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -72,7 +70,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 )
             if base_url:
                 async_client = AsyncAzureOpenAI(
-                    base_url=base_url,
+                    base_url=str(base_url),
                     api_version=api_version,
                     api_key=api_key,
                     azure_ad_token=ad_token,

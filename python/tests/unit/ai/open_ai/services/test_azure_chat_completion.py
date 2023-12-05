@@ -43,9 +43,9 @@ def test_azure_chat_completion_init() -> None:
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
 
 
-def test_azure_chat_completion_init_with_custom_header() -> None:
+def test_azure_chat_completion_init_base_url() -> None:
     deployment_name = "test_deployment"
-    endpoint = "https://test-endpoint.com"
+    base_url = "https://test-endpoint.com/openai/deployment/test_deployment"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
@@ -55,7 +55,7 @@ def test_azure_chat_completion_init_with_custom_header() -> None:
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
-        endpoint=endpoint,
+        base_url=base_url,
         api_key=api_key,
         api_version=api_version,
         log=logger,
@@ -133,6 +133,23 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,
+            api_key=api_key,
+            api_version=api_version,
+            log=logger,
+        )
+
+
+def test_azure_chat_completion_init_with_base_url() -> None:
+    deployment_name = "test_deployment"
+    base_url = "http://test-endpoint.com/openai/deployment/test_deployment"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+
+    with pytest.raises(ValidationError, match="url"):
+        AzureChatCompletion(
+            deployment_name=deployment_name,
+            base_url=base_url,
             api_key=api_key,
             api_version=api_version,
             log=logger,

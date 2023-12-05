@@ -22,11 +22,12 @@ public static class Example72_KernelStreaming
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -34,6 +35,7 @@ public static class Example72_KernelStreaming
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
+                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey)
@@ -46,7 +48,7 @@ public static class Example72_KernelStreaming
         Console.WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         // Streaming can be of any type depending on the underlying service the function is using.
-        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatContent>(funnyParagraphFunction))
+        await foreach (var update in kernel.InvokeStreamingAsync<OpenAIStreamingChatMessageContent>(funnyParagraphFunction))
         {
             // You will be always able to know the type of the update by checking the Type property.
             if (!roleDisplayed && update.Role.HasValue)
@@ -55,9 +57,9 @@ public static class Example72_KernelStreaming
                 roleDisplayed = true;
             }
 
-            if (update.ContentUpdate is { Length: > 0 })
+            if (update.Content is { Length: > 0 })
             {
-                Console.Write(update.ContentUpdate);
+                Console.Write(update.Content);
             }
         }
     }
