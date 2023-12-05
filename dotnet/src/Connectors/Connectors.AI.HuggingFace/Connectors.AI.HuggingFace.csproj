@@ -14,7 +14,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Hugging Face AI connectors</Title>
-    <Description>Semantic Kernel connectors for Hugging Face. Contains clients for text completion and text embedding generation.</Description>
+    <Description>Semantic Kernel connectors for Hugging Face. Contains clients for text generation and text embedding generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>

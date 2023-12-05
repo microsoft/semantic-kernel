@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextCompletion
+public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataService"/> class.
@@ -65,7 +65,9 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     /// <inheritdoc/>
     public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
+        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+            .Select(chat => new TextContent(chat.Content, chat, chat.ModelId, Encoding.UTF8, chat.Metadata))
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -77,7 +79,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, Encoding.UTF8, streamingChatContent.Metadata);
+            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, streamingChatContent.ModelId, Encoding.UTF8, streamingChatContent.Metadata);
         }
     }
 
@@ -106,7 +108,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -126,7 +128,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         var metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, metadata)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).ToList();
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
@@ -207,7 +209,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, metadata);
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, metadata);
             }
         }
     }

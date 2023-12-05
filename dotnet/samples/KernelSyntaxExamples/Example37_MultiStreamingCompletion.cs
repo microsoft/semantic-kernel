@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -36,14 +36,14 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        ITextCompletion textCompletionService = new OpenAIChatCompletionService(
+        ITextGenerationService textGeneration = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(textCompletionService);
+        await ChatCompletionStreamAsync(textGeneration);
     }
 
-    private static async Task ChatCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task ChatCompletionStreamAsync(ITextGenerationService textGeneration)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -59,7 +59,7 @@ public static class Example37_MultiStreamingCompletion
 
         PrepareDisplay();
         var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
-        await ProcessStreamAsyncEnumerableAsync(textCompletion, prompt, executionSettings, consoleLinesPerResult);
+        await ProcessStreamAsyncEnumerableAsync(textGeneration, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
 
@@ -77,7 +77,7 @@ public static class Example37_MultiStreamingCompletion
             Console.WriteLine();
         }
     }
-    private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextGenerationService chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var messagePerChoice = new Dictionary<int, string>();
         await foreach (var textUpdate in chatCompletion.GetStreamingTextContentsAsync(prompt, executionSettings))

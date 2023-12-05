@@ -272,7 +272,7 @@ public static class Example15_TextMemoryPlugin
         // PART 3: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
-        // the text completion model to answer a natural language query.
+        // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");

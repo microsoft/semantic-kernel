@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
-/// Represents text content return from a <see cref="ITextCompletion" /> service.
+/// Represents text content return from a <see cref="ITextGenerationService" /> service.
 /// </summary>
 public sealed class TextContent : ContentBase
 {
@@ -26,10 +26,11 @@ public sealed class TextContent : ContentBase
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
     /// <param name="text">Text content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string? text, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
+    public TextContent(string? text, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;

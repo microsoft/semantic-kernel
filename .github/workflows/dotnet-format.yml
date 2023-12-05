@@ -56,13 +56,17 @@ jobs:
         if: github.event_name != 'pull_request' || steps.changed-files.outputs.added_modified != '' || steps.changed-files.outcome == 'failure'
         run: |
           csproj_files=()
+          exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
               dir="./$file"
               while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
                 if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
-                  csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
+                  csproj_path="$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)"
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
+                    csproj_files+=("$csproj_path")  
+                  fi
                   break
                 fi
 
