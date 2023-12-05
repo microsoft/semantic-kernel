@@ -76,4 +76,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="prompts\GenerateStory.yaml" />
+  </ItemGroup>
 </Project>
