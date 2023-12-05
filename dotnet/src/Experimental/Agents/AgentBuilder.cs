@@ -115,6 +115,7 @@ public partial class AgentBuilder
     public AgentBuilder WithAzureOpenAIChatCompletion(string deploymentName, string model, string endpoint, string apiKey)
     {
         this._kernelBuilder.WithAzureOpenAIChatCompletion(deploymentName, model, endpoint, apiKey);
+        this._kernelBuilder.WithAzureOpenAITextGeneration(deploymentName, model, endpoint, apiKey);
         return this;
     }
 
@@ -225,9 +226,9 @@ public partial class AgentBuilder
             .WithName(agentModel.Name!.Trim())
             .WithDescription(agentModel.Description!.Trim())
             .WithInstructions(agentModel.Instructions.Trim())
-            .WithPlanner(agentModel.Planner!.Trim())
+            .WithPlanner(agentModel.Planner?.Trim())
             .WithModel(agentModel.Model!.Trim())
-            .WithAzureOpenAIChatCompletion(agentModel.Model!, agentModel.Model!, azureOpenAIEndpoint, azureOpenAIKey);
+            .WithAzureOpenAIChatCompletion(agentModel.DeploymentName!, agentModel.Model!, azureOpenAIEndpoint, azureOpenAIKey);
 
         if (plugins is not null)
         {

@@ -20,4 +20,7 @@ internal class AgentModel
 
     [YamlMember(Alias = "model")]
     public string? Model { get; set; }
+
+    [YamlMember(Alias = "deployment_name")]
+    public string? DeploymentName { get; set; }
 }

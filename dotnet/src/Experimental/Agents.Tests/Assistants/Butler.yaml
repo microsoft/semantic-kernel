@@ -4,5 +4,7 @@ instructions: |
   Act as a butler.
   No need to explain further the internal process.
   Be concise when answering.
-model: gpt-35-turbo-1106
-planner: Handlebars
+model: gpt-3.5-turbo
+deployment_name: gpt-35-turbo-1106
+planner: Stepwise
+

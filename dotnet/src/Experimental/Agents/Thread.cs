@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
@@ -122,26 +123,48 @@ public class Thread : IThread
 
     private async Task ExecutePlannerIfNeededAsync(string userMessage)
     {
-        int maxTries = 3;
-        HandlebarsPlan? lastPlan = null;
-        Exception? lastError = null;
+
 
         if (string.IsNullOrEmpty(this._agent.Planner))
         {
             return;
         }
 
+        var userIntent = await this.ExtractUserIntentAsync(userMessage)
+                                .ConfigureAwait(false);
+
+        var result = await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
+
+        this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
+
+    }
+
+    private async Task<string?> ExecutePlannerAsync(string userIntent)
+    {
+        var goal = $"{this._agent.Instructions}\n" +
+                            $"Given the following context, accomplish the user intent.\n" +
+                            $"{userIntent}";
+
+        switch (this._agent.Planner)
+        {
+            case "Handlebars":
+                return await this.ExecuteHandleBarsPlannerAsync(goal).ConfigureAwait(false);
+            case "Stepwise":
+                return await this.ExecuteStepwisePlannerAsync(goal).ConfigureAwait(false);
+            default:
+                throw new NotImplementedException($"Planner {this._agent.Planner} is not implemented.");
+        }
+    }
+
+    private async Task<string> ExecuteHandleBarsPlannerAsync(string goal, int maxTries = 3)
+    {
+        HandlebarsPlan? lastPlan = null;
+        Exception? lastError = null;
+
         while (maxTries > 0)
         {
             try
             {
-                var userIntent = await this.ExtractUserIntentAsync(userMessage)
-                                                .ConfigureAwait(false);
-
-                var goal = $"{this._agent.Instructions}\n" +
-                            $"Given the following context, accomplish the user intent.\n" +
-                            $"{userIntent}";
-
                 var planner = new HandlebarsPlanner(new()
                 {
                     LastPlan = lastPlan, // Pass in the last plan in case we want to try again
@@ -153,9 +176,7 @@ public class Thread : IThread
 
                 var result = plan.Invoke(this._agent.Kernel, new KernelArguments(this._arguments));
 
-                this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
-
-                return;
+                return result;
             }
             catch (Exception e)
             {
@@ -168,6 +189,22 @@ public class Thread : IThread
 
         this._logger.LogError(lastError!, lastError!.Message);
         this._logger.LogError(lastPlan!.ToString());
+
         throw lastError;
+    }
+
+    private async Task<string> ExecuteStepwisePlannerAsync(string goal)
+    {
+        var config = new FunctionCallingStepwisePlannerConfig
+        {
+            MaxIterations = 15,
+            MaxTokens = 4000,
+        };
+
+        var planner = new FunctionCallingStepwisePlanner(config);
+
+        var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);
+
+        return result.FinalAnswer;
     }
 }

@@ -5,5 +5,6 @@ instructions: |
   Given a math problem, you must answer it with the best calculation formula.
   No need to show your work, just give the answer to the math problem.
   Use calculation results.
-model: gpt-35-turbo-1106
+model: gpt-3.5-turbo
+deployment_name: gpt-35-turbo-1106
 planner: Handlebars

@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
+    <ProjectReference Include="..\..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
