@@ -19,6 +19,12 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction
 {
+    /// <summary>The measurement tag name for the function name.</summary>
+    protected const string MeasurementFunctionTagName = "sk.function.name";
+
+    /// <summary>The measurement tag name for the function error type.</summary>
+    protected const string MeasurementErrorTagName = "sk.function.error.type";
+
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
@@ -158,7 +164,7 @@ public abstract class KernelFunction
         arguments ??= new KernelArguments();
         logger.LogFunctionInvokingWithArguments(this.Name, arguments);
 
-        TagList tags = new() { { "sk.function.name", this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
         try
@@ -196,7 +202,6 @@ public abstract class KernelFunction
         }
         catch (Exception ex)
         {
-            s_invocationFailure.Add(1, in tags);
             HandleException(ex, logger, this, kernel, arguments, functionResult, ref tags);
             throw;
         }
@@ -281,7 +286,7 @@ public abstract class KernelFunction
         arguments ??= new KernelArguments();
         logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
 
-        TagList tags = new() { { "sk.function.name", this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
@@ -335,6 +340,7 @@ public abstract class KernelFunction
                 }
             }
 
+            s_invocationSuccess.Add(1, in tags);
             // The FunctionInvoked hook is not used when streaming.
         }
         finally
@@ -374,7 +380,8 @@ public abstract class KernelFunction
         Exception ex, ILogger logger, KernelFunction kernelFunction, Kernel kernel, KernelArguments arguments, FunctionResult? result, ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
-        tags.Add("error.type", ex.GetType().FullName);
+        tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
+        s_invocationFailure.Add(1, in tags);
         logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException

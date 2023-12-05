@@ -201,6 +201,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
+    /// <summary>The measurement tag name for the model used.</summary>
+    private const string MeasurementModelTagName = "sk.function.model_id";
+
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
     private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
@@ -294,8 +297,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     promptTokens, completionTokens);
 
         TagList tags = new() {
-            { "sk.function.name", this.Name },
-            { "sk.function.model_id", modelId }
+            { MeasurementErrorTagName, this.Name },
+            { MeasurementModelTagName, modelId }
         };
 
         s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
