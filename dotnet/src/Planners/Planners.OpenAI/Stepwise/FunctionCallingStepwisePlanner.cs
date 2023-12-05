@@ -158,7 +158,7 @@ public sealed class FunctionCallingStepwisePlanner
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml, pluginName: StepwisePlannerPluginName);
+        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml);
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {

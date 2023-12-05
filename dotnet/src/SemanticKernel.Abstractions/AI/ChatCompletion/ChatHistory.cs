@@ -30,7 +30,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message
     /// </summary>
-    /// <param name="systemMessage"></param>
+    /// <param name="systemMessage">The system message to add to the history.</param>
     public ChatHistory(string systemMessage)
     {
         Verify.NotNullOrWhiteSpace(systemMessage);
@@ -63,11 +63,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <param name="encoding"></param>
+    /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, encoding, metadata));
+        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -179,6 +179,19 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNull(item);
         return this._messages.Remove(item);
+    }
+
+    /// <summary>
+    /// Removes a range of messages from the history.
+    /// </summary>
+    /// <param name="index">The index of the range of elements to remove.</param>
+    /// <param name="count">The number of elements to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 0.</exception>
+    /// <exception cref="ArgumentException"><paramref name="count"/> and <paramref name="count"/> do not denote a valid range of messages.</exception>
+    public void RemoveRange(int index, int count)
+    {
+        this._messages.RemoveRange(index, count);
     }
 
     /// <inheritdoc/>
