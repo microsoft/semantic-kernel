@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -71,26 +72,30 @@ public class FunctionFromMethodTests
     }
 
     [Fact]
-    public async Task InvokeStreamingAsyncInvokingCancellingShouldRenderNoChunksAsync()
+    public async Task InvokeStreamingAsyncInvokingCancelingShouldThrowAsync()
     {
         // Arrange
         var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
+        bool invokingCalled = false;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
+            invokingCalled = true;
             e.Cancel = true;
         };
-        var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
-        {
-            chunkCount++;
-        }
+        IAsyncEnumerable<StreamingContentBase> enumerable = sut.InvokeStreamingAsync<StreamingContentBase>(kernel);
+        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        Assert.False(invokingCalled);
+        var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
-        Assert.Equal(0, chunkCount);
+        Assert.True(invokingCalled);
+        Assert.Same(sut, e.Function);
+        Assert.Same(kernel, e.Kernel);
+        Assert.Empty(e.Arguments);
     }
 
     [Fact]
