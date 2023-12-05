@@ -43,7 +43,7 @@ public interface IAgent
     /// <summary>
     /// The chat completion service.
     /// </summary>
-    internal IChatCompletion ChatCompletion { get; }
+    internal IChatCompletionService ChatCompletion { get; }
 
     /// <summary>
     /// Gets the agent threads.

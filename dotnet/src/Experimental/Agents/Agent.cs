@@ -50,7 +50,7 @@ internal class Agent : IAgent
     /// <summary>
     /// Gets the chat completion service.
     /// </summary>
-    IChatCompletion IAgent.ChatCompletion => this._kernel.Services.GetService<IChatCompletion>()!;
+    IChatCompletionService IAgent.ChatCompletion => this._kernel.Services.GetService<IChatCompletionService>()!;
 
     /// <summary>
     /// Gets the assistant threads.

@@ -20,5 +20,5 @@ public interface IThread
     /// <summary>
     /// Gets the chat messages.
     /// </summary>
-    IReadOnlyList<ChatMessage> ChatMessages { get; }
+    IReadOnlyList<ChatMessageContent> ChatMessages { get; }
 }

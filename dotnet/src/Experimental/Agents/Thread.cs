@@ -50,7 +50,7 @@ public class Thread : IThread
     /// <summary>
     /// Gets the chat messages.
     /// </summary>
-    public IReadOnlyList<ChatMessage> ChatMessages => this._chatHistory;
+    public IReadOnlyList<ChatMessageContent> ChatMessages => this._chatHistory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Thread"/> class.
@@ -66,8 +66,7 @@ public class Thread : IThread
         this._agent = agent;
         this._callerName = callerName;
         this._arguments = arguments ?? new Dictionary<string, object?>();
-        this._chatHistory = this._agent.ChatCompletion
-                                    .CreateNewChat(this._agent.Description);
+        this._chatHistory = new ChatHistory(this._agent.Description!);
 
         this._chatHistory.AddSystemMessage(this._agent.Instructions);
     }
@@ -84,15 +83,13 @@ public class Thread : IThread
 
         this._chatHistory.AddUserMessage(userMessage);
 
-        var agentAnswer = await this._agent.ChatCompletion.GetChatCompletionsAsync(this._chatHistory)
+        var agentAnswer = await this._agent.ChatCompletion.GetChatMessageContentAsync(this._chatHistory)
                                         .ConfigureAwait(false);
 
-        var assistantMessage = await agentAnswer[0].GetChatMessageAsync().ConfigureAwait(false);
+        this._chatHistory.Add(agentAnswer);
+        this._logger.LogInformation(message: $"{this._agent.Name!} > {agentAnswer.Content}");
 
-        this._chatHistory.Add(assistantMessage);
-        this._logger.LogInformation(message: $"{this._agent.Name!} > {assistantMessage.Content}");
-
-        return assistantMessage.Content;
+        return agentAnswer.Content;
     }
 
     /// <summary>
@@ -102,8 +99,7 @@ public class Thread : IThread
     /// <returns></returns>
     private async Task<string> ExtractUserIntentAsync(string userMessage)
     {
-        var chat = this._agent.ChatCompletion
-                                    .CreateNewChat(SystemIntentExtractionPrompt);
+        var chat = new ChatHistory(SystemIntentExtractionPrompt);
 
         foreach (var item in this._chatHistory)
         {
@@ -119,13 +115,9 @@ public class Thread : IThread
 
         chat.AddUserMessage(userMessage);
 
-        var chatResults = await this._agent.ChatCompletion.GetChatCompletionsAsync(chat).ConfigureAwait(false);
+        var chatResult = await this._agent.ChatCompletion.GetChatMessageContentAsync(chat).ConfigureAwait(false);
 
-        var chatMessage = await chatResults[0]
-                                    .GetChatMessageAsync()
-                                    .ConfigureAwait(false);
-
-        return chatMessage.Content;
+        return chatResult.Content;
     }
 
     private async Task ExecutePlannerIfNeededAsync(string userMessage)
@@ -161,10 +153,8 @@ public class Thread : IThread
 
                 var result = plan.Invoke(this._agent.Kernel, new KernelArguments(this._arguments));
 
-                var response = new ChatMessage(new AuthorRole("function"), result!.Trim(), new Dictionary<string, string>());
-                response!.AdditionalProperties!.Add("Name", this._agent.Name!);
+                this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
 
-                this._chatHistory.Add(response);
                 return;
             }
             catch (Exception e)
