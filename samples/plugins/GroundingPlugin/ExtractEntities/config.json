@@ -14,17 +14,17 @@
     {
       "name": "input",
       "description": "The text from which the entities are to be extracted",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "topic",
       "description": "The topic of interest; the extracted entities should be related to this topic",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "example_entities",
       "description": "A list of example entities from the topic. This can help guide the entity extraction",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

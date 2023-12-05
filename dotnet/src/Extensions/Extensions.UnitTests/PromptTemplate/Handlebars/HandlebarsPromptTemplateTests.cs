@@ -85,13 +85,13 @@ public sealed class HandlebarsPromptTemplateTests
         {
             Name = "bar",
             Description = "Bar",
-            DefaultValue = "Bar"
+            Default = "Bar"
         });
         promptConfig.InputParameters.Add(new InputParameter()
         {
             Name = "baz",
             Description = "Baz",
-            DefaultValue = "Baz"
+            Default = "Baz"
         });
         promptConfig.Template = "Foo {{bar}} {{baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);

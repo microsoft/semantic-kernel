@@ -92,8 +92,8 @@ public sealed class PromptTemplateConfig
         /// <summary>
         /// Default value when nothing is provided.
         /// </summary>
-        [JsonPropertyName("default_value")]
-        public string DefaultValue { get; set; } = string.Empty;
+        [JsonPropertyName("default")]
+        public string Default { get; set; } = string.Empty;
 
         /// <summary>
         /// True to indeicate the input parameter is required. True by default.
@@ -110,7 +110,7 @@ public sealed class PromptTemplateConfig
         return this.InputParameters.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.DefaultValue
+            DefaultValue = p.Default
         }).ToList();
     }
 

@@ -14,7 +14,7 @@
     {
       "name": "input",
       "description": "The scenario to turn into a poem.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

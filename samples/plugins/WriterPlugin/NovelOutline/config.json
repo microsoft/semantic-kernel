@@ -14,17 +14,17 @@
     {
       "name": "input",
       "description": "What the novel should be about.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "chapterCount",
       "description": "The number of chapters to generate.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "endMarker",
       "description": "The marker to use to end each chapter.",
-      "default_value": "<!--===ENDPART===-->"
+      "default": "<!--===ENDPART===-->"
     }
   ]
 }

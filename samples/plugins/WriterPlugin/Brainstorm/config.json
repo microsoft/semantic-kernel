@@ -15,7 +15,7 @@
     {
       "name": "input",
       "description": "A topic description or goal.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }
