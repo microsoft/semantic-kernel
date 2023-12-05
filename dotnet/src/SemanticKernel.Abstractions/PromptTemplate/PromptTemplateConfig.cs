@@ -45,10 +45,10 @@ public sealed class PromptTemplateConfig
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Input parameters.
+    /// Input variables.
     /// </summary>
-    [JsonPropertyName("input_parameters")]
-    public List<InputParameter> InputParameters { get; set; } = new();
+    [JsonPropertyName("input_variables")]
+    public List<InputVariable> InputVariables { get; set; } = new();
 
     /// <summary>
     /// Prompt execution settings.
@@ -72,9 +72,9 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Input parameter for prompt functions.
+    /// Input variable for prompt functions.
     /// </summary>
-    public class InputParameter
+    public class InputVariable
     {
         /// <summary>
         /// Name of the parameter to pass to the function.
@@ -107,7 +107,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     internal List<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        return this.InputParameters.Select(p => new KernelParameterMetadata(p.Name)
+        return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
             DefaultValue = p.DefaultValue
