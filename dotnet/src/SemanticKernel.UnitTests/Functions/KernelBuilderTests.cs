@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -205,7 +205,7 @@ public class KernelBuilderTests
     {
         Kernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithAzureOpenAITextCompletion(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai")
+            .WithAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai")
             .WithServices(services =>
             {
                 services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
@@ -215,9 +215,9 @@ public class KernelBuilderTests
             .Build();
 
         Assert.IsType<OpenAIChatCompletionService>(kernel.GetService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextCompletion>(kernel.GetService<ITextCompletion>("azureopenai"));
+        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetService<ITextGenerationService>("azureopenai"));
 
-        Assert.Equal(2, kernel.GetAllServices<ITextCompletion>().Count());
+        Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
         Assert.Single(kernel.GetAllServices<IChatCompletionService>());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
