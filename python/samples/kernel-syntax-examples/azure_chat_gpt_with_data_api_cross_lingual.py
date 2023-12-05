@@ -54,7 +54,7 @@ prompt_template = sk.ChatWithDataPromptTemplate(
 
 prompt_template.add_user_message("Bonjour!")
 prompt_template.add_assistant_message(
-    "Ich freue mich, euch die Geschichte von Emily und David erzählen zu können. Was möchten Sie wissen?"
+    "Ich freue mich, euch die Geschichte von Emily und David erzählen zu können. Wie kann ich helfen?"
 )
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
