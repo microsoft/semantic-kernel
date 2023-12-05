@@ -181,6 +181,19 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         return this._messages.Remove(item);
     }
 
+    /// <summary>
+    /// Removes a range of messages from the history.
+    /// </summary>
+    /// <param name="index">The index of the range of elements to remove.</param>
+    /// <param name="count">The number of elements to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 0.</exception>
+    /// <exception cref="ArgumentException"><paramref name="count"/> and <paramref name="count"/> do not denote a valid range of messages.</exception>
+    public void RemoveRange(int index, int count)
+    {
+        this._messages.RemoveRange(index, count);
+    }
+
     /// <inheritdoc/>
     bool ICollection<ChatMessageContent>.IsReadOnly => false;
 

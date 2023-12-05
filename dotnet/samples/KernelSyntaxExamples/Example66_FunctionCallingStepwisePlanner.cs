@@ -27,11 +27,11 @@ public static class Example66_FunctionCallingStepwisePlanner
             MaxIterations = 15,
             MaxTokens = 4000,
         };
-        var planner = new FunctionCallingStepwisePlanner(kernel, config);
+        var planner = new FunctionCallingStepwisePlanner(config);
 
         foreach (var question in questions)
         {
-            FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(question);
+            FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(kernel, question);
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
