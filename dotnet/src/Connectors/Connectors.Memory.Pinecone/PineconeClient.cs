@@ -258,7 +258,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new KernelException("Must provide at least one of ids, filter, or deleteAll");
+            throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
