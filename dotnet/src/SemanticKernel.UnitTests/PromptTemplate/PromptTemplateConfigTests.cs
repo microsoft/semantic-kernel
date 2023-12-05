@@ -91,8 +91,7 @@ public class PromptTemplateConfigTests
       ]
     }
   ]
-}
-        ";
+}";
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
@@ -127,8 +126,7 @@ public class PromptTemplateConfigTests
       ]
     }
   ]
-}
-        ";
+}";
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
@@ -137,5 +135,58 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.NotNull(promptTemplateConfig.ExecutionSettings?.FirstOrDefault<PromptExecutionSettings>());
         Assert.Equal("gpt-4", promptTemplateConfig?.ExecutionSettings.FirstOrDefault<PromptExecutionSettings>()?.ModelId);
+    }
+
+    [Fact]
+    public void DeserializingExpectInputVariables()
+    {
+        // Arrange
+        string configPayload = @"
+{
+  ""description"": ""function description"",
+  ""input_variables"":
+    [
+        {
+            ""name"": ""input variable name"",
+            ""description"": ""input variable description"",
+            ""default_value"": ""default value"",
+            ""is_required"": true
+        }
+    ]
+}";
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.NotNull(promptTemplateConfig.InputVariables);
+        Assert.Single(promptTemplateConfig.InputVariables);
+        Assert.Equal("input variable name", promptTemplateConfig.InputVariables[0].Name);
+        Assert.Equal("input variable description", promptTemplateConfig.InputVariables[0].Description);
+        Assert.Equal("default value", promptTemplateConfig.InputVariables[0].DefaultValue);
+        Assert.True(promptTemplateConfig.InputVariables[0].IsRequired);
+    }
+
+    [Fact]
+    public void DeserializingExpectOutputVariable()
+    {
+        // Arrange
+        string configPayload = @"
+{
+  ""description"": ""function description"",
+  ""output_variable"": 
+    {
+        ""description"": ""output variable description""
+    }
+}";
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.NotNull(promptTemplateConfig.OutputVariable);
+        Assert.Equal("output variable description", promptTemplateConfig.OutputVariable.Description);
     }
 }

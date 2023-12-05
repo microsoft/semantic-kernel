@@ -24,9 +24,9 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
         string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (serviceId == null || apiKey == null || deploymentName == null || modelId == null || endpoint == null)
+        if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI serviceId, modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
