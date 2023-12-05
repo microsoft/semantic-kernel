@@ -41,7 +41,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             )
         if base_url:
             client = AsyncAzureOpenAI(
-                base_url=base_url,
+                base_url=str(base_url),
                 api_version=api_version,
                 api_key=api_key,
                 azure_ad_token=ad_token,
