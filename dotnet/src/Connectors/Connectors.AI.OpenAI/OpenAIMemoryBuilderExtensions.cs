@@ -50,17 +50,17 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="modelId">Model identifier</param>
+    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
     [Experimental("SKEXP0011")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credential,
-        string modelId,
         HttpClient? httpClient = null)
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
