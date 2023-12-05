@@ -26,7 +26,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     public string DeploymentOrModelName => this._core.DeploymentOrModelName;
 
     /// <summary>
-    /// OpenAI / Azure OpenAI Client
+    /// Gets the underlying <see cref="OpenAIClient"/> used by this <see cref="AzureOpenAIChatCompletionService"/> instance.
     /// </summary>
     /// <remarks>
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
