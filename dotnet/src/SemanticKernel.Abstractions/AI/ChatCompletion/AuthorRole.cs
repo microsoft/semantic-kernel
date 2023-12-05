@@ -42,7 +42,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
-    /// <param name="label"></param>
+    /// <param name="label">The label to associate with this AuthorRole.</param>
     [JsonConstructor]
     public AuthorRole(string label)
     {

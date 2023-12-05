@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public sealed class KernelFunctionTests3
+public sealed class KernelFunctionFromMethodTests2
 {
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
     private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);

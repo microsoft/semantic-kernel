@@ -8,15 +8,15 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 /// <summary>
-/// Azure OpenAI text completion client.
+/// Azure OpenAI text generation client.
 /// </summary>
-public sealed class AzureOpenAITextCompletion : ITextCompletion
+public sealed class AzureOpenAITextGenerationService : ITextGenerationService
 {
     private readonly AzureOpenAIClientCore _core;
 
@@ -24,7 +24,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
+    /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using API Key auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -32,7 +32,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextCompletion(
+    public AzureOpenAITextGenerationService(
         string deploymentName,
         string modelId,
         string endpoint,
@@ -40,12 +40,12 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance supporting AAD auth
+    /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance supporting AAD auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -53,7 +53,7 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextCompletion(
+    public AzureOpenAITextGenerationService(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -61,25 +61,25 @@ public sealed class AzureOpenAITextCompletion : ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using the specified OpenAIClient
+    /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using the specified OpenAIClient
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextCompletion(
+    public AzureOpenAITextGenerationService(
         string deploymentName,
         OpenAIClient openAIClient,
         string modelId,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

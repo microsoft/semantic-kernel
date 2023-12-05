@@ -272,7 +272,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (embeddingSize < 1)
         {
-            throw new KernelException("Invalid embedding size: the value must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(embeddingSize), "Invalid embedding size: the value must be greater than zero.");
         }
 
         const string ProfileName = "searchProfile";
@@ -375,12 +375,13 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     /// to throw an error for edge cases not handled locally.
     /// </summary>
     /// <param name="indexName">Value to normalize</param>
+    /// <param name="parameterName">The name of the argument used with <paramref name="indexName"/>.</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName)
+    private string NormalizeIndexName(string indexName, [CallerArgumentExpression("indexName")] string? parameterName = null)
     {
         if (indexName.Length > 128)
         {
-            throw new KernelException("The collection name is too long, it cannot exceed 128 chars.");
+            throw new ArgumentOutOfRangeException(parameterName, "The collection name is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
