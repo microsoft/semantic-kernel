@@ -40,7 +40,11 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var result = await FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", initialValue), ("amount", amount));
+        var result = await KernelPluginFactory.CreateFromObject(target)["Add"].InvokeAsync(new(), new()
+        {
+            ["value"] = initialValue,
+            ["amount"] = amount,
+        });
 
         // Assert
         Assert.Equal(expectedResult, result.GetValue<int>());
@@ -61,7 +65,11 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var result = await FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
+        var result = await KernelPluginFactory.CreateFromObject(target)["Subtract"].InvokeAsync(new(), new()
+        {
+            ["value"] = initialValue,
+            ["amount"] = amount,
+        });
 
         // Assert
         Assert.Equal(expectedResult, result.GetValue<int>());
@@ -82,10 +90,15 @@ public class MathPluginTests
     public async Task AddWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var target = new MathPlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Add"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", initialValue), ("amount", "1")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            func.InvokeAsync(new(), new()
+            {
+                ["value"] = initialValue,
+                ["amount"] = "1",
+            }));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
@@ -106,11 +119,15 @@ public class MathPluginTests
     public async Task AddWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var target = new MathPlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Add"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", "1"), ("amount", amount)));
-
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            func.InvokeAsync(new(), new()
+            {
+                ["value"] = "1",
+                ["amount"] = amount,
+            }));
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
     }
@@ -130,10 +147,15 @@ public class MathPluginTests
     public async Task SubtractWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var target = new MathPlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Subtract"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", "1")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            func.InvokeAsync(new(), new()
+            {
+                ["value"] = initialValue,
+                ["amount"] = "1",
+            }));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
@@ -154,10 +176,15 @@ public class MathPluginTests
     public async Task SubtractAsyncWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var target = new MathPlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Subtract"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", "1"), ("amount", amount)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            func.InvokeAsync(new(), new()
+            {
+                ["value"] = "1",
+                ["amount"] = amount,
+            }));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
