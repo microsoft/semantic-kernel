@@ -14,12 +14,14 @@ What's the sum of 5+10+15?
 ```handlebars
 {{#if allowLoops}}
 \{{!-- Step 1: Initialize the count --}}
-\{{set
+\{{
+set
   "count"
   10
 }}
 \{{!-- Step 2: Loop using the count --}}
-\{{#each
+\{{
+#each
   (range
     1
     (get
@@ -27,22 +29,27 @@ What's the sum of 5+10+15?
     )
   )
 }}
-  \{{set
+  \{{
+set
     "index"
     this
-  }}
+}}
   \{{!-- Step 3: Create random number --}}
-  \{{set
+  \{{
+set
     "randomNumber"
-    (Example{{reservedNameDelimiter}}Random
+    (Example{{reservedNameDelimiter
+}}Random
       seed=(get
         "index"
       )
     )
   }}
   \{{!-- Step 4: Call example helper with random number and print the result to the screen --}}
-  \{{json
-    (Example{{reservedNameDelimiter}}Helper
+  \{{
+json
+    (Example{{reservedNameDelimiter
+}}Helper
       input=(get
         "randomNumber"
       )
@@ -51,22 +58,27 @@ What's the sum of 5+10+15?
 \{{/each}}
 {{else}}
 \{{!-- Step 1: Initialize the variables --}}
-\{{set
+\{{
+set
   "num1"
   5
 }}
-\{{set
+\{{
+set
   "num2"
   10
 }}
-\{{set
+\{{
+set
   "num3"
   15
 }}
 \{{!-- Step 2: Call the Example-AddNums helper with the variables and store the result --}}
-\{{set
+\{{
+set
   "sum"
-  (Example{{reservedNameDelimiter}}AddNums
+  (Example{{reservedNameDelimiter
+}}AddNums
     num1=(get
       "num1"
     )
@@ -79,7 +91,8 @@ What's the sum of 5+10+15?
   )
 }}
 \{{!-- Step 3: Print the result using the json helper --}}
-\{{json
+\{{
+json
   (get
     "sum"
   )
@@ -128,11 +141,11 @@ Some helpers require arguments that are complex objects. The JSON schemas for th
 {
   "type": "object",
   "properties": {
-  {{#each Properties}}
+{{#each Properties}}
     "{{Name}}": {
       "type": "{{ParameterType.Name}}",
     },
-  {{/each}}
+{{/each}}
   }
 }
 
@@ -150,27 +163,47 @@ Lastly, you also have the following Handlebars helpers that you can use:
 ### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
-  {{#each Parameters}}
+{{#each Parameters}}
     - {{Name}}:
-    {{~#if ParameterType}} {{ParameterType.Name}} -
-    {{~else}}
-        {{~#if Schema}} {{getSchemaTypeName this}} -{{/if}}
-    {{~/if}}
-    {{~#if Description}} {{Description}}{{/if}}
-    {{~#if IsRequired}} (required){{else}} (optional){{/if}}
-  {{/each}}
+{{~#if ParameterType}} {{ParameterType.Name}} -
+{{~else}}
+{{~#if Schema}} {{getSchemaTypeName this}} -{{/if}}
+{{~/if}}
+{{~#if Description}} {{Description}}{{/if}}
+{{~#if IsRequired}} (required){{else}} (optional){{/if}}
+{{/each}}
 Output:
 {{~#if ReturnParameter}}
-  {{~#if ReturnParameter.ParameterType}} {{ReturnParameter.ParameterType.Name}}
-  {{~else}}
-    {{~#if ReturnParameter.Schema}} {{getSchemaReturnTypeName ReturnParameter}}
-    {{else}} string{{/if}}
-  {{~/if}}
-  {{~#if ReturnParameter.Description}} - {{ReturnParameter.Description}}{{/if}}
+{{~#if ReturnParameter.ParameterType}} {{ReturnParameter.ParameterType.Name}}
+{{~else}}
+{{~#if ReturnParameter.Schema}} {{getSchemaReturnTypeName ReturnParameter}}
+{{else}} string{{/if}}
+{{~/if}}
+{{~#if ReturnParameter.Description}} - {{ReturnParameter.Description}}{{/if}}
 {{/if}}
 
 {{/each}}
 IMPORTANT: You can only use the helpers that are listed above. Do not use any other helpers that are not listed here. For example, do not use `\{{log}}` or any `\{{Example}}` helpers, as they are not supported.{{/message}}
+
+{{~#if lastError}}
+{{/if}}
+
+{{#if lastError}}
+## Previous attempt
+This previous plan failed to achieve the goal:
+
+```handlebars
+{{lastPlan}}
+```
+
+The error was :
+```
+{{lastError}}
+```
+
+Try again to achieve the goal while fixing the error.
+{{/if}}
+
 {{#message role="system"}}
 ## Tips and tricks
 - Add a comment above each step to describe what the step does.
