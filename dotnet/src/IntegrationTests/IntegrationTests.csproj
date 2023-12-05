@@ -21,6 +21,9 @@
     <Compile Remove="Planners\PlanTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="prompts\GenerateStoryHandlebars.yaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
@@ -80,6 +83,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="prompts/GenerateStory.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="prompts\GenerateStoryHandlebars.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

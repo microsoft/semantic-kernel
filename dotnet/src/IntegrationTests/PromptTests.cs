@@ -33,8 +33,10 @@ public sealed class PromptTests : IDisposable
         this._kernelBuilder = new KernelBuilder();
     }
 
-    [Fact]
-    public async Task GenerateStoryTestAsync()
+    [Theory]
+    [InlineData("SemanticKernel.IntegrationTests.prompts.GenerateStory.yaml", false)]
+    [InlineData("SemanticKernel.IntegrationTests.prompts.GenerateStoryHandlebars.yaml", true)]
+    public async Task GenerateStoryTestAsync(string resourceName, bool isHandlebars)
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
@@ -42,15 +44,15 @@ public sealed class PromptTests : IDisposable
         var kernel = builder.Build();
 
         // Load prompt from resource
-        var promptTemplateFactory = new HandlebarsPromptTemplateFactory();
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("SemanticKernel.IntegrationTests.prompts.GenerateStory.yaml")!);
+        var promptTemplateFactory = isHandlebars ? new HandlebarsPromptTemplateFactory() : null;
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)!);
         var function = kernel.CreateFunctionFromPromptYaml(await reader.ReadToEndAsync(), promptTemplateFactory);
 
         // Act
         FunctionResult actual = await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Dog" },
-                { "length", 3 },
+                { "length", "3" },
             });
 
         // Assert

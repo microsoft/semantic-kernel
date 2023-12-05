@@ -1,7 +1,7 @@
 ﻿name: GenerateStory
 template: |
-  Tell a story about {{$topic}} that is {{$length}} sentences long.
-template_format: semantic-kernel
+  Tell a story about {{topic}} that is {{length}} sentences long.
+template_format: handlebars
 description: A function that generates a story about a topic.
 input_variables:
   - name: topic
