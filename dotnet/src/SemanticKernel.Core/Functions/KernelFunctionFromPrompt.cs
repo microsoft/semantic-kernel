@@ -130,7 +130,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(textContent.Metadata ?? new Dictionary<string, object?>()));
+        return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
