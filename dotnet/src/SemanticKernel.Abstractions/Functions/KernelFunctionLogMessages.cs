@@ -18,7 +18,7 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Function {FunctionName} invoking with arguments: {Arguments}.")]
+        Message = "Function {FunctionName} invoking. Arguments: {Arguments}.")]
     public static partial void LogFunctionInvokingWithArguments(
         this ILogger logger,
         string functionName,
@@ -71,7 +71,7 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 5,
         Level = LogLevel.Trace,
-        Message = "Function {FunctionName} streaming invoking with arguments {Arguments}.")]
+        Message = "Function {FunctionName} streaming. Arguments: {Arguments}.")]
     public static partial void LogFunctionStreamingInvokingWithArguments(
         this ILogger logger,
         string functionName,

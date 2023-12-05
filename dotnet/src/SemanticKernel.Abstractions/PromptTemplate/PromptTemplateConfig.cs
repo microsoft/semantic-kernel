@@ -45,10 +45,16 @@ public sealed class PromptTemplateConfig
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Input parameters.
+    /// Input variables.
     /// </summary>
-    [JsonPropertyName("input_parameters")]
-    public List<InputParameter> InputParameters { get; set; } = new();
+    [JsonPropertyName("input_variables")]
+    public List<InputVariable> InputVariables { get; set; } = new();
+
+    /// <summary>
+    /// Output variable.
+    /// </summary>
+    [JsonPropertyName("output_variable")]
+    public OutputVariable? OutputVariable { get; set; }
 
     /// <summary>
     /// Prompt execution settings.
@@ -72,42 +78,11 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Input parameter for prompt functions.
-    /// </summary>
-    public class InputParameter
-    {
-        /// <summary>
-        /// Name of the parameter to pass to the function.
-        /// e.g. when using "{{$input}}" the name is "input", when using "{{$style}}" the name is "style", etc.
-        /// </summary>
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Parameter description for UI apps and planner. Localization is not supported here.
-        /// </summary>
-        [JsonPropertyName("description")]
-        public string Description { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Default value when nothing is provided.
-        /// </summary>
-        [JsonPropertyName("default_value")]
-        public string DefaultValue { get; set; } = string.Empty;
-
-        /// <summary>
-        /// True to indeicate the input parameter is required. True by default.
-        /// </summary>
-        [JsonPropertyName("is_required")]
-        public bool IsRequired { get; set; } = true;
-    }
-
-    /// <summary>
-    /// Return the input parameters metadata.
+    /// Return the input variables metadata.
     /// </summary>
     internal List<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        return this.InputParameters.Select(p => new KernelParameterMetadata(p.Name)
+        return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
             DefaultValue = p.DefaultValue

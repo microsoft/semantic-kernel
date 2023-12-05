@@ -2,12 +2,12 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 /// <summary>
 /// HTTP schema to perform completion request.
 /// </summary>
-public sealed class TextCompletionRequest
+public sealed class TextGenerationRequest
 {
     /// <summary>
     /// Prompt to complete.
