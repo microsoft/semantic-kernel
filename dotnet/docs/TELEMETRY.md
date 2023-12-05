@@ -67,20 +67,20 @@ Metering is implemented with `Meter` class from `System.Diagnostics.Metrics` nam
 Available meters:
 
 - _Microsoft.SemanticKernel.Planning_ - contains all metrics related to planning. List of metrics:
-  - `sk.planning.create_plan.duration` - execution time of plan creation (in seconds)
-  - `sk.planning.create_plan.success` - number of successful plan creation
-  - `sk.planning.create_plan.failure` - number of failed plan creation
+  - `sk.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
+  - `sk.planning.create_plan.success` (Counter) - number of successful plan creation
+  - `sk.planning.create_plan.failure` (Counter) - number of failed plan creation
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
-  - `sk.function.invocation.duration` - function execution time (in seconds)
-  - `sk.function.streaming.duration` - function streaming execution time (in seconds)
-  - `sk.function.invocation.success` - number of successful function executions
-  - `sk.function.invocation.failure` - number of failed function executions
-  - `sk.function.invocation.token_usage.prompt` - number of prompt token usage (only for `KernelFunctionFromPrompt`)
-  - `sk.function.invocation.token_usage.completion` - number of completion token usage (only for `KernelFunctionFromPrompt`)
+  - `sk.function.invocation.duration` (Histogram) - function execution time (in seconds)
+  - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)
+  - `sk.function.invocation.success` (Counter) - number of successful function executions
+  - `sk.function.invocation.failure` (Counter) - number of failed function executions
+  - `sk.function.invocation.token_usage.prompt` (Histogram) - number of prompt token usage (only for `KernelFunctionFromPrompt`)
+  - `sk.function.invocation.token_usage.completion` (Histogram) - number of completion token usage (only for `KernelFunctionFromPrompt`)
 - _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
-  - `sk.connectors.openai.tokens.prompt` - number of prompt tokens used.
-  - `sk.connectors.openai.tokens.completion` - number of completion tokens used.
-  - `sk.connectors.openai.tokens.total` - total number of tokens used.
+  - `sk.connectors.openai.tokens.prompt` (Counter) - number of prompt tokens used.
+  - `sk.connectors.openai.tokens.completion` (Counter) - number of completion tokens used.
+  - `sk.connectors.openai.tokens.total` (Counter) - total number of tokens used.
 
 Measurements will be associated with tags that will allow data to be categorized for analysis:
 

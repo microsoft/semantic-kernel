@@ -41,6 +41,7 @@ Contoso is a company that is developing an AI application using SK.
   - Input token usage for prompt (Prompt)
     - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Type: Histogram
     - Example:
       | ComponentType | ComponentName | Service ID | Model ID | Value |
       |---|---|---|---|---|
@@ -51,6 +52,7 @@ Contoso is a company that is developing an AI application using SK.
   - Output token usage for prompt (Completion)
     - Description: A prompt is the smallest unit that consumes tokens (`KernelFunctionFromPrompt`).
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Type: Histogram
     - Example:
       | ComponentType | ComponentName | Service ID | Model ID | Value |
       |---|---|---|---|---|
@@ -61,6 +63,7 @@ Contoso is a company that is developing an AI application using SK.
   - Aggregated execution time for functions
     - Description: A function can consist of zero or more prompts. The execution time of a function is the duration from start to end of a function's `invoke` call.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Type: Histogram
     - Example:
       | ComponentType | ComponentName | Value |
       |---|---|---|
@@ -71,6 +74,7 @@ Contoso is a company that is developing an AI application using SK.
   - Success/failure count for planners
     - Description: A planner run is considered successful when it generates a valid plan. A plan is valid when the model response is successfully parsed into a plan of desired format and it contains one or more steps.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Type: Counter
     - Example:
       | ComponentType | ComponentName | Fail | Success
       |---|---|---|---|
@@ -79,6 +83,7 @@ Contoso is a company that is developing an AI application using SK.
   - Success/failure count for plans
     - Description: A plan execution is considered successful when all steps in the plan are executed successfully.
     - Dimensions: ComponentType, ComponentName, Service ID, Model ID
+    - Type: Counter
     - Example:
       | ComponentType | ComponentName | Fail | Success
       |---|---|---|---|
