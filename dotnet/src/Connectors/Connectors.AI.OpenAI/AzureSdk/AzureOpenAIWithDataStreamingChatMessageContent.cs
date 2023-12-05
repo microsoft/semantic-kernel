@@ -30,8 +30,9 @@ public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingCh
     /// </summary>
     /// <param name="choice">Azure message update representation from WithData apis</param>
     /// <param name="choiceIndex">Index of the choice</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal AzureOpenAIWithDataStreamingChatMessageContent(ChatWithDataStreamingChoice choice, int choiceIndex, IDictionary<string, object?>? metadata = null) : base(AuthorRole.Assistant, null, choice, choiceIndex, Encoding.UTF8, metadata)
+    internal AzureOpenAIWithDataStreamingChatMessageContent(ChatWithDataStreamingChoice choice, int choiceIndex, string modelId, IDictionary<string, object?>? metadata = null) : base(AuthorRole.Assistant, null, choice, choiceIndex, modelId, Encoding.UTF8, metadata)
     {
         var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
         var messageContent = message?.Delta?.Content;

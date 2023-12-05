@@ -89,7 +89,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     {
         foreach (var textContent in await this.InternalGetTextContentsAsync(prompt, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(textContent.Text, 0, textContent);
+            yield return new StreamingTextContent(textContent.Text, 0, this.GetModelId(), textContent);
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
             };
         }
 
-        return completionResponse.ConvertAll(c => new TextContent(c.Text, innerContent: c));
+        return completionResponse.ConvertAll(responseContent => new TextContent(responseContent.Text, this.GetModelId(), responseContent));
     }
 
     /// <summary>
