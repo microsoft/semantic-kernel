@@ -28,8 +28,8 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
         Assert.NotNull(semanticFunctionConfig);
         Assert.Equal("SayHello", semanticFunctionConfig.Name);
         Assert.Equal("Say hello to the specified person using the specified language", semanticFunctionConfig.Description);
-        Assert.Equal(2, semanticFunctionConfig.InputParameters.Count);
-        Assert.Equal("language", semanticFunctionConfig.InputParameters[1].Name);
+        Assert.Equal(2, semanticFunctionConfig.InputVariables.Count);
+        Assert.Equal("language", semanticFunctionConfig.InputVariables[1].Name);
         Assert.Equal(2, semanticFunctionConfig.ExecutionSettings.Count);
         Assert.Equal("gpt-3.5", semanticFunctionConfig.ExecutionSettings[1].ModelId);
     }
@@ -39,7 +39,7 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
         default_value: John

@@ -11,7 +11,7 @@
       "stop_sequences": ["##END##"]
     }
   ],
-  "input_parameters": [
+  "input_variables": [
     {
       "name": "input",
       "description": "A topic description or goal.",

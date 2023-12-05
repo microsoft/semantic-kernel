@@ -56,7 +56,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Dictionary<string, object?> result = new();
 
-        foreach (var p in this._promptModel.InputParameters)
+        foreach (var p in this._promptModel.InputVariables)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
             {
