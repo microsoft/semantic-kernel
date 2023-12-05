@@ -36,11 +36,12 @@ public class StreamingChatMessageContent : StreamingContentBase
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="innerContent">Inner content object reference</param>
-    /// <param name="choiceIndex"></param>
+    /// <param name="choiceIndex">Choice index</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
     [JsonConstructor]
-    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, metadata)
+    protected StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent, int choiceIndex = 0, string? modelId = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;

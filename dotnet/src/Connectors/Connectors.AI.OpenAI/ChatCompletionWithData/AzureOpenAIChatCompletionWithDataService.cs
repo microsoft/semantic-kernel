@@ -65,7 +65,9 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     /// <inheritdoc/>
     public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata)).ToList();
+        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+            .Select(chat => new TextContent(chat.Content, chat, chat.ModelId, Encoding.UTF8, chat.Metadata))
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -77,7 +79,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, Encoding.UTF8, streamingChatContent.Metadata);
+            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent, streamingChatContent.ModelId, Encoding.UTF8, streamingChatContent.Metadata);
         }
     }
 
@@ -126,7 +128,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         var metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, metadata)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).ToList();
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
@@ -207,7 +209,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, metadata);
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, metadata);
             }
         }
     }
