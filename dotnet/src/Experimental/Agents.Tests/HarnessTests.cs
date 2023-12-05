@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
-using Google.Apis.CustomSearchAPI.v1.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
@@ -118,8 +116,6 @@ public class HarnessTests
         string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
         var mathematician = AgentBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-                azureOpenAIChatCompletionDeployment,
-                azureOpenAIChatCompletionDeployment,
                 azureOpenAIEndpoint,
                 azureOpenAIKey,
                 new[] {
@@ -128,8 +124,6 @@ public class HarnessTests
                 loggerFactory: this._loggerFactory);
 
         var butler = AgentBuilder.FromTemplate("./Assistants/Butler.yaml",
-                           azureOpenAIChatCompletionDeployment,
-                           azureOpenAIChatCompletionDeployment,
                            azureOpenAIEndpoint,
                            azureOpenAIKey,
                            assistants: new[] {
@@ -172,8 +166,6 @@ public class HarnessTests
         string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
         var verifier = AgentBuilder.FromTemplate("./Assistants/Auditor.yaml",
-                  azureOpenAIChatCompletionDeployment,
-                  azureOpenAIChatCompletionDeployment,
                   azureOpenAIEndpoint,
                   azureOpenAIKey,
                   loggerFactory: this._loggerFactory);

@@ -7,5 +7,7 @@ instructions: |
   Then compare the two results.
   If the results are equal, return only "True", otherwise simply return "False".
   DO NOT EXECUTE ANYTHING JUST COMPARE THEIR ANSWERS.
-model: gpt-4
-deployment_name: gpt-4-1106-preview
+execution_settings:
+  planner: Handlebars
+  model: gpt-4
+  deployment_name: gpt-4-1106-preview

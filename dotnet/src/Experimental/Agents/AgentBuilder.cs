@@ -114,6 +114,9 @@ public partial class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder WithAzureOpenAIChatCompletion(string deploymentName, string model, string endpoint, string apiKey)
     {
+        this._model.ExecutionSettings.DeploymentName = deploymentName;
+        this._model.ExecutionSettings.Model = model;
+
         this._kernelBuilder.WithAzureOpenAIChatCompletion(deploymentName, model, endpoint, apiKey);
         this._kernelBuilder.WithAzureOpenAITextGeneration(deploymentName, model, endpoint, apiKey);
         return this;
@@ -168,18 +171,7 @@ public partial class AgentBuilder
     /// <returns></returns>
     public AgentBuilder WithPlanner(string plannerName)
     {
-        this._model.Planner = plannerName;
-        return this;
-    }
-
-    /// <summary>
-    /// Defines the agent's model.
-    /// </summary>
-    /// <param name="modelName">The model name used by the agent.</param>
-    /// <returns></returns>
-    public AgentBuilder WithModel(string modelName)
-    {
-        this._model.Model = modelName;
+        this._model.ExecutionSettings.Planner = plannerName;
         return this;
     }
 
@@ -199,8 +191,6 @@ public partial class AgentBuilder
     /// Creates a new agent from a yaml template.
     /// </summary>
     /// <param name="definitionPath">The yaml definition file path.</param>
-    /// <param name="deploymentName">The deployment name.</param>
-    /// <param name="modelId">The model id.</param>
     /// <param name="azureOpenAIEndpoint">The Azure OpenAI endpoint.</param>
     /// <param name="azureOpenAIKey">The Azure OpenAI key.</param>
     /// <param name="plugins">The plugins.</param>
@@ -209,8 +199,6 @@ public partial class AgentBuilder
     /// <returns></returns>
     public static IAgent FromTemplate(
         string definitionPath,
-        string deploymentName,
-        string modelId,
         string azureOpenAIEndpoint,
         string azureOpenAIKey,
         IEnumerable<IKernelPlugin>? plugins = null,
@@ -226,9 +214,8 @@ public partial class AgentBuilder
             .WithName(agentModel.Name!.Trim())
             .WithDescription(agentModel.Description!.Trim())
             .WithInstructions(agentModel.Instructions.Trim())
-            .WithPlanner(agentModel.Planner?.Trim())
-            .WithModel(agentModel.Model!.Trim())
-            .WithAzureOpenAIChatCompletion(agentModel.DeploymentName!, agentModel.Model!, azureOpenAIEndpoint, azureOpenAIKey);
+            .WithPlanner(agentModel.ExecutionSettings.Planner?.Trim())
+            .WithAzureOpenAIChatCompletion(agentModel.ExecutionSettings.DeploymentName!, agentModel.ExecutionSettings.Model!, azureOpenAIEndpoint, azureOpenAIKey);
 
         if (plugins is not null)
         {

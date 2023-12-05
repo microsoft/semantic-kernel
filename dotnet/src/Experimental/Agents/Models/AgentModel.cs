@@ -15,12 +15,6 @@ internal class AgentModel
     [YamlMember(Alias = "instructions")]
     public string Instructions { get; set; } = string.Empty;
 
-    [YamlMember(Alias = "planner")]
-    public string? Planner { get; set; }
-
-    [YamlMember(Alias = "model")]
-    public string? Model { get; set; }
-
-    [YamlMember(Alias = "deployment_name")]
-    public string? DeploymentName { get; set; }
+    [YamlMember(Alias = "execution_settings")]
+    public AgentExecutionSettings ExecutionSettings { get; set; } = new();
 }

@@ -60,7 +60,7 @@ internal class Agent : IAgent
     /// <summary>
     /// Gets the planner.
     /// </summary>
-    public string Planner => this._model.Planner!;
+    public string Planner => this._model.ExecutionSettings.Planner!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Agent"/> class.
