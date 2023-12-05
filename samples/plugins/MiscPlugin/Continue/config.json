@@ -14,7 +14,7 @@
     {
       "name": "input",
       "description": "The text to continue.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }
