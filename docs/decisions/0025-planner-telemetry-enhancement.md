@@ -100,7 +100,7 @@ Contoso is a company that is developing an AI application using SK.
 
 SK currently tracks token usage metrics in connectors; however, these metrics are not categorized. Consequently, developers cannot determine token usage for different operations. To address this issue, we propose the following two approaches:
 
-- Bottom-up: Propagate token usage information from connectors back to the functions, along with model results (See [Option 1](#option-1) and [Option 2](#option-2) under this section).
+- Bottom-up: Propagate token usage information from connectors back to the functions.
 - Top-down: Propagate function information down to the connectors, enabling them to tag metric items with function information.
 
 We have decided to implement the bottom-up approach for the following reasons:
@@ -108,136 +108,63 @@ We have decided to implement the bottom-up approach for the following reasons:
 1. SK is already configured to propagate token usage information from connectors via `ModelResult`. We simply need to extend the list of items that get propagated, such as model information.
 2. Currently, SK does not have a method for passing function information down to the connector level. Although we considered using [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/#:~:text=In%20OpenTelemetry%2C%20Baggage%20is%20contextual%20information%20that%E2%80%99s%20passed,available%20to%20any%20span%20created%20within%20that%20trace.) as a means of propagating information downward, experts from the OpenTelemetry team advised against this approach due to security concerns.
 
-With the bottom-up approach, we need to propagate model information from connectors to functions.
-
-#### Option 1
-
-Add to `IResultBase`:
-
-```csharp
-/// <summary>
-/// Interface for model results
-/// </summary>
-public interface IResultBase
-{
-  /// <summary>
-  /// Model name or Id
-  /// </summary>
-  string ModelId { get; }
-
-  /// <summary>
-  /// Gets the model result data.
-  /// </summary>
-  ModelResult ModelResult { get; }
-}
-```
-
-#### Option 2
-
-Add to `ModelResult`:
-
-```csharp
-public sealed class ModelResult
-{
-    private readonly object _result;
-
-    public ModelResult(object result, string modelId)
-    {
-        Verify.NotNull(result);
-
-        this._result = result;
-        this.ModelId = modelId;
-    }
-
-    public string ModelId { get; }
-
-    ...
-}
-```
-
-We also need to propagate the model Id up via KernelResult:
-
-```csharp
-// In AIFunctionResultExtensions.cs
-...
-/// <summary>
-/// Function model id key for <see cref="ModelResult"/> records.
-/// </summary>
-public const string ModelIdKey = "ModelId";
-...
-/// <summary>
-/// Returns the model Id from <see cref="FunctionResult"/> metadata.
-/// </summary>
-/// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
-public static string? GetModelId(this FunctionResult result)
-{
-  if (result.TryGetMetadataValue(ModelIdKey, out string? modelId))
-  {
-    return modelId;
-  }
-
-  return null;
-}
-
-
-// In KernelFunctionFromPrompt.cs
-...
-result.Metadata.Add(AIFunctionResultExtensions.ModelIdKey, completionResults[0].ModelId);
-...
-return result;
-```
-
-A kernel function will then retrieve the information by doing the following:
+With the bottom-up approach, we need to propagate model usage information from connectors to functions.
 
 ```csharp
 // Note that not all services support usage details.
-if (result.GetModelId() is null)
+/// <summary>
+/// Captures usage details, including token information.
+/// </summary>
+private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? metadata, ILogger logger)
 {
-  logger.LogInformation("Model id not found in function result.");
-  return;
+  if (string.IsNullOrWhiteSpace(modelId))
+  {
+    logger.LogWarning("No model ID provided to capture usage details.");
+    return;
+  }
+
+  if (metadata is null)
+  {
+    logger.LogWarning("No metadata provided to capture usage details.");
+    return;
+  }
+
+  if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
+  {
+    logger.LogWarning("No usage details provided to capture usage details.");
+    return;
+  }
+
+  var promptTokens = 0;
+  var completionTokens = 0;
+  try
+  {
+    var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+    promptTokens = jsonObject.GetProperty("PromptTokens").GetInt32();
+    completionTokens = jsonObject.GetProperty("CompletionTokens").GetInt32();
+  }
+  catch (Exception ex) when (ex is KeyNotFoundException)
+  {
+    logger.LogInformation("Usage details not found in model result.");
+  }
+  catch (Exception ex)
+  {
+    logger.LogError(ex, "Error while parsing usage details from model result.");
+    throw;
+  }
+
+  logger.LogInformation(
+    "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+    promptTokens, completionTokens);
+
+  TagList tags = new() {
+    { "sk.function.name", this.Name },
+    { "sk.function.model_id", modelId }
+  };
+
+  s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
+  s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
 }
-var modelId = result.GetModelId();
-
-if (result.GetModelResults() is null)
-{
-  logger.LogInformation("Model results not found in function result.");
-  return;
-}
-var modelResult = result.GetModelResults().FirstOrDefault();
-var modelResultJson = modelResult?.GetJsonResult();
-
-var promptTokens = 0;
-var completionTokens = 0;
-try
-{
-  var tokenUsage = modelResultJson.GetValueOrDefault().GetProperty("Usage");
-  promptTokens = tokenUsage.GetProperty("PromptTokens").GetInt32();
-  completionTokens = tokenUsage.GetProperty("CompletionTokens").GetInt32();
-}
-catch (Exception ex) when (ex is KeyNotFoundException)
-{
-  logger.LogInformation("Usage details not found in model result.");
-  return;
-}
-catch (Exception ex)
-{
-  logger.LogError(ex, "Error while parsing usage details from model result.");
-  throw;
-}
-
-
-logger.LogInformation(
-  "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
-  promptTokens, completionTokens);
-
-TagList tags = new() {
-  { "sk.function.name", this.Name },
-  { "sk.function.model_id", modelId }
-};
-
-// The metrics will be created as private static class members.
-s_promptTokensCounter.Add(promptTokens, in tags);
-s_completionTokenCounter.Add(completionTokens, in tags);
 ```
 
 > Note that we do not consider services that do not return token usage. Currently only OpenAI & Azure OpenAI services return token usage information.
