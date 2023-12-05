@@ -2,7 +2,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Microsoft.SemanticKernel;
 
@@ -16,7 +18,7 @@ internal static class TypeConverterFactory
     /// </summary>
     /// <param name="type">The Type of the object to convert.</param>
     /// <returns>A TypeConverter instance if a suitable converter is found, otherwise null.</returns>
-    internal static TypeConverter? GetTypeConverter(Type type)
+    internal static TypeConverter GetTypeConverter(Type type)
     {
         // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
         // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
@@ -51,6 +53,21 @@ internal static class TypeConverterFactory
             return converter;
         }
 
-        return null;
+        return new JsonSerializationTypeConverter();
+    }
+
+    internal sealed class JsonSerializationTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            return JsonSerializer.Deserialize<object>((string)value);
+        }
+
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        {
+            return JsonSerializer.Serialize(value);
+        }
     }
 }
