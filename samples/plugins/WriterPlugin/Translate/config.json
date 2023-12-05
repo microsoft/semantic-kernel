@@ -13,7 +13,7 @@
       ]
     }
   ],
-  "input_parameters": [
+  "input_variables": [
     {
       "name": "input",
       "description": "Text to translate",
