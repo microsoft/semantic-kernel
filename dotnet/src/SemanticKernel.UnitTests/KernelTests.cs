@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Events;
 using Moq;
@@ -157,16 +159,16 @@ public class KernelTests
         };
 
         // Act
-        int chunksCount = 0;
-        await foreach (var chunk in kernel.InvokeStreamingAsync(function))
-        {
-            chunksCount++;
-        }
+        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(function);
+        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Equal(0, chunksCount);
+        Assert.Same(function, e.Function);
+        Assert.Same(kernel, e.Kernel);
+        Assert.Empty(e.Arguments);
     }
 
     [Fact]
@@ -188,9 +190,9 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in kernel.InvokeStreamingAsync(functions["GetAnyValue"]))
-        {
-        }
+        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(functions["GetAnyValue"]);
+        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
         Assert.Equal(0, invoked);
