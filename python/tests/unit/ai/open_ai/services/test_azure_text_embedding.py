@@ -107,6 +107,38 @@ def test_azure_text_embedding_init_with_invalid_endpoint() -> None:
         )
 
 
+def test_azure_text_embedding_init_with_from_dict() -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+    default_headers = {"test_header": "test_value"}
+
+    settings = {
+        "deployment_name": deployment_name,
+        "endpoint": endpoint,
+        "api_key": api_key,
+        "api_version": api_version,
+        "log": logger,
+        "default_headers": default_headers,
+    }
+
+    azure_text_embedding = AzureTextEmbedding.from_dict(settings=settings)
+
+    assert azure_text_embedding.client is not None
+    assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
+    assert azure_text_embedding.ai_model_id == deployment_name
+    assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
+    assert endpoint in str(azure_text_embedding.client.base_url)
+    assert azure_text_embedding.client.api_key == api_key
+
+    # Assert that the default header we added is present in the client's default headers
+    for key, value in default_headers.items():
+        assert key in azure_text_embedding.client.default_headers
+        assert azure_text_embedding.client.default_headers[key] == value
+
+
 @pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
