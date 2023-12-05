@@ -83,7 +83,7 @@ internal static partial class PlannerInstrumentation
 
     [LoggerMessage(
         EventId = 3,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
         Message = "Plan:\n{Plan}")]
     static partial void LogPlan(this ILogger logger, object plan);
 
