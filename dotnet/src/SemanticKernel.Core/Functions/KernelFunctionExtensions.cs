@@ -22,12 +22,12 @@ public static class KernelFunctionExtensions
     /// <returns>The provided generic typed result value of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    public static async Task<T?> InvokeAsync<T>(
+    public static async Task<TResult?> InvokeAsync<TResult>(
         this KernelFunction kernelFunction,
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
-        => (await kernelFunction.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false)).GetValue<T>();
+        => (await kernelFunction.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
 
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/>.
@@ -40,11 +40,11 @@ public static class KernelFunctionExtensions
     /// <returns>The provided generic typed result value of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    public static async Task<T?> InvokeAsync<T>(
+    public static async Task<TResult?> InvokeAsync<TResult>(
         this KernelFunction kernelFunction,
         Kernel kernel,
         string? input,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
-        => (await kernelFunction.InvokeAsync(kernel, input, executionSettings, cancellationToken).ConfigureAwait(false)).GetValue<T>();
+        => (await kernelFunction.InvokeAsync(kernel, input, executionSettings, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
 }

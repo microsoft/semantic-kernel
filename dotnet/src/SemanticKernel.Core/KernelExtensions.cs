@@ -458,13 +458,13 @@ public static class KernelExtensions
     /// <remarks>
     /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
-    public static async Task<T?> InvokeAsync<T>(
+    public static async Task<TResult?> InvokeAsync<TResult>(
         this Kernel kernel,
         KernelFunction function,
         string? input,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(function, input, executionSettings, cancellationToken).ConfigureAwait(false)).GetValue<T>();
+        => (await kernel.InvokeAsync(function, input, executionSettings, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
 
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/>.
@@ -479,12 +479,12 @@ public static class KernelExtensions
     /// <remarks>
     /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
-    public static async Task<T?> InvokeAsync<T>(
+    public static async Task<TResult?> InvokeAsync<TResult>(
         this Kernel kernel,
         KernelFunction function,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<T>();
+        => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -502,12 +502,12 @@ public static class KernelExtensions
     /// This behaves identically to using <see cref="IKernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
     /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
-    public static async Task<T?> InvokeAsync<T>(
+    public static async Task<TResult?> InvokeAsync<TResult>(
         this Kernel kernel,
         string? pluginName,
         string functionName,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<T>();
+        => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
     #endregion
 }
