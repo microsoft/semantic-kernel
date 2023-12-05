@@ -118,6 +118,7 @@ public class KernelFunctionFromPromptTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService and names service3 not registered.", exception.Message);
+
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService with one of the following serviceIds: service3 or modelIds:  not registered.", exception.Message);
     }
 }

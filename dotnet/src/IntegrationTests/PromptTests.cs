@@ -6,12 +6,14 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests;
+
 public sealed class PromptTests : IDisposable
 {
     public PromptTests(ITestOutputHelper output)
@@ -40,8 +42,9 @@ public sealed class PromptTests : IDisposable
         var kernel = builder.Build();
 
         // Load prompt from resource
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("prompts.GenerateStory.yaml")!);
-        var function = kernel.CreateFunctionFromPromptYaml(await reader.ReadToEndAsync());
+        var promptTemplateFactory = new HandlebarsPromptTemplateFactory();
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("SemanticKernel.IntegrationTests.prompts.GenerateStory.yaml")!);
+        var function = kernel.CreateFunctionFromPromptYaml(await reader.ReadToEndAsync(), promptTemplateFactory);
 
         // Act
         FunctionResult actual = await kernel.InvokeAsync(function, arguments: new()
@@ -49,7 +52,6 @@ public sealed class PromptTests : IDisposable
                 { "topic", "Dog" },
                 { "length", 3 },
             });
-
 
         // Assert
         Assert.Contains("Dog", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

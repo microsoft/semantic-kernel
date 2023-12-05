@@ -64,10 +64,9 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             }
         }
 
-        var names = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ServiceId).ToArray()) : null;
-        throw new KernelException(string.IsNullOrWhiteSpace(names) ?
-            $"Service of type {typeof(T)} not registered." :
-            $"Service of type {typeof(T)} and names {names} not registered.");
+        var serviceIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ServiceId).ToArray()) : null;
+        var modelIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ModelId).ToArray()) : null;
+        throw new KernelException($"Service of type {typeof(T)} with one of the following serviceIds: {serviceIds} or modelIds: {modelIds} not registered.");
     }
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService

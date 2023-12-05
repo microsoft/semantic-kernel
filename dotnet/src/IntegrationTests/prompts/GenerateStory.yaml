@@ -1,6 +1,6 @@
 ﻿name: GenerateStory
 template: |
-  Tell a story about {{$topic}} that is {{$length}} sentences long.
+  Tell a story about {{topic}} that is {{length}} sentences long.
 template_format: handlebars
 description: A function that generates a story about a topic.
 input_variables:
@@ -12,3 +12,5 @@ input_variables:
     is_required: true
 output_variable:
   description: The generated story.
+execution_settings:
+    - temperature: 0.6
