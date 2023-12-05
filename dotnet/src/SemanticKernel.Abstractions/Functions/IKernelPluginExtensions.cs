@@ -56,7 +56,7 @@ public static class IKernelPluginExtensions
 
         if (!TryGetFunction(plugins, pluginName, functionName, out KernelFunction? function))
         {
-            throw new KeyNotFoundException("The plugin collection does not contain a plugin and/or function with the specified names.");
+            throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{pluginName}', function name - '{functionName}'.");
         }
 
         return function;
