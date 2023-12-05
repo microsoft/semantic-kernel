@@ -44,7 +44,6 @@ public sealed class HandlebarsPlanner
         return PlannerInstrumentation.CreatePlanAsync(
             static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
                 => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
-            static (HandlebarsPlan plan) => plan.ToString(),
             this, kernel, goal, logger, cancellationToken);
     }
 

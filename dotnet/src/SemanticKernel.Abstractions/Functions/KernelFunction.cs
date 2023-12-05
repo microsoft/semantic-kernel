@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -145,11 +144,7 @@ public abstract class KernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
-        }
+        logger.LogFunctionInvokingWithArguments(this.Name, arguments);
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -182,11 +177,7 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Function succeeded. Result: {Result}", functionResult.Value);
-            }
-
+            logger.LogFunctionInvokedSuccess(functionResult.Value);
             return functionResult;
         }
         catch (Exception ex)
@@ -199,10 +190,7 @@ public abstract class KernelFunction
             // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
-            }
+            logger.LogFunctionComplete(duration.TotalSeconds);
         }
     }
 
@@ -276,11 +264,7 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         arguments ??= new KernelArguments();
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function streaming. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
-        }
+        logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -379,10 +363,7 @@ public abstract class KernelFunction
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add("error.type", ex.GetType().FullName);
-        if (logger.IsEnabled(LogLevel.Error))
-        {
-            logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
-        }
+        logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
