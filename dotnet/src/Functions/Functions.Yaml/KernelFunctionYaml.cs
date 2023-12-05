@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.IO;
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -13,26 +11,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelFunctionYaml
 {
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
-    /// </summary>
-    /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
-    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/>.</returns>
-    public static KernelFunction FromPromptYamlResource(
-        string resourceName,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null)
-    {
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
-
-        return FromPromptYaml(
-            reader.ReadToEnd(),
-            promptTemplateFactory,
-            loggerFactory);
-    }
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.IO;
-using System.Reflection;
 using System.Text.Json;
 using Markdig;
 using Markdig.Syntax;
@@ -15,32 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelFunctionMarkdown
 {
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown resource.
-    /// </summary>
-    /// <param name="resourceName">Resource containing the markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
-    /// <param name="functionName">The name of the function.</param>
-    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/>.</returns>
-    public static KernelFunction FromPromptMarkdownResource(
-        string resourceName,
-        string functionName,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNull(resourceName);
-        Verify.NotNull(functionName);
-
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
-
-        return FromPromptMarkdown(
-            reader.ReadToEnd(),
-            functionName,
-            promptTemplateFactory,
-            loggerFactory);
-    }
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
