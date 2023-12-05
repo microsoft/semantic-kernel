@@ -32,7 +32,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     public static string Render(
         Kernel kernel,
         string template,
-        Dictionary<string, object?> arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         IHandlebars handlebarsInstance = HandlebarsDotNet.Handlebars.Create(
@@ -61,7 +61,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         KernelArguments state,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        Dictionary<string, object?> arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         string fullyResolvedFunctionName = functionMetadata.PluginName + ReservedNameDelimiter + functionMetadata.Name;
@@ -95,7 +95,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
     private static void RegisterSystemHelpers(
         IHandlebars handlebarsInstance,
-        Dictionary<string, object?> variables
+        KernelArguments variables
     )
     {
         // Not exposed as a helper to the model, used for initial prompt rendering only.
@@ -355,7 +355,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessHashArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, IDictionary<string, object>? handlebarArgs)
+    private static void ProcessHashArguments(KernelFunctionMetadata functionMetadata, KernelArguments variables, IDictionary<string, object>? handlebarArgs)
     {
         // Prepare the input parameters for the function
         foreach (var param in functionMetadata.Parameters)
@@ -381,7 +381,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="handlebarArgs">Dictionary of arguments passed to the Handlebars helper function.</param>
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
-    private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
+    private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, KernelArguments variables, Arguments handlebarArgs)
     {
         var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
         if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)
@@ -412,7 +412,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// </summary>
     /// <param name="variables">Dictionary of variables passed to the Handlebars template engine.</param>
     /// <param name="state">The execution state.</param>
-    private static void InitializeState(Dictionary<string, object?> variables, KernelArguments state)
+    private static void InitializeState(KernelArguments variables, KernelArguments state)
     {
         foreach (var v in variables)
         {

@@ -25,7 +25,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.NotNull(chatHistoryJson);
-        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"AdditionalProperties\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"AdditionalProperties\":null}]", chatHistoryJson);
+        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"Metadata\":null}]", chatHistoryJson);
     }
 
     [Fact]

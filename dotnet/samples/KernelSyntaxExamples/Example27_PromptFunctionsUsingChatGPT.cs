@@ -13,11 +13,11 @@ public static class Example27_PromptFunctionsUsingChatGPT
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Using Chat GPT model for text completion ========");
+        Console.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         var func = kernel.CreateFunctionFromPrompt(

@@ -2,10 +2,9 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
 /// <summary>
 /// OpenAI function execution parameters

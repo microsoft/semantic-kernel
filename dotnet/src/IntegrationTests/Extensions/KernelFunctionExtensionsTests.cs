@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Extensions;
+namespace SemanticKernel.IntegrationTests;
 
 public sealed class KernelFunctionExtensionsTests : IDisposable
 {
@@ -27,8 +27,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
@@ -45,8 +45,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
@@ -65,37 +65,20 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextGenerationService : ITextGenerationService
     {
         public string? ModelId => null;
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(prompt) });
+            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
-        }
-    }
-
-    internal sealed class RedirectTextCompletionResult : ITextResult
-    {
-        private readonly string _completion;
-
-        public RedirectTextCompletionResult(string completion)
-        {
-            this._completion = completion;
-        }
-
-        public ModelResult ModelResult => new(this._completion);
-
-        public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(this._completion);
         }
     }
 }

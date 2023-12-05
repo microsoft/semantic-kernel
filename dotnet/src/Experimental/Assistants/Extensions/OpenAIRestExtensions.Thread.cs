@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Supported OpenAI REST API actions for threads.

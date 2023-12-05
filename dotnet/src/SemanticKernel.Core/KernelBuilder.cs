@@ -16,8 +16,8 @@ namespace Microsoft.SemanticKernel;
 /// A <see cref="Kernel"/> is primarily a collection of services and plugins. Services are represented
 /// via the standard <see cref="IServiceProvider"/> interface, and plugins via a <see cref="KernelPluginCollection"/>.
 /// <see cref="KernelBuilder"/> makes it easy to compose those services and plugins via a fluent
-/// interface. In particular, <see cref="ConfigureServices"/> allows for extension methods off of
-/// <see cref="IServiceCollection"/> to be used to register services, and <see cref="M:ConfigurePlugins"/>
+/// interface. In particular, <see cref="WithServices"/> allows for extension methods off of
+/// <see cref="IServiceCollection"/> to be used to register services, and <see cref="M:WithPlugins"/>
 /// allows for plugins to be constructed and added to the collection, having been handed a reference
 /// to the <see cref="IServiceProvider"/>, in case it's needed for resolving services, e.g. a <see cref="HttpClient"/>
 /// or <see cref="ILoggerFactory"/> that might be used by the plugin. Once composed, the builder's
@@ -28,7 +28,7 @@ public sealed class KernelBuilder
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private ServiceCollection? _services;
     /// <summary>Multicast delegate of configuration callbacks for creating plugins.</summary>
-    private Action<IServiceProvider, ICollection<IKernelPlugin>>? _pluginCallbacks;
+    private Action<KernelPluginCollection, IServiceProvider>? _pluginCallbacks;
     /// <summary>The initial culture to be stored in the <see cref="Kernel"/>.</summary>
     private CultureInfo? _culture;
 
@@ -65,7 +65,7 @@ public sealed class KernelBuilder
 
                 keys.Add(serviceDescriptor.ServiceKey);
             }
-            services.AddKeyedSingleton(Kernel.KernelServiceTypeToKeyMappingsKey, typeToKeyMappings);
+            services.AddKeyedSingleton(Kernel.KernelServiceTypeToKeyMappings, typeToKeyMappings);
 
             serviceProvider = services.BuildServiceProvider();
         }
@@ -78,7 +78,7 @@ public sealed class KernelBuilder
         if (this._pluginCallbacks is { } pluginCallbacks)
         {
             plugins = new KernelPluginCollection();
-            pluginCallbacks(serviceProvider, plugins);
+            pluginCallbacks(plugins, serviceProvider);
         }
 
         var instance = new Kernel(serviceProvider, plugins);
@@ -94,15 +94,15 @@ public sealed class KernelBuilder
     /// <summary>
     /// Configures the services to be available through the <see cref="Kernel"/>.
     /// </summary>
-    /// <param name="configureServices">Callback invoked as part of this call. It's passed the service collection to manipulate.</param>
+    /// <param name="withServices">Callback invoked as part of this call. It's passed the service collection to manipulate.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>The callback will be invoked synchronously as part of the call to <see cref="ConfigureServices"/>.</remarks>
-    public KernelBuilder ConfigureServices(Action<IServiceCollection> configureServices)
+    /// <remarks>The callback will be invoked synchronously as part of the call to <see cref="WithServices"/>.</remarks>
+    public KernelBuilder WithServices(Action<IServiceCollection> withServices)
     {
-        Verify.NotNull(configureServices);
+        Verify.NotNull(withServices);
 
         this._services ??= new();
-        configureServices(this._services);
+        withServices(this._services);
 
         return this;
     }
@@ -110,14 +110,24 @@ public sealed class KernelBuilder
     /// <summary>
     /// Configures the plugins to be available through the <see cref="Kernel"/>.
     /// </summary>
-    /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
+    /// <param name="withPlugins">Callback to invoke to add plugins.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>The callback will be invoked as part of each call to <see cref="Build"/>.</remarks>
-    public KernelBuilder ConfigurePlugins(Action<ICollection<IKernelPlugin>> configurePlugins)
+    /// <remarks>
+    /// <para>
+    /// The callback will be invoked as part of each call to <see cref="Build"/>.
+    /// </para>
+    /// <para>
+    /// Using a <see cref="KernelBuilder"/> to add plugins to a <see cref="Kernel"/> isn't required. Plugins can
+    /// also be added to the <see cref="Kernel"/> after it is produced by <see cref="Build"/>. All aspects of
+    /// a <see cref="Kernel"/> instance are mutable, with the sole exception of the <see cref="IServiceProvider"/>,
+    /// which represents a fixed view of the services available at the time the <see cref="Kernel"/> was created.
+    /// </para>
+    /// </remarks>
+    public KernelBuilder WithPlugins(Action<KernelPluginCollection> withPlugins)
     {
-        Verify.NotNull(configurePlugins);
+        Verify.NotNull(withPlugins);
 
-        this._pluginCallbacks += (_, plugins) => configurePlugins(plugins);
+        this._pluginCallbacks += (plugins, _) => withPlugins(plugins);
 
         return this;
     }
@@ -128,10 +138,18 @@ public sealed class KernelBuilder
     /// <param name="configurePlugins">Callback to invoke to add plugins.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
     /// <remarks>
+    /// <para>
     /// The callback will be invoked as part of each call to <see cref="Build"/>. It is passed the same <see cref="IServiceProvider"/>
     /// that will be provided to the <see cref="Kernel"/> so that the callback can resolve services necessary to create plugins.
+    /// </para>
+    /// <para>
+    /// Using a <see cref="KernelBuilder"/> to add plugins to a <see cref="Kernel"/> isn't required. Plugins can
+    /// also be added to the <see cref="Kernel"/> after it is produced by <see cref="Build"/>. All aspects of
+    /// a <see cref="Kernel"/> instance are mutable, with the sole exception of the <see cref="IServiceProvider"/>,
+    /// which represents a fixed view of the services available at the time the <see cref="Kernel"/> was created.
+    /// </para>
     /// </remarks>
-    public KernelBuilder ConfigurePlugins(Action<IServiceProvider, ICollection<IKernelPlugin>> configurePlugins)
+    public KernelBuilder WithPlugins(Action<KernelPluginCollection, IServiceProvider> configurePlugins)
     {
         Verify.NotNull(configurePlugins);
 
@@ -142,6 +160,11 @@ public sealed class KernelBuilder
 
     /// <summary>Sets a culture to be used by the <see cref="Kernel"/>.</summary>
     /// <param name="culture">The culture.</param>
+    /// <remarks>
+    /// Using a <see cref="KernelBuilder"/> to set the culture onto the <see cref="Kernel"/> isn't required.
+    /// <see cref="Kernel.Culture"/> may be set any number of times onto the <see cref="Kernel"/> returned
+    /// from <see cref="Build"/>.
+    /// </remarks>
     public KernelBuilder WithCulture(CultureInfo? culture)
     {
         this._culture = culture;
@@ -152,11 +175,19 @@ public sealed class KernelBuilder
     /// <summary>Configures the services to contain the specified singleton <see cref="IAIServiceSelector"/>.</summary>
     /// <param name="aiServiceSelector">The <see cref="IAIServiceSelector"/> to use to select an AI service from those registered in the kernel.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
+    /// <remarks>
+    /// This is functionally equivalent to calling <see cref="WithServices"/> with a callback that adds the specified
+    /// <see cref="IAIServiceSelector"/> as a non-keyed singleton.
+    /// </remarks>
     public KernelBuilder WithAIServiceSelector(IAIServiceSelector? aiServiceSelector) => this.WithSingleton(aiServiceSelector);
 
     /// <summary>Configures the services to contain the specified singleton <see cref="ILoggerFactory"/>.</summary>
     /// <param name="loggerFactory">The logger factory. If null, no logger factory will be registered.</param>
     /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
+    /// <remarks>
+    /// This is functionally equivalent to calling <see cref="WithServices"/> with a callback that adds the specified
+    /// <see cref="ILoggerFactory"/> as a non-keyed singleton.
+    /// </remarks>
     public KernelBuilder WithLoggerFactory(ILoggerFactory? loggerFactory) => this.WithSingleton(loggerFactory);
 
     /// <summary>Configures the services to contain the specified singleton.</summary>

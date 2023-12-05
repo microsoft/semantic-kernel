@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -47,13 +46,11 @@ public sealed class HandlebarsPlan
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
-    public FunctionResult Invoke(
+    public string Invoke(
         Kernel kernel,
-        Dictionary<string, object?> arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
-
-        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
+        return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
     }
 }

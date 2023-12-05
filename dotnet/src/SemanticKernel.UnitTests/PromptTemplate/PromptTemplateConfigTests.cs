@@ -24,12 +24,12 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
+        var settings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Assert
-        Assert.NotNull(requestSettings);
-        Assert.NotNull(requestSettings.ChatSystemPrompt);
-        Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
+        Assert.NotNull(settings);
+        Assert.NotNull(settings.ChatSystemPrompt);
+        Assert.Equal("Assistant is a large language model.", settings.ChatSystemPrompt);
     }
 
     [Fact]
@@ -46,12 +46,12 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
+        var settings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Assert
-        Assert.NotNull(requestSettings);
-        Assert.NotNull(requestSettings.ChatSystemPrompt);
-        Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
+        Assert.NotNull(settings);
+        Assert.NotNull(settings.ChatSystemPrompt);
+        Assert.Equal("I am a prompt", settings.ChatSystemPrompt);
     }
 
     [Fact]

@@ -74,6 +74,8 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\22-ai-plugin.json" />
+    <EmbeddedResource Include="Resources\22-openapi.json" />
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
