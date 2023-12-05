@@ -14,12 +14,12 @@
     {
       "name": "input",
       "description": "The text from which the entities are to be removed",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "ungrounded_entities",
       "description": "The entities to remove. This is a list of strings.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

@@ -14,12 +14,12 @@
     {
       "name": "input",
       "description": "Joke subject",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "style",
       "description": "Give a hint about the desired joke style",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

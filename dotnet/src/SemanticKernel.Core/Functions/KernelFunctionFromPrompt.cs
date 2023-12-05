@@ -204,9 +204,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         foreach (var parameter in this._promptConfig.InputVariables)
         {
-            if (!arguments.ContainsName(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {
-                arguments[parameter.Name] = parameter.DefaultValue;
+                arguments[parameter.Name] = parameter.Default;
             }
         }
     }

@@ -14,27 +14,27 @@
     {
       "name": "input",
       "description": "What the novel should be about.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "theme",
       "description": "The theme of this novel.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "notes",
       "description": "Notes useful to write this chapter.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "previousChapter",
       "description": "The previous chapter synopsis.",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "chapterIndex",
       "description": "The number of the chapter to write.",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

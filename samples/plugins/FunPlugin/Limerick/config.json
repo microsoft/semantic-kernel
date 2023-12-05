@@ -14,12 +14,12 @@
     {
       "name": "name",
       "description": "",
-      "default_value": "Bob"
+      "default": "Bob"
     },
     {
       "name": "input",
       "description": "",
-      "default_value": "Dogs"
+      "default": "Dogs"
     }
   ]
 }

@@ -17,12 +17,12 @@
     {
       "name": "input",
       "description": "Text to translate",
-      "default_value": ""
+      "default": ""
     },
       {
       "name": "language",
       "description": "Language to translate to",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

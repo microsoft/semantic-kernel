@@ -85,7 +85,7 @@ public sealed class PromptTemplateConfig
         return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.DefaultValue
+            DefaultValue = p.Default
         }).ToList();
     }
 
