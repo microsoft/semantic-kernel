@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -61,19 +58,18 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Pre Execution Handler - Should not trigger");
-            e.Cancel();
+            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
+            e.Cancel = true;
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -84,7 +80,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -108,13 +104,13 @@ public static class Example57_KernelHooks
 
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendering Handler - Triggered");
-            e.Variables.Set("style", "Seinfeld");
+            Console.WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
+            e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : Prompt Rendered Handler - Triggered");
+            Console.WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
             Console.WriteLine(e.RenderedPrompt);
@@ -124,7 +120,7 @@ public static class Example57_KernelHooks
         kernel.PromptRendered += MyRenderedHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -148,12 +144,12 @@ public static class Example57_KernelHooks
 
         static void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.Variables.Input;
+            var originalOutput = e.Result.ToString();
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
 
-            e.Variables.Update(newOutput);
+            e.SetResultValue(newOutput);
         }
 
         kernel.FunctionInvoked += MyChangeDataHandler;
@@ -184,8 +180,8 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.Function.Metadata.PluginName}.{e.Function.Name} : FunctionInvoking - Cancelling all subsequent invocations");
-            e.Cancel();
+            Console.WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
+            e.Cancel = true;
         };
 
         // Technically invoked will never be called since the function will be cancelled
@@ -226,7 +222,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             functionInvokedCount++;
-            e.Cancel();
+            e.Cancel = true;
         };
 
         var result = await kernel.InvokeAsync(secondFunction);

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// The REST API operation.
@@ -133,27 +133,27 @@ public sealed class RestApiOperation
             var headerValue = header.Value;
 
             //A try to resolve header value in arguments.
-            if (arguments.TryGetValue(headerName, out var value))
+            if (arguments.TryGetValue(headerName, out string? value) && value is not null)
             {
-                headers.Add(headerName, value);
+                headers.Add(headerName, value!);
                 continue;
             }
 
             //Header value is already supplied.
             if (!string.IsNullOrEmpty(headerValue))
             {
-                headers.Add(headerName, headerValue);
+                headers.Add(headerName, headerValue!);
                 continue;
             }
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                                 ?? throw new KernelException($"No value for the '{headerName} header is found.'");
+                                 ?? throw new KernelException($"No argument or value is provided for the '{headerName}' header of the operation - '{this.Id}'.");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)
             {
-                throw new KernelException($"No value for the '{headerName} header is found.'");
+                throw new KernelException($"No argument or value is provided for the '{headerName}' required header of the operation - '{this.Id}'.'");
             }
 
             //Parameter is not required and no default value provided.
@@ -184,7 +184,7 @@ public sealed class RestApiOperation
             var parameterName = match.Groups[1].Value;
 
             //A try to find parameter value in arguments
-            if (arguments.TryGetValue(parameterName, out var value))
+            if (arguments.TryGetValue(parameterName, out string? value) && value is not null)
             {
                 return value;
             }
@@ -193,7 +193,7 @@ public sealed class RestApiOperation
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
-                throw new KernelException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
+                throw new KernelException($"No argument or value is provided for the '{parameterName}' parameter of the operation - '{this.Id}'.");
             }
 
             return parameterMetadata.DefaultValue;

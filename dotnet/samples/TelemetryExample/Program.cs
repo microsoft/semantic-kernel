@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -9,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -82,10 +80,10 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
@@ -98,6 +96,7 @@ public sealed class Program
             .WithLoggerFactory(loggerFactory)
             .WithAzureOpenAIChatCompletion(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
+                Env.Var("AzureOpenAI__ChatModelId"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
