@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.templateengine.handlebars;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
@@ -51,11 +52,15 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
                             String role = options.hash("role");
                             String content = (String) options.fn(context);
 
+                            // when message is inside a loop Context is Optional<ChatHistory.Message>
+                            // when message is not inside a loop Context is the UnmodifiableMap<String, Object> with all the variables
                             if (context instanceof Optional) {
                                 ChatHistory.Message message = ((Optional<ChatHistory.Message>) context).orElse(null);
-                                role = message.getAuthorRoles()
-                                                .toString()
-                                                .toLowerCase();
+                                if (role == null || role.isEmpty()) {
+                                    role = message.getAuthorRoles()
+                                                    .toString()
+                                                    .toLowerCase();
+                                }
                                 content = message.getContent();
                             }
 
@@ -79,22 +84,6 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-//            AtomicReference<String> template = new AtomicReference<>(this.template);
-//
-//            variables
-//                    .asMap()
-//                    .forEach(
-//                            (k, v) -> {
-//                                try {
-//                                    template.set(
-//                                            handlebars.compileInline(template.get()).apply(v));
-//                                } catch (IOException e) {
-//                                    throw new RuntimeException(e);
-//                                }
-//                            });
-//
-//            return Mono.just(template.get());
         }
     }
 }
