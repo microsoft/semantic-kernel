@@ -50,7 +50,6 @@ public static class Example45_MultiStreamingChatCompletion
     /// </summary>
     /// <param name="chatCompletionService">Chat completion service to use</param>
     /// <param name="numResultsPerPrompt">Number of results to get for each chat completion request</param>
-    /// <returns></returns>
     private static async Task StreamingChatCompletionAsync(IChatCompletionService chatCompletionService,
                                                            int numResultsPerPrompt)
     {
@@ -114,7 +113,7 @@ public static class Example45_MultiStreamingChatCompletion
     }
 
     /// <summary>
-    /// Add enough new lines so as to clear the console window.
+    /// Add enough new lines to clear the console window.
     /// </summary>
     private static void ClearDisplayByAddingEmptyLines()
     {
