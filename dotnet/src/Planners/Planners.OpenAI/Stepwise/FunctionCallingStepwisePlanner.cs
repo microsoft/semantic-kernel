@@ -45,7 +45,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
-        IChatCompletionService chatCompletion = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType());
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);

@@ -49,7 +49,7 @@ public static class Example26_AADAuth
                 new DefaultAzureCredential(authOptions))
             .Build();
 
-        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
 
         // User message

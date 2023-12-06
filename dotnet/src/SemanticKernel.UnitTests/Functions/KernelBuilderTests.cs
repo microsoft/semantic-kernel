@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -50,6 +51,37 @@ public class KernelBuilderTests
     }
 
     [Fact]
+    public void ItDefaultsServiceSelectorToSingleton()
+    {
+        Kernel kernel = new KernelBuilder().Build();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
+
+        kernel = new Kernel();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
+
+        NopServiceSelector selector = new();
+
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<IAIServiceSelector>(selector);
+        kernel = builder.Build();
+        Assert.Same(selector, kernel.Services.GetService<IAIServiceSelector>());
+        Assert.Same(selector, kernel.ServiceSelector);
+        Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
+    }
+
+    private sealed class NopServiceSelector : IAIServiceSelector
+    {
+        (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
+            throw new NotImplementedException();
+    }
+
+    [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
         IKernelPlugin plugin1 = new KernelPlugin("plugin1");
@@ -84,8 +116,8 @@ public class KernelBuilderTests
 
         Kernel kernel = builder.Build();
 
-        Assert.IsType<OpenAIChatCompletionService>(kernel.GetService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetService<ITextGenerationService>("azureopenai"));
+        Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
+        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
         Assert.Single(kernel.GetAllServices<IChatCompletionService>());
@@ -127,8 +159,8 @@ public class KernelBuilderTests
 
         Assert.NotNull(k);
         Assert.Same(plugins, k.Plugins);
-        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai1"));
-        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai2"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai1"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai2"));
 
         // This should be 4, not 2. However, there is currently a limitation with Microsoft.Extensions.DependencyInjection
         // that prevents GetAllServices from enumerating named services. KernelBuilder works around this,
