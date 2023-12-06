@@ -42,7 +42,6 @@ public sealed class OpenAICompletionTests : IDisposable
             .Build();
 
         this._kernelBuilder = new KernelBuilder();
-        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -53,6 +52,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
             .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
@@ -74,6 +74,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIChatAsTextTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         KernelBuilder builder = this._kernelBuilder;
 
         this.ConfigureChatOpenAI(builder);
@@ -93,6 +94,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task CanUseOpenAiChatForTextGenerationAsync()
     {
         // Note: we use OpenAI Chat Completion and GPT 3.5 Turbo
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         KernelBuilder builder = this._kernelBuilder;
         this.ConfigureChatOpenAI(builder);
 
@@ -115,6 +117,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIStreamingTestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
 
         if (useChatModel)
@@ -147,6 +150,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAITestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
 
         if (useChatModel)
@@ -177,6 +181,7 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         this._kernelBuilder
             .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
@@ -206,6 +211,7 @@ public sealed class OpenAICompletionTests : IDisposable
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         KernelBuilder builder = this._kernelBuilder;
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -246,6 +252,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
             .AddOpenAITextGeneration(
                 modelId: openAIConfiguration.ModelId,
@@ -268,6 +275,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
             .AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -292,6 +300,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
             .AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -323,6 +332,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder.Build();
 
         this._serviceConfiguration[service](target);
@@ -340,6 +350,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIInvokePromptTestAsync()
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
@@ -357,6 +368,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIDefaultValueTestAsync()
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
@@ -374,6 +386,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task MultipleServiceLoadPromptConfigTestAsync()
     {
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
