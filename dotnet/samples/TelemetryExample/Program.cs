@@ -6,13 +6,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Web;
-using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcPlugins;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -42,7 +39,10 @@ public sealed class Program
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
-        var connectionString = Env.Var("ApplicationInsights__ConnectionString");
+        // Load configuration from environment variables or user secrets.
+        LoadUserSecrets();
+
+        var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
 
         using var traceProvider = Sdk.CreateTracerProviderBuilder()
             .AddSource("Microsoft.SemanticKernel*")
@@ -89,24 +89,17 @@ public sealed class Program
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
-        var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
             .WithAzureOpenAIChatCompletion(
-                Env.Var("AzureOpenAI__ChatDeploymentName"),
-                Env.Var("AzureOpenAI__ChatModelId"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
-
-        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }
@@ -115,5 +108,14 @@ public sealed class Program
     {
         var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
         return new HandlebarsPlanner(plannerConfig);
+    }
+
+    private static void LoadUserSecrets()
+    {
+        IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Program>()
+            .Build();
+        TestConfiguration.Initialize(configRoot);
     }
 }
