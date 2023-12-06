@@ -124,7 +124,7 @@ internal sealed class ChatThread : IChatThread
     {
         if (this._isDeleted)
         {
-            throw new AssistantException($"Assistant: {this.Id} has been deleted.");
+            throw new AssistantException($"{nameof(ChatThread)}: {this.Id} has been deleted.");
         }
     }
 }

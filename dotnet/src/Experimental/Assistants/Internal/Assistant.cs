@@ -172,7 +172,7 @@ internal sealed class Assistant : IAssistant
     {
         if (this._isDeleted)
         {
-            throw new AssistantException($"Assistant: {this.Id} has been deleted.");
+            throw new AssistantException($"{nameof(Assistant)}: {this.Id} has been deleted.");
         }
     }
 }
