@@ -95,11 +95,12 @@ public static class TextGenerationExtensions
                 {
                     yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage, chatMessage.Encoding, chatMessage.Metadata);
                 }
-            }
 
-            // No TextPromptParser found...
+                yield break;
+            }
         }
 
+        // When using against text completions, the prompt will be used as is.
         await foreach (var textChunk in textGenerationService.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken))
         {
             yield return textChunk;
