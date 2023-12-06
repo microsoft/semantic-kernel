@@ -11,11 +11,14 @@ using Microsoft.SemanticKernel;
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
+/*
+ * This example shows how to use a retry handler within a Semantic Kernel
+ */
 public static class Example08_RetryHandler
 {
     public static async Task RunAsync()
     {
-        // Create a Kernel with the HttpClient
+        // Create a Kernel with a customized HttpClient
         var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
@@ -27,13 +30,16 @@ public static class Example08_RetryHandler
                     o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
                 });
             });
-            c.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+            c.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - Setting OpenAI.ApiKey to an invalid value to see the retry policy in play
         }).Build();
 
         var logger = kernel.LoggerFactory.CreateLogger(typeof(Example08_RetryHandler));
 
-        const string Question = "How popular is Polly library?";
+        const string Question = "How popular is the Polly library?";
         logger.LogInformation("Question: {Question}", Question);
+
+        // The call to OpenAI will fail and be retried a few times before eventually failing.
+        // Retrying can overcome transient problems and thus improves resiliency.
         try
         {
             // The InvokePromptAsync call will issue a request to OpenAI with an invalid API key.
