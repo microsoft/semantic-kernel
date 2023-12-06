@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 
@@ -38,6 +39,6 @@ public sealed class KernelExtensionTests
         var kernel = new Kernel();
 
         //Act & Assert
-        Assert.Throws<KernelException>(() => kernel.GetAssistantTool(toolName));
+        Assert.Throws<AssistantException>(() => kernel.GetAssistantTool(toolName));
     }
 }
