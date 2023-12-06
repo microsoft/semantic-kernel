@@ -118,7 +118,7 @@ internal sealed class Assistant : IAssistant
             return;
         }
 
-        await this._restContext.DeleteThreadModelAsync(id, cancellationToken).ConfigureAwait(false);
+        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
