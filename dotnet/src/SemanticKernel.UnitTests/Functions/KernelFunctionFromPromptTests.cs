@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -233,7 +232,7 @@ public class KernelFunctionFromPromptTests
         }
     }
 
-    private class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
+    private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
         public ChatHistory? ChatHistory { get; private set; }
