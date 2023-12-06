@@ -107,7 +107,6 @@ internal sealed class ChatRun
                 try
                 {
                     this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
-                    //Console.WriteLine($"### {this._model.Status}"); $$$
                 }
                 catch (Exception exception) when (!exception.IsCriticalException())
                 {
