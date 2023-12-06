@@ -61,7 +61,7 @@ public sealed class KernelBuilder : IKernelBuilder
             throw new InvalidOperationException("Build is not supported on this instance. Use BuildServiceProvider on the original IServiceCollection.");
         }
 
-        IServiceProvider serviceProvider;
+        IServiceProvider serviceProvider = EmptyServiceProvider.Instance;
         if (this._services is { Count: > 0 } services)
         {
             // This is a workaround for Microsoft.Extensions.DependencyInjection's GetKeyedServices not currently supporting
@@ -86,10 +86,6 @@ public sealed class KernelBuilder : IKernelBuilder
             services.AddKeyedSingleton(Kernel.KernelServiceTypeToKeyMappings, typeToKeyMappings);
 
             serviceProvider = services.BuildServiceProvider();
-        }
-        else
-        {
-            serviceProvider = EmptyServiceProvider.Instance;
         }
 
         return new Kernel(serviceProvider);
