@@ -45,7 +45,7 @@ internal sealed class ChatWithDataRequest
 internal sealed class ChatWithDataSource
 {
     [JsonPropertyName("type")]
-    public string Type { get; set; } = ChatWithDataSourceType.AzureCognitiveSearch.ToString();
+    public string Type { get; set; } = ChatWithDataSourceType.AzureAISearch.ToString();
 
     [JsonPropertyName("parameters")]
     public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
@@ -67,5 +67,5 @@ internal sealed class ChatWithDataSourceParameters
 [Experimental("SKEXP0010")]
 internal enum ChatWithDataSourceType
 {
-    AzureCognitiveSearch
+    AzureAISearch
 }

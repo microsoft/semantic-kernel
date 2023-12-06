@@ -6,13 +6,13 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
 
 /// <summary>
-/// Azure Cognitive Search record and index definition.
+/// Azure AI Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
-internal sealed class AzureCognitiveSearchMemoryRecord
+internal sealed class AzureAISearchMemoryRecord
 {
     /// <summary>
     /// ID field name.
@@ -91,24 +91,24 @@ internal sealed class AzureCognitiveSearchMemoryRecord
     public bool IsReference { get; set; } = false;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class.
+    /// Initializes a new instance of the <see cref="AzureAISearchMemoryRecord"/> class.
     /// Required by JSON deserializer.
     /// </summary>
-    public AzureCognitiveSearchMemoryRecord()
+    public AzureAISearchMemoryRecord()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified ID.
+    /// Initializes a new instance of the <see cref="AzureAISearchMemoryRecord"/> class with the specified ID.
     /// </summary>
     /// <param name="id">The record ID.</param>
-    public AzureCognitiveSearchMemoryRecord(string id)
+    public AzureAISearchMemoryRecord(string id)
     {
         this.Id = EncodeId(id);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified parameters.
+    /// Initializes a new instance of the <see cref="AzureAISearchMemoryRecord"/> class with the specified parameters.
     /// </summary>
     /// <param name="id">The record ID.</param>
     /// <param name="text">The content stored in the record.</param>
@@ -117,7 +117,7 @@ internal sealed class AzureCognitiveSearchMemoryRecord
     /// <param name="embedding">The content embedding.</param>
     /// <param name="description">The optional description of the content.</param>
     /// <param name="additionalMetadata">The additional metadata.</param>
-    public AzureCognitiveSearchMemoryRecord(
+    public AzureAISearchMemoryRecord(
         string id,
         string text,
         string externalSourceName,
@@ -151,13 +151,13 @@ internal sealed class AzureCognitiveSearchMemoryRecord
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureCognitiveSearchMemoryRecord"/> object from the specified <see cref="MemoryRecord"/>.
+    /// Creates a new <see cref="AzureAISearchMemoryRecord"/> object from the specified <see cref="MemoryRecord"/>.
     /// </summary>
     /// <param name="record">The <see cref="MemoryRecord"/> object.</param>
-    /// <returns>A new <see cref="AzureCognitiveSearchMemoryRecord"/> object.</returns>
-    public static AzureCognitiveSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
+    /// <returns>A new <see cref="AzureAISearchMemoryRecord"/> object.</returns>
+    public static AzureAISearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
-        return new AzureCognitiveSearchMemoryRecord(
+        return new AzureAISearchMemoryRecord(
             id: record.Metadata.Id,
             text: record.Metadata.Text,
             externalSourceName: string.Empty,
@@ -183,7 +183,7 @@ internal sealed class AzureCognitiveSearchMemoryRecord
 
     /// <summary>
     /// Encodes the specified ID using a URL-safe algorithm.
-    /// ACS keys can contain only letters, digits, underscore, dash, equal sign, recommending
+    /// Azure AI Search keys can contain only letters, digits, underscore, dash, equal sign, recommending
     /// to encode values with a URL-safe algorithm.
     /// </summary>
     /// <param name="realId">The original ID.</param>

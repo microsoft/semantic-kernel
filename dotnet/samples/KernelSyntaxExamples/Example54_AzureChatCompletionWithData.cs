@@ -122,9 +122,9 @@ public static class Example54_AzureChatCompletionWithData
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
             CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
+            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
+            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
+            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
 }
