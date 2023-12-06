@@ -2,14 +2,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming Text Completion.
  *
- * Note that all text completion models are deprecated by OpenAI and will be removed in a future release.
+ * Note that all text generation models are deprecated by OpenAI and will be removed in a future release.
  *
  * Refer to example 33 for streaming chat completion.
  */
@@ -18,34 +18,35 @@ public static class Example32_StreamingCompletion
 {
     public static async Task RunAsync()
     {
-        await AzureOpenAITextCompletionStreamAsync();
-        await OpenAITextCompletionStreamAsync();
+        await AzureOpenAITextGenerationStreamAsync();
+        await OpenAITextGenerationStreamAsync();
     }
 
-    private static async Task AzureOpenAITextCompletionStreamAsync()
+    private static async Task AzureOpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new AzureTextCompletion(
+        var textGeneration = new AzureOpenAITextGenerationService(
             TestConfiguration.AzureOpenAI.DeploymentName,
+            TestConfiguration.AzureOpenAI.ModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await TextGenerationStreamAsync(textGeneration);
     }
 
-    private static async Task OpenAITextCompletionStreamAsync()
+    private static async Task OpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new OpenAITextCompletion("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAITextGenerationService("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await TextGenerationStreamAsync(textGeneration);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task TextGenerationStreamAsync(ITextGenerationService textGeneration)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
@@ -57,9 +58,9 @@ public static class Example32_StreamingCompletion
         var prompt = "Write one paragraph why AI is awesome";
 
         Console.WriteLine("Prompt: " + prompt);
-        await foreach (string message in textCompletion.CompleteStreamAsync(prompt, requestSettings))
+        await foreach (var content in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
-            Console.Write(message);
+            Console.Write(content);
         }
 
         Console.WriteLine();

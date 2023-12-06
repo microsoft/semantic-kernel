@@ -2,12 +2,12 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -34,13 +34,13 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner but not enough for the given goal.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         try
         {
             await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine(e.Message);
             // Create plan error: Not possible to create plan for goal with available functions.
@@ -73,16 +73,15 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
         var planner = new SequentialPlanner(kernel);
 
@@ -98,7 +97,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var result = await kernel.RunAsync(plan);
+        var result = await plan.InvokeAsync(kernel);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -108,13 +107,12 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
-        kernel.ImportFunctions(new EmailPlugin(), "email");
+        kernel.ImportPluginFromObject<EmailPlugin>("email");
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
         var plan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
 
@@ -169,7 +167,7 @@ internal static class Example12_SequentialPlanner
             Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
 
             // Deseriliaze the plan from the description
-            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.Functions);
+            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.Plugins);
 
             Console.WriteLine(restoredPlan.ToPlanWithGoalString());
             Console.WriteLine();
@@ -186,7 +184,7 @@ internal static class Example12_SequentialPlanner
             "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
             "he's not just an ordinary boy.";
 
-            var result = await kernel.RunAsync(restoredPlan, new(newInput));
+            var result = await restoredPlan.InvokeAsync(kernel, newInput);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
@@ -200,8 +198,8 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "MiscPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "MiscPlugin"));
 
         var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
 
@@ -233,22 +231,16 @@ internal static class Example12_SequentialPlanner
         var memory = InitializeMemory();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin",
-           "CalendarPlugin",
-           "ChatPlugin",
-           "ChildrensBookPlugin",
-           "ClassificationPlugin",
-           "CodingPlugin",
-           "FunPlugin",
-           "IntentDetectionPlugin",
-           "MiscPlugin",
-           "QAPlugin");
+        foreach (string pluginFolder in new[] {
+            "SummarizePlugin", "WriterPlugin", "CalendarPlugin", "ChatPlugin", "ChildrensBookPlugin", "ClassificationPlugin",
+            "CodingPlugin", "FunPlugin", "IntentDetectionPlugin", "MiscPlugin", "QAPlugin" })
+        {
+            kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginFolder));
+        }
 
-        kernel.ImportFunctions(new EmailPlugin(), "email");
-        kernel.ImportFunctions(new StaticTextPlugin(), "statictext");
-        kernel.ImportFunctions(new TextPlugin(), "coretext");
+        kernel.ImportPluginFromObject<EmailPlugin>("email");
+        kernel.ImportPluginFromObject<StaticTextPlugin>("statictext");
+        kernel.ImportPluginFromObject<TextPlugin>("coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
@@ -261,11 +253,11 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(plan.ToPlanWithGoalString());
     }
 
-    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
+    private static Kernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -276,17 +268,17 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
         // use these to generate and store embeddings for the function descriptions.
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureTextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
@@ -299,8 +291,8 @@ internal static class Example12_SequentialPlanner
     {
         var memoryStorage = new VolatileMemoryStore();
 
-        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
-            modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+        var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
+            deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
@@ -310,7 +302,7 @@ internal static class Example12_SequentialPlanner
     }
 
     private static async Task<Plan> ExecutePlanAsync(
-        IKernel kernel,
+        Kernel kernel,
         Plan plan,
         string input = "",
         int maxSteps = 10)
@@ -325,7 +317,7 @@ internal static class Example12_SequentialPlanner
             {
                 if (string.IsNullOrEmpty(input))
                 {
-                    await plan.InvokeNextStepAsync(kernel.CreateNewContext());
+                    await plan.InvokeNextStepAsync(kernel, new ContextVariables());
                     // or await kernel.StepAsync(plan);
                 }
                 else
@@ -345,7 +337,7 @@ internal static class Example12_SequentialPlanner
                 Console.WriteLine(plan.State.ToString());
             }
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
             Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);

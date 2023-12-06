@@ -1,34 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>
-    /// Show how to configure model request settings
+    /// Show how to use a custom AI service selector to select the GPT 3.x model
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example61_CustomAIServiceSelector ========");
+        Console.WriteLine("======== Example62_CustomAIServiceSelector ========");
 
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string azureApiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string azureDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -41,124 +38,47 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+            .WithAzureOpenAIChatCompletion(
+                deploymentName: azureDeploymentName,
+                endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
-            .WithOpenAIChatCompletionService(
+                modelId: azureModelId,
+                apiKey: azureApiKey)
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
-            .WithAIServiceSelector(new MyAIServiceSelector())
+            // Use the custom AI service selector to select the GPT 3.x model
+            .WithAIServiceSelector(new Gpt3xAIServiceSelector())
             .Build();
 
-        var modelSettings = new List<AIRequestSettings>
-        {
-            new OpenAIRequestSettings() { ServiceId = "AzureOpenAIChat", MaxTokens = 400 },
-            new OpenAIRequestSettings() { ServiceId = "OpenAIChat", MaxTokens = 200 }
-        };
-
-        await RunSemanticFunctionAsync(kernel, "Hello AI, what can you do for me?", modelSettings);
-        await RunSemanticFunctionAsync(kernel, "Hello AI, provide an indepth description of what can you do for me as a bulleted list?", modelSettings);
-    }
-
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string prompt, List<AIRequestSettings> modelSettings)
-    {
-        Console.WriteLine($"======== {prompt} ========");
-
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
-        var promptTemplate = new PromptTemplate(prompt, promptTemplateConfig, kernel);
-
-        var skfunction = kernel.RegisterSemanticFunction(
-            "MyFunction",
-            promptTemplateConfig,
-            promptTemplate);
-
-        var result = await kernel.RunAsync(skfunction);
+        var prompt = "Hello AI, what can you do for me?";
+        var result = await kernel.InvokePromptAsync(prompt);
         Console.WriteLine(result.GetValue<string>());
-    }
-}
-
-public class MyAIServiceSelector : IAIServiceSelector
-{
-    private readonly int _defaultMaxTokens = 300;
-    private readonly int _minResponseTokens = 150;
-
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
-    {
-        if (modelSettings is null || modelSettings.Count == 0)
-        {
-            var service = serviceProvider.GetService<T>(null);
-            if (service is not null)
-            {
-                return (service, null);
-            }
-        }
-        else
-        {
-            var tokens = this.CountTokens(renderedPrompt);
-
-            string? serviceId = null;
-            int fewestTokens = 0;
-            AIRequestSettings? requestSettings = null;
-            AIRequestSettings? defaultRequestSettings = null;
-            foreach (var model in modelSettings)
-            {
-                if (!string.IsNullOrEmpty(model.ServiceId))
-                {
-                    if (model is OpenAIRequestSettings openAIModel)
-                    {
-                        var responseTokens = (openAIModel.MaxTokens ?? this._defaultMaxTokens) - tokens;
-                        if (serviceId is null || (responseTokens > this._minResponseTokens && responseTokens < fewestTokens))
-                        {
-                            fewestTokens = responseTokens;
-                            serviceId = model.ServiceId;
-                            requestSettings = model;
-                        }
-                    }
-                }
-                else
-                {
-                    // First request settings with empty or null service id is the default
-                    defaultRequestSettings ??= model;
-                }
-            }
-            Console.WriteLine($"Prompt tokens: {tokens}, Response tokens: {fewestTokens}");
-
-            if (serviceId is not null)
-            {
-                Console.WriteLine($"Selected service: {serviceId}");
-                var service = serviceProvider.GetService<T>(serviceId);
-                if (service is not null)
-                {
-                    return (service, requestSettings);
-                }
-            }
-
-            if (defaultRequestSettings is not null)
-            {
-                var service = serviceProvider.GetService<T>(null);
-                if (service is not null)
-                {
-                    return (service, defaultRequestSettings);
-                }
-            }
-        }
-
-        throw new SKException("Unable to find AI service to handled request.");
     }
 
     /// <summary>
-    /// MicrosoftML token counter implementation.
+    /// Custom AI service selector that selects the GPT 3.x model
     /// </summary>
-    private int CountTokens(string input)
+    private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        Tokenizer tokenizer = new(new Bpe());
-        var tokens = tokenizer.Encode(input).Tokens;
+        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
+        {
+            foreach (var service in kernel.GetAllServices<T>())
+            {
+                // Find the first service that has a model id that starts with "gpt-3"
+                var serviceModelId = service.GetModelId();
+                var endpoint = service.GetEndpoint();
+                if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
+                    return (service, new OpenAIPromptExecutionSettings());
+                }
+            }
 
-        return tokens.Count;
+            throw new KernelException("Unable to find AI service for GPT 3.x.");
+        }
     }
 }

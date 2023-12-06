@@ -1,16 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
@@ -21,7 +16,6 @@ internal static class RestApiOperationExtensions
     /// Returns list of REST API operation parameters.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="serverUrlOverride">The server URL override.</param>
     /// <param name="addPayloadParamsFromMetadata">Determines whether to include the operation payload parameters from payload metadata.
     /// If false, the 'payload' and 'content-type' artificial parameters are added instead.
     /// </param>
@@ -31,37 +25,15 @@ internal static class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<RestApiOperationParameter> GetParameters(
         this RestApiOperation operation,
-        Uri? serverUrlOverride = null,
         bool addPayloadParamsFromMetadata = false,
-        bool enablePayloadNamespacing = false,
-        Uri? documentUri = null)
+        bool enablePayloadNamespacing = false)
     {
-        string? serverUrlString = null;
-        Uri? serverUrl = serverUrlOverride ?? operation.ServerUrl ?? documentUri;
+        var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
-        if (serverUrl is not null)
-        {
-            serverUrlString = $"{serverUrl.GetLeftPart(UriPartial.Authority)}/";
-        }
-
-        var parameters = new List<RestApiOperationParameter>(operation.Parameters)
-        {
-            // Register the "server-url" parameter if override is provided
-            new RestApiOperationParameter(
-                name: RestApiOperation.ServerUrlArgumentName,
-                type: "string",
-                isRequired: false,
-                expand: false,
-                RestApiOperationParameterLocation.Path,
-                RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlString)
-        };
-
-        //Add payload parameters
+        // Add payload parameters
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
@@ -74,6 +46,42 @@ internal static class RestApiOperationExtensions
         }
 
         return parameters;
+    }
+
+    /// <summary>
+    /// Returns the default return parameter metadata for a given REST API operation.
+    /// </summary>
+    /// <param name="operation">The REST API operation object with Responses to parse.</param>
+    /// <param name="preferredResponses">A list of preferred response codes to use when selecting the default response.</param>
+    /// <returns>The default return parameter metadata, if any.</returns>
+    public static KernelReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
+    {
+        RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
+
+        var returnParameter =
+            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
+
+        return returnParameter;
+    }
+
+    /// <summary>
+    /// Retrieves the default response for a given REST API operation.
+    /// </summary>
+    /// <param name="responses">The REST API operation responses to parse.</param>
+    /// <param name="preferredResponses">The preferred response codes to use when selecting the default response.</param>
+    /// <returns>The default response, if any.</returns>
+    private static RestApiOperationExpectedResponse? GetDefaultResponse(IDictionary<string, RestApiOperationExpectedResponse> responses, string[] preferredResponses)
+    {
+        foreach (var code in preferredResponses)
+        {
+            if (responses.TryGetValue(code, out var response))
+            {
+                return response;
+            }
+        }
+
+        // If no appropriate response is found, return null or throw an exception
+        return null;
     }
 
     /// <summary>
@@ -90,7 +98,7 @@ internal static class RestApiOperationExtensions
         {
             if (operation.Payload is null)
             {
-                throw new SKException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
+                throw new KernelException($"Payload parameters cannot be retrieved from the '{operation.Id}' operation payload metadata because it is missing.");
             }
 
             // The 'text/plain' content type payload metadata does not contain parameter names.
@@ -141,7 +149,8 @@ internal static class RestApiOperationExtensions
             expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
-            description: operation.Payload?.Description ?? "REST API request body.");
+            description: operation.Payload?.Description ?? "REST API request body.",
+            schema: operation.Payload?.Schema);
     }
 
     /// <summary>
@@ -170,7 +179,8 @@ internal static class RestApiOperationExtensions
                     expand: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
-                    description: property.Description));
+                    description: property.Description,
+                    schema: property.Schema));
             }
 
             parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
@@ -198,4 +208,5 @@ internal static class RestApiOperationExtensions
 
     private const string MediaTypeTextPlain = "text/plain";
     private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");
+    private static readonly string[] s_preferredResponses = new string[] { "200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default" };
 }

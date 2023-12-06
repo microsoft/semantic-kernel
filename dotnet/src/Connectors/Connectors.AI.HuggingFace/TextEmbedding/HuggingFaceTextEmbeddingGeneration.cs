@@ -8,7 +8,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -22,6 +23,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
+    private readonly Dictionary<string, object?> _attributes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -34,10 +36,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
-
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._endpoint = endpoint.AbsoluteUri;
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -52,8 +55,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         this._model = model;
         this._endpoint = endpoint;
-
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -66,19 +70,26 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
+        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
+        {
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+        }
 
         this._model = model;
         this._endpoint = endpoint;
         this._httpClient = httpClient;
-
-        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
-        {
-            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
-        }
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributes.Add(AIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
 
     /// <inheritdoc/>
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
+    /// <inheritdoc/>
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
@@ -100,7 +111,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -130,7 +141,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         }
         else
         {
-            throw new SKException("No endpoint or HTTP client base address has been provided");
+            throw new KernelException("No endpoint or HTTP client base address has been provided");
         }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");

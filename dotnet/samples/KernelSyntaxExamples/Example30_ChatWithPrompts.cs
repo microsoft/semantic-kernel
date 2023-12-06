@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 using Resources;
 
@@ -19,12 +18,12 @@ using Resources;
  *
  * - Use the prompt template engine to render prompts, without executing them.
  *   This can be used to leverage the template engine (which executes functions internally)
- *   to generate prompts and use them programmatically, without executing them like semantic functions.
+ *   to generate prompts and use them programmatically, without executing them like prompt functions.
  *
  * - Use rendered prompts to create the context of System and User messages sent to Chat models
  *   like "gpt-3.5-turbo"
  *
- * Note: normally you would work with Semantic Functions to automatically send a prompt to a model
+ * Note: normally you would work with Prompt Functions to automatically send a prompt to a model
  *       and get a response. In this case we use the Chat model, sending a chat history object, which
  *       includes some instructions, some context (the text selected), and the user query.
  *
@@ -40,7 +39,7 @@ using Resources;
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
  *
- *      var promptRenderer = new BasicPromptTemplateEngine();
+ *      var promptRenderer = new KernelPromptTemplateEngine();
  *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
 // ReSharper disable CommentTypo
@@ -61,56 +60,56 @@ public static class Example30_ChatWithPrompts
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        // We need a kernel context to store some information to pass to the prompts and the list
-        // of available plugins needed to render prompt templates.
-        var context = kernel.CreateNewContext();
+        // Adding required arguments referenced by the prompt templates.
+        var arguments = new KernelArguments
+        {
+            // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
+            ["selectedText"] = selectedText,
 
-        // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
-        context.Variables["selectedText"] = selectedText;
+            // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
+            ["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture),
 
-        // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
-        context.Variables["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
+            // This is the user message, store it in the variable used by 28-user-prompt.txt
+            ["userMessage"] = "extract locations as a bullet point list"
+        };
 
-        // This is the user message, store it in the variable used by 28-user-prompt.txt
-        context.Variables["userMessage"] = "extract locations as a bullet point list";
-
-        // Instantiate the prompt renderer, which we will use to turn prompt templates
+        // Instantiate the prompt template factory, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
         // to the Chat Model.
-        var promptRenderer = new BasicPromptTemplateEngine();
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptRenderer.RenderAsync(systemPromptTemplate, context);
+        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, arguments);
         Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptRenderer.RenderAsync(userPromptTemplate, context);
+        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, arguments);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
-        var chatGPT = kernel.GetService<IChatCompletion>();
+        var chatCompletion = kernel.GetService<IChatCompletionService>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
         // information needed.
-        var chatHistory = chatGPT.CreateNewChat(systemMessage);
+        var chatHistory = new ChatHistory(systemMessage);
 
         // Add the user query to the chat history
         chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
-        string answer = await chatGPT.GenerateMessageAsync(chatHistory);
+        var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
         Console.WriteLine($"------------------------------------\n{answer}");
 
         /*

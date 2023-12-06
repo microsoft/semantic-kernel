@@ -2,17 +2,18 @@
 
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 public sealed class OpenAIFunctionResponseTests
 {
     [Fact]
     public void ItCanConvertFromFunctionCallWithPluginName()
     {
         // Arrange
-        var sut = new FunctionCall("foo-bar", "{}");
+        var sut = new FunctionCall("foo_bar", "{}");
 
         // Act
         var result = OpenAIFunctionResponse.FromFunctionCall(sut);

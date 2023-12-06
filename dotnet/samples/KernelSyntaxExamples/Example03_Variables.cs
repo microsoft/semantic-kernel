@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Plugins;
 using RepoUtils;
 
@@ -18,16 +17,28 @@ public static class Example03_Variables
     {
         Console.WriteLine("======== Variables ========");
 
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
-        var textFunctions = kernel.ImportFunctions(new StaticTextPlugin(), "text");
+        Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
+        var textPlugin = kernel.ImportPluginFromObject<StaticTextPlugin>();
 
-        var variables = new ContextVariables("Today is: ");
-        variables.Set("day", DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture));
+        var arguments = new KernelArguments("Today is: ")
+        {
+            ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
+        };
 
-        KernelResult result = await kernel.RunAsync(variables,
-            textFunctions["AppendDay"],
-            textFunctions["Uppercase"]);
+        // ** Different ways of executing function with arguments **
 
-        Console.WriteLine(result.GetValue<string>());
+        // Specify and get the value type as generic parameter
+        var resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
+        Console.WriteLine($"string -> {resultValue}");
+
+        // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult
+        var functionResult = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
+        var metadata = functionResult.Metadata;
+
+        // Specify the type from the FunctionResult
+        Console.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
+
+        // FunctionResult.ToString() automatically converts the result to string
+        Console.WriteLine($"FunctionResult.ToString() -> {functionResult}");
     }
 }

@@ -409,15 +409,19 @@ FodyWeavers.xsd
 *.key
 *.pem
 
+# JetBrains IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
+
 .env
 certs/
 launchSettings.json
-!samples/dotnet/MsGraphPluginsExample/Properties/launchSettings.json
 config.development.yaml
 *.development.config
 *.development.json
 .DS_Store
-.idea/
 node_modules/
 obj/
 bin/

@@ -3,11 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.
@@ -33,12 +32,12 @@ internal static class QueryStringBuilder
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out var argument))
+            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
             {
                 //Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
                 {
-                    throw new SKException($"No argument found for the `{parameter.Name}` required parameter");
+                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{operation.Id}'.");
                 }
 
                 //Skipping not required parameter if no argument provided for it.
@@ -49,7 +48,7 @@ internal static class QueryStringBuilder
 
             if (!s_queryStringParameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new SKException($"The query string parameter `{parameterStyle}` serialization style is not supported.");
+                throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
             }
 
             //Serializing the parameter and adding it to the query string if there's an argument for it.

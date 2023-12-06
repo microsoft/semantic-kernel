@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -45,7 +45,7 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletionAsync(question);
+                await RunTextGenerationAsync(question);
                 await RunChatCompletionAsync(question);
             }
         }
@@ -84,11 +84,11 @@ public static class Example51_StepwisePlanner
 
     private static readonly List<ExecutionResult> s_executionResults = new();
 
-    private static async Task RunTextCompletionAsync(string question)
+    private static async Task RunTextGenerationAsync(string question)
     {
-        Console.WriteLine("RunTextCompletion");
+        Console.WriteLine("RunTextGeneration");
         ExecutionResult currentExecutionResult = default;
-        currentExecutionResult.mode = "RunTextCompletion";
+        currentExecutionResult.mode = "RunTextGeneration";
         var kernel = GetKernel(ref currentExecutionResult);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
@@ -102,32 +102,21 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
-    private static async Task RunWithQuestionAsync(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
+    private static async Task RunWithQuestionAsync(Kernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
-
-        // StepwisePlanner is instructed to depend on available functions.
-        // We expose this function to increase the flexibility in it's ability to answer
-        // given the relatively small number of functions we have in this example.
-        // This seems to be particularly helpful in these examples with gpt-35-turbo -- even though it
-        // does not *use* this function. It seems to help the planner find a better path to the answer.
-        kernel.CreateSemanticFunction(
-            "Generate an answer for the following question: {{$input}}",
-            functionName: "GetAnswerForQuestion",
-            pluginName: "AnswerBot",
-            description: "Given a question, get an answer and return it as the result of the function");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("semanticCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
 
-        var plannerConfig = new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig();
+        var plannerConfig = new StepwisePlannerConfig();
         plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
         plannerConfig.ExcludedFunctions.Add("DaysAgo");
         plannerConfig.ExcludedFunctions.Add("DateMatchingLastDayName");
@@ -152,9 +141,9 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
 
-            var kernelResult = await kernel.RunAsync(plan);
-            var planResult = kernelResult.FunctionResults.First();
-            var result = kernelResult.GetValue<string>()!;
+            var functionResult = await plan.InvokeAsync(kernel);
+
+            var result = functionResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
@@ -167,18 +156,18 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.answer = result;
             }
 
-            if (planResult.TryGetMetadataValue("stepCount", out string stepCount))
+            if (functionResult.TryGetMetadataValue("stepCount", out string stepCount))
             {
                 Console.WriteLine("Steps Taken: " + stepCount);
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (planResult.TryGetMetadataValue("functionCount", out string functionCount))
+            if (functionResult.TryGetMetadataValue("functionCount", out string functionCount))
             {
                 Console.WriteLine("Functions Used: " + functionCount);
             }
 
-            if (planResult.TryGetMetadataValue("iterations", out string iterations))
+            if (functionResult.TryGetMetadataValue("iterations", out string iterations))
             {
                 Console.WriteLine("Iterations: " + iterations);
                 currentExecutionResult.iterations = iterations;
@@ -196,30 +185,28 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-    private static IKernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
+    private static Kernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
         var maxTokens = 0;
         if (useChat)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletion(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
-                setAsDefault: true);
+                TestConfiguration.AzureOpenAI.ApiKey);
 
-            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
         {
-            builder.WithAzureTextCompletionService(
+            builder.WithAzureOpenAITextGeneration(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = TextMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName;
         }
 
@@ -227,12 +214,6 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
             .Build();
 
         return kernel;

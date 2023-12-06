@@ -3,10 +3,9 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Web;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'Form' style.
@@ -23,14 +22,11 @@ internal static class FormStyleParameterSerializer
     {
         const string ArrayType = "array";
 
-        if (parameter is null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        Verify.NotNull(parameter);
 
         if (parameter.Style != RestApiOperationParameterStyle.Form)
         {
-            throw new SKException($"Unexpected Rest Api operation parameter style - `{parameter.Style}`");
+            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
         }
 
         // Handling parameters of array type.
@@ -53,7 +49,7 @@ internal static class FormStyleParameterSerializer
     {
         if (JsonNode.Parse(argument) is not JsonArray array)
         {
-            throw new SKException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
+            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
         }
 
         if (parameter.Expand)

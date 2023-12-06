@@ -2,13 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Text;
+using Json.Schema;
+using Json.Schema.Generation;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// Represents a function parameter that can be pass to the OpenAI API
+/// Represents a function parameter that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunctionParameter
 {
@@ -23,25 +26,60 @@ public class OpenAIFunctionParameter
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Type of the parameter.
-    /// </summary>
-    public string Type { get; set; } = string.Empty;
-
-    /// <summary>
     /// Whether the parameter is required or not.
     /// </summary>
     public bool IsRequired { get; set; } = false;
+
+    /// <summary>
+    /// The JSON Schema of the parameter.
+    /// </summary>
+    public KernelJsonSchema? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The <see cref="Type"/> of the parameter.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
 }
 
 /// <summary>
-/// Represents a function that can be pass to the OpenAI API
+/// Represents a return parameter of a function that can be passed to the OpenAI API
+/// </summary>
+public class OpenAIFunctionReturnParameter
+{
+    /// <summary>
+    /// Description of the parameter.
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The JSON Schema of the parameter.
+    /// </summary>
+    public KernelJsonSchema? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The <see cref="Type"/> of the return parameter.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
+}
+
+/// <summary>
+/// Represents a function that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunction
 {
     /// <summary>
+    /// Cached <see cref="BinaryData"/> storing the JSON for a function with no parameters.
+    /// </summary>
+    /// <remarks>
+    /// This is an optimization to avoid serializing the same JSON Schema over and over again
+    /// for this relatively common case.
+    /// </remarks>
+    private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");
+
+    /// <summary>
     /// Separator between the plugin name and the function name
     /// </summary>
-    public const string NameSeparator = "-";
+    public const string NameSeparator = "_";
 
     /// <summary>
     /// Name of the function
@@ -59,7 +97,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(NameSeparator, this.PluginName, this.FunctionName);
+        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
 
     /// <summary>
     /// Description of the function
@@ -72,40 +110,75 @@ public class OpenAIFunction
     public IList<OpenAIFunctionParameter> Parameters { get; set; } = new List<OpenAIFunctionParameter>();
 
     /// <summary>
+    /// The return parameter of the function.
+    /// </summary>
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
+
+    /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> to OpenAI's <see cref="FunctionDefinition"/>.
     /// </summary>
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        var requiredParams = new List<string>();
+        BinaryData resultParameters = s_zeroFunctionParametersSchema;
 
-        var paramProperties = new Dictionary<string, object>();
-        foreach (var param in this.Parameters)
+        var parameters = this.Parameters;
+        if (parameters.Count > 0)
         {
-            paramProperties.Add(
-                param.Name,
-                new
-                {
-                    type = param.Type,
-                    description = param.Description,
-                });
+            var properties = new Dictionary<string, KernelJsonSchema>();
+            var required = new List<string>();
 
-            if (param.IsRequired)
+            for (int i = 0; i < parameters.Count; i++)
             {
-                requiredParams.Add(param.Name);
+                var parameter = parameters[i];
+
+                KernelJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
+                if (schema is not null)
+                {
+                    properties.Add(parameter.Name, schema);
+
+                    if (parameter.IsRequired)
+                    {
+                        required.Add(parameter.Name);
+                    }
+                }
             }
+
+            resultParameters = BinaryData.FromObjectAsJson(new
+            {
+                type = "object",
+                required = required,
+                properties = properties,
+            });
         }
+
         return new FunctionDefinition
         {
             Name = this.FullyQualifiedName,
             Description = this.Description,
-            Parameters = BinaryData.FromObjectAsJson(
-            new
-            {
-                type = "object",
-                properties = paramProperties,
-                required = requiredParams,
-            }),
+            Parameters = resultParameters,
         };
+    }
+
+    /// <summary>
+    /// Creates an <see cref="KernelJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
+    /// </summary>
+    /// <param name="type">The object Type.</param>
+    /// <param name="description">The object description.</param>
+    /// <returns>Return JSON Schema document or null if the type is null</returns>
+    [return: NotNullIfNotNull("type")]
+    internal static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
+    {
+        KernelJsonSchema? schema = null;
+        if (type is not null)
+        {
+            schema = KernelJsonSchema.Parse(JsonSerializer.Serialize(
+                new JsonSchemaBuilder()
+                .FromType(type)
+                .Description(description ?? string.Empty)
+                .Build()));
+        }
+
+        return schema;
     }
 }
