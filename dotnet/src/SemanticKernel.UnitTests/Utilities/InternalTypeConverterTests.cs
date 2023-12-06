@@ -6,6 +6,7 @@ using System.Globalization;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;
+
 public class InternalTypeConverterTests
 {
     [Theory]
