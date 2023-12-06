@@ -301,4 +301,32 @@ public class CodeBlockTests
         await variable.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
         Assert.Same(expectedValue, canary);
     }
+
+    [Fact]
+    public async Task ItDoesNotMutateOriginalArgumentsAsync()
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "bar";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var funcId = new FunctionIdBlock("plugin.function");
+        var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("baz=$bob");
+
+        var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        await codeBlock.RenderCodeAsync(this._kernel, arguments);
+
+        // Assert
+        Assert.Equal(2, arguments.Count);
+    }
 }
