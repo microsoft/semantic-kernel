@@ -103,7 +103,7 @@ public sealed class KernelFunctionHelpersTests
 
     private async Task<string> RenderPromptTemplateAsync(string template)
     {
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromObject(new Foo());
         var resultConfig = InitializeHbPromptConfig(template);
         var target = (HandlebarsPromptTemplate)this._factory.Create(resultConfig);
 

@@ -12,6 +12,8 @@ using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using static Extensions.UnitTests.PromptTemplate.Handlebars.HandlebarsPromptTemplateTestUtils;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 public sealed class HandlebarsPromptTemplateTests
@@ -70,7 +72,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersNestedFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromObject(new Foo());
         var template = "Foo {{Foo-Bar}} {{Foo-Baz}} {{Foo-Qux (Foo-Bar)}}";
         var promptConfig = InitializeHbPromptConfig(template);
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);

@@ -27,14 +27,14 @@ public static class Example65_HandlebarsPlanner
         s_sampleIndex = 1;
         bool shouldPrintPrompt = true;
 
+        // Using Complex Types as inputs and outputs
+        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
         await RunPoetrySampleAsync();
         await RunBookSampleAsync();
-
-        // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -56,8 +56,7 @@ public static class Example65_HandlebarsPlanner
         }
 
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,
@@ -67,11 +66,11 @@ public static class Example65_HandlebarsPlanner
 
         if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new StringParamsDictionaryPlugin(), StringParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new ComplexParamsDictionaryPlugin(), ComplexParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == CourseraPluginName)
         {
@@ -115,7 +114,7 @@ public static class Example65_HandlebarsPlanner
 
         // Execute the plan
         var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
-        Console.WriteLine($"\nResult:\n{result}\n");
+        Console.WriteLine($"\nResult:{result}\n");
     }
 
     private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)

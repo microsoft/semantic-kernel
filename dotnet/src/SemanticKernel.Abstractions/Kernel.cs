@@ -51,8 +51,24 @@ public sealed class Kernel
         IServiceProvider? services = null,
         KernelPluginCollection? plugins = null)
     {
+        // Store the provided services, or an empty singleton if there aren't any.
         this.Services = services ?? EmptyServiceProvider.Instance;
-        this._plugins = plugins;
+
+        // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
+        this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+        if (this._plugins is null)
+        {
+            // Otherwise, enumerate any plugins that may have been registered directly.
+            IEnumerable<IKernelPlugin> e = this.Services.GetServices<IKernelPlugin>();
+
+            // It'll be common not to have any plugins directly registered as a service.
+            // If we can efficiently tell there aren't any, avoid proactively allocating
+            // the plugins collection.
+            if (e is not ICollection<IKernelPlugin> c || c.Count != 0)
+            {
+                this._plugins = new(e);
+            }
+        }
     }
 
     /// <summary>
@@ -245,14 +261,6 @@ public sealed class Kernel
 
                 return Enumerable.Empty<T>();
             }
-        }
-
-        if (this.Services is EmptyServiceProvider)
-        {
-            // If the Kernel is created without a service provider, it uses a simple empty implementation.
-            // But the GetServices extension relies on the service provider special-casing enumerables.
-            // Since the empty provider doesn't do that, we need to special-case it here.
-            return Enumerable.Empty<T>();
         }
 
         return this.Services.GetServices<T>();

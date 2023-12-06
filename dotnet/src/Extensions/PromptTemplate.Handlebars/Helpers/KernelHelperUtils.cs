@@ -48,21 +48,4 @@ public static class KernelHelpersUtils
             double.TryParse(input, out _) ||
             decimal.TryParse(input, out _);
     }
-
-    /// <summary>
-    /// Casts the specified object to a double number.
-    /// </summary>
-    /// <param name="number">The object to cast.</param>
-    /// <returns>The double representation of the object.</returns>
-    public static double CastToNumber(object number)
-    {
-        try
-        {
-            return Convert.ToDouble(number, CultureInfo.CurrentCulture);
-        }
-        catch (FormatException)
-        {
-            return Convert.ToDouble(number, CultureInfo.InvariantCulture);
-        }
-    }
 }
