@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import reactor.util.annotation.NonNull;
 
@@ -13,7 +15,7 @@ import reactor.util.annotation.NonNull;
 /// </summary>
 class DefaultContextVariables implements ContextVariables, WritableContextVariables {
 
-    private final CaseInsensitiveMap<Object> variables;
+    private final CaseInsensitiveMap<ContextVariable<?>> variables;
 
     /// <summary>
     /// In the simplest scenario, the data is an input string, stored here.
@@ -24,24 +26,43 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    DefaultContextVariables(@NonNull Object content) {
+    DefaultContextVariables(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
     }
 
-    DefaultContextVariables(Map<String, Object> variables) {
+    DefaultContextVariables(Map<String, ContextVariable<?>> variables) {
         this.variables = new CaseInsensitiveMap<>(variables);
     }
 
+    DefaultContextVariables() {
+        this.variables = new CaseInsensitiveMap<>();
+    }
+
     @Override
-    public ContextVariables setVariable(@NonNull String key, @NonNull Object content) {
+    public ContextVariables setVariable(@NonNull String key, @NonNull ContextVariable<?> content) {
         this.variables.put(key, content);
         return this;
     }
 
     @Override
-    public Map<String, Object> asMap() {
-        return Collections.unmodifiableMap(variables);
+    public ContextVariables setVariable(String key, String content) {
+        return null;
+    }
+
+    @Override
+    public ContextVariables appendToVariable(
+        @NonNull String key, @NonNull ContextVariable<?> content) {
+        ContextVariable<?> existing = this.variables.get(key);
+
+        ContextVariable<?> newVal;
+        if (existing == null) {
+            newVal = content;
+        } else {
+            newVal = existing.append(content);
+        }
+
+        return setVariable(key, newVal);
     }
 
     /// <summary>
@@ -52,8 +73,13 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
     @Override
-    public ContextVariables update(@NonNull Object content) {
+    public ContextVariables update(@NonNull ContextVariable<?> content) {
         return setVariable(MAIN_KEY, content);
+    }
+
+    @Override
+    public ContextVariables update(String content) {
+        return null;
     }
 
     public DefaultContextVariables update(@NonNull DefaultContextVariables newData) {
@@ -80,7 +106,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         }
 
          */
-        this.variables.putAll(newData.asMap());
+        this.variables.putAll(newData);
         return this;
     }
 
@@ -97,60 +123,143 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
     @Override
     @Nullable
-    public Object getInput() {
+    public ContextVariable<?> getInput() {
         return get(MAIN_KEY);
     }
 
     @Override
     public String prettyPrint() {
         return variables.entrySet().stream()
-                .reduce(
-                        "",
-                        (str, entry) ->
-                                str
-                                        + System.lineSeparator()
-                                        + entry.getKey()
-                                        + ": "
-                                        + entry.getValue(),
-                        (a, b) -> a + b);
+            .reduce(
+                "",
+                (str, entry) ->
+                    str
+                        + System.lineSeparator()
+                        + entry.getKey()
+                        + ": "
+                        + entry.getValue(),
+                (a, b) -> a + b);
+    }
+
+    @Nullable
+    @Override
+    public <U, T extends ContextVariable<U>> T get(String key, Class<T> clazz) {
+        return (T) get(key);
+    }
+
+    @Override
+    public boolean isNullOrEmpty(String key) {
+        return get(key) == null || get(key).isEmpty();
     }
 
     @Override
     @Nullable
-    public Object get(String key) {
+    public ContextVariable<?> get(String key) {
         return variables.get(key);
     }
 
+    @Override
+    public int size() {
+        return variables.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return variables.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return variables.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return variables.containsValue(value);
+    }
+
+    @Override
+    public ContextVariable<?> get(Object key) {
+        return variables.get(key);
+    }
+
+    @Override
+    public ContextVariable<?> put(String key, ContextVariable<?> value) {
+        return variables.put(key, value);
+    }
+
+    @Override
+    public ContextVariable<?> remove(Object key) {
+        return variables.remove(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends ContextVariable<?>> m) {
+        variables.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        variables.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return variables.keySet();
+    }
+
+    @Override
+    public Collection<ContextVariable<?>> values() {
+        return variables.values();
+    }
+
+    @Override
+    public Set<Entry<String, ContextVariable<?>>> entrySet() {
+        return variables.entrySet();
+    }
+
     public static class WritableBuilder implements WritableContextVariables.Builder {
+
         @Override
-        public WritableContextVariables build(Map<String, Object> map) {
+        public WritableContextVariables build(Map<String, ContextVariable<?>> map) {
             return new DefaultContextVariables(map);
         }
     }
 
     public static class Builder implements ContextVariables.Builder {
 
-        private final Map<String, Object> variables;
+        private final DefaultContextVariables variables;
 
         public Builder() {
-            variables = new CaseInsensitiveMap<>();
-//            this.variables.put(MAIN_KEY, "");
+            variables = new DefaultContextVariables();
+            this.variables.put(MAIN_KEY, StringVariable.of(""));
         }
 
         @Override
-        public ContextVariables.Builder withVariable(String key, Object value) {
+        public <T> ContextVariables.Builder withVariable(String key, ContextVariable<T> value) {
             variables.put(key, value);
             return this;
         }
 
         @Override
-        public Builder withInput(String content) {
+        public ContextVariables.Builder withVariable(String key, Object value) {
+            variables.put(key, ContextVariable.of(value));
+            return this;
+        }
+
+        @Override
+        public <T> Builder withInput(ContextVariable<T> content) {
             variables.put(MAIN_KEY, content);
             return this;
         }
 
         @Override
-        public Builder withVariables(Map<String, Object> map) {
+        public ContextVariables.Builder withInput(Object content) {
+            return withInput(ContextVariable.of(content));
+        }
+
+        @Override
+        public Builder withVariables(Map<String, ContextVariable<?>> map) {
             variables.putAll(map);
             return this;
         }

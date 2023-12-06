@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import java.util.List;
@@ -124,7 +125,7 @@ public class TextMemorySkill {
         return memory.saveInformationAsync(collection, info, key, null, null)
                 .map(
                         it -> {
-                            context.setVariable(TextMemorySkill.KEY_PARAM, it);
+                            context.setVariable(TextMemorySkill.KEY_PARAM, StringVariable.of(it));
                             return SKBuilders.context()
                                     .withVariables(context.getVariables())
                                     .withSkills(context.getSkills())
@@ -186,8 +187,12 @@ public class TextMemorySkill {
         // TODO: 1.0 fix cast
         // Validate parameters
         if (collection == null || collection.trim().isEmpty()) {
-            collection = (String) context.getVariables().get(TextMemorySkill.COLLECTION_PARAM);
-            if (collection == null) collection = DEFAULT_COLLECTION;
+            if (context.getVariables().get(TextMemorySkill.COLLECTION_PARAM) == null) {
+                collection = DEFAULT_COLLECTION;
+            } else {
+                collection =
+                        context.getVariables().get(TextMemorySkill.COLLECTION_PARAM).toString();
+            }
         }
         final String _collection = collection;
         final float _relevance = (float) Math.min(1.0, Math.max(0.0, relevance));

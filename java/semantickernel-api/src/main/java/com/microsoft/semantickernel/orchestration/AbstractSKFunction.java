@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 /** Abstract implementation of the SKFunction interface. */
 public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFunction {
 
+
     private final List<ParameterView> parameters;
     private final String skillName;
     private final String functionName;
@@ -198,6 +199,7 @@ public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFun
                                             || parameter.getDefaultValue().isEmpty()
                                             || parameter
                                                     .getDefaultValue()
+                                                    .toPromptString()
                                                     .equals(
                                                             SKFunctionParameters
                                                                     .NO_DEFAULT_VALUE)) {

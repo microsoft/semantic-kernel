@@ -6,10 +6,12 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.AbstractSkFunction;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
@@ -277,8 +279,8 @@ public class Plan extends AbstractSkFunction {
 
         step.outputs.forEach(
                 item -> {
-                    if (result.getVariables().asMap().containsKey(item)) {
-                        String variable = result.getVariables().get(item);
+                    if (result.getVariables().containsKey(item)) {
+                        ContextVariable<?> variable = result.getVariables().get(item);
                         if (variable != null) {
                             updatedContext.setVariable(item, variable);
                         }
@@ -367,39 +369,46 @@ public class Plan extends AbstractSkFunction {
      * @param input Input string to expand.
      * @return Expanded string.
      */
-    private String expandFromVariables(ContextVariables variables, String input) {
-        String result = input;
-        Matcher matches = s_variablesRegex.matcher(input);
+    private ContextVariable<?> expandFromVariables(
+            ContextVariables variables, ContextVariable<?> input) {
+
+        if (!(input instanceof StringVariable)) {
+            return input;
+        }
+
+        String result = ((StringVariable) input).getValue();
+        Matcher matches = s_variablesRegex.matcher(result);
         while (matches.find()) {
 
             String varName = matches.group(1);
 
-            String value = variables.get(varName);
+            ContextVariable<?> value = variables.get(varName);
 
             if (value == null) {
                 value = state.get(varName);
             }
 
             if (value == null) {
-                value = "";
+                value = StringVariable.of("");
             }
 
-            result = result.replaceAll("\\$" + varName, value);
+            if (value instanceof StringVariable) {
+                result = result.replaceAll("\\$" + varName, value.toPromptString());
+            }
         }
 
-        return result;
+        return StringVariable.of(result);
     }
 
     /** Add any missing variables from a plan state variables to the context. */
     private static SKContext addVariablesToContext(ContextVariables vars, SKContext context) {
         WritableContextVariables clone = context.getVariables().writableClone();
-        vars.asMap()
-                .forEach(
-                        (key, value) -> {
-                            if (Verify.isNullOrEmpty(clone.get(key))) {
-                                clone.setVariable(key, value);
-                            }
-                        });
+        vars.forEach(
+                (key, value) -> {
+                    if (Verify.isNullOrEmpty(clone.get(key))) {
+                        clone.setVariable(key, value);
+                    }
+                });
 
         return SKBuilders.context().clone(context).withVariables(clone).build();
     }
@@ -419,7 +428,7 @@ public class Plan extends AbstractSkFunction {
         // - Empty if sending to another plan
         // - Plan.Description
 
-        String input = "";
+        ContextVariable<?> input = StringVariable.of("");
         if (step.parameters != null
                 && !Verify.isNullOrEmpty(step.parameters.getInput())
                 && !step.parameters.getInput().equals(SKFunctionParameters.NO_DEFAULT_VALUE)) {
@@ -431,9 +440,9 @@ public class Plan extends AbstractSkFunction {
         } else if (!Verify.isNullOrEmpty(this.state.getInput())) {
             input = Objects.requireNonNull(this.state.getInput());
         } else if (steps.size() > 0) {
-            input = "";
+            input = StringVariable.of("");
         } else if (!Verify.isNullOrEmpty(this.getDescription())) {
-            input = this.getDescription();
+            input = StringVariable.of(this.getDescription());
         }
 
         WritableContextVariables stepVariables =
@@ -453,45 +462,49 @@ public class Plan extends AbstractSkFunction {
                 }
 
                 if (!Verify.isNullOrEmpty(variables.get(param.getName()))) {
-                    String variable = Objects.requireNonNull(variables.get(param.getName()));
+                    ContextVariable<?> variable =
+                            Objects.requireNonNull(variables.get(param.getName()));
                     stepVariables.setVariable(param.getName(), variable);
                 } else if (!Verify.isNullOrEmpty(this.state.get(param.getName()))) {
-                    String variable = Objects.requireNonNull(this.state.get(param.getName()));
+                    ContextVariable<?> variable =
+                            Objects.requireNonNull(this.state.get(param.getName()));
                     stepVariables.setVariable(param.getName(), variable);
                 }
             }
         }
 
         if (step.parameters != null) {
-            step.parameters
-                    .asMap()
-                    .forEach(
-                            (key, value) -> {
-                                // Don't overwrite variable values that are already set
-                                if (!Verify.isNullOrEmpty(stepVariables.get(key))) {
-                                    return;
-                                }
+            step.parameters.forEach(
+                    (key, value) -> {
+                        // Don't overwrite variable values that are already set
+                        if (!Verify.isNullOrEmpty(stepVariables.get(key))) {
+                            return;
+                        }
 
-                                String expandedValue = this.expandFromVariables(variables, value);
-                                if (expandedValue != null
-                                        && !expandedValue.equalsIgnoreCase(value)) {
-                                    stepVariables.setVariable(key, expandedValue);
-                                } else if (!Verify.isNullOrEmpty(variables.get(key))) {
-                                    String variable = variables.get(key);
-                                    if (variable != null) {
-                                        stepVariables.setVariable(key, variable);
-                                    }
-                                } else if (!Verify.isNullOrEmpty(state.get(key))) {
-                                    String variable = state.get(key);
-                                    if (variable != null) {
-                                        stepVariables.setVariable(key, variable);
-                                    }
-                                } else {
-                                    if (expandedValue != null) {
-                                        stepVariables.setVariable(key, expandedValue);
-                                    }
-                                }
-                            });
+                        ContextVariable<?> expandedValue =
+                                this.expandFromVariables(variables, value);
+                        if (expandedValue != null
+                                && expandedValue instanceof StringVariable
+                                && !((StringVariable) expandedValue)
+                                        .getValue()
+                                        .equalsIgnoreCase(value.getValue().toString())) {
+                            stepVariables.setVariable(key, expandedValue);
+                        } else if (!Verify.isNullOrEmpty(variables.get(key))) {
+                            ContextVariable<?> variable = variables.get(key);
+                            if (variable != null) {
+                                stepVariables.setVariable(key, variable);
+                            }
+                        } else if (!Verify.isNullOrEmpty(state.get(key))) {
+                            ContextVariable<?> variable = state.get(key);
+                            if (variable != null) {
+                                stepVariables.setVariable(key, variable);
+                            }
+                        } else {
+                            if (expandedValue != null) {
+                                stepVariables.setVariable(key, expandedValue);
+                            }
+                        }
+                    });
         }
 
         return stepVariables;
@@ -521,7 +534,7 @@ public class Plan extends AbstractSkFunction {
                     step.getParametersView().stream()
                             .map(
                                     param -> {
-                                        String value = param.getDefaultValue();
+                                        ContextVariable<?> value = param.getDefaultValue();
                                         if (step.getParameters() != null
                                                 && step.getParameters().get(param.getName())
                                                         != null) {

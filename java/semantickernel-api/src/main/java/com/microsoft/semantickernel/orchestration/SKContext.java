@@ -57,7 +57,7 @@ public interface SKContext extends Buildable {
      * @param content value to set
      * @return Context for fluent calls
      */
-    SKContext setVariable(String key, String content);
+    SKContext setVariable(String key, ContextVariable<?> content);
 
     /**
      * Appends data to the given key

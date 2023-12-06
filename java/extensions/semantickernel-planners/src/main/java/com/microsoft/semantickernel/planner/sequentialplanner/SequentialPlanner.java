@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -108,7 +109,7 @@ public class SequentialPlanner {
                                 SKContext updatedContext =
                                         context.setVariable(
                                                         "available_functions",
-                                                        relevantFunctionsManual)
+                                                        StringVariable.of(relevantFunctionsManual))
                                                 .update(goal);
 
                                 return functionFlowFunction.invokeAsync(updatedContext, null);

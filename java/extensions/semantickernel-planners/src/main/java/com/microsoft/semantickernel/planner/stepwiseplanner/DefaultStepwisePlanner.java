@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.NumberVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -192,8 +195,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
         ContextVariables parameters =
                 SKBuilders.variables()
-                        .withVariable("functionDescriptions", functionDescriptions)
-                        .withVariable("question", goal)
+                        .withVariable(
+                                "functionDescriptions", StringVariable.of(functionDescriptions))
+                        .withVariable("question", StringVariable.of(goal))
                         .build();
         /*
             planStep.addOutputs(Arrays.asList("agentScratchPad", "stepCount", "skillCount", "stepsTaken"));
@@ -283,7 +287,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
             SKContext context, Integer stepIndex, ArrayList<SystemStep> stepsTaken) {
         String scratchPad = this.createScratchPad(stepsTaken);
 
-        context.setVariable("agentScratchPad", scratchPad);
+        context.setVariable("agentScratchPad", StringVariable.of(scratchPad));
 
         return systemStepFunction
                 .invokeAsync(context)
@@ -356,7 +360,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
         context = context.update(nextStep.getFinalAnswer());
         String updatedScratchPlan = this.createScratchPad(stepsTaken);
-        context.setVariable("agentScratchPad", updatedScratchPlan);
+        context.setVariable("agentScratchPad", StringVariable.of(updatedScratchPlan));
 
         // Add additional results to the context
         try {
@@ -438,8 +442,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
     private void addExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context)
             throws JsonProcessingException {
-        context.setVariable("stepCount", Integer.toString(stepsTaken.size()));
-        context.setVariable("stepsTaken", new ObjectMapper().writeValueAsString(stepsTaken));
+        context.setVariable("stepCount", NumberVariable.of(stepsTaken.size()));
+        context.setVariable(
+                "stepsTaken", StringVariable.of(new ObjectMapper().writeValueAsString(stepsTaken)));
 
         Map<String, Integer> actionCounts = new HashMap<>();
 
@@ -463,7 +468,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         String skillCallCountStr =
                 actionCounts.values().stream().reduce(0, Integer::sum).toString();
 
-        context.setVariable("skillCount", skillCallCountStr + " (" + skillCallListWithCounts + ")");
+        context.setVariable(
+                "skillCount",
+                StringVariable.of(skillCallCountStr + " (" + skillCallListWithCounts + ")"));
     }
 
     private String createScratchPad(List<SystemStep> stepsTaken) {
@@ -525,7 +532,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         return scratchPad;
     }
 
-    private Mono<String> invokeActionAsync(String actionName, Map<String, String> actionVariables) {
+    private Mono<String> invokeActionAsync(
+            String actionName, Map<String, ContextVariable<?>> actionVariables) {
         List<SKFunction> availableFunctions = this.getAvailableFunctions();
         Optional<SKFunction> targetFunction =
                 availableFunctions.stream()
@@ -564,7 +572,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                         });
     }
 
-    private SKContext createActionContext(Map<String, String> actionVariables) {
+    private SKContext createActionContext(Map<String, ContextVariable<?>> actionVariables) {
         SKContext actionContext = SKBuilders.context().withKernel(this.kernel).build();
 
         if (actionVariables != null) {

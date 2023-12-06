@@ -273,7 +273,8 @@ public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
     }
 
     @Override
-    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+    public Mono<FunctionResult> invokeAsync(
+            Kernel kernel, ContextVariables variables, boolean streaming) {
         return null;
     }
 

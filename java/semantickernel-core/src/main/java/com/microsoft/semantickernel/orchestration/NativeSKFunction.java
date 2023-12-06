@@ -6,6 +6,7 @@ import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctio
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.ai.AIException.ErrorCodes;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -76,7 +77,8 @@ public class NativeSKFunction extends AbstractSKFunction {
     }
 
     @Override
-    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+    public Mono<FunctionResult> invokeAsync(
+            Kernel kernel, ContextVariables variables, boolean streaming) {
         return null;
     }
 
@@ -352,12 +354,11 @@ public class NativeSKFunction extends AbstractSKFunction {
             Method method, SKContext context, Parameter parameter, Set<Parameter> inputArgs) {
         String variableName = getGetVariableName(parameter);
 
-        // TODO: 1.0 fix cast
-        String arg = (String) context.getVariables().get(variableName);
+        ContextVariable<?> arg = context.getVariables().get(variableName);
         if (arg == null) {
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
-                String input = (String) context.getVariables().get(ContextVariables.MAIN_KEY);
+                ContextVariable<?> input = context.getVariables().get(ContextVariables.MAIN_KEY);
                 if (input != null) {
                     arg = input;
                 }
@@ -367,7 +368,7 @@ public class NativeSKFunction extends AbstractSKFunction {
                 SKFunctionParameters annotation =
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
-                    arg = annotation.defaultValue();
+                    arg = StringVariable.of(annotation.defaultValue());
 
                     if (NO_DEFAULT_VALUE.equals(arg)) {
                         if (!annotation.required()) {
@@ -409,10 +410,14 @@ public class NativeSKFunction extends AbstractSKFunction {
         if (annotation == null || annotation.type() == null) {
             return arg;
         }
+
         Class<?> type = annotation.type();
+        /*
         if (Number.class.isAssignableFrom(type)) {
             arg = arg.replace(",", ".");
         }
+
+         */
 
         Object value = arg;
         // Well-known types only

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.templateengine.blocks;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.TemplateException;
@@ -99,8 +100,9 @@ public final class CodeBlock extends Block implements CodeRendering {
             String input = ((TextRendering) this.tokens.get(1)).render(variables);
             if (content.startsWith("$")) {
                 String varName = content.substring(1);
-                variables = variables.writableClone().setVariable(varName, input);
-            } else variables = variables.writableClone().update(input);
+                variables =
+                        variables.writableClone().setVariable(varName, StringVariable.of(input));
+            } else variables = variables.writableClone().update(StringVariable.of(input));
         }
 
         Mono<SKContext> result =

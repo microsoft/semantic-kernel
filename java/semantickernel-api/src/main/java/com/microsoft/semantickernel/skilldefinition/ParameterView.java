@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
+import com.microsoft.semantickernel.orchestration.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
+
 /// <summary>
 /// Class used to copy and export data from
 /// <see cref="SKFunctionContextParameterAttribute"/>
@@ -8,9 +11,11 @@ package com.microsoft.semantickernel.skilldefinition;
 /// for planner and related scenarios.
 /// </summary>
 public class ParameterView {
+
     private final String name;
     private final String description;
-    private final String defaultValue;
+    private final ContextVariable<?> defaultValue;
+    private static final String type = "String";
 
     /// <summary>
     /// Create a function parameter view, using information provided by the skill developer.
@@ -25,7 +30,7 @@ public class ParameterView {
 
         this.name = name;
         this.description = description;
-        this.defaultValue = defaultValue;
+        this.defaultValue = StringVariable.of(defaultValue);
     }
 
     public ParameterView(String name) {
@@ -40,7 +45,7 @@ public class ParameterView {
         return description;
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
+    public ContextVariable<?> getDefaultValue() {
+        return defaultValue.cloneVariable();
     }
 }

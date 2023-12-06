@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -26,8 +27,8 @@ public abstract class AbstractSKContext implements SKContext {
 
     @Nullable
     @Override
-    public Object getResult() {
-        return getVariables().asMap().get(ContextVariables.MAIN_KEY);
+    public String getResult() {
+        return getVariables().get(ContextVariables.MAIN_KEY).toString();
     }
 
     /// <summary>
@@ -35,7 +36,7 @@ public abstract class AbstractSKContext implements SKContext {
     /// </summary>
     @Override
     public ContextVariables getVariables() {
-        return SKBuilders.variables().withVariables(variables.asMap()).build();
+        return SKBuilders.variables().withVariables(variables).build();
     }
 
     AbstractSKContext(ContextVariables variables) {
@@ -53,8 +54,7 @@ public abstract class AbstractSKContext implements SKContext {
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills) {
-        this.variables =
-                SKBuilders.variables().withVariables(variables.asMap()).build().writableClone();
+        this.variables = SKBuilders.variables().withVariables(variables).build().writableClone();
 
         if (memory != null) {
             this.memory = memory.copy();
@@ -100,14 +100,14 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
-    public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext setVariable(@Nonnull String key, @Nonnull ContextVariable<?> content) {
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
     public SKContext update(@Nonnull String content) {
-        variables.update(content);
+        variables.update(StringVariable.of(content));
         return getThis();
     }
 

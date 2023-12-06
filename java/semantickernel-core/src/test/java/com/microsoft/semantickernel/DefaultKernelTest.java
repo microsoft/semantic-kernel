@@ -11,6 +11,7 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -58,8 +59,8 @@ public class DefaultKernelTest {
                 SKBuilders.context()
                         .withKernel(kernel)
                         .build()
-                        .setVariable("history", "")
-                        .setVariable("user_input", "A");
+                        .setVariable("history", StringVariable.of(""))
+                        .setVariable("user_input", StringVariable.of("A"));
 
         SKContext result = chat.invokeAsync(readOnlySkContext, null).block();
 
@@ -71,7 +72,7 @@ public class DefaultKernelTest {
 
         result =
                 result.appendToVariable("history", "user: A" + result.getResult())
-                        .setVariable("user_input", "B");
+                        .setVariable("user_input", StringVariable.of("B"));
 
         result = chat.invokeAsync(result, null).block();
         if (result == null) {

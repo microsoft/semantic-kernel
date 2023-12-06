@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
@@ -170,7 +171,7 @@ public class SequentialPlanTest {
                           <function.Skills.Skill4/>
                         </plan><!-- END -->
                         """;
-        SKContext context = SKBuilders.context().build().setVariable("anarg", "foo");
+        SKContext context = SKBuilders.context().build().setVariable("anarg", StringVariable.of("foo"));
         SKContext result = makePlan(planString).invokeAsync(context).block();
         Assertions.assertEquals("foo::Skill4", result.getResult());
     }
