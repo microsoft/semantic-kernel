@@ -40,7 +40,7 @@ public static class Example71_AssistantDelegation
 
         try
         {
-            var plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
+            var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
             menuAssistant =
                 await new AssistantBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
