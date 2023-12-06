@@ -99,6 +99,7 @@ internal sealed class ChatRun
                 {
                     // Reduce polling frequency after a couple attempts
                     await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
+                    ++count;
                 }
 
                 force = false;
@@ -112,8 +113,6 @@ internal sealed class ChatRun
                 {
                     // Retry anyway..
                 }
-
-                ++count;
             }
         }
     }
