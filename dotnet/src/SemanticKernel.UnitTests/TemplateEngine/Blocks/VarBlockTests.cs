@@ -53,10 +53,10 @@ public class VarBlockTests
     public void ItRendersToNullWithNullArgument()
     {
         // Arrange
-        var target = new VarBlock("$var ");
+        var target = new VarBlock("$var");
         var arguments = new KernelArguments()
         {
-            ["foo"] = null
+            ["$var"] = null
         };
 
         // Act
