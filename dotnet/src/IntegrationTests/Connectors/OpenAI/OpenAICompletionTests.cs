@@ -12,6 +12,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -411,11 +412,11 @@ public sealed class OpenAICompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task UsingStandardizedChatPromptGivesNoXmlBack()
+    public async Task UsingStandardizedChatPromptGivesNoXmlBackAsync()
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        this.ConfigureAzureOpenAI(builder);
+        this.ConfigureAzureOpenAIChatAsText(builder);
         Kernel target = builder.Build();
 
         // Create prompt
@@ -423,9 +424,6 @@ public sealed class OpenAICompletionTests : IDisposable
             <message role=""system"">You are a helpful assistant.</message>
             <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
         ");
-
-        ChatHistory chatMessages = [];
-        IChatCompletionService chatCompletionService = target.GetService<IChatCompletionService>();
 
         var result = target.InvokeStreamingAsync<StreamingChatMessageContent>(prompt);
 
@@ -439,6 +437,34 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Assert.False(fullContent.ToString().Contains('<', StringComparison.Ordinal));
         Assert.False(fullContent.ToString().Contains('>', StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task UsingStandardizedChatPromptAgainstTextCompletionGivesXmlBackAsync()
+    {
+        // Arrange
+        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this.ConfigureAzureOpenAI(builder);
+        Kernel target = builder.Build();
+
+        // Create prompt
+        KernelFunction prompt = KernelFunctionFactory.CreateFromPrompt(@"
+            <message role=""system"">You are a helpful assistant.</message>
+            <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
+        ");
+
+        var result = target.InvokeStreamingAsync<StreamingTextContent>(prompt);
+
+        // Print the chat completions
+        var fullContent = new StringBuilder();
+
+        await foreach (var content in result)
+        {
+            fullContent.Append(content);
+        }
+
+        Assert.True(fullContent.ToString().Contains('<', StringComparison.Ordinal));
+        Assert.True(fullContent.ToString().Contains('>', StringComparison.Ordinal));
     }
 
     #region internals
