@@ -63,7 +63,7 @@ internal static class Verify
 
         if (plugins is not null && plugins.Contains(pluginName))
         {
-            throw new KernelException($"A plugin with the name '{pluginName}' already exists.");
+            throw new ArgumentException($"A plugin with the name '{pluginName}' already exists.");
         }
     }
 
@@ -143,7 +143,7 @@ internal static class Verify
 
                 if (!seen.Add(p.Name))
                 {
-                    throw new KernelException($"The function has two or more parameters with the same name '{p.Name}'");
+                    throw new ArgumentException($"The function has two or more parameters with the same name '{p.Name}'");
                 }
             }
         }

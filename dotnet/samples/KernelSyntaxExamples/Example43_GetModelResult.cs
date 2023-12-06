@@ -30,7 +30,7 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using the Kernel InvokeAsync
-        var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
+        var result = await kernel.InvokeAsync(myFunction, new("sorry I forgot your birthday"));
         Console.WriteLine(result.GetValue<string>());
         Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
@@ -56,7 +56,7 @@ public static class Example43_GetModelResult
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            await kernel.InvokeAsync(errorFunction, "sorry I forgot your birthday");
+            await kernel.InvokeAsync(errorFunction, new("sorry I forgot your birthday"));
         }
         catch (Exception ex)
         {
