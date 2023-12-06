@@ -85,8 +85,27 @@ public sealed class PromptTemplateConfig
         return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.Default
+            DefaultValue = p.Default,
+            IsRequired = p.IsRequired,
+            Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
         }).ToList();
+    }
+
+    /// <summary>
+    /// Return the output variable metadata.
+    /// </summary>
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
+    {
+        if (this.OutputVariable is not null)
+        {
+            return new KernelReturnParameterMetadata()
+            {
+                Description = this.OutputVariable.Description,
+                Schema = string.IsNullOrEmpty(this.OutputVariable.JsonSchema) ? null : KernelJsonSchema.Parse(this.OutputVariable.JsonSchema!),
+            };
+        }
+
+        return null;
     }
 
     /// <summary>
