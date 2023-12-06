@@ -198,7 +198,7 @@ public class OrderedAIServiceConfigurationProviderTests
 
         // Assert
         Assert.Equal(kernel.GetService<ITextGenerationService>(expectedServiceId), aiService);
-        if (!string.IsNullOrEmpty(defaultExecutionSettings.ServiceId))
+        if (!string.IsNullOrEmpty(defaultExecutionSettings!.ServiceId))
         {
             Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);
         }
