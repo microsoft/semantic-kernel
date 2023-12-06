@@ -32,11 +32,12 @@ public class ChatMessageContent : ContentBase
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatMessageContent(AuthorRole role, string content, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, metadata)
+    public ChatMessageContent(AuthorRole role, string content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;

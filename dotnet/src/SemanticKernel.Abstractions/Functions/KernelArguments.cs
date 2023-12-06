@@ -33,21 +33,36 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <param name="executionSettings">The prompt execution settings.</param>
     public KernelArguments(PromptExecutionSettings? executionSettings = null)
     {
-        this._arguments = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        this._arguments = new(StringComparer.OrdinalIgnoreCase);
         this.ExecutionSettings = executionSettings;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>.
     /// </summary>
     /// <param name="source">The <see cref="IDictionary{TKey, TValue}"/> whose elements are copied the new <see cref="KernelArguments"/>.</param>
-    /// <remarks>If the source is a <see cref="KernelArguments"/>, its elements and <see cref="ExecutionSettings"/> are copied to this instance.</remarks>
-    public KernelArguments(IDictionary<string, object?> source)
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    /// <remarks>
+    /// If <paramref name="executionSettings"/> is non-null, it is used as the <see cref="ExecutionSettings"/> for this new instance.
+    /// Otherwise, if the source is a <see cref="KernelArguments"/>, its <see cref="ExecutionSettings"/> are used.
+    /// </remarks>
+    public KernelArguments(IDictionary<string, object?> source, PromptExecutionSettings? executionSettings = null)
     {
         Verify.NotNull(source);
 
-        this._arguments = new Dictionary<string, object?>(source, StringComparer.OrdinalIgnoreCase);
-        this.ExecutionSettings = (source as KernelArguments)?.ExecutionSettings;
+        this._arguments = new(source, StringComparer.OrdinalIgnoreCase);
+        this.ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains a single input argument.
+    /// </summary>
+    /// <param name="input">A string input value to use as the <see cref="InputParameterName"/> argument.</param>
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    public KernelArguments(string? input, PromptExecutionSettings? executionSettings = null)
+    {
+        this._arguments = new(1, StringComparer.OrdinalIgnoreCase) { [InputParameterName] = input };
+        this.ExecutionSettings = executionSettings;
     }
 
     /// <summary>

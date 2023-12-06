@@ -112,7 +112,7 @@ public static class OpenApiKernelExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.GetService<ILoggerFactory>().CreateLogger(typeof(OpenApiKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
