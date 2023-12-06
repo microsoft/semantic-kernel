@@ -182,7 +182,7 @@ public class KernelFunctionMetadataTests
     private static async Task ValidFunctionNameAsync()
     {
         var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName));
-        var result = await function.InvokeAsync(new Kernel(new Mock<IServiceProvider>().Object));
+        var result = await function.InvokeAsync(new());
     }
 
     private static MethodInfo Method(Delegate method)
