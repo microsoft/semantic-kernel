@@ -1,18 +1,18 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: teresaqhoang
-date: 2023-11-21
-deciders: markwallace, mabolan, alliscode, SergeyMenshykh, dluc
+date: 2023-12-06
+deciders: markwallace, alliscode, SergeyMenshykh
 consulted: markwallace, mabolan
-informed:
+informed: stephentoub
 ---
 
-# Handlebars Planner Template Engine Helpers
+# Handlebars Prompt Template Helpers
 
 ## Context and Problem Statement
 
-We want to use Handlebars as a template engine for rendering prompts and planners in the Semantic Kernel. Handlebars provides a simple and expressive syntax for creating dynamic templates with logic and data. However, Handlebars does not have built-in support for some features and scenarios that are relevant for our use cases, such as:
+We want to use Handlebars as a template factory for rendering prompts and planners in the Semantic Kernel. Handlebars provides a simple and expressive syntax for creating dynamic templates with logic and data. However, Handlebars does not have built-in support for some features and scenarios that are relevant for our use cases, such as:
 
 - Marking a block of text as a message with a role for chat completion connectors.
 - Invoking functions from the kernel and passing parameters to them.
@@ -24,8 +24,8 @@ Therefore, we need to extend Handlebars with custom helpers that can address the
 
 First, we will do this by **_baking in a defined set of custom system helpers_** for common operations and utilities that are not provided any the built-in Handlebars helpers, which:
 
-- Allows us full control over what functionality can be executed by the Handlebars template engine.
-- Enhances the functionality and usability of the template engine, by providing helpers for common operations and utilities that are not provided by any built-in Handlebars helpers but are commonly hallucinated by the model.
+- Allows us full control over what functionality can be executed by the Handlebars template factory.
+- Enhances the functionality and usability of the template factory, by providing helpers for common operations and utilities that are not provided by any built-in Handlebars helpers but are commonly hallucinated by the model.
 - Improves the expressiveness and readability of the rendered template, as the helpers can be used to perform simple or complex logic or transformations on the template data / arguments.
 - Provides flexibility and convenience for the users, as they can:
 
@@ -38,7 +38,7 @@ First, we will do this by **_baking in a defined set of custom system helpers_**
 
 These helpers would handle the evaluation of the arguments, the execution of the operation or utility, and the writing of the result to the template. Examples of such operations are `{{concat string1 string2 ...}}`, `{{equal value1 value2}}`, `{{json object}}`, `{{set name=value}}`, `{{get name}}`, `{{or condition1 condition2}}`, etc.
 
-Secondly, we have to **_expose the functions that are registered in the Kernel as helpers_** to the Handlebars template engine. Options for this are detailed below.
+Secondly, we have to **_expose the functions that are registered in the Kernel as helpers_** to the Handlebars template factory. Options for this are detailed below.
 
 ## Decision Drivers
 
@@ -57,7 +57,7 @@ We considered the following options for extending Handlebars with kernel functio
 
 ## Pros and Cons
 
-**1. Use a single generic helper for invoking functions from the kernel**
+### 1. Use a single generic helper for invoking functions from the kernel
 
 Pros:
 
@@ -71,7 +71,7 @@ Cons:
 - Reduces the expressiveness and readability of the template, as the function name and parameters are wrapped in a generic helper invocation.
 - Adds additional syntax for the model to learn and keep track of, potentially leading to more errors during render.
 
-**2. Use a generic helper for _each_ function from the kernel**
+### 2. Use a generic helper for _each_ function from the kernel
 
 Pros:
 
@@ -84,7 +84,7 @@ Cons:
 
 ## Decision Outcome
 
-We decided to go with option 2: providing special helpers to invoke any function in the kernel. These helpers will follow the same logic and syntax for each registered function. We believe that this approach, alongside the custom system helpers that will enable special utility logic or behavior, provides the best balance between simplicity, expressiveness, flexibility, and functionality for the template engine and the users.
+We decided to go with option 2: providing special helpers to invoke any function in the kernel. These helpers will follow the same logic and syntax for each registered function. We believe that this approach, alongside the custom system helpers that will enable special utility logic or behavior, provides the best balance between simplicity, expressiveness, flexibility, and functionality for the Handlebars template factory and our users.
 
 With this approach,
 
@@ -124,7 +124,7 @@ Effectively, there will be four buckets of helpers enabled in the Handlebars Tem
 
 ### Pseudocode for the Handlebars Prompt Template Engine
 
-A prototype implementation of a handlebars prompt template engine with built-in helpers could look something like this:
+A prototype implementation of a Handlebars prompt template factory with built-in helpers could look something like this:
 
 ```csharp
 /// Options for Handlebars helpers (built-in and custom).
