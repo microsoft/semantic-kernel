@@ -50,7 +50,7 @@ public static class Example15_TextMemoryPlugin
         // store = CreateSampleMongoDBMemoryStore();
 
         // Azure AI Search Memory Store - a store that persists data in a hosted Azure AI Search database
-        store = CreateSampleAzureAISearchMemoryStore();
+        // store = CreateSampleAzureAISearchMemoryStore();
 
         // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
