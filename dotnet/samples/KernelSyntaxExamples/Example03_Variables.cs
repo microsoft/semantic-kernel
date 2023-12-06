@@ -3,16 +3,12 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Plugins;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
 {
-    private static readonly ILoggerFactory s_loggerFactory = ConsoleLogger.LoggerFactory;
-
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Variables ========");

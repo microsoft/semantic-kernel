@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
@@ -26,18 +24,29 @@ public class KernelBuilderTests
     }
 
     [Fact]
+    public void ItHasIdempotentServicesAndPlugins()
+    {
+        KernelBuilder builder = new();
+
+        Assert.NotNull(builder.Services);
+        Assert.NotNull(builder.Plugins);
+
+        IServiceCollection services = builder.Services;
+        IKernelBuilderPlugins plugins = builder.Plugins;
+
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.Same(services, builder.Services);
+            Assert.Same(plugins, builder.Plugins);
+            Assert.NotNull(builder.Build());
+        }
+    }
+
+    [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
         Kernel kernel = new KernelBuilder().Build();
         Assert.Empty(kernel.Data);
-    }
-
-    [Fact]
-    public void ItDefaultsLoggerFactoryToNullLoggerFactory()
-    {
-        Kernel kernel = new KernelBuilder().Build();
-        Assert.Same(NullLoggerFactory.Instance, kernel.GetService<ILoggerFactory>());
-        Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
     }
 
     [Fact]
@@ -56,7 +65,7 @@ public class KernelBuilderTests
     }
 
     [Fact]
-    public void ItSuppliesBuiltServiceProviderToConfigurePlugins()
+    public void ItSuppliesServicesCollectionToPluginsBuilder()
     {
         KernelBuilder builder = new();
         Assert.Same(builder.Services, builder.Plugins.Services);
@@ -146,5 +155,37 @@ public class KernelBuilderTests
 
         k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
         Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
+    }
+
+    [Fact]
+    public void ItFindsAllPluginsToPopulatePluginsCollection()
+    {
+        KernelPlugin plugin1 = new("plugin1");
+        KernelPlugin plugin2 = new("plugin2");
+        KernelPlugin plugin3 = new("plugin3");
+
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<IKernelPlugin>(plugin1);
+        builder.Services.AddSingleton<IKernelPlugin>(plugin2);
+        builder.Services.AddSingleton<IKernelPlugin>(plugin3);
+        Kernel kernel = builder.Build();
+
+        Assert.Equal(3, kernel.Plugins.Count);
+    }
+
+    [Fact]
+    public void ItFindsPluginCollectionToUse()
+    {
+        KernelPlugin plugin1 = new("plugin1");
+        KernelPlugin plugin2 = new("plugin2");
+        KernelPlugin plugin3 = new("plugin3");
+
+        KernelPluginCollection plugins = new(new[] { plugin1, plugin2, plugin3 });
+
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton(plugins);
+        Kernel kernel = builder.Build();
+
+        Assert.Equal(3, kernel.Plugins.Count);
     }
 }
