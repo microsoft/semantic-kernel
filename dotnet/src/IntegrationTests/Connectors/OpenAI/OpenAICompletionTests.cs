@@ -430,6 +430,7 @@ public sealed class OpenAICompletionTests : IDisposable
         {
             fullContent.Append(content);
         }
+        fullContent.Append((await target.InvokeAsync(prompt)).GetValue<string>());
 
         Assert.False(fullContent.ToString().Contains('<', StringComparison.Ordinal));
         Assert.False(fullContent.ToString().Contains('>', StringComparison.Ordinal));
@@ -454,9 +455,12 @@ public sealed class OpenAICompletionTests : IDisposable
         {
             fullContent.Append(content);
         }
+        var resultValue = (await target.InvokeAsync(prompt)).GetValue<string>()!;
 
         Assert.True(fullContent.ToString().Contains('<', StringComparison.Ordinal));
         Assert.True(fullContent.ToString().Contains('>', StringComparison.Ordinal));
+        Assert.True(resultValue.Contains('<', StringComparison.Ordinal));
+        Assert.True(resultValue.Contains('>', StringComparison.Ordinal));
     }
 
     #region internals

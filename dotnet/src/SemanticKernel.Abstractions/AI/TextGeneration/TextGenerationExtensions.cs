@@ -57,7 +57,7 @@ public static class TextGenerationExtensions
             return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
         }
 
-        //Otherwise, fallback to use the prompt as the chat system message
+        // When using against text generations, the prompt will be used as is.
         return await textGenerationService.GetTextContentAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
 
