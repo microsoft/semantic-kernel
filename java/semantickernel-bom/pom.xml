@@ -146,7 +146,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
-                <version>1.13.10</version>
+                <version>1.13.11</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
