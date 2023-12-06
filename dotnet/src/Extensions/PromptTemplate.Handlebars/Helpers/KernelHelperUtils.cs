@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Globalization;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
