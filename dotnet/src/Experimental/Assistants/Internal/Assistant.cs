@@ -110,6 +110,18 @@ internal sealed class Assistant : IAssistant
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public async Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        await this._restContext.DeleteThreadModelAsync(id, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)

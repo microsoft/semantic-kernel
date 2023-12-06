@@ -124,6 +124,7 @@ public static class Example70_Assistant
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
+
         string? threadId = null;
         try
         {
@@ -143,7 +144,7 @@ public static class Example70_Assistant
         finally
         {
             await Task.WhenAll(
-                threadId == null ? Task.CompletedTask : (await assistant.GetThreadAsync(threadId)).DeleteAsync(), // $$$
+                assistant.DeleteThreadAsync(threadId),
                 assistant.DeleteAsync());
         }
     }
