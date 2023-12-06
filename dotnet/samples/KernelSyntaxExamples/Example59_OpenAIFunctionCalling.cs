@@ -24,18 +24,12 @@ public static class Example59_OpenAIFunctionCalling
     public static async Task RunAsync()
     {
         // Create kernel with chat completions service and plugins
-        Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .WithServices(services =>
-            {
-                services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
-            })
-            .WithPlugins(plugins =>
-            {
-                plugins.AddFromType<TimePlugin>();
-                plugins.AddFromType<WidgetPlugin>();
-            })
-            .Build();
+        KernelBuilder builder = new();
+        builder.Plugins.AddFromType<TimePlugin>();
+        builder.Plugins.AddFromType<WidgetPlugin>();
+        builder.WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        Kernel kernel = builder.Build();
 
         // Load additional functions into the kernel
         await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));

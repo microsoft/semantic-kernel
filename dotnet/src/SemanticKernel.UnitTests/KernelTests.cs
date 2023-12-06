@@ -28,13 +28,8 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddSingleton<ITextGenerationService>(factory.Object);
-        }).Build();
-
-        kernel.ImportPluginFromType<MyPlugin>("mySk");
+        Kernel kernel = new();
+        kernel.Plugins.AddFromType<MyPlugin>("mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.NotNull(kernel.Plugins.GetFunction("mySk", "sayhello"));
@@ -326,18 +321,21 @@ public class KernelTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextCompletion.Object)).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
-        sut.FunctionInvoked += (sender, e) =>
+        kernel.FunctionInvoked += (sender, e) =>
         {
             invoked++;
         };
 
         // Act
-        var result = await sut.InvokeAsync(function);
+        var result = await kernel.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
@@ -502,12 +500,9 @@ public class KernelTests
     public async Task ItCanFindAndRunFunctionAsync()
     {
         //Arrange
-        var serviceProvider = new Mock<IServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
-        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
+        var kernel = new Kernel();
         kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         //Act
@@ -623,7 +618,9 @@ public class KernelTests
         var mockTextCompletion = this.SetupStreamingMocks(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
-        var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextCompletion.Object)).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new KernelArguments("importance");

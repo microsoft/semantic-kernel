@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -38,7 +39,7 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        var kernel = new KernelBuilder()
+        var builder = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
@@ -49,10 +50,9 @@ public static class Example62_CustomAIServiceSelector
             .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
-            // Use the custom AI service selector to select the GPT 3.x model
-            .WithAIServiceSelector(new Gpt3xAIServiceSelector())
-            .Build();
+                apiKey: openAIApiKey);
+        builder.Services.AddSingleton<IAIServiceSelector>(new Gpt3xAIServiceSelector()); // Use the custom AI service selector to select the GPT 3.x model
+        Kernel kernel = builder.Build();
 
         var prompt = "Hello AI, what can you do for me?";
         var result = await kernel.InvokePromptAsync(prompt);

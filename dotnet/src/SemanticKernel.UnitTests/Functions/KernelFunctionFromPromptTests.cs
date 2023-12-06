@@ -22,10 +22,9 @@ public class KernelFunctionFromPromptTests
     {
         // Arrange
         var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddSingleton(factory.Object);
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton(factory.Object);
+        Kernel kernel = builder.Build();
 
         kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
@@ -45,10 +44,9 @@ public class KernelFunctionFromPromptTests
 
         mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("x", mockTextGeneration.Object);
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -77,11 +75,10 @@ public class KernelFunctionFromPromptTests
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -103,11 +100,10 @@ public class KernelFunctionFromPromptTests
         var mockTextGeneration1 = new Mock<ITextGenerationService>();
         var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";

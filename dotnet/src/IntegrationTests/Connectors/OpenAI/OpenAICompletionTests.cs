@@ -176,21 +176,21 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        Kernel target = this._kernelBuilder
+        this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
             .WithOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
-                apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
-            .WithServices(c => c.ConfigureHttpClientDefaults(c =>
-                {
-                    // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                    c.AddStandardResilienceHandler().Configure(o =>
-                    {
-                        o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                    });
-                }))
-            .Build();
+                apiKey: "INVALID_KEY"); // Use an invalid API key to force a 401 Unauthorized response
+        this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
+        {
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
+            {
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+            });
+        });
+        Kernel target = this._kernelBuilder.Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
@@ -219,14 +219,14 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        builder.WithServices(c => c.ConfigureHttpClientDefaults(c =>
+        builder.Services.ConfigureHttpClientDefaults(c =>
+        {
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
             {
-                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                c.AddStandardResilienceHandler().Configure(o =>
-                {
-                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                });
-            }));
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+            });
+        });
 
         Kernel target = builder.Build();
 

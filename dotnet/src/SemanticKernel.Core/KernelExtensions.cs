@@ -205,6 +205,38 @@ public static class KernelExtensions
         plugins.Add(plugin);
         return plugin;
     }
+
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
+    /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton<IKernelPlugin>(serviceProvider => KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider));
+
+        return plugins;
+    }
+
+    /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
+    /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
+    /// <param name="plugin">The plugin to add.</param>
+    /// <returns></returns>
+    public static IKernelBuilderPlugins Add(this IKernelBuilderPlugins plugins, IKernelPlugin plugin)
+    {
+        Verify.NotNull(plugins);
+        Verify.NotNull(plugin);
+
+        plugins.Services.AddSingleton(plugin);
+
+        return plugins;
+    }
     #endregion
 
     #region ImportPluginFromObject
@@ -241,6 +273,24 @@ public static class KernelExtensions
         IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
+    }
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="target">The instance of the class to be wrapped.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// </param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, string? pluginName = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+
+        return plugins;
     }
     #endregion
 
@@ -445,6 +495,27 @@ public static class KernelExtensions
             promptTemplateFactory: promptTemplateFactory);
 
         return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+    }
+    #endregion
+
+    #region AddKernel for IServiceCollection
+    /// <summary>Adds a <see cref="KernelPluginCollection"/> and <see cref="Kernel"/> services to the services collection.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>
+    /// A <see cref="IKernelBuilder"/> that can be used to add additional services to the same <see cref="IServiceCollection"/>.
+    /// </returns>
+    /// <remarks>
+    /// The <see cref="KernelPluginCollection"/> is registered as a singleton.
+    /// The <see cref="Kernel"/> is registered as transient.
+    /// </remarks>
+    public static IKernelBuilder AddKernel(this IServiceCollection services)
+    {
+        Verify.NotNull(services);
+
+        services.AddSingleton<KernelPluginCollection>();
+        services.AddTransient<Kernel>();
+
+        return new KernelBuilder(services);
     }
     #endregion
 }

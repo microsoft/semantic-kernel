@@ -143,31 +143,32 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().WithServices(c =>
-        {
-            if (useChatModel)
-            {
-                c.AddAzureOpenAIChatCompletion(
-                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
-            else
-            {
-                c.AddAzureOpenAITextGeneration(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
+        KernelBuilder builder = new();
 
-            if (useEmbeddings)
-            {
-                c.AddAzureOpenAITextEmbeddingGeneration(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-            }
-        }).Build();
+        if (useChatModel)
+        {
+            builder.Services.AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.Services.AddAzureOpenAITextGeneration(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+
+        if (useEmbeddings)
+        {
+            builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }
+
+        return builder.Build();
     }
 
     private readonly RedirectOutput _testOutputHelper;

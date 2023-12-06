@@ -25,11 +25,10 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddFromType<EmailPluginFake>())
-            .Build();
+        var builder = new KernelBuilder().WithLoggerFactory(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
@@ -43,11 +42,10 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddFromType<EmailPluginFake>())
-            .Build();
+        var builder = new KernelBuilder().WithLoggerFactory(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
