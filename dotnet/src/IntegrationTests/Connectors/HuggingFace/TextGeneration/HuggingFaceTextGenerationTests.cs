@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
