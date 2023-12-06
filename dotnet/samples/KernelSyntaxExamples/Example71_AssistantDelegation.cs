@@ -72,10 +72,10 @@ public static class Example71_AssistantDelegation
             thread = await toolAssistant.NewThreadAsync();
             foreach (var message in messages)
             {
-                var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
+                var messageUser = await thread.AddUserMessageAsync(message);
                 DisplayMessage(messageUser);
 
-                var assistantMessages = await thread.InvokeAsync(toolAssistant).ConfigureAwait(true);
+                var assistantMessages = await thread.InvokeAsync(toolAssistant);
                 DisplayMessages(assistantMessages);
             }
         }
@@ -85,7 +85,7 @@ public static class Example71_AssistantDelegation
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 toolAssistant?.DeleteAsync() ?? Task.CompletedTask,
                 parrotAssistant?.DeleteAsync() ?? Task.CompletedTask,
-                menuAssistant?.DeleteAsync() ?? Task.CompletedTask).ConfigureAwait(false);
+                menuAssistant?.DeleteAsync() ?? Task.CompletedTask);
         }
     }
 

@@ -140,7 +140,7 @@ internal sealed class Assistant : IAssistant
             new AssistantResponse
             {
                 ThreadId = thread.Id,
-                Response = string.Concat(message.Select(m => m.Content)),
+                Message = string.Concat(message.Select(m => m.Content)),
             };
 
         return response;

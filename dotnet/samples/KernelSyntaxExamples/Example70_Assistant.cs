@@ -124,6 +124,7 @@ public static class Example70_Assistant
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
+        string? threadId = null;
         try
         {
             // Invoke assistant plugin function.
@@ -134,13 +135,16 @@ public static class Example70_Assistant
 
             // Display result
             var response = result.GetValue<AssistantResponse>();
+            threadId = response?.ThreadId;
             Console.WriteLine(
-                response?.Response ??
+                response?.Message ??
                 $"No response from assistant: {assistant.Id}");
         }
         finally
         {
-            await assistant.DeleteAsync();
+            await Task.WhenAll(
+                threadId == null ? Task.CompletedTask : (await assistant.GetThreadAsync(threadId)).DeleteAsync(), // $$$
+                assistant.DeleteAsync());
         }
     }
 
@@ -181,11 +185,11 @@ public static class Example70_Assistant
             foreach (var message in messages)
             {
                 // Add the user message
-                var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
+                var messageUser = await thread.AddUserMessageAsync(message);
                 DisplayMessage(messageUser);
 
                 // Retrieve the assistant response
-                var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
+                var assistantMessages = await thread.InvokeAsync(assistant);
                 DisplayMessages(assistantMessages);
             }
         }
@@ -193,7 +197,7 @@ public static class Example70_Assistant
         {
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
-                assistant.DeleteAsync()).ConfigureAwait(false);
+                assistant.DeleteAsync());
         }
     }
 
