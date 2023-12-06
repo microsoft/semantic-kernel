@@ -38,7 +38,7 @@ public static class Example59_OpenAIFunctionCalling
         // Load additional functions into the kernel
         await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 
-        var chatCompletionService = kernel.GetService<IChatCompletionService>();
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
         var executionSettings = new OpenAIPromptExecutionSettings();
 
