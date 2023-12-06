@@ -70,7 +70,7 @@ public sealed class WebSearchEnginePlugin
     /// <param name="offset">The number of results to skip. Default is 0.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The return value contains the search results as an IEnumerable WebPage object serialized as a string</returns>
-    [SKFunction, Description("Perform a web search and return complete results.")]
+    [KernelFunction, Description("Perform a web search and return complete results.")]
     public async Task<string> GetSearchResultsAsync(
         [Description("Text to search for")] string query,
         [Description("Number of results")] int count = 1,
