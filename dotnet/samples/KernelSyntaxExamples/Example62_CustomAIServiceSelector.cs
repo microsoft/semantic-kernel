@@ -38,7 +38,7 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
-        // Buid a kernel with multiple chat completion services
+        // Build a kernel with multiple chat completion services
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
