@@ -408,7 +408,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
